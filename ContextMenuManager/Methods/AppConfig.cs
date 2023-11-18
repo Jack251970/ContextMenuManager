@@ -74,7 +74,6 @@ namespace ContextMenuManager.Methods
         public static string UserUwpModeItemsDic = $@"{UserDicsDir}\{UWPMODEITEMSDICXML}";
 
         public const string ZH_CNINI = "zh-CN.ini";
-        public const string DE_DEINI = "zh-DE.ini";
         public const string GUIDINFOSDICINI = "GuidInfosDic.ini";
         public const string DETAILEDEDITDICXML = "DetailedEditDic.xml";
         public const string ENHANCEMENUSICXML = "EnhanceMenusDic.xml";

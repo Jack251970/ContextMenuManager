@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Jedes Programm ist eine Gruppe, Text ist der Anzeigetext des Gruppenelements, Guid wird verwendet, um zu beurteilen, ob der Benutzer das Programm installiert und entscheidet, ob die Gruppe angezeigt werden soll. Wenn die Guid nicht festgelegt ist, ist sie der Bewohner Menü und RegPath ist der Registrierungsschlüssel, der sich auf den Programmpfad bezieht;
-Der zugehörige Menüpunkt wird als Unterelement „Artikel“ festgelegt, „Artikeltext“ ist der für den Artikel angezeigte Text, „Tipp“ ist die Eingabeaufforderungsinformation, wenn sich die Maus über dem Schalter befindet, und „RestartExplorer“ wird hinzugefügt, wenn der Explorer neu gestartet werden muss, damit er wirksam wird ;
-Das Unterelement Rule of Item stellt den relevanten Registrierungsinhalt dar. Wenn RegPath weggelassen wird, wird standardmäßig der Hauptpfad der Gruppe verwendet, und wenn es mit \\ beginnt, ist es der Unterelementpfad des Hauptpfads der Gruppe.
-ValueName ist der relevante Schlüsselname, On dient zum Aktivieren des Schlüsselwerts und Off zum Deaktivieren des Schlüsselwerts. Wenn die On- oder Off-Eigenschaft nicht festgelegt ist, ist ihr Wert null und der entsprechende Registrierungsschlüsselwert ist nicht vorhanden.
-Jedes Element kann von mehreren Registrierungsregeln betroffen sein, und die Schlüsselwertbeurteilung wird der Reihe nach durchgeführt; Beurteilungsregeln: Wenn mehrere Regeln vorhanden sind, stimmt der Registrierungsschlüsselwert der vorherigen Regel mit „Ein“ überein, dann ist er „Ein“, und wenn er mit „Aus“ übereinstimmt, ist er „Ein“. ist ausgeschaltet und beendet die Beurteilung. Wenn keine Übereinstimmung vorliegt, fahren Sie mit der Beurteilung fort. Wenn nicht alle Regeln übereinstimmen, ist sie eingeschaltet
-ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist REG_DWORD, der weggelassen werden kann, wenn es sich um den Standardwert handelt. Derzeit werden nur die Schlüsselwerttypen REG_SZ, REG_DWORD, REG_EXPAND_SZ, REG_BINARY -> unterstützt-->
+<!--每个程序为一个Group，Text为Group项显示文本，Guid用于判断用户是否安装此程序并决定是否显示该Group，不设置Guid则为常驻菜单，RegPath为程序相关注册表主路径;
+其相关菜单项目设置作为一个Item子元素，Item的Text为该Item项显示文本，Tip为鼠标悬浮在开关上时的提示信息，需要重启资源管理器生效则添加RestartExplorer;
+Item的子元素Rule为相关注册表内容，RegPath省略则默认为Group主路径，以\开头则为Group主路径的子项路径；
+ValueName为相关键名，On为启用键值，Off为禁用键值；不设置On或Off属性时，其值为null，对应注册表键值不存在；
+每个Item可能受多个注册表Rule影响，按照顺序进行键值判定；判定规则：当有多条规则时，前面的规则注册表键值匹配On则为On，匹配Off则为Off，并终止判断，都不匹配时继续往下判断，若所有规则都不匹配则为On
+ValueKind为键值类型，默认键值类型ValueKind为REG_DWORD，为默认值时可省略，目前仅支持REG_SZ、REG_DWORD、REG_EXPAND_SZ、REG_BINARY的键值类型-->
 
 <Data>
   <Group>
@@ -14,8 +14,8 @@ ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist
     <RegPath>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer</RegPath>
     <Item>
       <Text Value='右键菜单'/>
-      <Text Value='Kontextmenü'>
-        <Culture>de-DE</Culture>
+      <Text Value='Context Menu'>
+        <Culture>en-US</Culture>
       </Text>
       <RestartExplorer/>
       <Rule RegPath='HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' ValueName='NoViewContextMenu' Off='1'/>
@@ -63,8 +63,8 @@ ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist
 
   <Group>
     <Text Value='任务栏'/>
-    <Text Value='Taskleiste'>
-      <Culture>de-DE</Culture>
+    <Text Value='TaskBar'>
+      <Culture>en-US</Culture>
     </Text>
     <Guid>90aa3a4e-1cba-4233-b8bb-535773d48449</Guid>
     <RegPath>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer</RegPath>
@@ -119,8 +119,8 @@ ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist
 
   <Group>
     <Text Value='开始屏幕'/>
-    <Text Value='Startmenü'>
-      <Culture>de-DE</Culture>
+    <Text Value='Start Menu'>
+      <Culture>en-US</Culture>
     </Text>
     <Guid>470c0ebd-5d73-4d58-9ced-e91e22e23282</Guid>
     <RegPath>HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer</RegPath>
@@ -178,142 +178,142 @@ ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist
     <RegPath>HKEY_CURRENT_USER\SOFTWARE\Bandizip</RegPath>
     <Item>
       <Text Value='禁用上下文菜单'/>
-      <Text Value='Kontextmenü deaktivieren'>
-        <Culture>de-DE</Culture>
+      <Text Value='Disable context menu'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_DoNotUse' On='1' Off='0' ValueKind='REG_DWORD'/>
     </Item>
     <Item>
       <Text Value='层叠上下文菜单'/>
-      <Text Value='Kaskadiertes Kontextmenü'>
-        <Culture>de-DE</Culture>
+      <Text Value='Cascaded context menu'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ShowSubmenu' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='隐藏Bandizip图标'/>
-      <Text Value='Bandizip-Symbol ausblenden'>
-        <Culture>de-DE</Culture>
+      <Text Value='Hide Bandizip icon'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_HideIcon' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='预览压缩文件'/>
-      <Text Value='Vorschau-Archiv'>
-        <Culture>de-DE</Culture>
+      <Text Value='Preview Archive'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_Preview' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='预览文件数量限制'/>
-      <Text Value='Beschränken Sie die Vorschaudateien auf'>
-        <Culture>de-DE</Culture>
+      <Text Value='Limit preview files to'>
+        <Culture>en-US</Culture>
       </Text>
       <IsNumberItem/>
       <Rule ValueName='shell_PreviewSize' Max='20' Min='1' Default='6'/>
     </Item>
     <Item>
       <Text Value='新建文件夹'/>
-      <Text Value='Neuer Ordner'>
-        <Culture>de-DE</Culture>
+      <Text Value='New Folder'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_CreateNewFolder' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='打开命令提示符'/>
-      <Text Value='Starten Sie das Befehlsfenster'>
-        <Culture>de-DE</Culture>
+      <Text Value='Launch Command Window'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_OpenCmd' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压到当前文件夹'/>
-      <Text Value='Hier entpacken'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract Here'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ExtractHere' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='自动解压'/>
-      <Text Value='Hier entpacken(Schlau)'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract Here (Smart)'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ExtractAuto' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压到...'/>
-      <Text Value='Extrahieren, um...'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract to...'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ExtractSub' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压到当前文件夹并删除原始文件 (智能)'/>
-      <Text Value='Hier entpacken(Schlau)und Löschen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract Here (Smart) and Delete'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ExtractAuto_Del' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='选择解压路径'/>
-      <Text Value='In einen anderen Ordner extrahieren...'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract to another folder...'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ExtractDlg' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='测试压缩文件'/>
-      <Text Value='Testarchiv'>
-        <Culture>de-DE</Culture>
+      <Text Value='Test Archive'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_TestArchive' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='用Bandizip打开'/>
-      <Text Value='Mit Bandizip öffnen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Open with Bandizip'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_OpenArchive' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='以管理员身份解压'/>
-      <Text Value='Als Administrator extrahieren'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract as Administrator'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ExtractAsAdmin' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='以管理员身份压缩'/>
-      <Text Value='Als Administrator komprimieren'>
-        <Culture>de-DE</Culture>
+      <Text Value='Compress as Administrator'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ArchivingAsAdmin' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='选中压缩文件时仍显示压缩菜单'/>
-      <Text Value='Archiv-Kontextmenü auch für Archivdateien anzeigen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Show archive context menu even for archive files'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_ShowCompressMenu2Archive' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压后打开文件夹'/>
-      <Text Value='Öffnen Sie den Ordner nach dem Extrahieren'>
-        <Culture>de-DE</Culture>
+      <Text Value='Open the folder after extracting'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='openFolderWhenComplete' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压完成后不要关闭进度窗口'/>
-      <Text Value='Schließen Sie das Fortschrittsfenster nach dem Extrahieren nicht'>
-        <Culture>de-DE</Culture>
+      <Text Value='Do not close the progress window after extracting'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='doNotCloseExtractDlg' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='压缩完成后不要关闭进度窗口'/>
-      <Text Value='Schließen Sie das Fortschrittsfenster nach der Archivierung nicht'>
-        <Culture>de-DE</Culture>
+      <Text Value='Do not close the progress window after archiving'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='doNotCloseCompressDlg' On='1' Off='0'/>
     </Item>
@@ -325,43 +325,43 @@ ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist
     <RegPath>HKEY_CURRENT_USER\SOFTWARE\Honeyview</RegPath>
     <Item>
       <Text Value='在资源管理器中使用上下文菜单'/>
-      <Text Value='Verwenden Sie das Kontextmenü im Windows Explorer'>
-        <Culture>de-DE</Culture>
+      <Text Value='Use context menu in Windows Explorer'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_useShellMenu' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='用 蜂蜜浏览器 转换图片'/>
-      <Text Value='Bild mit Honeyview konvertieren'>
-        <Culture>de-DE</Culture>
+      <Text Value='Convert image with Honeyview'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_transformDlg' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='用 蜂蜜浏览器 浏览图片'/>
-      <Text Value='Bild mit Honeyview ansehen'>
-        <Culture>de-DE</Culture>
+      <Text Value='View image with Honeyview'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_showWithHoneyview' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='上下文菜单预览'/>
-      <Text Value='Vorschau im Kontextmenü'>
-        <Culture>de-DE</Culture>
+      <Text Value='Preview in context menu'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_previewImage' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='显示图片信息'/>
-      <Text Value='Bildinformationen anzeigen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Show image info'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_showImageInfo' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='显示软件图标'/>
-      <Text Value='Honeyview-Symbol anzeigen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Show Honeyview icon'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='shell_showIcon' On='1' Off='0'/>
     </Item>
@@ -374,113 +374,113 @@ ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist
     <RegPath>HKEY_CURRENT_USER\SOFTWARE\WinRAR</RegPath>
     <Item>
       <Text Value='层叠右键菜单'/>
-      <Text Value='Kaskadierte Kontextmenüs'>
-        <Culture>de-DE</Culture>
+      <Text Value='Cascaded context menus'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup' ValueName='CascadedMenu' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='显示图标'/>
-      <Text Value='Symbole in Kontextmenüs'>
-        <Culture>de-DE</Culture>
+      <Text Value='Icons in context menus'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup' ValueName='MenuIcons' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压文件(A)...'/>
-      <Text Value='Dateien extrahieren...'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract Files...'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='ExtrTo' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压到当前文件夹(X)'/>
-      <Text Value='Hier entpacken'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract Here'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='ExtrHere' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压到 [文件夹名\] (E)'/>
-      <Text Value='Extrahieren nach [Ordner\]'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract to [folder\]'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='Extr' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='解压每个压缩文件到单独文件夹(S)'/>
-      <Text Value='Extrahieren Sie jedes Archiv in einen separaten Ordner'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract each archive to separate folder'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='ExtrSep' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='使用WinRAR打开(用于自解压文件)'/>
-      <Text Value='Mit WinRAR öffnen(für SFX-Archive)'>
-        <Culture>de-DE</Culture>
+      <Text Value='Open with WinRAR (for SFX archives)'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='OpenSFX' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='使用WinRAR打开(用于常规压缩文件)'/>
-      <Text Value='Mit WinRAR öffnen(für übliche Archive)'>
-        <Culture>de-DE</Culture>
+      <Text Value='Open with WinRAR (for usual archives)'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='OpenArc' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='添加到压缩文件(A)...'/>
-      <Text Value='Zum Archiv hinzufügen...'>
-        <Culture>de-DE</Culture>
+      <Text Value='Add to archive...'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='AddTo' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='添加到 [压缩文件名称](T)'/>
-      <Text Value='Zu [Archivname hinzufügen]'>
-        <Culture>de-DE</Culture>
+      <Text Value='Add to [archive name]'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='AddArc' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='压缩到 [压缩文件名称] 并发送电子邮件'/>
-      <Text Value='Komprimieren auf [Archivname]und E-Mail'>
-        <Culture>de-DE</Culture>
+      <Text Value='Compress to [archive name] and email'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='EmailArc' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='压缩并发送电子邮件...'/>
-      <Text Value='Komprimieren und per E-Mail versenden...'>
-        <Culture>de-DE</Culture>
+      <Text Value='Compress and email...'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='EmailOpt' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='测试压缩文件(R)'/>
-      <Text Value='Testarchiv'>
-        <Culture>de-DE</Culture>
+      <Text Value='Test archive'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='Test' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='转换压缩文件(V)...'/>
-      <Text Value='Archiv konvertieren...'>
-        <Culture>de-DE</Culture>
+      <Text Value='Convert archive...'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='Convert' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='右键拖放文件显示压缩菜单'/>
-      <Text Value='Archivierungselemente im Drag-and-Drop-Kontextmenü anzeigen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Display archiving items in Drag and drop context menu'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='DragAdd' On='1' Off='0'/>
     </Item>
     <Item>
       <Text Value='右键拖放压缩文件显示解压菜单'/>
-      <Text Value='Extraktionselemente im Drag-and-Drop-Kontextmenü anzeigen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Display extraction items in Drag and drop context menu'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule RegPath='\Setup\MenuItems' ValueName='DragExtr' On='1' Off='0'/>
     </Item>
@@ -606,57 +606,57 @@ ValueKind ist der Schlüsselwerttyp, der Standardschlüsselwerttyp ValueKind ist
     <Process Arguments='.\,RunDll_Preferences'/>
     <Item>
       <Text Value='解压到(E)'/>
-      <Text Value='Extrahieren, um'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract to'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HideExtractMenu' On='0' Off='1'/>
     </Item>
     <Item>
       <Text Value='解压到历史文件夹'/>
-      <Text Value='In den Verlaufsordner extrahieren'>
-        <Culture>de-DE</Culture>
+      <Text Value='Extract to history folder'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HideExtractHistory' On='0' Off='1'/>
     </Item>
     <Item>
       <Text Value='打开为文件夹'/>
-      <Text Value='Als Ordner öffnen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Open as folder'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HideOpenAsFolder' On='0' Off='1'/>
     </Item>
     <Item>
       <Text Value='压缩为(P)'/>
-      <Text Value='Packen Sie zu'>
-        <Culture>de-DE</Culture>
+      <Text Value='Pack to'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HidePackMenu' On='0' Off='1'/>
     </Item>
     <Item>
       <Text Value='压缩并邮寄'/>
-      <Text Value='Packen Sie es an und senden Sie es per E-Mail'>
-        <Culture>de-DE</Culture>
+      <Text Value='Pack to and email'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HidePackSendMenu' On='0' Off='1'/>
     </Item>
     <Item>
       <Text Value='压缩到历史压缩包'/>
-      <Text Value='Ins Verlaufsarchiv packen'>
-        <Culture>de-DE</Culture>
+      <Text Value='Pack to history archive'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HidePackHistory' On='0' Off='1'/>
     </Item>
     <Item>
       <Text Value='属性对话框哈希选项卡'/>
-      <Text Value='Registerkarte „Hash“ im Dialogfeld „Eigenschaften“.'>
-        <Culture>de-DE</Culture>
+      <Text Value='Properties dialog hash tab'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HideHashTab' On='0' Off='1'/>
     </Item>
     <Item>
       <Text Value='属性对话框导航选项卡'/>
-      <Text Value='Navigationsregisterkarte des Eigenschaftendialogs'>
-        <Culture>de-DE</Culture>
+      <Text Value='Properties dialog navigation tab'>
+        <Culture>en-US</Culture>
       </Text>
       <Rule ValueName='HideNavTab' On='0' Off='1'/>
     </Item>

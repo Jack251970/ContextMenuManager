@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Microsoft in Win10 Zum Rechtsklick-Menü hinzugefügt UWP Modul , NEIN Shell、ShellExTyp ,
-kann aber bestehen GUID Sperren Sie das Schild, um zugehörige Kontextmenüelemente zu deaktivieren ,
-GUID Standort finden ：HKEY_CLASSES_ROOT\PackagedCom\Package\[Paketnamen ]\Class\[GUID],
-Scene Jeder untergeordnete Knoten ist die Position, an der das Menüelement angezeigt wird , Item haben müssen Guid Attribute ，
-UwpName、Text、Icon、Tip und andere Attribute werden eingeschrieben GuidInfosDic.ini In -->
+<!-- 微软在Win10右键菜单中新增的UWP模块, 非Shell、ShellEx类型,
+但是可通过GUID锁定屏蔽来禁用相关右键菜单项目,
+GUID查找位置：HKEY_CLASSES_ROOT\PackagedCom\Package\[包名]\Class\[GUID],
+Scene的各子节点为菜单项目出现位置, Item必须有Guid属性，
+UwpName、Text、Icon、Tip等属性写在GuidInfosDic.ini里面-->
 
 <Scene>
   <File>
