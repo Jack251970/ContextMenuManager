@@ -24,6 +24,13 @@ namespace BluePointLilac.Controls
                 "Chrome/90.0.4430.212 Safari/537.36 Edg/90.0.818.66");
         }
 
+        protected override WebRequest GetWebRequest(Uri address)
+        {
+            WebRequest request = base.GetWebRequest(address);
+            request.Timeout = 6 * 1000;
+            return request;
+        }
+
         /// <summary>获取网页文本</summary>
         public string GetWebString(string url)
         {
