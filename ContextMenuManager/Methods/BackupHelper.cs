@@ -115,7 +115,7 @@ namespace ContextMenuManager.Methods
             };
 
         public int backupCount = 0;     // 备份项目总数量
-        public int restoreCount = 0;    // 恢复改变项目数量
+        public List<RestoreChangedItem> restoreList = new List<RestoreChangedItem>();    // 恢复改变项目
         public string createTime;       // 本次备份文件创建时间
         public string filePath;         // 本次备份文件目录
 
@@ -167,7 +167,7 @@ namespace ContextMenuManager.Methods
             GetBackupRestoreScenes(sceneTexts);
             backup = false;
             this.restoreMode = restoreMode;
-            restoreCount = 0;
+            restoreList.Clear();
             // 加载备份文件到缓冲区
             LoadBackupList(filePath);
             // 还原缓冲区的备份文件
@@ -353,7 +353,7 @@ namespace ContextMenuManager.Methods
                     }
                     if (itemData != currentItemData)
                     {
-                        restoreCount++;
+                        restoreList.Add(new RestoreChangedItem(currentScene, keyName, itemData.ToString()));
                         return true;
                     }
                     else
@@ -365,7 +365,7 @@ namespace ContextMenuManager.Methods
             if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) || 
                 (restoreMode == RestoreMode.EnableNotOnList && !currentItemData))
             {
-                restoreCount++;
+                restoreList.Add(new RestoreChangedItem(currentScene, keyName, (!currentItemData).ToString()));
                 return true;
             }
             return false;
@@ -416,7 +416,7 @@ namespace ContextMenuManager.Methods
                     }
                     if (itemData != currentItemData)
                     {
-                        restoreCount++;
+                        restoreList.Add(new RestoreChangedItem(currentScene, keyName, itemData.ToString()));
                         restoreItemData = itemData;
                         return true;
                     }
@@ -467,7 +467,7 @@ namespace ContextMenuManager.Methods
                     string itemData = item.ItemData;
                     if (itemData != currentItemData)
                     {
-                        restoreCount++;
+                        restoreList.Add(new RestoreChangedItem(currentScene, keyName, itemData.ToString()));
                         restoreItemData = itemData;
                         return true;
                     }
@@ -485,9 +485,10 @@ namespace ContextMenuManager.Methods
         // SelectItem有单独的备份恢复机制
         private void BackupRestoreSelectItem(SelectItem item, string itemData, Scenes currentScene)
         {
+            string keyName = "";
             if (backup)
             {
-                AddItem("", BackupItemType.SelectItem, itemData, currentScene);
+                AddItem(keyName, BackupItemType.SelectItem, itemData, currentScene);
             }
             else
             {
@@ -510,7 +511,7 @@ namespace ContextMenuManager.Methods
                                     }
                                     break;
                             }
-                            restoreCount++;
+                            restoreList.Add(new RestoreChangedItem(currentScene, keyName, restoreItemData.ToString()));
                         }
                     }
                 }
@@ -1792,5 +1793,22 @@ namespace ContextMenuManager.Methods
 
         [XmlElement("Device")]
         public string Device { get; set; } // 备份设备
+    }
+
+    // 定义一个类来表示恢复项目
+    public sealed class RestoreChangedItem
+    {
+        public RestoreChangedItem(Scenes scene, string keyName, string itemData)
+        {
+            BackupScene = scene;
+            KeyName = keyName;
+            ItemData = itemData;
+        }
+
+        public Scenes BackupScene { get; set; } // 右键菜单位置
+
+        public string KeyName { get; set; } // 查询索引名字
+
+        public string ItemData { get; set; } // 备份数据：是否位于右键菜单中，数字，或者字符串
     }
 }

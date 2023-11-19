@@ -136,10 +136,24 @@ namespace ContextMenuManager.Controls
             // 开始恢复项目
             Cursor = Cursors.WaitCursor;
             helper.RestoreItems(filePath, restoreScenes, restoreMode);
-            Cursor = Cursors.Default;
             // 弹窗提示结果
-            int restoreCount = helper.restoreCount;
-            AppMessageBox.Show(AppString.Message.RestoreSucceeded.Replace("%s", restoreCount.ToString()));
+            List<RestoreChangedItem> restoreList = helper.restoreList;
+            ShowRestoreDialog(restoreList);
+            Cursor = Cursors.Default;
+        }
+
+        private void ShowRestoreDialog(List<RestoreChangedItem> restoreList)
+        {
+            if (restoreList.Count == 0)
+            {
+                AppMessageBox.Show(AppString.Message.NoNeedRestore);
+                return;
+            }
+            using (RestoreListDialog dlg = new RestoreListDialog())
+            {
+                dlg.RestoreData = restoreList;
+                dlg.ShowDialog();
+            }
         }
     }
 }

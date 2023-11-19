@@ -273,6 +273,7 @@ namespace ContextMenuManager.Methods
             public static string SelectSubMenuMode { get; set; }
             public static string OldBackupVersion { get; set; }
             public static string BackupSucceeded { get; set; }
+            public static string NoNeedRestore { get; set; }
             public static string RestoreSucceeded { get; set; }
             public static string ConfirmDeleteBackupPermanently { get; set; }
             public static string DeprecatedBackupVersion { get; set; }
