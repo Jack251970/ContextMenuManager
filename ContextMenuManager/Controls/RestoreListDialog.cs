@@ -3,6 +3,7 @@ using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
@@ -32,7 +33,7 @@ namespace ContextMenuManager.Controls
             public RestoreListForm()
             {
                 Font = SystemFonts.DialogFont;
-                Text = AppString.Other.DonationList;
+                Text = AppString.Dialog.RestoreDetails;
                 SizeGripStyle = SizeGripStyle.Hide;
                 StartPosition = FormStartPosition.Manual;
                 Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -57,18 +58,20 @@ namespace ContextMenuManager.Controls
                 AllowUserToResizeRows = false,
                 AllowUserToAddRows = false,
                 RowHeadersVisible = false,
-                ColumnHeadersVisible = false,
                 MultiSelect = false,
                 ReadOnly = true
             };
 
-            readonly Label lblRestore = new Label { AutoSize = true };
+            readonly Label lblRestore = new Label {
+                Width = 480.DpiZoom()
+            };
 
             protected override void OnResize(EventArgs e)
             {
                 base.OnResize(e);
                 int a = 20.DpiZoom();
                 lblRestore.Location = new Point(a, a);
+                lblRestore.Width = ClientSize.Width;
                 dgvRestore.Location = new Point(a, lblRestore.Bottom + a);
                 dgvRestore.Width = ClientSize.Width - 2 * a;
                 dgvRestore.Height = ClientSize.Height - 3 * a - lblRestore.Height;
@@ -76,26 +79,34 @@ namespace ContextMenuManager.Controls
 
             public void ShowDonateList(List<RestoreChangedItem> restoreList)
             {
-                dgvRestore.ColumnCount = 4;
-                dgvRestore.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                string[] heads = new[] { AppString.Dialog.ItemLocation, AppString.Dialog.RestoredValue };
+                dgvRestore.ColumnCount = heads.Length;
+                dgvRestore.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 int restoreCount = restoreList.Count;
+                for (int n = 0; n < heads.Length; n++)
+                {
+                    dgvRestore.Columns[n].HeaderText = heads[n];
+                }
                 for (int n = 0; n < restoreCount; n++)
                 {
                     RestoreChangedItem item = restoreList[n];
                     Scenes scene = item.BackupScene;
                     string sceneText = BackupHelper.BackupScenesText[(int)scene];
                     string[] values;
+                    string changedValue = item.ItemData;
+                    if (changedValue == false.ToString()) changedValue = AppString.Dialog.Disabled;
+                    if (changedValue == true.ToString()) changedValue = AppString.Dialog.Enabled;
                     if (Array.IndexOf(BackupHelper.TypeBackupScenesText, sceneText) != -1)
                     {
-                        values = new[] { AppString.ToolBar.Type, sceneText, item.KeyName, item.ItemData };
+                        values = new[] { AppString.ToolBar.Type + " -> " + sceneText + " -> " + item.KeyName, changedValue };
                     }
                     else if (Array.IndexOf(BackupHelper.RuleBackupScenesText, sceneText) != -1)
                     {
-                        values = new[] { AppString.ToolBar.Rule, sceneText, item.KeyName, item.ItemData };
+                        values = new[] { AppString.ToolBar.Rule + " -> " + sceneText + " -> " + item.KeyName, changedValue };
                     }
                     else
                     {
-                        values = new[] { AppString.ToolBar.Home, sceneText, item.KeyName, item.ItemData };
+                        values = new[] { AppString.ToolBar.Home + " -> " + sceneText + " -> " + item.KeyName, changedValue };
                     }
                     dgvRestore.Rows.Add(values);
                 }

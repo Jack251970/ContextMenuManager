@@ -231,6 +231,11 @@ namespace ContextMenuManager.Methods
             public static string RestoreMode1 { get; set; }
             public static string RestoreMode2 { get; set; }
             public static string RestoreMode3 { get; set; }
+            public static string RestoreDetails { get; set; }
+            public static string ItemLocation { get; set; }
+            public static string RestoredValue { get; set; }
+            public static string Enabled { get; set; }
+            public static string Disabled { get; set; }
         }
 
         /// <summary>消息</summary>

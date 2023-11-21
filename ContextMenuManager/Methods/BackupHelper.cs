@@ -67,7 +67,7 @@ namespace ContextMenuManager.Methods
         /*******************************外部变量、函数************************************/
 
         // 目前备份版本号
-        public const int BackupVersion = 3;
+        public const int BackupVersion = 4;
 
         // 弃用备份版本号
         public const int DeprecatedBackupVersion = 1;
@@ -276,7 +276,7 @@ namespace ContextMenuManager.Methods
 
         /*******************************单个Item处理************************************/
 
-        private void BackupRestoreItem(MyListItem item, string keyName, BackupItemType backupItemType, bool itemData, Scenes currentScene)
+        private void BackupRestoreItem(MyListItem item, string itemName, string keyName, BackupItemType backupItemType, bool itemData, Scenes currentScene)
         {
             if (backup)
             {
@@ -298,7 +298,7 @@ namespace ContextMenuManager.Methods
             else
             {
                 // 恢复备份列表（新增备份类别处4）
-                if (CheckItemNeedChange(keyName, backupItemType, itemData))
+                if (CheckItemNeedChange(itemName, keyName, backupItemType, itemData))
                 {
                     switch (backupItemType)
                     {
@@ -335,7 +335,7 @@ namespace ContextMenuManager.Methods
             item.Dispose();
         }
 
-        private bool CheckItemNeedChange(string keyName, BackupItemType itemType, bool currentItemData)
+        private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, bool currentItemData)
         {
             foreach (BackupItem item in sceneRestoreList)
             {
@@ -353,7 +353,7 @@ namespace ContextMenuManager.Methods
                     }
                     if (itemData != currentItemData)
                     {
-                        restoreList.Add(new RestoreChangedItem(currentScene, keyName, itemData.ToString()));
+                        restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
                         return true;
                     }
                     else
@@ -365,13 +365,13 @@ namespace ContextMenuManager.Methods
             if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) || 
                 (restoreMode == RestoreMode.EnableNotOnList && !currentItemData))
             {
-                restoreList.Add(new RestoreChangedItem(currentScene, keyName, (!currentItemData).ToString()));
+                restoreList.Add(new RestoreChangedItem(currentScene, itemName, (!currentItemData).ToString()));
                 return true;
             }
             return false;
         }
 
-        private void BackupRestoreItem(MyListItem item, string keyName, BackupItemType backupItemType, int itemData, Scenes currentScene)
+        private void BackupRestoreItem(MyListItem item, string itemName, string keyName, BackupItemType backupItemType, int itemData, Scenes currentScene)
         {
             if (backup)
             {
@@ -382,7 +382,7 @@ namespace ContextMenuManager.Methods
             {
                 // 恢复备份列表（新增备份类别处4）
                 int restoreItemData;
-                if (CheckItemNeedChange(keyName, backupItemType, itemData, out restoreItemData))
+                if (CheckItemNeedChange(itemName, keyName, backupItemType, itemData, out restoreItemData))
                 {
                     switch (backupItemType)
                     {
@@ -397,7 +397,7 @@ namespace ContextMenuManager.Methods
             item.Dispose();
         }
 
-        private bool CheckItemNeedChange(string keyName, BackupItemType itemType, int currentItemData, out int restoreItemData)
+        private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, int currentItemData, out int restoreItemData)
         {
             foreach (BackupItem item in sceneRestoreList)
             {
@@ -416,7 +416,7 @@ namespace ContextMenuManager.Methods
                     }
                     if (itemData != currentItemData)
                     {
-                        restoreList.Add(new RestoreChangedItem(currentScene, keyName, itemData.ToString()));
+                        restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
                         restoreItemData = itemData;
                         return true;
                     }
@@ -431,7 +431,7 @@ namespace ContextMenuManager.Methods
             return false;
         }
 
-        private void BackupRestoreItem(MyListItem item, string keyName, BackupItemType backupItemType, string itemData, Scenes currentScene)
+        private void BackupRestoreItem(MyListItem item, string itemName, string keyName, BackupItemType backupItemType, string itemData, Scenes currentScene)
         {
             if (backup)
             {
@@ -442,7 +442,7 @@ namespace ContextMenuManager.Methods
             {
                 // 恢复备份列表（新增备份类别处4）
                 string restoreItemData;
-                if (CheckItemNeedChange(keyName, backupItemType, itemData, out restoreItemData))
+                if (CheckItemNeedChange(itemName, keyName, backupItemType, itemData, out restoreItemData))
                 {
                     switch (backupItemType)
                     {
@@ -457,7 +457,7 @@ namespace ContextMenuManager.Methods
             item.Dispose();
         }
 
-        private bool CheckItemNeedChange(string keyName, BackupItemType itemType, string currentItemData, out string restoreItemData)
+        private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, string currentItemData, out string restoreItemData)
         {
             foreach (BackupItem item in sceneRestoreList)
             {
@@ -467,7 +467,7 @@ namespace ContextMenuManager.Methods
                     string itemData = item.ItemData;
                     if (itemData != currentItemData)
                     {
-                        restoreList.Add(new RestoreChangedItem(currentScene, keyName, itemData.ToString()));
+                        restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
                         restoreItemData = itemData;
                         return true;
                     }
@@ -511,7 +511,8 @@ namespace ContextMenuManager.Methods
                                     }
                                     break;
                             }
-                            restoreList.Add(new RestoreChangedItem(currentScene, keyName, restoreItemData.ToString()));
+                            string itemName = keyName;
+                            restoreList.Add(new RestoreChangedItem(currentScene, itemName, restoreItemData.ToString()));
                         }
                     }
                 }
@@ -601,7 +602,7 @@ namespace ContextMenuManager.Methods
                     string valueName = item.ValueName;
                     string itemName = item.Text;
                     bool ifItemInMenu = item.ItemVisible;
-                    BackupRestoreItem(item, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
+                    BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
 #if DEBUG
                     i++;
                     if (AppConfig.EnableLog)
@@ -620,7 +621,7 @@ namespace ContextMenuManager.Methods
                     valueName = item.ValueName;
                     itemName = item.Text;
                     ifItemInMenu = item.ItemVisible;
-                    BackupRestoreItem(item, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
+                    BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
 #if DEBUG
                     i++;
                     if (AppConfig.EnableLog)
@@ -639,7 +640,7 @@ namespace ContextMenuManager.Methods
                     valueName = item.ValueName;
                     itemName = item.Text;
                     ifItemInMenu = item.ItemVisible;
-                    BackupRestoreItem(item, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
+                    BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
 #if DEBUG
                     i++;
                     if (AppConfig.EnableLog)
@@ -707,7 +708,7 @@ namespace ContextMenuManager.Methods
                     ShellItem item = new ShellItem(regPath);
                     string itemName = item.ItemText;
                     bool ifItemInMenu = item.ItemVisible;
-                    BackupRestoreItem(item, keyName, BackupItemType.ShellItem, ifItemInMenu, currentScene);
+                    BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellItem, ifItemInMenu, currentScene);
 #if DEBUG
                     i++;
                     if (AppConfig.EnableLog)
@@ -770,7 +771,7 @@ namespace ContextMenuManager.Methods
                             item.FoldGroupItem = groupItem;
                             item.Indent();
                         }
-                        BackupRestoreItem(item, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
+                        BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
                         names.Add(keyName);
 #if DEBUG
                         i++;
@@ -807,7 +808,7 @@ namespace ContextMenuManager.Methods
                     StoreShellItem item = new StoreShellItem($@"{ShellItem.CommandStorePath}\{itemName}", true, false);
                     string regPath = item.RegPath;
                     bool ifItemInMenu = item.ItemVisible;
-                    BackupRestoreItem(item, itemName, BackupItemType.StoreShellItem, ifItemInMenu, currentScene);
+                    BackupRestoreItem(item, itemName, itemName, BackupItemType.StoreShellItem, ifItemInMenu, currentScene);
 #if DEBUG
                     i++;
                     if (AppConfig.EnableLog)
@@ -856,7 +857,7 @@ namespace ContextMenuManager.Methods
                                 // TODO:修复名称显示错误的问题
                                 string itemName = keyName;  // 右键菜单名称
                                 bool ifItemInMenu = uwpItem.ItemVisible;
-                                BackupRestoreItem(uwpItem, keyName, BackupItemType.UwpModelItem, ifItemInMenu, currentScene);
+                                BackupRestoreItem(uwpItem, itemName, keyName, BackupItemType.UwpModelItem, ifItemInMenu, currentScene);
 #if DEBUG
                                 i++;
                                 if (AppConfig.EnableLog)
@@ -994,7 +995,7 @@ namespace ContextMenuManager.Methods
                                         string openMode = item.OpenMode;
                                         string itemName = item.Text;
                                         bool ifItemInMenu = item.ItemVisible;
-                                        BackupRestoreItem(item, openMode, BackupItemType.ShellNewItem, ifItemInMenu, currentScene);
+                                        BackupRestoreItem(item, itemName, openMode, BackupItemType.ShellNewItem, ifItemInMenu, currentScene);
 #if DEBUG
                                         i++;
                                         if (AppConfig.EnableLog)
@@ -1040,7 +1041,7 @@ namespace ContextMenuManager.Methods
                 itemFileName = sendToItem.ItemFileName;
                 itemName = sendToItem.Text;
                 ifItemInMenu = sendToItem.ItemVisible;
-                BackupRestoreItem(sendToItem, itemFileName, BackupItemType.SendToItem, ifItemInMenu, currentScene);
+                BackupRestoreItem(sendToItem, itemName, itemFileName, BackupItemType.SendToItem, ifItemInMenu, currentScene);
 #if DEBUG
                 i = 0;
                 i++;
@@ -1058,7 +1059,7 @@ namespace ContextMenuManager.Methods
             string valueName = item.ValueName;
             itemName = item.Text;
             ifItemInMenu = item.ItemVisible;
-            BackupRestoreItem(item, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
+            BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
 #if DEBUG
             i = 0;
             i++;
@@ -1076,7 +1077,7 @@ namespace ContextMenuManager.Methods
             valueName = item.ValueName;
             itemName = item.Text;
             ifItemInMenu = item.ItemVisible;
-            BackupRestoreItem(item, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
+            BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
 #if DEBUG
             i++;
             if (AppConfig.EnableLog)
@@ -1134,7 +1135,7 @@ namespace ContextMenuManager.Methods
                                 string itemFileName = item.ItemFileName;
                                 string itemName = item.Text;
                                 bool ifItemInMenu = item.ItemVisible;
-                                BackupRestoreItem(item, itemFileName, BackupItemType.OpenWithItem, ifItemInMenu, currentScene);
+                                BackupRestoreItem(item, itemName, itemFileName, BackupItemType.OpenWithItem, ifItemInMenu, currentScene);
 #if DEBUG
                                 i++;
                                 if (AppConfig.EnableLog)
@@ -1159,7 +1160,7 @@ namespace ContextMenuManager.Methods
                 string valueName = storeItem.ValueName;
                 string itemName = storeItem.Text;
                 bool ifItemInMenu = storeItem.ItemVisible;
-                BackupRestoreItem(storeItem, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
+                BackupRestoreItem(storeItem, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
 #if DEBUG
                 i = 1;
                 if (AppConfig.EnableLog)
@@ -1228,7 +1229,7 @@ namespace ContextMenuManager.Methods
                         fileName = fileName.Substring(index + 3);
                         string itemName = item.Text;
                         bool ifItemInMenu = item.ItemVisible;
-                        BackupRestoreItem(item, fileName, BackupItemType.WinXItem, ifItemInMenu, currentScene);
+                        BackupRestoreItem(item, itemName, fileName, BackupItemType.WinXItem, ifItemInMenu, currentScene);
 #if DEBUG
                         i++;
                         if (AppConfig.EnableLog)
@@ -1266,8 +1267,9 @@ namespace ContextMenuManager.Methods
                                 if (!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
                                 {
                                     IEItem item = new IEItem(key.Name);
+                                    string itemName = item.Text;
                                     bool ifItemInMenu = item.ItemVisible;
-                                    BackupRestoreItem(item, keyName, BackupItemType.IEItem, ifItemInMenu, currentScene);
+                                    BackupRestoreItem(item, itemName, keyName, BackupItemType.IEItem, ifItemInMenu, currentScene);
                                     names.Add(keyName);
                                 }
                             }
@@ -1366,9 +1368,10 @@ namespace ContextMenuManager.Methods
                                             MinValue = maxValue
                                         };
                                         ruleItem = new NumberIniRuleItem(rule, info);
+                                        string itemName = ruleItem.Text;
                                         string infoText = info.Text;
                                         int itemValue = ((NumberIniRuleItem)ruleItem).ItemValue;
-                                        BackupRestoreItem(ruleItem, infoText, BackupItemType.NumberIniRuleItem, itemValue, currentScene);
+                                        BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.NumberIniRuleItem, itemValue, currentScene);
                                     }
                                     else if (itemXE.SelectSingleNode("IsStringItem") != null)
                                     {
@@ -1379,9 +1382,10 @@ namespace ContextMenuManager.Methods
                                             KeyName = keyName
                                         };
                                         ruleItem = new StringIniRuleItem(rule, info);
+                                        string itemName = ruleItem.Text;
                                         string infoText = info.Text;
                                         string itemValue = ((StringIniRuleItem)ruleItem).ItemValue;
-                                        BackupRestoreItem(ruleItem, infoText, BackupItemType.StringIniRuleItem, itemValue, currentScene);
+                                        BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.StringIniRuleItem, itemValue, currentScene);
                                     }
                                     else
                                     {
@@ -1395,8 +1399,9 @@ namespace ContextMenuManager.Methods
                                         };
                                         ruleItem = new VisbleIniRuleItem(rule, info);
                                         string infoText = info.Text;
+                                        string itemName = ruleItem.Text;
                                         bool itemVisible = ((VisbleIniRuleItem)ruleItem).ItemVisible;
-                                        BackupRestoreItem(ruleItem, infoText, BackupItemType.VisbleIniRuleItem, itemVisible, currentScene);
+                                        BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.VisbleIniRuleItem, itemVisible, currentScene);
                                     }
                                 }
                                 else
@@ -1414,9 +1419,10 @@ namespace ContextMenuManager.Methods
                                             MinValue = minValue
                                         };
                                         ruleItem = new NumberRegRuleItem(rule, info);
+                                        string itemName = ruleItem.Text;
                                         string infoText = info.Text;
                                         int itemValue = ((NumberRegRuleItem)ruleItem).ItemValue;// 备份值
-                                        BackupRestoreItem(ruleItem, infoText, BackupItemType.NumberRegRuleItem, itemValue, currentScene);
+                                        BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.NumberRegRuleItem, itemValue, currentScene);
                                     }
                                     else if (itemXE.SelectSingleNode("IsStringItem") != null)
                                     {
@@ -1427,9 +1433,10 @@ namespace ContextMenuManager.Methods
                                             ValueName = ruleXE.GetAttribute("ValueName"),
                                         };
                                         ruleItem = new StringRegRuleItem(rule, info);
+                                        string itemName = ruleItem.Text;
                                         string infoText = info.Text;
                                         string itemValue = ((StringRegRuleItem)ruleItem).ItemValue; // 备份值
-                                        BackupRestoreItem(ruleItem, infoText, BackupItemType.StringRegRuleItem, itemValue, currentScene);
+                                        BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.StringRegRuleItem, itemValue, currentScene);
                                     }
                                     else
                                     {
@@ -1465,9 +1472,10 @@ namespace ContextMenuManager.Methods
                                             }
                                         }
                                         ruleItem = new VisibleRegRuleItem(rules, info);
+                                        string itemName = ruleItem.Text;
                                         string infoText = info.Text;
                                         bool itemVisible = ((VisibleRegRuleItem)ruleItem).ItemVisible;  // 备份值
-                                        BackupRestoreItem(ruleItem, infoText, BackupItemType.VisibleRegRuleItem, itemVisible, currentScene);
+                                        BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.VisibleRegRuleItem, itemVisible, currentScene);
                                     }
                                 }
                                 groupItem.Dispose();
@@ -1578,9 +1586,23 @@ namespace ContextMenuManager.Methods
                     tip += AppString.Tip.CommandFiles;
                 }
                 ToolTipBox.SetToolTip(item.ChkVisible, tip);
-                string itemText = item.Text;
+                string itemName = item.Text;
+                string regPath = item.RegPath;
+                string[] pathSegments = regPath.Split('\\');
+                int index = Array.LastIndexOf(pathSegments, "shell");
+                string itemKey;
+                if (index != -1 && index < pathSegments.Length - 1)
+                {
+                    string[] targetFields = new string[pathSegments.Length - index];
+                    Array.Copy(pathSegments, index, targetFields, 0, targetFields.Length);
+                    itemKey = string.Join("\\", targetFields);
+                }
+                else
+                {
+                    itemKey = regPath;
+                }
                 bool itemVisible = item.ItemVisible;
-                BackupRestoreItem(item, itemText, BackupItemType.EnhanceShellItem, itemVisible, currentScene);
+                BackupRestoreItem(item, itemName, itemKey, BackupItemType.EnhanceShellItem, itemVisible, currentScene);
             }
         }
 
@@ -1615,9 +1637,23 @@ namespace ContextMenuManager.Methods
                     if (XmlDicHelper.JudgeCulture(tipXE)) tip = tipXE.GetAttribute("Text");
                 }
                 ToolTipBox.SetToolTip(item.ChkVisible, tip);
-                string itemText = item.Text;
+                string itemName = item.Text;
+                string regPath = item.RegPath;
+                string[] pathSegments = regPath.Split('\\');
+                int index = Array.LastIndexOf(pathSegments, "ShellEx");
+                string itemKey;
+                if (index != -1 && index < pathSegments.Length - 1)
+                {
+                    string[] targetFields = new string[pathSegments.Length - index];
+                    Array.Copy(pathSegments, index, targetFields, 0, targetFields.Length);
+                    itemKey = string.Join("\\", targetFields);
+                }
+                else
+                {
+                    itemKey = regPath;
+                }
                 bool itemVisible = item.ItemVisible;
-                BackupRestoreItem(item, itemText, BackupItemType.EnhanceShellExItem, itemVisible, currentScene);
+                BackupRestoreItem(item, itemName, itemKey, BackupItemType.EnhanceShellExItem, itemVisible, currentScene);
             }
         }
     }
