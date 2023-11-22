@@ -144,7 +144,7 @@ namespace ContextMenuManager.Controls
 
         private void ShowRestoreDialog(List<RestoreChangedItem> restoreList)
         {
-            if (restoreList.Count == 0)
+            if (restoreList == null || restoreList.Count == 0)
             {
                 AppMessageBox.Show(AppString.Message.NoNeedRestore);
                 return;
