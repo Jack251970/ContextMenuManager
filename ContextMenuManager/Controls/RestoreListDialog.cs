@@ -3,7 +3,6 @@ using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
@@ -16,14 +15,17 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (RestoreListForm frm = new RestoreListForm())
+            MainForm mainForm = (MainForm)Control.FromHandle(hwndOwner);
+            if (mainForm != null)
             {
-                frm.ShowDonateList(RestoreData);
-                MainForm mainForm = (MainForm)Control.FromHandle(hwndOwner);
-                frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
-                frm.Top = mainForm.Top + 150.DpiZoom();
-                frm.TopMost = AppConfig.TopMost;
-                frm.ShowDialog();
+                using (RestoreListForm frm = new RestoreListForm())
+                {
+                    frm.ShowDonateList(RestoreData);
+                    frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
+                    frm.Top = mainForm.Top + 150.DpiZoom();
+                    frm.TopMost = AppConfig.TopMost;
+                    frm.ShowDialog();
+                }
             }
             return true;
         }
