@@ -2,7 +2,7 @@
 # ContextMenuManager
 ![](Logo/Logo.png)
 ------
-> 🖱️ 一个纯粹的Windows右键菜单管理程序
+> 🖱️ 一个纯粹的Windows右键菜单管理程序，支持Win 7 - 11。
 
 ## 程序下载
 * [最新版本][Latest]<br>
@@ -27,12 +27,6 @@
 ## 运行截图
 ![](Screenshot/Screenshot.png)
 
-## 资源引用
-* 程序主图标来自 [EasyIcon][EasyIcon]<br>
-![][AppIcon]
-* [程序按钮图标][AppImage] 主要来自于 [阿里巴巴矢量图标资源库][IconFont]<br>
-![](Screenshot/AppImage.jpg)
-
 ## 温馨提示
 * 程序需要对大量的注册表项和文件进行读写删改操作，这些行为比较敏感，<br>
 可能会被 Windows Defender 等误报为病毒，如发生此情况请自行添加进白名单。
@@ -45,28 +39,10 @@
 
 * 此程序不用于清理未卸载干净的程序，但是可以帮助你快速定位菜单项相关注册表位置和文件位置，<br>你可以根据相关内容进行你的操作。如果你是一个电脑小白，建议只使用启用\禁用功能。
 
-## 联系作者
-* 程序由我个人独立开发，当然也要感谢 [萌研社][PcMoe] 站长 @坑晨 平时的答疑解惑。<br>
-能力有限，难免出现一些Bug，欢迎大家积极反馈Bug和提出优化建议。
-* 个人B站：[蓝点lilac][Bilibili]（欢迎大家关注我！）
-* 个人邮箱：1617859183@qq.com
-
-## 捐赠作者
-此程序完全免费，如果你觉得这个程序对你有所帮助，可以通过扫面下方二维码（微信、支付宝、QQ）<br>
-进行捐赠，金额请随意，谢谢你的理解和支持！更加期待你为此项目点亮Star（这对我很重要！）<br>
-[捐赠名单](Donate.md)<br>![][Donate]
-
-## 项目收藏
-[![Stargazers over time](https://starchart.cc/BluePointLilac/ContextMenuManager.svg)](https://starchart.cc/BluePointLilac/ContextMenuManager)
+## 特别感谢
+* 本项目基于[https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager)进行开发，感谢作者[蓝点lilac](https://github.com/BluePointLilac)！
 
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
   [Gitee Releases]: https://gitee.com/Jack251970/ContextMenuManager/releases
-  [.NET Framework]:https://dotnet.microsoft.com/download/dotnet-framework
-  [EasyIcon]: https://www.easyicon.net/1208132-mouse_icon.html
-  [AppIcon]: ContextMenuManager/Properties/AppIcon.ico
-  [AppImage]: ContextMenuManager/Properties/Resources/Images
-  [IconFont]: https://www.iconfont.cn
-  [PcMoe]: http://www.pcmoe.net
-  [Bilibili]: https://space.bilibili.com/34492771
-  [Donate]: ContextMenuManager/Properties/Resources/Images/Donate.png
+  [.NET Framework Runtime Library]: https://dotnet.microsoft.com/download/dotnet-framework
