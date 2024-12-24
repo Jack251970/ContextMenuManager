@@ -16,7 +16,7 @@ namespace BluePointLilac.Controls
             Height = 30.DpiZoom();
             Dock = DockStyle.Bottom;
             Font = SystemFonts.StatusFont;
-            BackColor = Color.FromArgb(70, 130, 200);
+            BackColor = Color.FromArgb(255, 143, 31);
             ForeColor = Color.White;
         }
 
