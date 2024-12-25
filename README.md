@@ -2,7 +2,7 @@
 # ContextMenuManager
 ![](Logo/Logo.png)
 ------
-> 🖱️ 一个纯粹的Windows右键菜单管理程序，支持Win 7 ~ 11。
+> 🖱️ 一个纯粹的Windows右键菜单管理程序，支持 Windows 7 ~ 11。
 
 ## 程序下载
 * [最新版本][Latest]<br>
