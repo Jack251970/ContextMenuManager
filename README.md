@@ -5,6 +5,10 @@
 ------
 > 🖱️ 一个纯粹的Windows右键菜单管理程序，支持 Windows 7 ~ 11。
 
+## 特别感谢
+* 本项目基于 [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager) 进行开发，感谢作者 [蓝点lilac](https://github.com/BluePointLilac)！
+* 感谢由 [蓝芸柒](https://github.com/LanYunSeven) 制作的的新图标！
+
 ## 程序下载
 * [最新版本][Latest]<br>
   [GitHub Releases][GitHub Releases]<br>
@@ -28,6 +32,9 @@
 ## 运行截图
 ![](Screenshot/Screenshot.png)
 
+## 资源引用
+![](Screenshot/AppImage.png)
+
 ## 温馨提示
 * 程序需要对大量的注册表项和文件进行读写删改操作，这些行为比较敏感，可能会被 Windows Defender 等误报为病毒，如发生此情况请自行添加进白名单。
 
@@ -40,10 +47,6 @@
 * 通过其他程序禁用的菜单项目。请先使用对应程序还原，不然可能无法在此程序中看到它。
 
 * 此程序不用于清理未卸载干净的程序，但是可以帮助你快速定位菜单项相关注册表位置和文件位置，你可以根据相关内容进行你的操作。如果你是一个电脑小白，建议只使用启用/禁用功能。
-
-## 特别感谢
-* 本项目基于 [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager) 进行开发，感谢作者 [蓝点lilac](https://github.com/BluePointLilac)！
-* 感谢由 [蓝芸柒](https://github.com/LanYunSeven) 制作的的程序主图标！
 
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases

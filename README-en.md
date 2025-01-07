@@ -5,6 +5,10 @@
 ------
 > 🖱️ A program to manage the Windows right-click context menu with support of Windows 7 - 11.
 
+## Thanks
+* This project is based on [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager), thanks to [蓝点lilac](https://github.com/BluePointLilac)!
+* Thanks to [蓝芸柒](https://github.com/LanYunSeven) for new icons!
+
 ## Download software
 * [Latest Version][Latest]<br>
   [Github Releases][GitHub Releases]<br>
@@ -29,6 +33,9 @@
 ## Screenshots
 ![](Screenshot/Screenshot-en.png)
 
+## Resources
+![](Screenshot/AppImage.png)
+
 ## Notices
 * The program needs to read, write and delete a lot of registry entries and files, these behaviours are sensitive and may be mistakenly reported as viruses by Windows Defender, etc. If this happens, please add it to the whitelist by yourself.
 
@@ -41,10 +48,6 @@
 * If you have used other context menu managers in the past, use that program to restore the menu items before using this one in order to avoid any potential issues.
 
 * This program is not designed to perform clean uninstalls; however, it can help you find the registry and file locations of menu items so that they can be modified. If you are not familiar with such operations, it is recommended you use the enable/disable functions only.
-
-## Thanks
-* This project is based on [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager), thanks to [蓝点lilac](https://github.com/BluePointLilac)!
-* Thanks to [蓝芸柒](https://github.com/LanYunSeven) for new app icon!
 
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
