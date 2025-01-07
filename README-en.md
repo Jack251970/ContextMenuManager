@@ -9,7 +9,7 @@
   [Github Releases][GitHub Releases]<br>
   [Gitee Releases][Gitee Releases]<br>
 * Download the zip file (recommended) or the exe file in the Assets list
-* About .NET versions: this application is based on the the .Net 4.8, and it is compatible with Windows Vista, 7, 8, 8.1, 10, 11.<br>
+* About .NET versions: this application is based on the the .Net 4.8, and it is compatible with Windows 7, 8, 8.1, 10, 11.<br>
  Win8, 8.1, 10, 11 come with .NET 4.8. Vista and Win7 does not come with .NET 4.8. <br> You may need to install the appropriate [.NET Framework Runtime Library][.NET Framework Runtime Library].
 
 ## Key features
@@ -20,7 +20,7 @@
 * Add custom menu items and commands
 
 ## Supported systems and features
-* Windows Vista, 7, 8, 8.1, 10, 11
+* Windows 7, 8, 8.1, 10, 11
 * 32 and 64 bit operating systems
 * Support for display scaling, optimal at 150% DPI
 * localization support: contributions are welcome

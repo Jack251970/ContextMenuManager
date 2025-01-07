@@ -92,7 +92,7 @@ namespace BluePointLilac.Controls
                     path.AddLine(new PointF(r1, 0), new PointF(w - r1, 0));
                     path.AddArc(new RectangleF(w - d1, 0, d1, d1), -90, 180);
                     path.AddLine(new PointF(w - r1, d1), new PointF(r1, d1));
-                    Color color = value ? Color.FromArgb(0, 138, 217) : Color.FromArgb(130, 136, 144);
+                    Color color = value ? Color.FromArgb(237, 132, 26) : Color.FromArgb(130, 136, 144);
                     using(Brush brush = new SolidBrush(color))
                     {
                         g.FillPath(brush, path);
@@ -104,7 +104,7 @@ namespace BluePointLilac.Controls
                     path.AddLine(new PointF(r1, a), new PointF(w - r1, a));
                     path.AddArc(new RectangleF(w - d2 - a, a, d2, d2), -90, 180);
                     path.AddLine(new PointF(w - r1, d2 + a), new PointF(r1, d2 + a));
-                    Color color = value ? Color.FromArgb(0, 162, 255) : Color.FromArgb(153, 160, 169);
+                    Color color = value ? Color.FromArgb(255, 143, 31) : Color.FromArgb(153, 160, 169);
                     using(Brush brush = new SolidBrush(color))
                     {
                         g.FillPath(brush, path);
