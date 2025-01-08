@@ -15,6 +15,7 @@ namespace ContextMenuManager
         public MainForm()
         {
             TopMost = AppConfig.TopMost;
+            StartPosition = FormStartPosition.CenterScreen;
             Size = AppConfig.MainFormSize;
             Text = AppString.General.AppName;
             Controls.Add(explorerRestarter);

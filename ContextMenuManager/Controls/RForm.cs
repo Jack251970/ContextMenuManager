@@ -11,6 +11,12 @@ namespace BluePointLilac.Controls
     /// </summary>
     public class RForm : Form
     {
+        protected override void OnLoad(EventArgs e)
+        {
+            StartPosition = FormStartPosition.CenterScreen;
+            base.OnLoad(e);
+        }
+
         public static Color ButtonMain => MyMainForm.ButtonMain;
         public static Color ButtonSecond => MyMainForm.ButtonSecond;
 
