@@ -28,11 +28,13 @@ namespace BluePointLilac.Controls
         {
             base.OnMouseEnter(e); Image = BaseImage;
         }
+
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
             Image = ToolStripRenderer.CreateDisabledImage(BaseImage);
         }
+
         protected override void OnMouseDown(MouseEventArgs e)
         {
             if(e.Button == MouseButtons.Left) base.OnMouseDown(e);

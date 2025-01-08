@@ -112,8 +112,7 @@ namespace BluePointLilac.Controls
         {
             BackColor = Color.Transparent,
             Font = SystemFonts.MenuFont,
-            // TODO: Check color here.
-            ForeColor = Color.White,
+            ForeColor = MyMainForm.foreMain,
             AutoSize = true,
         };
 
@@ -130,7 +129,7 @@ namespace BluePointLilac.Controls
         public float Opacity
         {
             get => BackColor.A / 255;
-            set => BackColor = Color.FromArgb((int)(value * 255), Color.White);
+            set => BackColor = Color.FromArgb((int)(value * 255), MyMainForm.foreMain);
         }
         public bool CanBeSelected { get; set; } = true;
 

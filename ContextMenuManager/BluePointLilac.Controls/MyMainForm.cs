@@ -242,8 +242,6 @@ namespace BluePointLilac.Controls
                     combo.ArrowColor = foreMain;
                 }
 
-
-
                 if (control is Button button)
                 {
                     button.BackColor = buttonMain;
@@ -258,11 +256,6 @@ namespace BluePointLilac.Controls
                     }
                 }
 
-                if (control is PictureBox pictureBox && pictureBox.BackgroundImage != null)
-                {
-                    pictureBox.BackgroundImage = AdjustImage(pictureBox.BackgroundImage);
-                }
-
                 if (control is NumericUpDown numbericUpDown)
                 {
                     numbericUpDown.ForeColor = foreMain;
@@ -274,9 +267,16 @@ namespace BluePointLilac.Controls
                     gb.ForeColor = foreMain;
                 }
 
-                if (control is Panel pn && pn.Name.Contains("Header"))
+                if (control is PictureBox pictureBox)
                 {
-                    pn.BackColor = buttonSecond;
+                    /*if (pictureBox.Image != null)
+                    {
+                        pictureBox.Image = AdjustImage(pictureBox.Image);
+                    }*/
+                    if (pictureBox.BackgroundImage != null)
+                    {
+                        pictureBox.BackgroundImage = AdjustImage(pictureBox.BackgroundImage);
+                    }
                 }
             }
         }

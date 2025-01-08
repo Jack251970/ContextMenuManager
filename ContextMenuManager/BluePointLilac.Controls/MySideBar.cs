@@ -82,18 +82,18 @@ namespace BluePointLilac.Controls
         readonly Panel PnlSelected = new Panel
         {
             BackColor = MyMainForm.MainColor,//侧边栏项目选中颜色
-            ForeColor = Color.White,
+            ForeColor = MyMainForm.foreMain,
             Enabled = false
         };
         readonly Panel PnlHovered = new Panel
         {
             BackColor = MyMainForm.buttonSecond,
-            ForeColor = Color.White,
+            ForeColor = MyMainForm.foreMain,
             Enabled = false
         };
         readonly Label LblSeparator = new Label
         {
-            BackColor = Color.FromArgb(220, 220, 220),
+            BackColor = MyMainForm.foreMain,
             Dock = DockStyle.Right,
             Width = 1,
         };

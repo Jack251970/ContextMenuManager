@@ -1,4 +1,5 @@
-﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Controls;
+using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
 using System.Drawing;
@@ -71,6 +72,8 @@ namespace ContextMenuManager.Controls
             };
             readonly NumericUpDown nudStyle = new NumericUpDown
             {
+                ForeColor = MyMainForm.foreMain,
+                BackColor = MyMainForm.buttonMain,
                 TextAlign = HorizontalAlignment.Center,
                 Width = 80.DpiZoom(),
                 Maximum = 10,
