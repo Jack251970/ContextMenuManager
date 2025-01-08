@@ -12,8 +12,8 @@ namespace BluePointLilac.Controls
             ReadOnly = true;
             Multiline = true;
             ShortcutsEnabled = false;
-            ForeColor = MyMainForm.foreMain;
-            BackColor = MyMainForm.formBack;
+            ForeColor = MyMainForm.FormFore;
+            BackColor = MyMainForm.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
         }
@@ -47,8 +47,8 @@ namespace BluePointLilac.Controls
             ReadOnly = true;
             Dock = DockStyle.Fill;
             BorderStyle = BorderStyle.None;
-            ForeColor = MyMainForm.foreMain;
-            BackColor = MyMainForm.formBack;
+            ForeColor = MyMainForm.FormFore;
+            BackColor = MyMainForm.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
         }

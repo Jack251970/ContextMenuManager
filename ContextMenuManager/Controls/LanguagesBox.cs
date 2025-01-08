@@ -117,7 +117,7 @@ namespace ContextMenuManager.Controls
 
                     Label lblLanguage = new Label
                     {
-                        ForeColor = MyMainForm.foreMain,
+                        ForeColor = MyMainForm.FormFore,
                         Text = language,
                         AutoSize = true,
                         Font = Font
@@ -138,7 +138,7 @@ namespace ContextMenuManager.Controls
                             if(url != "null")
                             {
                                 toolTip.SetToolTip(ctrTranslators[i], url);
-                                ctrTranslators[i].ForeColor = MyMainForm.foreMain;
+                                ctrTranslators[i].ForeColor = MyMainForm.FormFore;
                                 ctrTranslators[i].Font = new Font(ctrTranslators[i].Font, FontStyle.Underline);
                                 ctrTranslators[i].Click += (sender, e) => ExternalProgram.OpenWebUrl(url);
                             }

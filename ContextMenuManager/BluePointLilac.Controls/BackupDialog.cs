@@ -134,8 +134,8 @@ namespace BluePointLilac.Controls
             readonly Label tvInfo = new Label { AutoSize = true };
             readonly TreeView treeView = new TreeView
             {
-                ForeColor = MyMainForm.foreMain,
-                BackColor = MyMainForm.formBack,
+                ForeColor = MyMainForm.FormFore,
+                BackColor = MyMainForm.FormBack,
                 CheckBoxes = true,
                 Indent = 20.DpiZoom(),
                 ItemHeight = 25.DpiZoom(),

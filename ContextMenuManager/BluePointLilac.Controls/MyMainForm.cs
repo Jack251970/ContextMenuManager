@@ -16,8 +16,8 @@ namespace BluePointLilac.Controls
         {
             SuspendLayout();
             Text = Application.ProductName;
-            ForeColor = foreMain;
-            BackColor = formBack;
+            ForeColor = FormFore;
+            BackColor = FormBack;
             StartPosition = FormStartPosition.CenterScreen;
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Controls.AddRange(new Control[] { MainBody, SideBar, StatusBar, ToolBar });
@@ -104,13 +104,13 @@ namespace BluePointLilac.Controls
          * Edited from: https://github.com/seerge/g-helper
          */
 
-        public static Color buttonMain;
-        public static Color buttonSecond;
+        public static Color ButtonMain;
+        public static Color ButtonSecond;
         public static Color titleArea;
 
-        public static Color formBack;
-        public static Color foreMain;
-        public static Color borderMain;
+        public static Color FormBack;
+        public static Color FormFore;
+        public static Color FormBorder;
 
         [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
         public static extern bool CheckSystemDarkModeStatus();
@@ -141,23 +141,23 @@ namespace BluePointLilac.Controls
             {
                 titleArea = Color.FromArgb(255, 32, 32, 32);
 
-                buttonMain = Color.FromArgb(255, 55, 55, 55);
-                buttonSecond = Color.FromArgb(255, 38, 38, 38);
+                ButtonMain = Color.FromArgb(255, 55, 55, 55);
+                ButtonSecond = Color.FromArgb(255, 38, 38, 38);
 
-                formBack = Color.FromArgb(255, 28, 28, 28);
-                foreMain = Color.FromArgb(255, 240, 240, 240);
-                borderMain = Color.FromArgb(255, 50, 50, 50);
+                FormBack = Color.FromArgb(255, 28, 28, 28);
+                FormFore = Color.FromArgb(255, 240, 240, 240);
+                FormBorder = Color.FromArgb(255, 50, 50, 50);
             }
             else
             {
                 titleArea = Color.FromArgb(255, 243, 243, 243);
 
-                buttonMain = SystemColors.ControlLightLight;
-                buttonSecond = SystemColors.ControlLight;
+                ButtonMain = SystemColors.ControlLightLight;
+                ButtonSecond = SystemColors.ControlLight;
 
-                formBack = SystemColors.Control;
-                foreMain = SystemColors.ControlText;
-                borderMain = Color.LightGray;
+                FormBack = SystemColors.Control;
+                FormFore = SystemColors.ControlText;
+                FormBorder = Color.LightGray;
             }
         }
 
@@ -192,8 +192,8 @@ namespace BluePointLilac.Controls
 
         private void Adjust()
         {
-            BackColor = formBack;
-            ForeColor = foreMain;
+            BackColor = FormBack;
+            ForeColor = FormFore;
 
             AdjustControls(Controls);
         }
@@ -206,25 +206,25 @@ namespace BluePointLilac.Controls
 
                 if (control is MyListBox listBox)
                 {
-                    listBox.BackColor = formBack;
-                    listBox.ForeColor = foreMain;
+                    listBox.BackColor = FormBack;
+                    listBox.ForeColor = FormFore;
                 }
 
                 if (control is MyListItem listItem)
                 {
-                    listItem.BackColor = formBack;
-                    listItem.ForeColor = foreMain;
+                    listItem.BackColor = FormBack;
+                    listItem.ForeColor = FormFore;
                 }
 
                 if (control is MyToolBar toolBar)
                 {
                     toolBar.BackColor = titleArea;
-                    toolBar.ForeColor = foreMain;
+                    toolBar.ForeColor = FormFore;
                 }
 
                 if (control is MyToolBarButton toolBarButton)
                 {
-                    toolBarButton.ForeColor = foreMain;
+                    toolBarButton.ForeColor = FormFore;
                     if (toolBarButton.Image != null)
                     {
                         // Original image is for dark theme, so invert it for light theme
@@ -234,43 +234,43 @@ namespace BluePointLilac.Controls
 
                 if (control is MySideBar sideBar)
                 {
-                    sideBar.BackColor = buttonSecond;// More darker than buttonMain
-                    sideBar.ForeColor = foreMain;
+                    sideBar.BackColor = ButtonSecond;// More darker than buttonMain
+                    sideBar.ForeColor = FormFore;
                 }
 
                 if (control is MyStatusBar statusBar)
                 {
-                    statusBar.BackColor = buttonMain;
-                    statusBar.ForeColor = foreMain;
+                    statusBar.BackColor = ButtonMain;
+                    statusBar.ForeColor = FormFore;
                 }
 
                 if (control is RComboBox combo)
                 {
-                    combo.BackColor = buttonMain;
-                    combo.ForeColor = foreMain;
-                    combo.BorderColor = buttonMain;
-                    combo.ButtonColor = buttonMain;
-                    combo.ArrowColor = foreMain;
+                    combo.BackColor = ButtonMain;
+                    combo.ForeColor = FormFore;
+                    combo.BorderColor = ButtonMain;
+                    combo.ButtonColor = ButtonMain;
+                    combo.ArrowColor = FormFore;
                 }
 
                 if (control is Button button)
                 {
-                    button.BackColor = buttonMain;
-                    button.ForeColor = foreMain;
+                    button.BackColor = ButtonMain;
+                    button.ForeColor = FormFore;
 
                     button.FlatStyle = FlatStyle.Flat;
-                    button.FlatAppearance.BorderColor = borderMain;
+                    button.FlatAppearance.BorderColor = FormBorder;
                 }
 
                 if (control is NumericUpDown numbericUpDown)
                 {
-                    numbericUpDown.ForeColor = foreMain;
-                    numbericUpDown.BackColor = buttonMain;
+                    numbericUpDown.ForeColor = FormFore;
+                    numbericUpDown.BackColor = ButtonMain;
                 }
 
                 if (control is GroupBox gb)
                 {
-                    gb.ForeColor = foreMain;
+                    gb.ForeColor = FormFore;
                 }
             }
         }

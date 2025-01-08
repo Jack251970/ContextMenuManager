@@ -16,8 +16,8 @@ namespace BluePointLilac.Controls
             Height = 30.DpiZoom();
             Dock = DockStyle.Bottom;
             Font = SystemFonts.StatusFont;
-            BackColor = MyMainForm.buttonMain;
-            ForeColor = MyMainForm.foreMain;
+            BackColor = MyMainForm.ButtonMain;
+            ForeColor = MyMainForm.FormFore;
         }
 
         [Browsable(true), EditorBrowsable(EditorBrowsableState.Always)]

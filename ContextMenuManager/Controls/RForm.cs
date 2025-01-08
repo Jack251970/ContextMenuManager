@@ -11,12 +11,12 @@ namespace BluePointLilac.Controls
     /// </summary>
     public class RForm : Form
     {
-        public static Color buttonMain => MyMainForm.buttonMain;
-        public static Color buttonSecond => MyMainForm.buttonSecond;
+        public static Color ButtonMain => MyMainForm.ButtonMain;
+        public static Color ButtonSecond => MyMainForm.ButtonSecond;
 
-        public static Color formBack => MyMainForm.formBack;
-        public static Color foreMain => MyMainForm.foreMain;
-        public static Color borderMain => MyMainForm.borderMain;
+        public static Color FormBack => MyMainForm.FormBack;
+        public static Color FormFore => MyMainForm.FormFore;
+        public static Color FormBorder => MyMainForm.FormBorder;
 
         [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
         public static extern bool CheckSystemDarkModeStatus();
@@ -65,8 +65,8 @@ namespace BluePointLilac.Controls
 
         private void Adjust()
         {
-            BackColor = formBack;
-            ForeColor = foreMain;
+            BackColor = FormBack;
+            ForeColor = FormFore;
         }
     }
 }

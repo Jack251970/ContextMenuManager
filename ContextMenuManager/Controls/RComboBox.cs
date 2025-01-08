@@ -12,7 +12,7 @@ namespace BluePointLilac.Controls
     /// </summary>
     public class RComboBox : ComboBox
     {
-        private Color borderColor = MyMainForm.buttonMain;
+        private Color borderColor = MyMainForm.ButtonMain;
         [DefaultValue(typeof(Color), "Gray")]
         public Color BorderColor
         {
@@ -27,7 +27,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private Color buttonColor = MyMainForm.buttonMain;
+        private Color buttonColor = MyMainForm.ButtonMain;
         [DefaultValue(typeof(Color), "255, 255, 255")]
         public Color ButtonColor
         {
@@ -42,7 +42,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private Color arrowColor = MyMainForm.foreMain;
+        private Color arrowColor = MyMainForm.FormFore;
         [DefaultValue(typeof(Color), "Black")]
         public Color ArrowColor
         {
@@ -59,8 +59,8 @@ namespace BluePointLilac.Controls
 
         public RComboBox()
         {
-            BackColor = MyMainForm.buttonMain;
-            ForeColor = MyMainForm.foreMain;
+            BackColor = MyMainForm.ButtonMain;
+            ForeColor = MyMainForm.FormFore;
         }
 
         public static GraphicsPath RoundedRect(Rectangle bounds, int radiusL, int radiusR)

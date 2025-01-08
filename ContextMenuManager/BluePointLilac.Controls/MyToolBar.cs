@@ -13,7 +13,7 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Top;
             DoubleBuffered = true;
             BackColor = MyMainForm.titleArea;
-            ForeColor = MyMainForm.foreMain;
+            ForeColor = MyMainForm.FormFore;
         }
 
         private MyToolBarButton selectedButton;
@@ -88,7 +88,7 @@ namespace BluePointLilac.Controls
         {
             SuspendLayout();
             DoubleBuffered = true;
-            ForeColor = MyMainForm.foreMain;
+            ForeColor = MyMainForm.FormFore;
             BackColor = Color.Transparent;
             Cursor = Cursors.Hand;
             Size = new Size(72, 72).DpiZoom();
@@ -112,7 +112,7 @@ namespace BluePointLilac.Controls
 
         readonly Label lblText = new Label
         {
-            ForeColor = MyMainForm.foreMain,
+            ForeColor = MyMainForm.FormFore,
             BackColor = Color.Transparent,
             Font = SystemFonts.MenuFont,
             AutoSize = true,
@@ -133,7 +133,7 @@ namespace BluePointLilac.Controls
         public float Opacity
         {
             get => BackColor.A / 255;
-            set => BackColor = Color.FromArgb((int)(value * 255), MyMainForm.foreMain);
+            set => BackColor = Color.FromArgb((int)(value * 255), MyMainForm.FormFore);
         }
 
         public bool CanBeSelected { get; set; } = true;

@@ -13,8 +13,8 @@ namespace BluePointLilac.Controls
             ItemHeight = 30.DpiZoom();
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
-            ForeColor = MyMainForm.foreMain;
-            BackColor = MyMainForm.buttonSecond;
+            ForeColor = MyMainForm.FormFore;
+            BackColor = MyMainForm.ButtonSecond;
             BackgroundImageLayout = ImageLayout.None;
             Controls.AddRange(new Control[] { LblSeparator, PnlSelected, PnlHovered });
             PnlHovered.Paint += PaintItem;
@@ -82,18 +82,18 @@ namespace BluePointLilac.Controls
         readonly Panel PnlSelected = new Panel
         {
             BackColor = MyMainForm.MainColor,//侧边栏项目选中颜色
-            ForeColor = MyMainForm.foreMain,
+            ForeColor = MyMainForm.FormFore,
             Enabled = false
         };
         readonly Panel PnlHovered = new Panel
         {
-            BackColor = MyMainForm.buttonSecond,
-            ForeColor = MyMainForm.foreMain,
+            BackColor = MyMainForm.ButtonSecond,
+            ForeColor = MyMainForm.FormFore,
             Enabled = false
         };
         readonly Label LblSeparator = new Label
         {
-            BackColor = MyMainForm.foreMain,
+            BackColor = MyMainForm.FormFore,
             Dock = DockStyle.Right,
             Width = 1,
         };

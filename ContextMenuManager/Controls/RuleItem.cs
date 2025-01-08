@@ -243,8 +243,8 @@ namespace ContextMenuManager.Controls
 
         readonly NumericUpDown NudValue = new NumericUpDown
         {
-            ForeColor = MyMainForm.foreMain,
-            BackColor = MyMainForm.buttonMain,
+            ForeColor = MyMainForm.FormFore,
+            BackColor = MyMainForm.ButtonMain,
             TextAlign = HorizontalAlignment.Center,
             Width = 80.DpiZoom()
         };
@@ -269,7 +269,7 @@ namespace ContextMenuManager.Controls
                 }
                 else
                 {
-                    NudValue.ForeColor = MyMainForm.foreMain;
+                    NudValue.ForeColor = MyMainForm.FormFore;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Regular);
                 }
                 ItemValue = (int)NudValue.Value;
@@ -311,7 +311,7 @@ namespace ContextMenuManager.Controls
         readonly Label LblValue = new Label
         {
             BorderStyle = BorderStyle.FixedSingle,
-            ForeColor = MyMainForm.foreMain,
+            ForeColor = MyMainForm.FormFore,
             Cursor = Cursors.Hand,
             AutoSize = true
         };
@@ -418,7 +418,7 @@ namespace ContextMenuManager.Controls
                 }
                 else
                 {
-                    NudValue.ForeColor = MyMainForm.foreMain;
+                    NudValue.ForeColor = MyMainForm.FormFore;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Regular);
                 }
                 ItemValue = (int)NudValue.Value;
@@ -431,8 +431,8 @@ namespace ContextMenuManager.Controls
 
         readonly NumericUpDown NudValue = new NumericUpDown
         {
-            ForeColor = MyMainForm.foreMain,
-            BackColor = MyMainForm.buttonMain,
+            ForeColor = MyMainForm.FormFore,
+            BackColor = MyMainForm.ButtonMain,
             TextAlign = HorizontalAlignment.Center,
             Width = 80.DpiZoom()
         };
@@ -469,7 +469,7 @@ namespace ContextMenuManager.Controls
         readonly Label LblValue = new Label
         {
             BorderStyle = BorderStyle.FixedSingle,
-            ForeColor = MyMainForm.foreMain,
+            ForeColor = MyMainForm.FormFore,
             Cursor = Cursors.Hand,
             AutoSize = true
         };

@@ -16,8 +16,8 @@ namespace ContextMenuManager.Controls
             SuspendLayout();
             AutoScroll = true;
             Dock = DockStyle.Fill;
-            ForeColor = MyMainForm.foreMain;
-            BackColor = MyMainForm.formBack;
+            ForeColor = MyMainForm.FormFore;
+            BackColor = MyMainForm.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
             Controls.AddRange(new Control[] { lblInfo, picQR, lblList });
@@ -36,7 +36,7 @@ namespace ContextMenuManager.Controls
 
         readonly Label lblList = new Label
         {
-            ForeColor = MyMainForm.foreMain,
+            ForeColor = MyMainForm.FormFore,
             Text = AppString.Other.DonationList,
             Cursor = Cursors.Hand,
             AutoSize = true

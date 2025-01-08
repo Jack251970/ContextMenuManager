@@ -11,8 +11,8 @@ namespace BluePointLilac.Controls
         public MyListBox()
         {
             AutoScroll = true;
-            BackColor = MyMainForm.formBack;
-            ForeColor = MyMainForm.foreMain;
+            BackColor = MyMainForm.FormBack;
+            ForeColor = MyMainForm.FormFore;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
@@ -53,7 +53,7 @@ namespace BluePointLilac.Controls
                 if(hoveredItem == value) return;
                 if(hoveredItem != null)
                 {
-                    hoveredItem.ForeColor = MyMainForm.foreMain;
+                    hoveredItem.ForeColor = MyMainForm.FormFore;
                     hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
                 }
                 hoveredItem = value;
@@ -153,8 +153,8 @@ namespace BluePointLilac.Controls
             Height = 50.DpiZoom();
             Margin = new Padding(0);
             Font = SystemFonts.IconTitleFont;
-            ForeColor = MyMainForm.foreMain;
-            BackColor = MyMainForm.formBack;
+            ForeColor = MyMainForm.FormFore;
+            BackColor = MyMainForm.FormBack;
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
@@ -223,7 +223,7 @@ namespace BluePointLilac.Controls
         };
         private readonly Label lblSeparator = new Label
         {
-            BackColor = MyMainForm.foreMain,
+            BackColor = MyMainForm.FormFore,
             Dock = DockStyle.Bottom,
             Name = "Separator",
             Height = 1
