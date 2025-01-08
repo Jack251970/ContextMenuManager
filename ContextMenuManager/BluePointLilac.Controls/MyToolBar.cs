@@ -88,6 +88,8 @@ namespace BluePointLilac.Controls
         {
             SuspendLayout();
             DoubleBuffered = true;
+            ForeColor = MyMainForm.foreMain;
+            BackColor = Color.Transparent;
             Cursor = Cursors.Hand;
             Size = new Size(72, 72).DpiZoom();
             Controls.AddRange(new Control[] { picImage, lblText });
@@ -110,9 +112,9 @@ namespace BluePointLilac.Controls
 
         readonly Label lblText = new Label
         {
+            ForeColor = MyMainForm.foreMain,
             BackColor = Color.Transparent,
             Font = SystemFonts.MenuFont,
-            ForeColor = MyMainForm.foreMain,
             AutoSize = true,
         };
 

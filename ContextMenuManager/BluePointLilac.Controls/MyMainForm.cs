@@ -221,6 +221,11 @@ namespace BluePointLilac.Controls
                     toolBar.ForeColor = foreMain;
                 }
 
+                if (control is MyToolBarButton toolBarButton)
+                {
+                    toolBarButton.ForeColor = foreMain;
+                }
+
                 if (control is MySideBar sideBar)
                 {
                     sideBar.BackColor = buttonSecond;// More darker than buttonMain
@@ -267,16 +272,9 @@ namespace BluePointLilac.Controls
                     gb.ForeColor = foreMain;
                 }
 
-                if (control is PictureBox pictureBox)
+                if (control is PictureBox pictureBox && pictureBox.BackgroundImage != null)
                 {
-                    /*if (pictureBox.Image != null)
-                    {
-                        pictureBox.Image = AdjustImage(pictureBox.Image);
-                    }*/
-                    if (pictureBox.BackgroundImage != null)
-                    {
-                        pictureBox.BackgroundImage = AdjustImage(pictureBox.BackgroundImage);
-                    }
+                    pictureBox.BackgroundImage = AdjustImage(pictureBox.BackgroundImage);
                 }
             }
         }
