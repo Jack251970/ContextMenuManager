@@ -11,12 +11,6 @@ namespace ContextMenuManager.Controls
         {
             ForeColor = MyMainForm.FormFore;
             BackColor = MyMainForm.FormBack;
-            MouseHover += RToolStripMenuItem_MouseHover;
-        }
-
-        private void RToolStripMenuItem_MouseHover(object sender, EventArgs e)
-        {
-
         }
 
         public RToolStripMenuItem(string text) : base(text)
