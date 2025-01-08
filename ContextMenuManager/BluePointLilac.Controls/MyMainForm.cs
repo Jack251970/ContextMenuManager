@@ -106,6 +106,7 @@ namespace BluePointLilac.Controls
 
         public static Color buttonMain;
         public static Color buttonSecond;
+        public static Color titleArea;
 
         public static Color formBack;
         public static Color foreMain;
@@ -138,6 +139,8 @@ namespace BluePointLilac.Controls
         {
             if (darkTheme)
             {
+                titleArea = Color.FromArgb(255, 32, 32, 32);
+
                 buttonMain = Color.FromArgb(255, 55, 55, 55);
                 buttonSecond = Color.FromArgb(255, 38, 38, 38);
 
@@ -147,6 +150,8 @@ namespace BluePointLilac.Controls
             }
             else
             {
+                titleArea = Color.FromArgb(255, 243, 243, 243);
+
                 buttonMain = SystemColors.ControlLightLight;
                 buttonSecond = SystemColors.ControlLight;
 
@@ -167,7 +172,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        public bool InitTheme()
+        public bool InitTheme(bool firstTime = false)
         {
             bool newDarkTheme = IsDarkTheme();
             bool changed = darkTheme != newDarkTheme;
@@ -175,26 +180,22 @@ namespace BluePointLilac.Controls
 
             InitColors(darkTheme);
 
-            if (changed)
+            if (firstTime || changed)
             {
                 DwmSetWindowAttribute(Handle, 20, new[] { darkTheme ? 1 : 0 }, 4);
-                Adjust(changed);
+                Adjust();
                 Invalidate();
             }
 
             return changed;
         }
 
-        private bool _invert = false;
-
-        private void Adjust(bool invert = false)
+        private void Adjust()
         {
             BackColor = formBack;
             ForeColor = foreMain;
 
-            _invert = invert;
             AdjustControls(Controls);
-            _invert = false;
         }
 
         private void AdjustControls(Control.ControlCollection controls)
@@ -217,13 +218,18 @@ namespace BluePointLilac.Controls
 
                 if (control is MyToolBar toolBar)
                 {
-                    toolBar.BackColor = buttonMain;
+                    toolBar.BackColor = titleArea;
                     toolBar.ForeColor = foreMain;
                 }
 
                 if (control is MyToolBarButton toolBarButton)
                 {
                     toolBarButton.ForeColor = foreMain;
+                    if (toolBarButton.Image != null)
+                    {
+                        // Original image is for dark theme, so invert it for light theme
+                        toolBarButton.Image = AdjustImage(toolBarButton.Image, !darkTheme);
+                    }
                 }
 
                 if (control is MySideBar sideBar)
@@ -254,11 +260,6 @@ namespace BluePointLilac.Controls
 
                     button.FlatStyle = FlatStyle.Flat;
                     button.FlatAppearance.BorderColor = borderMain;
-
-                    if (button.Image != null)
-                    {
-                        button.Image = AdjustImage(button.Image);
-                    }
                 }
 
                 if (control is NumericUpDown numbericUpDown)
@@ -271,23 +272,18 @@ namespace BluePointLilac.Controls
                 {
                     gb.ForeColor = foreMain;
                 }
-
-                if (control is PictureBox pictureBox && pictureBox.BackgroundImage != null)
-                {
-                    pictureBox.BackgroundImage = AdjustImage(pictureBox.BackgroundImage);
-                }
             }
         }
 
-        private Image AdjustImage(Image image)
+        private Image AdjustImage(Image image, bool invert)
         {
             var pic = new Bitmap(image);
 
-            if (_invert)
+            if (invert)
             {
-                for (int y = 0; (y <= (pic.Height - 1)); y++)
+                for (int y = 0; y <= (pic.Height - 1); y++)
                 {
-                    for (int x = 0; (x <= (pic.Width - 1)); x++)
+                    for (int x = 0; x <= (pic.Width - 1); x++)
                     {
                         Color col = pic.GetPixel(x, y);
                         pic.SetPixel(x, y, Color.FromArgb(col.A, 255 - col.R, 255 - col.G, 255 - col.B));

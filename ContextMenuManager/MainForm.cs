@@ -32,7 +32,7 @@ namespace ContextMenuManager
             AddContextMenus();
             ResizeSideBar();
             JumpItem(0, 0);
-            InitTheme();
+            InitTheme(true);
         }
 
         readonly MyToolBarButton[] ToolBarButtons =

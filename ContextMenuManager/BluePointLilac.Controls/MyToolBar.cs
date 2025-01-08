@@ -12,7 +12,7 @@ namespace BluePointLilac.Controls
             Height = 80.DpiZoom();
             Dock = DockStyle.Top;
             DoubleBuffered = true;
-            BackColor = MyMainForm.buttonMain;
+            BackColor = MyMainForm.titleArea;
             ForeColor = MyMainForm.foreMain;
         }
 
@@ -123,16 +123,19 @@ namespace BluePointLilac.Controls
             get => picImage.Image;
             set => picImage.Image = value;
         }
+
         public new string Text
         {
             get => lblText.Text;
             set => lblText.Text = value;
         }
+
         public float Opacity
         {
             get => BackColor.A / 255;
             set => BackColor = Color.FromArgb((int)(value * 255), MyMainForm.foreMain);
         }
+
         public bool CanBeSelected { get; set; } = true;
 
         protected override void OnResize(EventArgs e)
