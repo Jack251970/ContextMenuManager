@@ -132,7 +132,7 @@ namespace ContextMenuManager.Controls
         public VisibleCheckBox ChkVisible { get; set; }
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public ChangeTextMenuItem TsiChangeText { get; set; }
-        readonly ToolStripMenuItem TsiRestoreDefault = new ToolStripMenuItem(AppString.Menu.RestoreDefault);
+        readonly RToolStripMenuItem TsiRestoreDefault = new RToolStripMenuItem(AppString.Menu.RestoreDefault);
 
         public bool ChkChecked
         {
@@ -146,8 +146,8 @@ namespace ContextMenuManager.Controls
             SetCtrIndex(ChkVisible, 1);
             TsiDeleteMe = new DeleteMeMenuItem(this);
             TsiChangeText = new ChangeTextMenuItem(this);
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new ToolStripSeparator(),
-                TsiChangeText, TsiRestoreDefault, new ToolStripSeparator(), TsiDeleteMe });
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new RToolStripSeparator(),
+                TsiChangeText, TsiRestoreDefault, new RToolStripSeparator(), TsiDeleteMe });
             ContextMenuStrip.Opening += (sender, e) => TsiRestoreDefault.Enabled = Directory.Exists(DefaultFolderPath);
             TsiRestoreDefault.Click += (sender, e) => RestoreDefault();
         }

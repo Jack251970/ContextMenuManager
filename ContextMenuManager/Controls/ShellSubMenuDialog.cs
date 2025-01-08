@@ -198,7 +198,7 @@ namespace ContextMenuManager.Controls
                     TsiDeleteRef.Click += (sender, e) => DeleteReference();
                 }
 
-                readonly ToolStripMenuItem TsiDeleteRef = new ToolStripMenuItem(AppString.Menu.DeleteReference);
+                readonly RToolStripMenuItem TsiDeleteRef = new RToolStripMenuItem(AppString.Menu.DeleteReference);
                 public PulicMultiItemsList Owner { get; private set; }
 
                 private void DeleteReference()

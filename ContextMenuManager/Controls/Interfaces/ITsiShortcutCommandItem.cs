@@ -14,7 +14,7 @@ namespace ContextMenuManager.Controls.Interfaces
         ContextMenuStrip ContextMenuStrip { get; set; }
     }
 
-    sealed class ShortcutCommandMenuItem : ToolStripMenuItem
+    sealed class ShortcutCommandMenuItem : RToolStripMenuItem
     {
         public ShortcutCommandMenuItem(ITsiShortcutCommandItem item) : base(AppString.Menu.ChangeCommand)
         {

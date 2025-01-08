@@ -211,8 +211,8 @@ namespace ContextMenuManager.Controls
         public MoveButton BtnMoveUp { get; set; }
         public MoveButton BtnMoveDown { get; set; }
 
-        readonly ToolStripMenuItem TsiDetails = new ToolStripMenuItem(AppString.Menu.Details);
-        readonly ToolStripMenuItem TsiChangeGroup = new ToolStripMenuItem(AppString.Menu.ChangeGroup);
+        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        readonly RToolStripMenuItem TsiChangeGroup = new RToolStripMenuItem(AppString.Menu.ChangeGroup);
 
         private void InitializeComponents()
         {
@@ -228,12 +228,12 @@ namespace ContextMenuManager.Controls
             TsiFileProperties = new FilePropertiesMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new ToolStripSeparator(),
-                TsiChangeGroup, new ToolStripSeparator(), TsiAdministrator, new ToolStripSeparator(),
-                TsiDetails, new ToolStripSeparator(), TsiDeleteMe });
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new RToolStripSeparator(),
+                TsiChangeGroup, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
+                TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
 
             TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch,
-                new ToolStripSeparator(), TsiChangeCommand, TsiFileProperties, TsiFileLocation });
+                new RToolStripSeparator(), TsiChangeCommand, TsiFileProperties, TsiFileLocation });
 
             TsiChangeGroup.Click += (sender, e) => ChangeGroup();
             BtnMoveDown.MouseDown += (sender, e) => MoveItem(false);

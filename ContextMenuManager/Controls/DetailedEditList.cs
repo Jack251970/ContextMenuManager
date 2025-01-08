@@ -55,17 +55,17 @@ namespace ContextMenuManager.Controls
                         groupItem.Image = GuidInfo.GetImage(guids[0]);
                         string filePath = GuidInfo.GetFilePath(guids[0]);
                         string clsidPath = GuidInfo.GetClsidPath(guids[0]);
-                        if(filePath != null || clsidPath != null) groupItem.ContextMenuStrip.Items.Add(new ToolStripSeparator());
+                        if(filePath != null || clsidPath != null) groupItem.ContextMenuStrip.Items.Add(new RToolStripSeparator());
                         if(filePath != null)
                         {
-                            ToolStripMenuItem tsi = new ToolStripMenuItem(AppString.Menu.FileLocation);
+                            var tsi = new RToolStripMenuItem(AppString.Menu.FileLocation);
                             // 打开文件夹
                             tsi.Click += (sender, e) => ExternalProgram.JumpExplorer(filePath, AppConfig.OpenMoreExplorer);
                             groupItem.ContextMenuStrip.Items.Add(tsi);
                         }
                         if(clsidPath != null)
                         {
-                            ToolStripMenuItem tsi = new ToolStripMenuItem(AppString.Menu.ClsidLocation);
+                            var tsi = new RToolStripMenuItem(AppString.Menu.ClsidLocation);
                             // 打开注册表
                             tsi.Click += (sender, e) => ExternalProgram.JumpRegEdit(clsidPath, null, AppConfig.OpenMoreRegedit);
                             groupItem.ContextMenuStrip.Items.Add(tsi);

@@ -55,9 +55,9 @@ namespace ContextMenuManager.Controls
         readonly ContextMenuStrip cms = new ContextMenuStrip();
         readonly ToolStripItem[] items =
         {
-            new ToolStripMenuItem(AppString.Menu.Edit),
-            new ToolStripSeparator(),
-            new ToolStripMenuItem(AppString.Menu.Save)
+            new RToolStripMenuItem(AppString.Menu.Edit),
+            new RToolStripSeparator(),
+            new RToolStripMenuItem(AppString.Menu.Save)
         };
 
         private void SaveFile()

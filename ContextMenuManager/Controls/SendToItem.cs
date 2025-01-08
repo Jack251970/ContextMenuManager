@@ -184,7 +184,7 @@ namespace ContextMenuManager.Controls
         public ShortcutCommandMenuItem TsiChangeCommand { get; set; }
         public RunAsAdministratorItem TsiAdministrator { get; set; }
 
-        readonly ToolStripMenuItem TsiDetails = new ToolStripMenuItem(AppString.Menu.Details);
+        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
 
         private void InitializeComponents()
         {
@@ -199,11 +199,11 @@ namespace ContextMenuManager.Controls
             TsiFileProperties = new FilePropertiesMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new ToolStripSeparator(),
-                TsiChangeIcon, new ToolStripSeparator(), TsiAdministrator, new ToolStripSeparator(),
-                TsiDetails, new ToolStripSeparator(), TsiDeleteMe });
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new RToolStripSeparator(),
+                TsiChangeIcon, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
+                TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new ToolStripSeparator(),
+            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new RToolStripSeparator(),
                 TsiChangeCommand, TsiFileProperties, TsiFileLocation });
 
             ContextMenuStrip.Opening += (sender, e) => TsiChangeCommand.Visible = IsShortcut;

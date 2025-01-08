@@ -12,7 +12,7 @@ namespace ContextMenuManager.Controls.Interfaces
         ChangeTextMenuItem TsiChangeText { get; set; }
     }
 
-    sealed class ChangeTextMenuItem : ToolStripMenuItem
+    sealed class ChangeTextMenuItem : RToolStripMenuItem
     {
         public ChangeTextMenuItem(ITsiTextItem item) : base(AppString.Menu.ChangeText)
         {

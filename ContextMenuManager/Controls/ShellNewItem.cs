@@ -240,10 +240,10 @@ namespace ContextMenuManager.Controls
         public RegExportMenuItem TsiRegExport { get; set; }
         public ChangeCommandMenuItem TsiChangeCommand { get; set; }
 
-        readonly ToolStripMenuItem TsiDetails = new ToolStripMenuItem(AppString.Menu.Details);
-        readonly ToolStripMenuItem TsiOtherAttributes = new ToolStripMenuItem(AppString.Menu.OtherAttributes);
-        readonly ToolStripMenuItem TsiBeforeSeparator = new ToolStripMenuItem(AppString.Menu.BeforeSeparator);
-        readonly ToolStripMenuItem TsiEditData = new ToolStripMenuItem(AppString.Menu.InitialData);
+        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        readonly RToolStripMenuItem TsiOtherAttributes = new RToolStripMenuItem(AppString.Menu.OtherAttributes);
+        readonly RToolStripMenuItem TsiBeforeSeparator = new RToolStripMenuItem(AppString.Menu.BeforeSeparator);
+        readonly RToolStripMenuItem TsiEditData = new RToolStripMenuItem(AppString.Menu.InitialData);
 
         private void InitializeComponents()
         {
@@ -263,13 +263,13 @@ namespace ContextMenuManager.Controls
             TsiChangeCommand.CommandCanBeEmpty = true;
 
             ContextMenuStrip.Items.AddRange(new ToolStripItem[] {TsiChangeText,
-                new ToolStripSeparator(), TsiChangeIcon, new ToolStripSeparator(), TsiOtherAttributes,
-                new ToolStripSeparator(), TsiDetails, new ToolStripSeparator(), TsiDeleteMe });
+                new RToolStripSeparator(), TsiChangeIcon, new RToolStripSeparator(), TsiOtherAttributes,
+                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
 
             TsiOtherAttributes.DropDownItems.AddRange(new[] { TsiBeforeSeparator, TsiEditData });
 
             TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch,
-                new ToolStripSeparator(), TsiChangeCommand, TsiFileProperties,
+                new RToolStripSeparator(), TsiChangeCommand, TsiFileProperties,
                 TsiFileLocation, TsiRegLocation, TsiRegExport });
 
             ContextMenuStrip.Opening += (sender, e) =>

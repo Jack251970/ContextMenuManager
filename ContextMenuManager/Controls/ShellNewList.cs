@@ -291,7 +291,7 @@ namespace ContextMenuManager.Controls
                 TsiSearch = new WebSearchMenuItem(this);
                 TsiRegLocation = new RegLocationMenuItem(this);
                 ContextMenuStrip.Items.AddRange(new ToolStripItem[]
-                    { TsiSearch, new ToolStripSeparator(), TsiRegLocation });
+                    { TsiSearch, new RToolStripSeparator(), TsiRegLocation });
             }
 
             public MenuButton BtnShowMenu { get; set; }

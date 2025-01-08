@@ -12,7 +12,7 @@ namespace ContextMenuManager.Controls.Interfaces
         ChangeCommandMenuItem TsiChangeCommand { get; set; }
     }
 
-    sealed class ChangeCommandMenuItem : ToolStripMenuItem
+    sealed class ChangeCommandMenuItem : RToolStripMenuItem
     {
         public bool CommandCanBeEmpty { get; set; }
 

@@ -181,6 +181,9 @@
     <Compile Include="Controls\RestoreItem.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\RToolStripMenuItem.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\SubItemsForm.cs">
       <SubType>Form</SubType>
     </Compile>

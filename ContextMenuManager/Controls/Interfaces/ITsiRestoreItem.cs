@@ -9,7 +9,7 @@ namespace ContextMenuManager.Controls.Interfaces
         void RestoreMe();
     }
 
-    sealed class RestoreMeMenuItem : ToolStripMenuItem
+    sealed class RestoreMeMenuItem : RToolStripMenuItem
     {
         public RestoreMeMenuItem(ITsiRestoreItem item) : base(AppString.Menu.RestoreBackup)
         {

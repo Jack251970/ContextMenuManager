@@ -15,13 +15,13 @@ namespace ContextMenuManager.Controls.Interfaces
         DetailedEditButton BtnDetailedEdit { get; set; }
     }
 
-    sealed class HandleGuidMenuItem : ToolStripMenuItem
+    sealed class HandleGuidMenuItem : RToolStripMenuItem
     {
         public HandleGuidMenuItem(ITsiGuidItem item) : base(AppString.Menu.HandleGuid)
         {
             Item = item;
             DropDownItems.AddRange(new ToolStripItem[] { TsiAddGuidDic,
-                new ToolStripSeparator(), TsiCopyGuid, TsiBlockGuid, TsiClsidLocation });
+                new RToolStripSeparator(), TsiCopyGuid, TsiBlockGuid, TsiClsidLocation });
             TsiCopyGuid.Click += (sender, e) => CopyGuid();
             TsiBlockGuid.Click += (sender, e) => BlockGuid();
             TsiAddGuidDic.Click += (sender, e) => AddGuidDic();
@@ -29,10 +29,10 @@ namespace ContextMenuManager.Controls.Interfaces
             ((MyListItem)item).ContextMenuStrip.Opening += (sender, e) => RefreshMenuItem();
         }
 
-        readonly ToolStripMenuItem TsiCopyGuid = new ToolStripMenuItem(AppString.Menu.CopyGuid);
-        readonly ToolStripMenuItem TsiBlockGuid = new ToolStripMenuItem(AppString.Menu.BlockGuid);
-        readonly ToolStripMenuItem TsiAddGuidDic = new ToolStripMenuItem(AppString.Menu.AddGuidDic);
-        readonly ToolStripMenuItem TsiClsidLocation = new ToolStripMenuItem(AppString.Menu.ClsidLocation);
+        readonly RToolStripMenuItem TsiCopyGuid = new RToolStripMenuItem(AppString.Menu.CopyGuid);
+        readonly RToolStripMenuItem TsiBlockGuid = new RToolStripMenuItem(AppString.Menu.BlockGuid);
+        readonly RToolStripMenuItem TsiAddGuidDic = new RToolStripMenuItem(AppString.Menu.AddGuidDic);
+        readonly RToolStripMenuItem TsiClsidLocation = new RToolStripMenuItem(AppString.Menu.ClsidLocation);
 
         public ITsiGuidItem Item { get; set; }
 

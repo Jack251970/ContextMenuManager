@@ -16,7 +16,7 @@ namespace ContextMenuManager.Controls.Interfaces
         Icon ItemIcon { get; }
     }
 
-    sealed class ChangeIconMenuItem : ToolStripMenuItem
+    sealed class ChangeIconMenuItem : RToolStripMenuItem
     {
         public ChangeIconMenuItem(ITsiIconItem item) : base(AppString.Menu.ChangeIcon)
         {

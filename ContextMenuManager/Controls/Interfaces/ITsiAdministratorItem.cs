@@ -12,7 +12,7 @@ namespace ContextMenuManager.Controls.Interfaces
         ShellLink ShellLink { get; }
     }
 
-    sealed class RunAsAdministratorItem : ToolStripMenuItem
+    sealed class RunAsAdministratorItem : RToolStripMenuItem
     {
         public RunAsAdministratorItem(ITsiAdministratorItem item) : base(AppString.Menu.RunAsAdministrator)
         {

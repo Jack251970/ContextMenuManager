@@ -12,7 +12,7 @@ namespace ContextMenuManager.Controls.Interfaces
         RegLocationMenuItem TsiRegLocation { get; set; }
     }
 
-    sealed class RegLocationMenuItem : ToolStripMenuItem
+    sealed class RegLocationMenuItem : RToolStripMenuItem
     {
         public RegLocationMenuItem(ITsiRegPathItem item) : base(AppString.Menu.RegistryLocation)
         {

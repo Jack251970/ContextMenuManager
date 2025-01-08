@@ -370,21 +370,21 @@ namespace ContextMenuManager.Controls
         public RegExportMenuItem TsiRegExport { get; set; }
 
         protected readonly PictureButton BtnSubItems = new PictureButton(AppImage.SubItems);
-        protected readonly ToolStripMenuItem TsiOtherAttributes = new ToolStripMenuItem(AppString.Menu.OtherAttributes);
-        readonly ToolStripMenuItem TsiItemIcon = new ToolStripMenuItem(AppString.Menu.ItemIcon);
-        readonly ToolStripMenuItem TsiDeleteIcon = new ToolStripMenuItem(AppString.Menu.DeleteIcon);
-        readonly ToolStripMenuItem TsiShieldIcon = new ToolStripMenuItem(AppString.Menu.ShieldIcon);
-        readonly ToolStripMenuItem TsiPosition = new ToolStripMenuItem(AppString.Menu.ItemPosition);
-        readonly ToolStripMenuItem TsiDefault = new ToolStripMenuItem(AppString.Menu.SetDefault);
-        readonly ToolStripMenuItem TsiSetTop = new ToolStripMenuItem(AppString.Menu.SetTop);
-        readonly ToolStripMenuItem TsiSetBottom = new ToolStripMenuItem(AppString.Menu.SetBottom);
-        readonly ToolStripMenuItem TsiOnlyWithShift = new ToolStripMenuItem(AppString.Menu.OnlyWithShift);
-        readonly ToolStripMenuItem TsiOnlyInExplorer = new ToolStripMenuItem(AppString.Menu.OnlyInExplorer);
-        readonly ToolStripMenuItem TsiNoWorkDir = new ToolStripMenuItem(AppString.Menu.NoWorkingDirectory);
-        readonly ToolStripMenuItem TsiNeverDefault = new ToolStripMenuItem(AppString.Menu.NeverDefault);
-        readonly ToolStripMenuItem TsiDetails = new ToolStripMenuItem(AppString.Menu.Details);
-        readonly ToolStripMenuItem TsiShowAsDisabled = new ToolStripMenuItem(AppString.Menu.ShowAsDisabledIfHidden);
-        readonly ToolStripMenuItem TsiClsidLocation = new ToolStripMenuItem(AppString.Menu.ClsidLocation);
+        protected readonly RToolStripMenuItem TsiOtherAttributes = new RToolStripMenuItem(AppString.Menu.OtherAttributes);
+        readonly RToolStripMenuItem TsiItemIcon = new RToolStripMenuItem(AppString.Menu.ItemIcon);
+        readonly RToolStripMenuItem TsiDeleteIcon = new RToolStripMenuItem(AppString.Menu.DeleteIcon);
+        readonly RToolStripMenuItem TsiShieldIcon = new RToolStripMenuItem(AppString.Menu.ShieldIcon);
+        readonly RToolStripMenuItem TsiPosition = new RToolStripMenuItem(AppString.Menu.ItemPosition);
+        readonly RToolStripMenuItem TsiDefault = new RToolStripMenuItem(AppString.Menu.SetDefault);
+        readonly RToolStripMenuItem TsiSetTop = new RToolStripMenuItem(AppString.Menu.SetTop);
+        readonly RToolStripMenuItem TsiSetBottom = new RToolStripMenuItem(AppString.Menu.SetBottom);
+        readonly RToolStripMenuItem TsiOnlyWithShift = new RToolStripMenuItem(AppString.Menu.OnlyWithShift);
+        readonly RToolStripMenuItem TsiOnlyInExplorer = new RToolStripMenuItem(AppString.Menu.OnlyInExplorer);
+        readonly RToolStripMenuItem TsiNoWorkDir = new RToolStripMenuItem(AppString.Menu.NoWorkingDirectory);
+        readonly RToolStripMenuItem TsiNeverDefault = new RToolStripMenuItem(AppString.Menu.NeverDefault);
+        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        readonly RToolStripMenuItem TsiShowAsDisabled = new RToolStripMenuItem(AppString.Menu.ShowAsDisabledIfHidden);
+        readonly RToolStripMenuItem TsiClsidLocation = new RToolStripMenuItem(AppString.Menu.ClsidLocation);
 
         private void InitializeComponents()
         {
@@ -400,8 +400,8 @@ namespace ContextMenuManager.Controls
             TsiRegExport = new RegExportMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new ToolStripSeparator(), TsiItemIcon,
-                TsiPosition, TsiOtherAttributes, new ToolStripSeparator(), TsiDetails, new ToolStripSeparator(), TsiDeleteMe});
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new RToolStripSeparator(), TsiItemIcon,
+                TsiPosition, TsiOtherAttributes, new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe});
 
             TsiItemIcon.DropDownItems.AddRange(new ToolStripItem[] { TsiChangeIcon, TsiDeleteIcon, TsiShieldIcon });
 
@@ -410,7 +410,7 @@ namespace ContextMenuManager.Controls
             TsiOtherAttributes.DropDownItems.AddRange(new ToolStripItem[] { TsiOnlyWithShift, TsiOnlyInExplorer,
                 TsiNoWorkDir, TsiNeverDefault, TsiShowAsDisabled });
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new ToolStripSeparator(),
+            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new RToolStripSeparator(),
                 TsiChangeCommand, TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport, TsiClsidLocation});
 
             TsiDeleteIcon.Click += (sender, e) => DeleteIcon();

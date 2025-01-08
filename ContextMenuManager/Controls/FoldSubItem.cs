@@ -42,8 +42,8 @@ namespace ContextMenuManager.Controls
         public MenuButton BtnShowMenu { get; set; }
         readonly PictureButton btnFold;
         readonly PictureButton btnOpenPath;
-        readonly ToolStripMenuItem tsiFoldAll = new ToolStripMenuItem(AppString.Menu.FoldAll);
-        readonly ToolStripMenuItem tsiUnfoldAll = new ToolStripMenuItem(AppString.Menu.UnfoldAll);
+        readonly RToolStripMenuItem tsiFoldAll = new RToolStripMenuItem(AppString.Menu.FoldAll);
+        readonly RToolStripMenuItem tsiUnfoldAll = new RToolStripMenuItem(AppString.Menu.UnfoldAll);
 
         public FoldGroupItem(string groupPath, PathType pathType)
         {

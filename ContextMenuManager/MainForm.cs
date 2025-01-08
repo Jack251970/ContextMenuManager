@@ -437,10 +437,10 @@ namespace ContextMenuManager
                 };
                 for(int i = 0; i < item.Value.Length; i++)
                 {
-                    if(item.Value[i] == null) cms.Items.Add(new ToolStripSeparator());
+                    if(item.Value[i] == null) cms.Items.Add(new RToolStripSeparator());
                     else
                     {
-                        ToolStripMenuItem tsi = new ToolStripMenuItem(item.Value[i]);
+                        var tsi = new RToolStripMenuItem(item.Value[i]);
                         cms.Items.Add(tsi);
                         int toolBarIndex = ToolBar.Controls.GetChildIndex(item.Key);
                         int index = i;

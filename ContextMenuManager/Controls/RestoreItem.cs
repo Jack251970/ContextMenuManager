@@ -40,7 +40,7 @@ namespace ContextMenuManager.Controls
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public RestoreMeMenuItem TsiRestoreMe { get; set; }
 
-        readonly ToolStripMenuItem TsiDetails = new ToolStripMenuItem(AppString.Menu.Details);
+        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
 
         private void InitializeComponents()
         {
@@ -51,8 +51,8 @@ namespace ContextMenuManager.Controls
             TsiRestoreMe = new RestoreMeMenuItem(this);
 
             // 设置菜单：详细信息；删除备份；恢复备份
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiDetails, new ToolStripSeparator(), 
-                TsiRestoreMe, new ToolStripSeparator(), TsiDeleteMe });
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiDetails, new RToolStripSeparator(), 
+                TsiRestoreMe, new RToolStripSeparator(), TsiDeleteMe });
 
             // 详细信息
             TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiFileProperties, TsiFileLocation });

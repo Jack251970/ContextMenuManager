@@ -72,7 +72,7 @@ namespace ContextMenuManager.Controls
         public RegExportMenuItem TsiRegExport { get; set; }
         public HandleGuidMenuItem TsiHandleGuid { get; set; }
 
-        readonly ToolStripMenuItem TsiDetails = new ToolStripMenuItem(AppString.Menu.Details);
+        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
 
         private void InitializeComponents()
         {
@@ -88,8 +88,8 @@ namespace ContextMenuManager.Controls
             TsiHandleGuid = new HandleGuidMenuItem(this);
 
             ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiHandleGuid,
-                new ToolStripSeparator(), TsiDetails, new ToolStripSeparator(), TsiDeleteMe });
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new ToolStripSeparator(),
+                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
+            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new RToolStripSeparator(),
                 TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport });
         }
 

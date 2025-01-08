@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls.Interfaces
         string RegPath { get; }
     }
 
-    sealed class DeleteMeMenuItem : ToolStripMenuItem
+    sealed class DeleteMeMenuItem : RToolStripMenuItem
     {
         public DeleteMeMenuItem(ITsiDeleteItem item) : base(item is RestoreItem ? AppString.Menu.DeleteBackup : AppString.Menu.Delete)
         {

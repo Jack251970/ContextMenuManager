@@ -13,7 +13,7 @@ namespace ContextMenuManager.Controls.Interfaces
         FilePropertiesMenuItem TsiFileProperties { get; set; }
     }
 
-    sealed class FileLocationMenuItem : ToolStripMenuItem
+    sealed class FileLocationMenuItem : RToolStripMenuItem
     {
         public FileLocationMenuItem(ITsiFilePathItem item) : base(AppString.Menu.FileLocation)
         {
@@ -25,7 +25,7 @@ namespace ContextMenuManager.Controls.Interfaces
         }
     }
 
-    sealed class FilePropertiesMenuItem : ToolStripMenuItem
+    sealed class FilePropertiesMenuItem : RToolStripMenuItem
     {
         public FilePropertiesMenuItem(ITsiFilePathItem item) : base(AppString.Menu.FileProperties)
         {

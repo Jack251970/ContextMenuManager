@@ -14,7 +14,7 @@ namespace ContextMenuManager.Controls.Interfaces
         RegExportMenuItem TsiRegExport { get; set; }
     }
 
-    sealed class RegExportMenuItem : ToolStripMenuItem
+    sealed class RegExportMenuItem : RToolStripMenuItem
     {
         public RegExportMenuItem(ITsiRegExportItem item) : base(AppString.Menu.ExportRegistry)
         {

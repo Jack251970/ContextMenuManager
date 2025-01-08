@@ -69,8 +69,8 @@ namespace ContextMenuManager.Controls
         public HandleGuidMenuItem TsiHandleGuid { get; set; }
         public RegLocationMenuItem TsiRegLocation { get; set; }
 
-        readonly ToolStripMenuItem TsiDetails = new ToolStripMenuItem(AppString.Menu.Details);
-        readonly ToolStripMenuItem TsiDelete = new ToolStripMenuItem(AppString.Menu.Delete);
+        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        readonly RToolStripMenuItem TsiDelete = new RToolStripMenuItem(AppString.Menu.Delete);
 
         private void InitializeComponents()
         {
@@ -83,9 +83,9 @@ namespace ContextMenuManager.Controls
             TsiHandleGuid = new HandleGuidMenuItem(this);
 
             ContextMenuStrip.Items.AddRange(new ToolStripItem[] {TsiHandleGuid,
-                new ToolStripSeparator(), TsiDetails, new ToolStripSeparator(), TsiDelete });
+                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDelete });
             TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch,
-                new ToolStripSeparator(), TsiFileProperties, TsiFileLocation, TsiRegLocation});
+                new RToolStripSeparator(), TsiFileProperties, TsiFileLocation, TsiRegLocation});
 
             TsiDelete.Click += (sender, e) => DeleteMe();
         }

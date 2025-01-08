@@ -74,7 +74,7 @@ namespace ContextMenuManager.Controls
             ChkVisible = new VisibleCheckBox(this);
             ToolTipBox.SetToolTip(ChkVisible, info.Tip);
             TsiRegLocation = new RegLocationMenuItem(this);
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new ToolStripSeparator(), TsiRegLocation });
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new RToolStripSeparator(), TsiRegLocation });
         }
 
         public VisibleRegRuleItem(RegRule[] rules, ItemInfo info)
@@ -255,7 +255,7 @@ namespace ContextMenuManager.Controls
             AddCtr(NudValue);
             ToolTipBox.SetToolTip(NudValue, info.Tip);
             TsiRegLocation = new RegLocationMenuItem(this);
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new ToolStripSeparator(), TsiRegLocation });
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new RToolStripSeparator(), TsiRegLocation });
             Rule = rule;
             NudValue.Maximum = rule.MaxValue;
             NudValue.Minimum = rule.MinValue;
@@ -323,7 +323,7 @@ namespace ContextMenuManager.Controls
             AddCtr(LblValue);
             ToolTipBox.SetToolTip(LblValue, info.Tip);
             TsiRegLocation = new RegLocationMenuItem(this);
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new ToolStripSeparator(), TsiRegLocation });
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new RToolStripSeparator(), TsiRegLocation });
             Rule = rule;
             LblValue.Text = ItemValue;
             LblValue.Font = new Font(Font.FontFamily, Font.Size + 3F);

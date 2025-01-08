@@ -10,7 +10,7 @@ namespace ContextMenuManager.Controls.Interfaces
         WebSearchMenuItem TsiSearch { get; set; }
     }
 
-    sealed class WebSearchMenuItem : ToolStripMenuItem
+    sealed class WebSearchMenuItem : RToolStripMenuItem
     {
         public WebSearchMenuItem(ITsiWebSearchItem item) : base(AppString.Menu.WebSearch)
         {
