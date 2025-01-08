@@ -26,7 +26,7 @@ namespace ContextMenuManager.Controls
             cmbLanguages.SelectionChangeCommitted += (sender, e) => ChangeLanguage();
             btnOpenDir.MouseDown += (sender, e) => ExternalProgram.OpenDirectory(AppConfig.LangsDir);
             lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = MyMainForm.MainColor;
-            lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;
+            lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;//Fixed
             btnDownLoad.MouseDown += (sender, e) =>
             {
                 Cursor = Cursors.WaitCursor;
@@ -74,7 +74,7 @@ namespace ContextMenuManager.Controls
         {
             Font = new Font("Lucida Handwriting", 11F),
             Text = "Thank you for your translation!",
-            ForeColor = Color.DimGray,
+            ForeColor = Color.DimGray,//Fixed
             AutoSize = true,
         };
         readonly List<string> languages = new List<string>();
@@ -130,7 +130,7 @@ namespace ContextMenuManager.Controls
                             AutoSize = true,
                             Font = Font,
                             Text = translators[i],
-                            ForeColor = Color.DimGray,
+                            ForeColor = Color.DimGray,//Fixed
                         };
                         if(urls.Length > i)
                         {

@@ -157,7 +157,7 @@ namespace ContextMenuManager.Controls
                         = DataGridViewContentAlignment.BottomCenter;
                     Controls.AddRange(new Control[] { lblThank, lblDonate, dgvDonate });
                     lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = MyMainForm.MainColor;
-                    lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;
+                    lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;//Fixed
                     lblDonate.Resize += (sender, e) => OnResize(null);
                     this.AddEscapeButton();
                     InitTheme();
@@ -181,7 +181,7 @@ namespace ContextMenuManager.Controls
                 readonly Label lblThank = new Label
                 {
                     Font = new Font("Lucida Handwriting", 15F),
-                    ForeColor = Color.DimGray,
+                    ForeColor = Color.DimGray,//Fixed
                     Text = "Thank you!",
                     AutoSize = true,
                 };
