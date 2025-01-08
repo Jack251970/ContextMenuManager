@@ -47,7 +47,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        sealed class SelectForm : Form
+        sealed class SelectForm : RForm
         {
             /*************************************外部函数***********************************/
 
@@ -63,6 +63,7 @@ namespace BluePointLilac.Controls
                 StartPosition = FormStartPosition.CenterParent;
                 InitializeComponents();
                 ResumeLayout();
+                InitTheme();
             }
 
             /*************************************外部属性***********************************/

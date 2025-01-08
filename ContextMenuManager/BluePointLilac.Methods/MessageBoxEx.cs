@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BluePointLilac.Controls;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -48,7 +49,7 @@ namespace BluePointLilac.Methods
             }
         }
 
-        sealed class MessageBoxForm : Form
+        sealed class MessageBoxForm : RForm
         {
             private MessageBoxForm(string text, string caption, bool canMoveParent)
             {
@@ -60,6 +61,7 @@ namespace BluePointLilac.Methods
                 MaximizeBox = MinimizeBox = false;
                 FormBorderStyle = FormBorderStyle.FixedSingle;
                 StartPosition = FormStartPosition.CenterParent;
+                InitTheme();
             }
 
             public MessageBoxForm(string text, string caption,
@@ -197,7 +199,8 @@ namespace BluePointLilac.Methods
             };
             readonly Panel pnlInfo = new Panel
             {
-                BackColor = Color.White,
+                ForeColor = MyMainForm.foreMain,
+                BackColor = MyMainForm.formBack,
                 Dock = DockStyle.Top,
             };
             readonly PictureBox picIcon = new PictureBox
@@ -207,6 +210,8 @@ namespace BluePointLilac.Methods
             };
             readonly Label lblText = new Label
             {
+                ForeColor = MyMainForm.foreMain,
+                BackColor = MyMainForm.formBack,
                 Location = new Point(68, 32).DpiZoom(),
                 AutoSize = true,
             };

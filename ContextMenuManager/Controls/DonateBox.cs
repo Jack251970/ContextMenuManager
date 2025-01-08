@@ -140,7 +140,7 @@ namespace ContextMenuManager.Controls
                 return true;
             }
 
-            sealed class DonateListForm : Form
+            sealed class DonateListForm : RForm
             {
                 public DonateListForm()
                 {
@@ -160,6 +160,7 @@ namespace ContextMenuManager.Controls
                     lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;
                     lblDonate.Resize += (sender, e) => OnResize(null);
                     this.AddEscapeButton();
+                    InitTheme();
                 }
 
                 readonly DataGridView dgvDonate = new DataGridView

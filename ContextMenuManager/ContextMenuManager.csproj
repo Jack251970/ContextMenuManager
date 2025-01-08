@@ -154,6 +154,9 @@
     <Compile Include="Controls\DictionariesBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\RForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controls\RComboBox.cs">
       <SubType>Component</SubType>
     </Compile>

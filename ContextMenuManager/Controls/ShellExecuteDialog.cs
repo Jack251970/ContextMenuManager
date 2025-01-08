@@ -41,7 +41,7 @@ namespace ContextMenuManager.Controls
                 $"(\"{fileName}\",\"{arguments}\",\"{directory}\",\"{verb}\",{windowStyle})(close)";
         }
 
-        sealed class ShellExecuteForm : Form
+        sealed class ShellExecuteForm : RForm
         {
             private const string ApiInfoUrl = "https://docs.microsoft.com/windows/win32/api/shellapi/nf-shellapi-shellexecutea";
             private static readonly string[] Verbs = new[] { "open", "runas", "edit", "print", "find", "explore" };
@@ -59,6 +59,7 @@ namespace ContextMenuManager.Controls
                 HelpButtonClicked += (sender, e) => ExternalProgram.OpenWebUrl(ApiInfoUrl);
                 InitializeComponents();
                 ResumeLayout();
+                InitTheme();
             }
             public string Verb { get; set; }
             public int WindowStyle { get; set; }

@@ -28,7 +28,7 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public sealed class ShellStoreForm : Form
+        public sealed class ShellStoreForm : RForm
         {
             public string ShellPath { get; private set; }
             public Func<string, bool> Filter { get; private set; }
@@ -61,6 +61,7 @@ namespace ContextMenuManager.Controls
                 InitializeComponents();
                 LoadItems(isReference);
                 ResumeLayout();
+                InitTheme();
             }
 
             readonly MyList list = new MyList();

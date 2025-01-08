@@ -4,13 +4,18 @@ using System.Windows.Forms;
 namespace BluePointLilac.Controls
 {
     /// <summary>限制水平、竖直方向调整大小的窗体</summary>
-    public class ResizeLimitedForm : Form
+    public class ResizeLimitedForm : RForm
     {
         /// <summary>水平方向可调整大小</summary>
         public bool HorizontalResizable { get; set; } = true;
 
         /// <summary>竖直方向可调整大小</summary>
         public bool VerticalResizable { get; set; } = true;
+
+        public ResizeLimitedForm()
+        {
+            InitTheme();
+        }
 
         protected override void WndProc(ref Message m)
         {

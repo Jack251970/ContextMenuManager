@@ -30,7 +30,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        sealed class InputBox : Form
+        sealed class InputBox : RForm
         {
             public InputBox()
             {
@@ -44,6 +44,7 @@ namespace BluePointLilac.Controls
                 txtInput.Font = new Font(txtInput.Font.FontFamily, txtInput.Font.Size + 2F);
                 txtInput.CanResizeFont();
                 InitializeComponents();
+                InitTheme();
             }
 
             public string InputedText

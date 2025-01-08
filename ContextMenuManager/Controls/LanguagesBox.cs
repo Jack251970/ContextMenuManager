@@ -270,7 +270,7 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            sealed class TranslateForm : Form
+            sealed class TranslateForm : RForm
             {
                 public TranslateForm()
                 {
@@ -284,6 +284,7 @@ namespace ContextMenuManager.Controls
                     StartPosition = FormStartPosition.CenterParent;
                     InitializeComponents();
                     ResumeLayout();
+                    InitTheme();
                 }
 
                 readonly Label lblSections = new Label

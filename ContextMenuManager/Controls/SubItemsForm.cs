@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class SubItemsForm : Form
+    sealed class SubItemsForm : RForm
     {
         public SubItemsForm()
         {
@@ -18,6 +18,7 @@ namespace ContextMenuManager.Controls
             statusBar.CanMoveForm();
             this.AddEscapeButton();
             ResumeLayout();
+            InitTheme();
         }
 
         readonly MyListBox listBox = new MyListBox { Dock = DockStyle.Fill };

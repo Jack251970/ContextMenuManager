@@ -177,7 +177,7 @@ namespace ContextMenuManager.Controls.Interfaces
                 }
             }
 
-            sealed class AddGuidDicForm : Form
+            sealed class AddGuidDicForm : RForm
             {
                 public AddGuidDicForm()
                 {
@@ -190,6 +190,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     FormBorderStyle = FormBorderStyle.FixedSingle;
                     StartPosition = FormStartPosition.CenterParent;
                     InitializeComponents();
+                    InitTheme();
                 }
 
                 public string ItemText

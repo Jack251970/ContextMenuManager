@@ -1,4 +1,5 @@
-﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Controls;
+using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace ContextMenuManager.Controls
             return true;
         }
 
-        sealed class RestoreListForm : Form
+        sealed class RestoreListForm : RForm
         {
             public RestoreListForm()
             {
@@ -48,6 +49,7 @@ namespace ContextMenuManager.Controls
                 Controls.AddRange(new Control[] { lblRestore, dgvRestore });
                 lblRestore.Resize += (sender, e) => OnResize(null);
                 this.AddEscapeButton();
+                InitTheme();
             }
 
             readonly DataGridView dgvRestore = new DataGridView

@@ -26,7 +26,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        sealed class DownloadForm : Form
+        sealed class DownloadForm : RForm
         {
             public DownloadForm()
             {
@@ -39,6 +39,7 @@ namespace BluePointLilac.Controls
                 Load += (sender, e) => DownloadFile(Url, FilePath);
                 InitializeComponents();
                 ResumeLayout();
+                InitTheme();
             }
 
             readonly ProgressBar pgbDownload = new ProgressBar
