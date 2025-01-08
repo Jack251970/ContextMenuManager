@@ -25,7 +25,7 @@ namespace ContextMenuManager.Controls
             VisibleChanged += (sender, e) => this.SetEnabled(Visible);
             cmbLanguages.SelectionChangeCommitted += (sender, e) => ChangeLanguage();
             btnOpenDir.MouseDown += (sender, e) => ExternalProgram.OpenDirectory(AppConfig.LangsDir);
-            lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = Color.FromArgb(0, 162, 255);
+            lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = MyMainForm.MainColor;
             lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;
             btnDownLoad.MouseDown += (sender, e) =>
             {
@@ -49,7 +49,7 @@ namespace ContextMenuManager.Controls
             ResumeLayout();
         }
 
-        readonly ComboBox cmbLanguages = new ComboBox
+        readonly RComboBox cmbLanguages = new RComboBox
         {
             DropDownStyle = ComboBoxStyle.DropDownList,
             Width = 170.DpiZoom(),
@@ -66,7 +66,7 @@ namespace ContextMenuManager.Controls
         readonly Label lblHeader = new Label
         {
             Text = AppString.Other.Translators + "\r\n" + new string('-', 96),
-            ForeColor = Color.DarkCyan,
+            ForeColor = MyMainForm.MainColor,
             Dock = DockStyle.Top,
             AutoSize = true
         };
@@ -117,7 +117,7 @@ namespace ContextMenuManager.Controls
 
                     Label lblLanguage = new Label
                     {
-                        ForeColor = Color.DodgerBlue,
+                        ForeColor = MyMainForm.foreMain,
                         Text = language,
                         AutoSize = true,
                         Font = Font
@@ -138,7 +138,7 @@ namespace ContextMenuManager.Controls
                             if(url != "null")
                             {
                                 toolTip.SetToolTip(ctrTranslators[i], url);
-                                ctrTranslators[i].ForeColor = Color.SkyBlue;
+                                ctrTranslators[i].ForeColor = MyMainForm.foreMain;
                                 ctrTranslators[i].Font = new Font(ctrTranslators[i].Font, FontStyle.Underline);
                                 ctrTranslators[i].Click += (sender, e) => ExternalProgram.OpenWebUrl(url);
                             }
@@ -325,11 +325,11 @@ namespace ContextMenuManager.Controls
                 {
                     Multiline = true
                 };
-                readonly ComboBox cmbSections = new ComboBox
+                readonly RComboBox cmbSections = new RComboBox
                 {
                     DropDownStyle = ComboBoxStyle.DropDownList
                 };
-                readonly ComboBox cmbKeys = new ComboBox
+                readonly RComboBox cmbKeys = new RComboBox
                 {
                     DropDownStyle = ComboBoxStyle.DropDownList
                 };

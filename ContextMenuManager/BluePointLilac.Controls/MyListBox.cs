@@ -11,7 +11,8 @@ namespace BluePointLilac.Controls
         public MyListBox()
         {
             AutoScroll = true;
-            BackColor = Color.FromArgb(250, 250, 250);
+            BackColor = MyMainForm.formBack;
+            ForeColor = MyMainForm.foreMain;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
@@ -52,16 +53,14 @@ namespace BluePointLilac.Controls
                 if(hoveredItem == value) return;
                 if(hoveredItem != null)
                 {
-                    hoveredItem.ForeColor = Color.FromArgb(90, 90, 90);
-                    //hoveredItem.BackColor = Color.FromArgb(250, 250, 250);
-                    //hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
+                    hoveredItem.ForeColor = MyMainForm.foreMain;
+                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
                 }
                 hoveredItem = value;
-                if(hoveredItem != null)
+                if (hoveredItem != null)
                 {
-                    value.ForeColor = Color.FromArgb(0, 138, 217);
-                    //value.BackColor = Color.FromArgb(200, 230, 250);
-                    //value.Font = new Font(hoveredItem.Font, FontStyle.Bold);
+                    value.ForeColor = MyMainForm.MainColor;
+                    value.Font = new Font(hoveredItem.Font, FontStyle.Bold);
                     value.Focus();
                 }
                 HoveredItemChanged?.Invoke(this, null);
@@ -154,8 +153,8 @@ namespace BluePointLilac.Controls
             Height = 50.DpiZoom();
             Margin = new Padding(0);
             Font = SystemFonts.IconTitleFont;
-            ForeColor = Color.FromArgb(80, 80, 80);
-            BackColor = Color.FromArgb(250, 250, 250);
+            ForeColor = MyMainForm.foreMain;
+            BackColor = MyMainForm.formBack;
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
@@ -224,7 +223,7 @@ namespace BluePointLilac.Controls
         };
         private readonly Label lblSeparator = new Label
         {
-            BackColor = Color.FromArgb(220, 220, 220),
+            BackColor = MyMainForm.foreMain,
             Dock = DockStyle.Bottom,
             Name = "Separator",
             Height = 1

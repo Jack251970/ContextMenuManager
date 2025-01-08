@@ -12,7 +12,8 @@ namespace BluePointLilac.Controls
             Height = 80.DpiZoom();
             Dock = DockStyle.Top;
             DoubleBuffered = true;
-            BackColor = Color.FromArgb(255, 143, 31);
+            BackColor = MyMainForm.buttonMain;
+            ForeColor = MyMainForm.foreMain;
         }
 
         private MyToolBarButton selectedButton;
@@ -111,6 +112,7 @@ namespace BluePointLilac.Controls
         {
             BackColor = Color.Transparent,
             Font = SystemFonts.MenuFont,
+            // TODO: Check color here.
             ForeColor = Color.White,
             AutoSize = true,
         };

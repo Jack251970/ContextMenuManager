@@ -1,4 +1,5 @@
-﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Controls;
+using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
 using System.IO;
@@ -21,6 +22,7 @@ namespace ContextMenuManager
                 }
             }
 #endif
+            MyMainForm.InitColors();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             if(SingleInstance.IsRunning()) return;

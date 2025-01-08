@@ -148,7 +148,7 @@ namespace BluePointLilac.Controls
             };
 
             readonly Label cmbInfo = new Label { AutoSize = true };
-            readonly ComboBox cmbItems = new ComboBox
+            readonly RComboBox cmbItems = new RComboBox
             {
                 AutoCompleteMode = AutoCompleteMode.SuggestAppend,
                 AutoCompleteSource = AutoCompleteSource.ListItems,

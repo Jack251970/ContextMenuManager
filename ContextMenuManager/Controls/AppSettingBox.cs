@@ -75,14 +75,14 @@ namespace ContextMenuManager.Controls
         {
             Text = AppString.Other.ConfigPath
         };
-        readonly ComboBox cmbConfigDir = new ComboBox();
+        readonly RComboBox cmbConfigDir = new RComboBox();
         readonly PictureButton btnConfigDir = new PictureButton(AppImage.Open);
 
         readonly MyListItem mliRepo = new MyListItem
         {
             Text = AppString.Other.SetRequestRepo
         };
-        readonly ComboBox cmbRepo = new ComboBox();
+        readonly RComboBox cmbRepo = new RComboBox();
 
         readonly MyListItem mliBackup = new MyListItem
         {
@@ -95,7 +95,7 @@ namespace ContextMenuManager.Controls
         {
             Text = AppString.Other.SetUpdateFrequency
         };
-        readonly ComboBox cmbUpdate = new ComboBox();
+        readonly RComboBox cmbUpdate = new RComboBox();
         readonly PictureButton btnUpdate = new PictureButton(AppImage.CheckUpdate);
 
         readonly MyListItem mliTopMost = new MyListItem
@@ -114,7 +114,7 @@ namespace ContextMenuManager.Controls
         {
             Text = AppString.Other.WebSearchEngine
         };
-        readonly ComboBox cmbEngine = new ComboBox();
+        readonly RComboBox cmbEngine = new RComboBox();
 
         readonly MyListItem mliShowFilePath = new MyListItem
         {

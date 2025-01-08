@@ -16,7 +16,8 @@ namespace ContextMenuManager.Controls
             SuspendLayout();
             AutoScroll = true;
             Dock = DockStyle.Fill;
-            BackColor = Color.White;
+            ForeColor = MyMainForm.foreMain;
+            BackColor = MyMainForm.formBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
             Controls.AddRange(new Control[] { lblInfo, picQR, lblList });
@@ -35,7 +36,7 @@ namespace ContextMenuManager.Controls
 
         readonly Label lblList = new Label
         {
-            ForeColor = Color.FromArgb(85, 145, 215),
+            ForeColor = MyMainForm.foreMain,
             Text = AppString.Other.DonationList,
             Cursor = Cursors.Hand,
             AutoSize = true
@@ -155,7 +156,7 @@ namespace ContextMenuManager.Controls
                         = dgvDonate.RowsDefaultCellStyle.Alignment
                         = DataGridViewContentAlignment.BottomCenter;
                     Controls.AddRange(new Control[] { lblThank, lblDonate, dgvDonate });
-                    lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = Color.FromArgb(0, 162, 255);
+                    lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = MyMainForm.MainColor;
                     lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;
                     lblDonate.Resize += (sender, e) => OnResize(null);
                     this.AddEscapeButton();

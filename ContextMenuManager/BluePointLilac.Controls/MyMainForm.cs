@@ -9,12 +9,15 @@ namespace BluePointLilac.Controls
 {
     public class MyMainForm : Form
     {
+        // <summary>程序主题色</summary>
+        public static Color MainColor = Color.FromArgb(255, 143, 31);
+
         public MyMainForm()
         {
             SuspendLayout();
             Text = Application.ProductName;
-            ForeColor = Color.FromArgb(80, 80, 80);
-            BackColor = Color.FromArgb(250, 250, 250);
+            ForeColor = foreMain;
+            BackColor = formBack;
             StartPosition = FormStartPosition.CenterScreen;
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Controls.AddRange(new Control[] { MainBody, SideBar, StatusBar, ToolBar });
@@ -98,7 +101,7 @@ namespace BluePointLilac.Controls
         #region Dark Theme
 
         /*
-         * Picked from: https://github.com/seerge/g-helper
+         * Edited from: https://github.com/seerge/g-helper
          */
 
         public static Color buttonMain;
@@ -107,8 +110,6 @@ namespace BluePointLilac.Controls
         public static Color formBack;
         public static Color foreMain;
         public static Color borderMain;
-        public static Color chartMain;
-        public static Color chartGrid;
 
         [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
         public static extern bool CheckSystemDarkModeStatus();
@@ -128,6 +129,11 @@ namespace BluePointLilac.Controls
             }
         }
 
+        public static void InitColors()
+        {
+            InitColors(IsDarkTheme());
+        }
+
         private static void InitColors(bool darkTheme)
         {
             if (darkTheme)
@@ -138,9 +144,6 @@ namespace BluePointLilac.Controls
                 formBack = Color.FromArgb(255, 28, 28, 28);
                 foreMain = Color.FromArgb(255, 240, 240, 240);
                 borderMain = Color.FromArgb(255, 50, 50, 50);
-
-                chartMain = Color.FromArgb(255, 35, 35, 35);
-                chartGrid = Color.FromArgb(255, 70, 70, 70);
             }
             else
             {
@@ -150,9 +153,6 @@ namespace BluePointLilac.Controls
                 formBack = SystemColors.Control;
                 foreMain = SystemColors.ControlText;
                 borderMain = Color.LightGray;
-
-                chartMain = SystemColors.ControlLightLight;
-                chartGrid = Color.LightGray;
             }
         }
 
@@ -197,95 +197,107 @@ namespace BluePointLilac.Controls
             _invert = false;
         }
 
-        private static void AdjustControls(Control.ControlCollection controls)
+        private void AdjustControls(Control.ControlCollection controls)
         {
-            /*foreach (Control control in controls)
+            foreach (Control control in controls)
             {
                 AdjustControls(control.Controls);
 
-                var button = control as RButton;
-                if (button != null)
+                if (control is MyListBox listBox)
                 {
-                    button.BackColor = button.Secondary ? RForm.buttonSecond : RForm.buttonMain;
-                    button.ForeColor = RForm.foreMain;
+                    listBox.BackColor = formBack;
+                    listBox.ForeColor = foreMain;
+                }
+
+                if (control is MyListItem listItem)
+                {
+                    listItem.BackColor = formBack;
+                    listItem.ForeColor = foreMain;
+                }
+
+                if (control is MyToolBar toolBar)
+                {
+                    toolBar.BackColor = buttonMain;
+                    toolBar.ForeColor = foreMain;
+                }
+
+                if (control is MySideBar sideBar)
+                {
+                    sideBar.BackColor = buttonSecond;// More darker than buttonMain
+                    sideBar.ForeColor = foreMain;
+                }
+
+                if (control is MyStatusBar statusBar)
+                {
+                    statusBar.BackColor = buttonMain;
+                    statusBar.ForeColor = foreMain;
+                }
+
+                if (control is RComboBox combo)
+                {
+                    combo.BackColor = buttonMain;
+                    combo.ForeColor = foreMain;
+                    combo.BorderColor = buttonMain;
+                    combo.ButtonColor = buttonMain;
+                    combo.ArrowColor = foreMain;
+                }
+
+
+
+                if (control is Button button)
+                {
+                    button.BackColor = buttonMain;
+                    button.ForeColor = foreMain;
 
                     button.FlatStyle = FlatStyle.Flat;
-                    button.FlatAppearance.BorderColor = RForm.borderMain;
+                    button.FlatAppearance.BorderColor = borderMain;
 
-                    if (button.Image is not null)
+                    if (button.Image != null)
+                    {
                         button.Image = AdjustImage(button.Image);
+                    }
                 }
 
-                var pictureBox = control as PictureBox;
-                if (pictureBox != null && pictureBox.BackgroundImage is not null)
+                if (control is PictureBox pictureBox && pictureBox.BackgroundImage != null)
+                {
                     pictureBox.BackgroundImage = AdjustImage(pictureBox.BackgroundImage);
-
-
-                var combo = control as RComboBox;
-                if (combo != null)
-                {
-                    combo.BackColor = RForm.buttonMain;
-                    combo.ForeColor = RForm.foreMain;
-                    combo.BorderColor = RForm.buttonMain;
-                    combo.ButtonColor = RForm.buttonMain;
-                    combo.ArrowColor = RForm.foreMain;
-                }
-                var numbericUpDown = control as NumericUpDown;
-                if (numbericUpDown is not null)
-                {
-                    numbericUpDown.ForeColor = RForm.foreMain;
-                    numbericUpDown.BackColor = RForm.buttonMain;
                 }
 
-                var gb = control as GroupBox;
-                if (gb != null)
+                if (control is NumericUpDown numbericUpDown)
                 {
-                    gb.ForeColor = RForm.foreMain;
+                    numbericUpDown.ForeColor = foreMain;
+                    numbericUpDown.BackColor = buttonMain;
                 }
 
-                var pn = control as Panel;
-                if (pn != null && pn.Name.Contains("Header"))
+                if (control is GroupBox gb)
                 {
-                    pn.BackColor = RForm.buttonSecond;
+                    gb.ForeColor = foreMain;
                 }
 
-                var sl = control as Slider;
-                if (sl != null)
+                if (control is Panel pn && pn.Name.Contains("Header"))
                 {
-                    sl.borderColor = RForm.buttonMain;
+                    pn.BackColor = buttonSecond;
                 }
+            }
+        }
 
-                var chk = control as CheckBox;
-                if (chk != null && chk.BackColor != RForm.formBack)
+        private Image AdjustImage(Image image)
+        {
+            var pic = new Bitmap(image);
+
+            if (_invert)
+            {
+                for (int y = 0; (y <= (pic.Height - 1)); y++)
                 {
-                    chk.BackColor = RForm.buttonSecond;
+                    for (int x = 0; (x <= (pic.Width - 1)); x++)
+                    {
+                        Color col = pic.GetPixel(x, y);
+                        pic.SetPixel(x, y, Color.FromArgb(col.A, 255 - col.R, 255 - col.G, 255 - col.B));
+                    }
                 }
+            }
 
-                var chart = control as Chart;
-                if (chart != null)
-                {
-                    chart.BackColor = RForm.chartMain;
-                    chart.ChartAreas[0].BackColor = RForm.chartMain;
-
-                    chart.ChartAreas[0].AxisX.TitleForeColor = RForm.foreMain;
-                    chart.ChartAreas[0].AxisY.TitleForeColor = RForm.foreMain;
-
-                    chart.ChartAreas[0].AxisX.LabelStyle.ForeColor = RForm.foreMain;
-                    chart.ChartAreas[0].AxisY.LabelStyle.ForeColor = RForm.foreMain;
-
-                    chart.ChartAreas[0].AxisX.MajorTickMark.LineColor = RForm.foreMain;
-                    chart.ChartAreas[0].AxisY.MajorTickMark.LineColor = RForm.foreMain;
-
-                    chart.ChartAreas[0].AxisX.MajorGrid.LineColor = RForm.chartGrid;
-                    chart.ChartAreas[0].AxisY.MajorGrid.LineColor = RForm.chartGrid;
-                    chart.ChartAreas[0].AxisX.LineColor = RForm.chartGrid;
-                    chart.ChartAreas[0].AxisY.LineColor = RForm.chartGrid;
-
-                    chart.Titles[0].ForeColor = RForm.foreMain;
-
-                }
-
-            }*/
+            return pic;
         }
 
         #endregion

@@ -1039,7 +1039,7 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            readonly ComboBox cmbDic = new ComboBox
+            readonly RComboBox cmbDic = new RComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Width = 180.DpiZoom()
