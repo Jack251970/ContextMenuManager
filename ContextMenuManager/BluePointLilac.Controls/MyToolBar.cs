@@ -7,6 +7,10 @@ namespace BluePointLilac.Controls
 {
     public sealed class MyToolBar : FlowLayoutPanel
     {
+        public const float SelctedOpacity = 0.3F;
+        public const float HoveredOpacity = 0.2F;
+        public const float UnSelctedOpacity = 0;
+
         public MyToolBar()
         {
             Height = 80.DpiZoom();
@@ -25,13 +29,13 @@ namespace BluePointLilac.Controls
                 if(selectedButton == value) return;
                 if(selectedButton != null)
                 {
-                    selectedButton.Opacity = 0;
+                    selectedButton.Opacity = UnSelctedOpacity;
                     selectedButton.Cursor = Cursors.Hand;
                 }
                 selectedButton = value;
                 if(selectedButton != null)
                 {
-                    selectedButton.Opacity = 0.4F;
+                    selectedButton.Opacity = SelctedOpacity;
                     selectedButton.Cursor = Cursors.Default;
                 }
                 SelectedButtonChanged?.Invoke(this, null);
@@ -65,11 +69,11 @@ namespace BluePointLilac.Controls
             };
             button.MouseEnter += (sender, e) =>
             {
-                if(button != SelectedButton) button.Opacity = 0.2F;
+                if(button != SelectedButton) button.Opacity = HoveredOpacity;
             };
             button.MouseLeave += (sender, e) =>
             {
-                if(button != SelectedButton) button.Opacity = 0;
+                if(button != SelectedButton) button.Opacity = UnSelctedOpacity;
             };
             ResumeLayout();
         }

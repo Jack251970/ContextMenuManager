@@ -424,11 +424,11 @@ namespace ContextMenuManager
                 ContextMenuStrip cms = new ContextMenuStrip();
                 cms.MouseEnter += (sender, e) =>
                 {
-                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = 0.2F;
+                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.HoveredOpacity;
                 };
                 cms.Closed += (sender, e) =>
                 {
-                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = 0;
+                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.UnSelctedOpacity;
                 };
                 item.Key.MouseDown += (sender, e) =>
                 {
