@@ -225,11 +225,6 @@ namespace BluePointLilac.Controls
                 if (control is MyToolBarButton toolBarButton)
                 {
                     toolBarButton.ForeColor = FormFore;
-                    if (toolBarButton.Image != null)
-                    {
-                        // Original image is for dark theme, so invert it for light theme
-                        toolBarButton.Image = AdjustImage(toolBarButton.Image, !darkTheme);
-                    }
                 }
 
                 if (control is MySideBar sideBar)
@@ -252,46 +247,7 @@ namespace BluePointLilac.Controls
                     combo.ButtonColor = ButtonMain;
                     combo.ArrowColor = FormFore;
                 }
-
-                if (control is Button button)
-                {
-                    button.BackColor = ButtonMain;
-                    button.ForeColor = FormFore;
-
-                    button.FlatStyle = FlatStyle.Flat;
-                    button.FlatAppearance.BorderColor = FormBorder;
-                }
-
-                if (control is NumericUpDown numbericUpDown)
-                {
-                    numbericUpDown.ForeColor = FormFore;
-                    numbericUpDown.BackColor = ButtonMain;
-                }
-
-                if (control is GroupBox gb)
-                {
-                    gb.ForeColor = FormFore;
-                }
             }
-        }
-
-        private Image AdjustImage(Image image, bool invert)
-        {
-            var pic = new Bitmap(image);
-
-            if (invert)
-            {
-                for (int y = 0; y <= (pic.Height - 1); y++)
-                {
-                    for (int x = 0; x <= (pic.Width - 1); x++)
-                    {
-                        Color col = pic.GetPixel(x, y);
-                        pic.SetPixel(x, y, Color.FromArgb(col.A, 255 - col.R, 255 - col.G, 255 - col.B));
-                    }
-                }
-            }
-
-            return pic;
         }
 
         #endregion
