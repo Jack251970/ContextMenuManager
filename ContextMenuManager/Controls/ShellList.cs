@@ -34,11 +34,11 @@ namespace ContextMenuManager.Controls
         public const string SYSFILEASSPATH = @"HKEY_CLASSES_ROOT\SystemFileAssociations";//系统扩展名注册表父项路径
         private const string LASTKEYPATH = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit";//上次打开的注册表项路径记录
 
-        private static readonly List<string> DirectoryTypes = new List<string>
+        public static readonly List<string> DirectoryTypes = new List<string>
         {
             "Document", "Image", "Video", "Audio"
         };
-        private static readonly List<string> PerceivedTypes = new List<string>
+        public static readonly List<string> PerceivedTypes = new List<string>
         {
             null, "Text", "Document", "Image",
             "Video", "Audio", "Compressed", "System"

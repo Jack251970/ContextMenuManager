@@ -18,18 +18,26 @@ namespace ContextMenuManager.Controls
         {
             CanEdit = true;
             Title = AppString.Dialog.SelectExtension;
-            List<string> items = new List<string>();
-            using(var key = RegistryEx.GetRegistryKey(FileExtension.FILEEXTSPATH))
+            Items = FileExtensionItems.ToArray();
+        }
+
+        public static List<string> FileExtensionItems
+        {
+            get
             {
-                if(key != null)
+                List<string> items = new List<string>();
+                using (var key = RegistryEx.GetRegistryKey(FileExtension.FILEEXTSPATH))
                 {
-                    foreach(string keyName in key.GetSubKeyNames())
+                    if (key != null)
                     {
-                        if(keyName.StartsWith(".")) items.Add(keyName.Substring(1));
+                        foreach (string keyName in key.GetSubKeyNames())
+                        {
+                            if (keyName.StartsWith(".")) items.Add(keyName.Substring(1));
+                        }
                     }
                 }
+                return items;
             }
-            Items = items.ToArray();
         }
 
         protected override bool RunDialog(IntPtr hwndOwner)
