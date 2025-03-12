@@ -21,7 +21,7 @@ namespace ContextMenuManager.Controls
             {
                 using (RestoreListForm frm = new RestoreListForm())
                 {
-                    frm.ShowRestoreList(RestoreData);
+                    frm.ShowDonateList(RestoreData);
                     frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
                     frm.Top = mainForm.Top + 150.DpiZoom();
                     frm.TopMost = AppConfig.TopMost;
@@ -81,7 +81,7 @@ namespace ContextMenuManager.Controls
                 dgvRestore.Height = ClientSize.Height - 3 * a - lblRestore.Height;
             }
 
-            public void ShowRestoreList(List<RestoreChangedItem> restoreList)
+            public void ShowDonateList(List<RestoreChangedItem> restoreList)
             {
                 string[] heads = new[] { AppString.Dialog.ItemLocation, AppString.Dialog.RestoredValue };
                 dgvRestore.ColumnCount = heads.Length;
