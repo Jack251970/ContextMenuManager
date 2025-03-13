@@ -69,6 +69,33 @@ namespace BluePointLilac.Controls
             return changed;
         }
 
+        protected void ApplyDarkModeToDataGridView(DataGridView dgv)
+        {
+            // Background color
+            dgv.BackgroundColor = MyMainForm.FormBack;
+            dgv.DefaultCellStyle.BackColor = MyMainForm.FormBack;
+            dgv.DefaultCellStyle.ForeColor = MyMainForm.FormFore;
+
+            // Grid color
+            dgv.GridColor = Color.DimGray;
+
+            // Header style
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = MyMainForm.FormBack;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = MyMainForm.FormFore;
+            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = MyMainForm.MainColor;
+            dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = MyMainForm.FormFore;
+            dgv.EnableHeadersVisualStyles = false;  // Ensure custom header styles apply
+
+            // Row styles
+            dgv.RowsDefaultCellStyle.BackColor = MyMainForm.FormBack;
+            dgv.RowsDefaultCellStyle.ForeColor = MyMainForm.FormFore;
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = MyMainForm.FormBack;
+
+            // Selection color
+            dgv.DefaultCellStyle.SelectionBackColor = MyMainForm.MainColor;
+            dgv.DefaultCellStyle.SelectionForeColor = MyMainForm.FormFore;
+        }
+
         private void Adjust()
         {
             BackColor = FormBack;

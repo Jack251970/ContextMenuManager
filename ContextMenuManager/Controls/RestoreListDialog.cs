@@ -50,6 +50,7 @@ namespace ContextMenuManager.Controls
                 lblRestore.Resize += (sender, e) => OnResize(null);
                 this.AddEscapeButton();
                 InitTheme();
+                ApplyDarkModeToDataGridView(dgvRestore);
             }
 
             readonly DataGridView dgvRestore = new DataGridView

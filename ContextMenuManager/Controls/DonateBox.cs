@@ -161,6 +161,7 @@ namespace ContextMenuManager.Controls
                     lblDonate.Resize += (sender, e) => OnResize(null);
                     this.AddEscapeButton();
                     InitTheme();
+                    ApplyDarkModeToDataGridView(dgvDonate);
                 }
 
                 readonly DataGridView dgvDonate = new DataGridView
