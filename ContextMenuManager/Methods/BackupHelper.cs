@@ -28,14 +28,15 @@ namespace ContextMenuManager.Methods
         WinX,
         // 文件类型——第一板块
         LnkFile, UwpLnk, ExeFile, UnknownType,
-        // 文件类型——第二板块（不予备份）
+        // 文件类型——第二板块
+        CustomExtension, PerceivedType, DirectoryType,
         // 其他规则——第一板块
         EnhanceMenu, DetailedEdit,
         // 其他规则——第二板块
         DragDrop, PublicReferences, InternetExplorer,
         // 其他规则——第三板块（不予备份）
         // 不予备份的场景
-        CustomExtension, PerceivedType, DirectoryType, MenuAnalysis, CustomRegPath, CustomExtensionPerceivedType,
+        MenuAnalysis, CustomRegPath, CustomExtensionPerceivedType,
     };
 
     // 备份项目类型（新增备份类别处3）
@@ -84,7 +85,8 @@ namespace ContextMenuManager.Methods
             AppString.SideBar.WinX,
             // 文件类型——第一板块
             AppString.SideBar.LnkFile, AppString.SideBar.UwpLnk, AppString.SideBar.ExeFile, AppString.SideBar.UnknownType,
-            // 文件类型——第二板块（不予备份）
+            // 文件类型——第二板块
+            AppString.SideBar.CustomExtension, AppString.SideBar.PerceivedType, AppString.SideBar.DirectoryType,
             // 其他规则——第一板块
             AppString.SideBar.EnhanceMenu, AppString.SideBar.DetailedEdit,
             // 其他规则——第二板块
@@ -105,7 +107,8 @@ namespace ContextMenuManager.Methods
         public static string[] TypeBackupScenesText = new string[] {
                 // 文件类型——第一板块
                 AppString.SideBar.LnkFile, AppString.SideBar.UwpLnk, AppString.SideBar.ExeFile, AppString.SideBar.UnknownType,
-                // 文件类型——第二板块（不予备份）
+                // 文件类型——第二板块
+                AppString.SideBar.CustomExtension, AppString.SideBar.PerceivedType, AppString.SideBar.DirectoryType,
             };
         public static string[] RuleBackupScenesText = new string[] {
                 // 其他规则——第一板块
@@ -182,6 +185,7 @@ namespace ContextMenuManager.Methods
 
         private bool backup;                // 目前备份还是恢复
         private Scenes currentScene;        // 目前处理场景
+        private string currentExtension;    // 二级菜单项目
         private BackupMode backupMode;      // 目前备份模式
         private RestoreMode restoreMode;    // 目前恢复模式
 
@@ -526,6 +530,7 @@ namespace ContextMenuManager.Methods
         private void GetShellListItems()
         {
             string scenePath = null;
+            currentExtension = null;
             switch (currentScene)
             {
                 case Scenes.File:
@@ -552,6 +557,41 @@ namespace ContextMenuManager.Methods
                     //Vista系统没有这一项
                     if (WinOsVersion.Current == WinOsVersion.Vista) return;
                     scenePath = MENUPATH_LIBRARY; break;
+                case Scenes.CustomExtension:
+                    foreach (var fileExtension in FileExtensionDialog.FileExtensionItems)
+                    {
+                        // From: FileExtensionDialog.Extension
+                        var extensionProperty = fileExtension.Trim();
+                        // From: FileExtensionDialog.RunDialog
+                        string extension = ObjectPath.RemoveIllegalChars(extensionProperty);
+                        int index = extension.LastIndexOf('.');
+                        if (index >= 0) extensionProperty = extension.Substring(index);
+                        else extensionProperty = $".{extension}";
+                        // From: ShellList.LoadItems
+                        bool isLnk = extensionProperty?.ToLower() == ".lnk";
+                        if (isLnk) scenePath = GetOpenModePath(".lnk");
+                        else scenePath = GetSysAssExtPath(extensionProperty);
+                        currentExtension = extensionProperty;
+                        GetShellListItems(scenePath);
+                    }
+                    return;
+                case Scenes.PerceivedType:
+                    foreach (var perceivedType in PerceivedTypes)
+                    {
+                        scenePath = GetSysAssExtPath(perceivedType);
+                        currentExtension = perceivedType;
+                        GetShellListItems(scenePath);
+                    }
+                    return;
+                case Scenes.DirectoryType:
+                    foreach (var directoryType in DirectoryTypes)
+                    {
+                        if (directoryType == null) scenePath = null;
+                        else scenePath = GetSysAssExtPath($"Directory.{directoryType}");
+                        currentExtension = directoryType;
+                        GetShellListItems(scenePath);
+                    }
+                    return;
                 case Scenes.LnkFile:
                     scenePath = GetOpenModePath(".lnk"); break;
                 case Scenes.UwpLnk:
@@ -588,12 +628,7 @@ namespace ContextMenuManager.Methods
             int i = 0;
 #endif
             // 获取ShellItem与ShellExItem类的备份项目
-            GetBackupItems(scenePath);
-            if (WinOsVersion.Current >= WinOsVersion.Win10)
-            {
-                // 获取UwpModeItem类的备份项目
-                GetBackupUwpModeItem();
-            }
+            GetShellListItems(scenePath);
             switch (currentScene)
             {
                 case Scenes.Background:
@@ -678,6 +713,23 @@ namespace ContextMenuManager.Methods
             }
         }
 
+        private void GetShellListItems(string scenePath)
+        {
+            // 获取ShellItem与ShellExItem类的备份项目
+            GetBackupItems(scenePath);
+            if (WinOsVersion.Current >= WinOsVersion.Win10)
+            {
+                // 获取UwpModeItem类的备份项目
+                GetBackupUwpModeItem();
+            }
+            // From: ShellList.LoadItems
+            // 自选文件扩展名后加载对应的右键菜单
+            if (currentScene == Scenes.CustomExtension && currentExtension != null)
+            {
+                GetBackupItems(GetOpenModePath(currentExtension));
+            }
+        }
+
         private void GetBackupItems(string scenePath)
         {
             if (scenePath == null) return;
@@ -708,7 +760,15 @@ namespace ContextMenuManager.Methods
                     ShellItem item = new ShellItem(regPath);
                     string itemName = item.ItemText;
                     bool ifItemInMenu = item.ItemVisible;
-                    BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellItem, ifItemInMenu, currentScene);
+                    if (currentScene == Scenes.CustomExtension || currentScene == Scenes.PerceivedType || currentScene == Scenes.DirectoryType)
+                    {
+                        // 加入Extension类别来区分这几个板块的不同备份项目
+                        BackupRestoreItem(item, itemName, $"{currentExtension}{keyName}", BackupItemType.ShellItem, ifItemInMenu, currentScene);
+                    }
+                    else
+                    {
+                        BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellItem, ifItemInMenu, currentScene);
+                    }
 #if DEBUG
                     i++;
                     if (AppConfig.EnableLog)
@@ -771,7 +831,16 @@ namespace ContextMenuManager.Methods
                             item.FoldGroupItem = groupItem;
                             item.Indent();
                         }
-                        BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
+                        if (currentScene == Scenes.CustomExtension || currentScene == Scenes.PerceivedType || currentScene == Scenes.DirectoryType)
+                        {
+                            // 加入Extension类别来区分这几个板块的不同备份项目
+                            BackupRestoreItem(item, itemName, $"{currentExtension}{keyName}", BackupItemType.ShellExItem, ifItemInMenu, currentScene);
+                        }
+                        else
+                        {
+                            BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
+                        }
+                        
                         names.Add(keyName);
 #if DEBUG
                         i++;
