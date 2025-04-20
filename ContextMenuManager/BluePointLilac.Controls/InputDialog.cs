@@ -22,8 +22,7 @@ namespace BluePointLilac.Controls
                 frm.Text = Title;
                 frm.InputedText = Text;
                 frm.Size = Size;
-                Form owner = (Form)Control.FromHandle(hwndOwner);
-                if(owner != null) frm.TopMost = owner.TopMost;
+                if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = owner.TopMost;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 Text = flag ? frm.InputedText : null;
                 return flag;

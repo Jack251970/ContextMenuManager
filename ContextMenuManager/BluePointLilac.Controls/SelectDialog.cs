@@ -24,8 +24,7 @@ namespace BluePointLilac.Controls
                 if(Selected != null) frm.Selected = Selected;
                 else frm.SelectedIndex = SelectedIndex;
                 frm.CanEdit = CanEdit;
-                Form owner = (Form)Control.FromHandle(hwndOwner);
-                if(owner != null) frm.TopMost = owner.TopMost;
+                if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = owner.TopMost;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 if(flag)
                 {
