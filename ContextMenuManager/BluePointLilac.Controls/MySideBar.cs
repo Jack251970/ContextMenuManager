@@ -11,15 +11,16 @@ namespace BluePointLilac.Controls
         {
             Dock = DockStyle.Left;
             ItemHeight = 30.DpiZoom();
-            Font = SystemFonts.MenuFont;
-            Font = new Font(Font.FontFamily, Font.Size + 1F);
+            Font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.Size + 1F);
             ForeColor = MyMainForm.FormFore;
             BackColor = MyMainForm.ButtonSecond;
             BackgroundImageLayout = ImageLayout.None;
-            Controls.AddRange(new Control[] { LblSeparator, PnlSelected, PnlHovered });
-            PnlHovered.Paint += PaintItem;
+            
+            Controls.AddRange(new Control[] { LblSeparator, PnlSelected });
             PnlSelected.Paint += PaintItem;
             SelectedIndex = -1;
+
+            animationTimer.Tick += AnimationTick;
         }
 
         private string[] itemNames;
@@ -35,7 +36,7 @@ namespace BluePointLilac.Controls
                     Array.ForEach(value, str => maxWidth = Math.Max(maxWidth, GetItemWidth(str)));
                     Width = maxWidth + 2 * HorizontalSpace;
                 }
-                PnlHovered.Width = PnlSelected.Width = Width;
+                PnlSelected.Width = Width;
                 PaintItems();
                 SelectedIndex = -1;
             }
@@ -45,49 +46,26 @@ namespace BluePointLilac.Controls
         public int ItemHeight
         {
             get => itemHeight;
-            set => PnlHovered.Height = PnlSelected.Height = itemHeight = value;
-        }//项上下边缘距离
-        public int TopSpace { get; set; } = 2.DpiZoom();//第一项顶部与上边缘的距离
-        public int HorizontalSpace { get; set; } = 20.DpiZoom();//项文字与项左右边缘距离
-        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;//项文字与项上下边缘距离
-        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;//项文字高度
-        public bool IsFixedWidth { get; set; } = true;//是否固定宽度
+            set => PnlSelected.Height = itemHeight = value;
+        }
+        public int TopSpace { get; set; } = 2.DpiZoom();
+        public int HorizontalSpace { get; set; } = 20.DpiZoom();
+        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;
+        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;
+        public bool IsFixedWidth { get; set; } = true;
 
         public Color SeparatorColor
         {
             get => LblSeparator.BackColor;
             set => LblSeparator.BackColor = value;
-        }//分隔线颜色
-        public Color SelectedBackColor
-        {
-            get => PnlSelected.BackColor;
-            set => PnlSelected.BackColor = value;
         }
-        public Color HoveredBackColor
-        {
-            get => PnlHovered.BackColor;
-            set => PnlHovered.BackColor = value;
-        }
-        public Color SelectedForeColor
-        {
-            get => PnlSelected.ForeColor;
-            set => PnlSelected.ForeColor = value;
-        }
-        public Color HoveredForeColor
-        {
-            get => PnlHovered.ForeColor;
-            set => PnlHovered.ForeColor = value;
-        }
+        public Color SelectedBackColor { get; set; } = MyMainForm.MainColor;
+        public Color HoveredBackColor { get; set; } = MyMainForm.ButtonSecond;
+        public Color SelectedForeColor { get; set; } = MyMainForm.FormFore;
 
         readonly Panel PnlSelected = new Panel
         {
-            BackColor = MyMainForm.MainColor,//侧边栏项目选中颜色
-            ForeColor = MyMainForm.FormFore,
-            Enabled = false
-        };
-        readonly Panel PnlHovered = new Panel
-        {
-            BackColor = MyMainForm.ButtonSecond,
+            BackColor = MyMainForm.MainColor,
             ForeColor = MyMainForm.FormFore,
             Enabled = false
         };
@@ -98,13 +76,11 @@ namespace BluePointLilac.Controls
             Width = 1,
         };
 
-        /// <summary>获取项目宽度</summary>
         public int GetItemWidth(string str)
         {
             return TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
         }
 
-        /// <summary>绘制所有项目作为底图</summary>
         private void PaintItems()
         {
             BackgroundImage = new Bitmap(Width, ItemHeight * ItemNames.Length);
@@ -112,8 +88,18 @@ namespace BluePointLilac.Controls
             {
                 g.Clear(BackColor);
                 if(itemNames == null) return;
+                
                 for(int i = 0; i < itemNames.Length; i++)
                 {
+                    if(i == HoveredIndex)
+                    {
+                        Rectangle rect = new Rectangle(0, 
+                            TopSpace + i * ItemHeight, 
+                            Width, 
+                            ItemHeight);
+                        g.FillRectangle(new SolidBrush(HoveredBackColor), rect);
+                    }
+
                     if(itemNames[i] != null)
                     {
                         g.DrawString(itemNames[i], Font, new SolidBrush(ForeColor),
@@ -130,60 +116,72 @@ namespace BluePointLilac.Controls
             }
         }
 
-        /// <summary>刷新选中的项目</summary>
-        private void RefreshItem(Panel panel, int index)
+        private Timer animationTimer = new Timer { Interval = 15 };
+        private int startTop;
+        private int targetTop;
+        private float animationProgress;
+
+        private void RefreshItem(int index)
         {
-            panel.CreateGraphics().Clear(panel.BackColor);
-            panel.Top = index < 0 ? -ItemHeight : (TopSpace + index * ItemHeight);
-            panel.Text = index < 0 ? null : ItemNames[index];
-            panel.Refresh();
+            if(animationTimer.Enabled) animationTimer.Stop();
+
+            startTop = PnlSelected.Top;
+            targetTop = index < 0 ? -ItemHeight : (TopSpace + index * ItemHeight);
+            PnlSelected.Text = index < 0 ? null : ItemNames[index];
+            
+            animationProgress = 0F;
+            animationTimer.Start();
         }
 
-        /// <summary>绘制选中的项目</summary>
+        private void AnimationTick(object sender, EventArgs e)
+        {
+            animationProgress += 0.1F;
+            PnlSelected.Top = (int)Lerp(startTop, targetTop, EaseOutQuad(animationProgress));
+
+            if(animationProgress >= 1F)
+            {
+                animationTimer.Stop();
+                PnlSelected.Top = targetTop;
+                PnlSelected.Refresh();
+            }
+        }
+
         private void PaintItem(object sender, PaintEventArgs e)
         {
-            Control ctr = (Control)sender;
-            e.Graphics.DrawString(ctr.Text, Font,
-                new SolidBrush(ctr.ForeColor),
-                new PointF(HorizontalSpace, VerticalSpace));
-        }
-
-        /// <summary>显示选中的项目</summary>
-        private void ShowItem(Panel panel, MouseEventArgs e)
-        {
-            if(itemNames == null) return;
-            int index = (e.Y - TopSpace) / ItemHeight;
-            if(index >= itemNames.Length || index < 0 || string.IsNullOrEmpty(itemNames[index]) || index == SelectedIndex)
+            var panel = (Panel)sender;
+            if(panel == PnlSelected)
             {
-                Cursor = Cursors.Default;
-                HoveredIndex = SelectedIndex;
-            }
-            else
-            {
-                Cursor = Cursors.Hand;
-                if(panel == PnlSelected) SelectedIndex = index;
-                else HoveredIndex = index;
+                e.Graphics.FillRectangle(new SolidBrush(SelectedBackColor), e.ClipRectangle);
+                e.Graphics.DrawString(panel.Text, Font,
+                    new SolidBrush(SelectedForeColor),
+                    new PointF(HorizontalSpace, VerticalSpace));
             }
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            ShowItem(PnlHovered, e);
+            int index = CalculateIndex(e);
+            HoveredIndex = IsValidIndex(index) ? index : -1;
         }
+
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            if(e.Button == MouseButtons.Left) ShowItem(PnlSelected, e);
+            if(e.Button == MouseButtons.Left)
+            {
+                int index = CalculateIndex(e);
+                if(IsValidIndex(index)) SelectedIndex = index;
+            }
         }
+
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
-            HoveredIndex = SelectedIndex;
+            HoveredIndex = -1;
         }
 
         public event EventHandler SelectIndexChanged;
-
         public event EventHandler HoverIndexChanged;
 
         private int selectIndex;
@@ -193,8 +191,7 @@ namespace BluePointLilac.Controls
             set
             {
                 if(selectIndex == value) return;
-                HoveredIndex = value;
-                RefreshItem(PnlSelected, value);
+                RefreshItem(value);
                 selectIndex = value;
                 SelectIndexChanged?.Invoke(this, null);
             }
@@ -207,10 +204,17 @@ namespace BluePointLilac.Controls
             set
             {
                 if(hoverIndex == value) return;
-                RefreshItem(PnlHovered, value);
                 hoverIndex = value;
+                Invalidate(); // 触发重绘
                 HoverIndexChanged?.Invoke(this, null);
             }
         }
+
+        private int CalculateIndex(MouseEventArgs e) => (e.Y - TopSpace) / ItemHeight;
+        private bool IsValidIndex(int index) => 
+            index >= 0 && index < itemNames.Length && !string.IsNullOrEmpty(itemNames[index]);
+
+        private float Lerp(float a, float b, float t) => a + (b - a) * t;
+        private float EaseOutQuad(float x) => x < 0.5 ? 2 * x * x : 1 - (float)Math.Pow(-2 * x + 2, 2) / 2;
     }
 }
