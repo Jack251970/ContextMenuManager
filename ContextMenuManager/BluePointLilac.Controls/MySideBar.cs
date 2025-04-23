@@ -1,6 +1,8 @@
 ﻿using BluePointLilac.Methods;
 using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -9,6 +11,11 @@ namespace BluePointLilac.Controls
     {
         public MySideBar()
         {
+            // 双缓冲设置
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | 
+                     ControlStyles.AllPaintingInWmPaint | 
+                     ControlStyles.UserPaint, true);
+            
             Dock = DockStyle.Left;
             ItemHeight = 30.DpiZoom();
             Font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.Size + 1F);
@@ -20,8 +27,25 @@ namespace BluePointLilac.Controls
             PnlSelected.Paint += PaintItem;
             SelectedIndex = -1;
 
+            animationTimer.Interval = 1; // 最小间隔1ms
             animationTimer.Tick += AnimationTick;
         }
+
+        // 新增深色模式兼容属性
+        public bool IsDarkMode { get; set; } = false; // 是否启用深色模式
+        private Color _gradientColor1 = Color.FromArgb(240, 240, 240); // 浅灰
+        private Color _gradientColor2 = Color.FromArgb(200, 200, 200); // 深灰
+        public Color GradientColor1
+        {
+            get => IsDarkMode ? Darken(_gradientColor1) : _gradientColor1;
+            set => _gradientColor1 = value;
+        }
+        public Color GradientColor2
+        {
+            get => IsDarkMode ? Darken(_gradientColor2) : _gradientColor2;
+            set => _gradientColor2 = value;
+        }
+        public float GradientAngle { get; set; } = 90F; // 渐变角度
 
         private string[] itemNames;
         public string[] ItemNames
@@ -59,22 +83,32 @@ namespace BluePointLilac.Controls
             get => LblSeparator.BackColor;
             set => LblSeparator.BackColor = value;
         }
-        public Color SelectedBackColor { get; set; } = MyMainForm.MainColor;
-        public Color HoveredBackColor { get; set; } = MyMainForm.ButtonSecond;
-        public Color SelectedForeColor { get; set; } = MyMainForm.FormFore;
+        public Color SelectedBackColor { get; set; } = Color.FromArgb(180, 180, 180); // 灰色选中背景
+        public Color HoveredBackColor { get; set; } = Color.FromArgb(220, 220, 220); // 灰色悬停背景
+        public Color SelectedForeColor { get; set; } = Color.Black; // 默认文字颜色
+        public Color HoveredForeColor { get; set; } = Color.Black; // 默认悬停文字颜色
 
         readonly Panel PnlSelected = new Panel
         {
-            BackColor = MyMainForm.MainColor,
-            ForeColor = MyMainForm.FormFore,
+            BackColor = Color.FromArgb(180, 180, 180),
+            ForeColor = Color.Black,
             Enabled = false
         };
         readonly Label LblSeparator = new Label
         {
-            BackColor = MyMainForm.FormFore,
+            BackColor = Color.DarkGray, // 分隔线颜色适配深色模式
             Dock = DockStyle.Right,
             Width = 1,
         };
+
+        // 深色模式颜色调整方法
+        private Color Darken(Color color)
+        {
+            int r = Math.Max(0, color.R - 50);
+            int g = Math.Max(0, color.G - 50);
+            int b = Math.Max(0, color.B - 50);
+            return Color.FromArgb(r, g, b);
+        }
 
         public int GetItemWidth(string str)
         {
@@ -85,21 +119,17 @@ namespace BluePointLilac.Controls
         {
             BackgroundImage = new Bitmap(Width, ItemHeight * ItemNames.Length);
             using(Graphics g = Graphics.FromImage(BackgroundImage))
+            using(var gradientBrush = new LinearGradientBrush(
+                new Rectangle(0, 0, Width, Height),
+                GradientColor1,
+                GradientColor2,
+                GradientAngle))
             {
-                g.Clear(BackColor);
-                if(itemNames == null) return;
+                g.FillRectangle(gradientBrush, new Rectangle(0, 0, Width, Height));
                 
+                if(itemNames == null) return;
                 for(int i = 0; i < itemNames.Length; i++)
                 {
-                    if(i == HoveredIndex)
-                    {
-                        Rectangle rect = new Rectangle(0, 
-                            TopSpace + i * ItemHeight, 
-                            Width, 
-                            ItemHeight);
-                        g.FillRectangle(new SolidBrush(HoveredBackColor), rect);
-                    }
-
                     if(itemNames[i] != null)
                     {
                         g.DrawString(itemNames[i], Font, new SolidBrush(ForeColor),
@@ -116,35 +146,88 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private Timer animationTimer = new Timer { Interval = 15 };
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            
+            // 绘制悬停渐变效果
+            if(HoveredIndex >= 0 && HoveredIndex < itemNames.Length)
+            {
+                using(var hoverBrush = new LinearGradientBrush(
+                    GetItemRect(HoveredIndex),
+                    Color.FromArgb(50, HoveredBackColor.R, HoveredBackColor.G, HoveredBackColor.B),
+                    Color.Transparent,
+                    LinearGradientMode.Vertical))
+                {
+                    e.Graphics.FillRectangle(hoverBrush, GetItemRect(HoveredIndex));
+                }
+                
+                // 绘制文字
+                if(itemNames[HoveredIndex] != null)
+                {
+                    e.Graphics.DrawString(itemNames[HoveredIndex], Font,
+                        new SolidBrush(IsDarkMode ? Color.White : Color.Black), // 深色模式文字颜色
+                        new PointF(HorizontalSpace, 
+                            TopSpace + HoveredIndex * ItemHeight + VerticalSpace));
+                }
+            }
+        }
+
+        private Timer animationTimer = new Timer { Interval = 1 }; // 1ms触发间隔
+        private Stopwatch frameSw = new Stopwatch();
         private int startTop;
         private int targetTop;
-        private float animationProgress;
+        private const int AnimationDuration = 200; // 动画总时长200ms
 
         private void RefreshItem(int index)
         {
-            if(animationTimer.Enabled) animationTimer.Stop();
+            if (index < -1 || index >= itemNames?.Length) return;
 
+            animationTimer.Stop();
+            frameSw.Restart();
+            
             startTop = PnlSelected.Top;
             targetTop = index < 0 ? -ItemHeight : (TopSpace + index * ItemHeight);
             PnlSelected.Text = index < 0 ? null : ItemNames[index];
             
-            animationProgress = 0F;
-            animationTimer.Start();
+            if (startTop != targetTop)
+            {
+                animationTimer.Start();
+            }
+            else
+            {
+                PnlSelected.Top = targetTop;
+                SelectIndexChanged?.Invoke(this, null);
+            }
         }
 
         private void AnimationTick(object sender, EventArgs e)
         {
-            animationProgress += 0.1F;
-            PnlSelected.Top = (int)Lerp(startTop, targetTop, EaseOutQuad(animationProgress));
+            double elapsed = frameSw.Elapsed.TotalMilliseconds;
+            float progress = Math.Min(1f, (float)(elapsed / AnimationDuration));
 
-            if(animationProgress >= 1F)
+            float t = CubicBezier(progress);
+            int newTop = (int)Math.Round(startTop + (targetTop - startTop) * t);
+            
+            bool shouldUpdate = Math.Abs(PnlSelected.Top - newTop) >= 1 
+                                || progress >= 0.99f;
+
+            if (shouldUpdate)
+            {
+                PnlSelected.Top = newTop;
+                PnlSelected.Invalidate();
+            }
+
+            if (progress >= 1f)
             {
                 animationTimer.Stop();
                 PnlSelected.Top = targetTop;
-                PnlSelected.Refresh();
+                SelectIndexChanged?.Invoke(this, null);
             }
         }
+
+        private float CubicBezier(float t) 
+            => t * t * (3f - 2f * t);
 
         private void PaintItem(object sender, PaintEventArgs e)
         {
@@ -153,7 +236,7 @@ namespace BluePointLilac.Controls
             {
                 e.Graphics.FillRectangle(new SolidBrush(SelectedBackColor), e.ClipRectangle);
                 e.Graphics.DrawString(panel.Text, Font,
-                    new SolidBrush(SelectedForeColor),
+                    new SolidBrush(IsDarkMode ? Color.White : Color.Black), // 深色模式文字颜色
                     new PointF(HorizontalSpace, VerticalSpace));
             }
         }
@@ -193,28 +276,37 @@ namespace BluePointLilac.Controls
                 if(selectIndex == value) return;
                 RefreshItem(value);
                 selectIndex = value;
-                SelectIndexChanged?.Invoke(this, null);
             }
         }
 
-        private int hoverIndex;
+        private int hoverIndex = -1;
         public int HoveredIndex
         {
             get => hoverIndex;
             set
             {
                 if(hoverIndex == value) return;
+                int oldIndex = hoverIndex;
                 hoverIndex = value;
-                Invalidate(); // 触发重绘
+                
+                if(oldIndex != -1)
+                    Invalidate(GetItemRect(oldIndex));
+                if(hoverIndex != -1)
+                    Invalidate(GetItemRect(hoverIndex));
+                    
                 HoverIndexChanged?.Invoke(this, null);
             }
         }
 
+        private Rectangle GetItemRect(int index) => new Rectangle(
+            0, 
+            TopSpace + index * ItemHeight, 
+            Width, 
+            ItemHeight
+        );
+
         private int CalculateIndex(MouseEventArgs e) => (e.Y - TopSpace) / ItemHeight;
         private bool IsValidIndex(int index) => 
             index >= 0 && index < itemNames.Length && !string.IsNullOrEmpty(itemNames[index]);
-
-        private float Lerp(float a, float b, float t) => a + (b - a) * t;
-        private float EaseOutQuad(float x) => x < 0.5 ? 2 * x * x : 1 - (float)Math.Pow(-2 * x + 2, 2) / 2;
     }
 }
