@@ -13,9 +13,29 @@ namespace BluePointLilac.Controls
         private Image originalImage;
         private Image disabledImage; // 缓存禁用图像
 
+        // 加载默认图像
+        private static readonly Image DefaultImage = LoadDefaultImage();
+
+        private static Image LoadDefaultImage()
+        {
+            try
+            {
+                string base64 = "iVBORw0KGgoAAAANSUhEUgAA..."; // 替换为实际 Base64 数据
+                byte[] imageBytes = Convert.FromBase64String(base64);
+                using (var ms = new System.IO.MemoryStream(imageBytes))
+                {
+                    return Image.FromStream(ms);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("默认图像加载失败，请检查 Base64 数据", ex);
+            }
+        }
+
         public PictureButton(Image image)
         {
-            BaseImage = image;
+            BaseImage = image ?? DefaultImage; // 确保传入图像有效
             SizeMode = PictureBoxSizeMode.AutoSize;
             Cursor = Cursors.Hand;
             timer.Tick += Timer_Tick;
@@ -27,11 +47,38 @@ namespace BluePointLilac.Controls
             get => baseImage;
             set
             {
-                baseImage = value;
-                originalImage = value; // 始终保留原始正常图像
-                disabledImage = ToolStripRenderer.CreateDisabledImage(value); // 预生成禁用图像
+                if (value == null)
+                {
+                    Console.WriteLine("BaseImage 设置失败：传入的图像为 null");
+                    value = DefaultImage; // 使用默认图像
+                }
+
+                try
+                {
+                    var test = value.Width; // 验证图像有效性
+                    Console.WriteLine($"BaseImage 设置成功：图像宽度={test}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"BaseImage 设置失败：图像无效或已损坏 - {ex.Message}");
+                    throw new ArgumentException("传入的图像无效或已损坏", nameof(value), ex);
+                }
+
+                baseImage = ConvertToSupportedFormat(value);
+                originalImage = baseImage;
+                disabledImage = ToolStripRenderer.CreateDisabledImage(baseImage);
                 Image = ApplyOpacity(disabledImage, currentOpacity, true);
             }
+        }
+
+        private static Image ConvertToSupportedFormat(Image source)
+        {
+            var bitmap = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(bitmap))
+            {
+                g.DrawImage(source, 0, 0, source.Width, source.Height);
+            }
+            return bitmap;
         }
 
         private void Timer_Tick(object sender, EventArgs e)
