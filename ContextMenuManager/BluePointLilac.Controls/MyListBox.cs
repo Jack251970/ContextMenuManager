@@ -87,7 +87,7 @@ namespace BluePointLilac.Controls
                     fadeTimer.Dispose();
                     return;
                 }
-                item.Opacity += 0.1F;
+                item.Opacity = Math.Min(item.Opacity + 0.1F, 1);
                 item.Invalidate(); // 触发重绘
             };
             fadeTimer.Start();
