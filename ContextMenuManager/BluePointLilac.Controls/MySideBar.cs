@@ -1,381 +1,292 @@
 ﻿using BluePointLilac.Methods;
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using Microsoft.Win32;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
 {
     public sealed class MySideBar : Panel
     {
-        // 构造函数
+        #region 核心字段与动画参数
+        private string[] itemNames;
+        private int itemHeight;
+        private int selectIndex = -1;
+        private int hoverIndex = -1;
+        private int stepCounter = 0; // 动画步数计数器
+        
+        // 动画配置
+        private const int AnimationSteps = 10; // 动画总帧数
+        private Timer animationTimer;
+        private int targetTop = -1;   // 目标位置
+        private int currentTop = -1;  // 当前实际位置
+        
+        // 布局常量
+        public int TopSpace { get; set; } = 2.DpiZoom();
+        public int HorizontalSpace { get; set; } = 20.DpiZoom();
+        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;
+        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;
+        public bool IsFixedWidth { get; set; } = true;
+        #endregion
+
+        #region 控件实例与初始化
+        readonly Panel PnlSelected = new Panel
+        {
+            BackColor = MyMainForm.MainColor,
+            ForeColor = MyMainForm.FormFore,
+            Enabled = false
+        };
+
+        readonly Panel PnlHovered = new Panel
+        {
+            BackColor = MyMainForm.ButtonSecond,
+            ForeColor = MyMainForm.FormFore,
+            Enabled = false
+        };
+
+        readonly Label LblSeparator = new Label
+        {
+            BackColor = MyMainForm.FormFore,
+            Dock = DockStyle.Right,
+            Width = 1,
+        };
+
         public MySideBar()
         {
-            // 双缓冲设置（移除 OptimizedDoubleBuffer）
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-
             Dock = DockStyle.Left;
             ItemHeight = 30.DpiZoom();
             Font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.Size + 1F);
-            ForeColor = SystemColors.ControlText;
-
-            Controls.AddRange(new Control[] { LblSeparator, PnlSelected });
+            ForeColor = MyMainForm.FormFore;
+            BackColor = MyMainForm.ButtonSecond;
+            BackgroundImageLayout = ImageLayout.None;
+            
+            Controls.AddRange(new Control[] { LblSeparator, PnlSelected, PnlHovered });
+            PnlHovered.Paint += PaintItem;
             PnlSelected.Paint += PaintItem;
-            SelectedIndex = -1;
+            
+            animationTimer = new Timer { Interval = 15 };
+            animationTimer.Tick += AnimateSelection;
 
-            animationTimer.Interval = 1; // 最小间隔1ms
-            animationTimer.Tick += AnimationTick;
-
-            // 监听系统主题变化
-            SystemEvents.UserPreferenceChanged += OnSystemThemeChanged;
-
-            // 初始颜色适配
-            UpdateColors();
-        }
-
-        // 深色模式检测（通过注册表）
-        private bool IsDarkMode => IsSystemDarkMode();
-
-        private bool IsSystemDarkMode()
-        {
-            try
+            // 延迟执行默认选中（保证布局完成）
+            var initTimer = new Timer { Interval = 1 };
+            initTimer.Tick += (s, e) =>
             {
-                var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                return key != null && key.GetValue("AppsUseLightTheme") is int value && value == 0; // 0 表示深色模式
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error detecting dark mode: {ex.Message}");
-                return false; // 默认浅色模式
-            }
+                initTimer.Stop();
+                if(ItemNames?.Length > 0) SelectedIndex = 0;
+            };
+            initTimer.Start();
         }
+        #endregion
 
-        // 渐变角度（水平渐变）
-        public float GradientAngle { get; set; } = 0F;
-
-        // 项目名称管理
-        private string[] itemNames;
+        #region 主要属性与资源管理
         public string[] ItemNames
         {
             get => itemNames;
             set
             {
                 itemNames = value;
-                if (value != null && !IsFixedWidth)
+                if(value != null && !IsFixedWidth)
                 {
-                    // 使用传统循环计算最大宽度
                     int maxWidth = 0;
-                    foreach (var str in value)
-                    {
-                        maxWidth = Math.Max(maxWidth, GetItemWidth(str));
-                    }
+                    Array.ForEach(value, str => maxWidth = Math.Max(maxWidth, GetItemWidth(str)));
                     Width = maxWidth + 2 * HorizontalSpace;
                 }
-                PnlSelected.Width = Width;
-                UpdateColors(); // 更新颜色
+                PnlHovered.Width = PnlSelected.Width = Width;
+                PaintItems();
                 SelectedIndex = -1;
+                
+                if(ItemNames?.Length > 0) SelectedIndex = 0;
             }
         }
 
-        // 项目高度管理
-        private int itemHeight;
         public int ItemHeight
         {
             get => itemHeight;
-            set => PnlSelected.Height = itemHeight = value;
+            set => PnlHovered.Height = PnlSelected.Height = itemHeight = value;
         }
 
-        public int TopSpace { get; set; } = 2.DpiZoom();
-        public int HorizontalSpace { get; set; } = 20.DpiZoom();
-        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;
-        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;
-        public bool IsFixedWidth { get; set; } = true;
-
-        // 分隔线颜色
         public Color SeparatorColor
         {
             get => LblSeparator.BackColor;
             set => LblSeparator.BackColor = value;
         }
-
-        // 选中项颜色
-        public Color SelectedBackColor 
-        { 
-            get => IsDarkMode ? Color.FromArgb(48, 102, 193) : SystemColors.Highlight; 
-            set { /* ... */ } 
-        }
-
-        // 悬停项颜色
-        public Color HoveredBackColor 
-        { 
-            get => IsDarkMode ? Color.FromArgb(50, 50, 50) : SystemColors.ControlLightLight; 
-            set { /* ... */ } 
-        }
-
-        // 文字颜色
-        public Color SelectedForeColor 
-        { 
-            get => IsDarkMode ? Color.White : SystemColors.ControlText; 
-            set { /* ... */ } 
-        }
-
-        public Color HoveredForeColor 
-        { 
-            get => IsDarkMode ? Color.White : SystemColors.ControlText; 
-            set { /* ... */ } 
-        }
-
-        // 子控件初始化
-        readonly Panel PnlSelected = new Panel
+        
+        public Color SelectedBackColor
         {
-            BackColor = Color.FromArgb(48, 102, 193),
-            ForeColor = Color.White,
-            Enabled = false
-        };
-
-        readonly Label LblSeparator = new Label
-        {
-            BackColor = SystemColors.ControlDark,
-            Dock = DockStyle.Right,
-            Width = 1,
-        };
-
-        // 文字宽度计算
-        public int GetItemWidth(string str)
-        {
-            return TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
+            get => PnlSelected.BackColor;
+            set => PnlSelected.BackColor = value;
         }
-
-        // 主绘制逻辑
-        protected override void OnPaint(PaintEventArgs e)
+        
+        public Color HoveredBackColor
         {
-            base.OnPaint(e);
+            get => PnlHovered.BackColor;
+            set => PnlHovered.BackColor = value;
+        }
+        
+        public Color SelectedForeColor
+        {
+            get => PnlSelected.ForeColor;
+            set => PnlSelected.ForeColor = value;
+        }
+        
+        public Color HoveredForeColor
+        {
+            get => PnlHovered.ForeColor;
+            set => PnlHovered.ForeColor = value;
+        }
+        #endregion
 
-            Debug.WriteLine($"OnPaint triggered. IsDarkMode: {IsDarkMode}");
-
-            // 强制清除背景
-            e.Graphics.Clear(IsDarkMode ? Color.FromArgb(32, 32, 32) : SystemColors.Window);
-
-            // 绘制背景渐变
-            using (var gradientBrush = new LinearGradientBrush(
-                ClientRectangle,
-                IsDarkMode ? Color.FromArgb(32, 32, 32) : SystemColors.Window, // 深色模式起点色
-                IsDarkMode ? Color.FromArgb(16, 16, 16) : SystemColors.Control, // 深色模式终点色
-                GradientAngle))
+        #region 动画增强功能
+        private void AnimateSelection(object sender, EventArgs e)
+        {
+            if(itemNames == null || itemNames.Length == 0) return;
+            if(currentTop == targetTop || stepCounter >= AnimationSteps)
             {
-                e.Graphics.FillRectangle(gradientBrush, ClientRectangle);
+                animationTimer.Stop();
+                currentTop = targetTop;
+                PnlSelected.Invalidate(); // 强制重绘
+                return;
             }
 
-            // 绘制文字和分隔线
-            if (itemNames == null) return;
-            for (int i = 0; i < itemNames.Length; i++)
+            double progress = (double)++stepCounter / AnimationSteps;
+            PnlSelected.Top = (int)(currentTop + (targetTop - currentTop) * progress);
+        }
+
+        private void RefreshItem(Panel panel, int index)
+        {
+            if(panel == PnlSelected && index != -1)
             {
-                var rect = GetItemRect(i);
-                if (itemNames[i] != null)
+                targetTop = TopSpace + index * ItemHeight;
+                
+                // 关键修复：首次加载直接定位，后续操作启用动画
+                if(currentTop == -1) 
                 {
-                    e.Graphics.DrawString(itemNames[i], Font, new SolidBrush(ForeColor), 
-                        new PointF(rect.X + HorizontalSpace, rect.Y + VerticalSpace));
+                    currentTop = targetTop;
+                    PnlSelected.Top = currentTop;
                 }
                 else
                 {
-                    e.Graphics.DrawLine(new Pen(SeparatorColor), 
-                        rect.Left + HorizontalSpace, rect.Top + rect.Height / 2, 
-                        rect.Right - HorizontalSpace, rect.Top + rect.Height / 2);
+                    stepCounter = 0;
+                    animationTimer.Start();
                 }
-            }
-
-            // 绘制悬停效果
-            if (HoveredIndex >= 0 && HoveredIndex < itemNames.Length)
-            {
-                var rect = GetItemRect(HoveredIndex);
-                using (var hoverBrush = new LinearGradientBrush(
-                    rect,
-                    Color.FromArgb(50, HoveredBackColor.R, HoveredBackColor.G, HoveredBackColor.B),
-                    Color.Transparent,
-                    LinearGradientMode.Vertical))
-                {
-                    e.Graphics.FillRectangle(hoverBrush, rect);
-                }
-
-                if (itemNames[HoveredIndex] != null)
-                {
-                    e.Graphics.DrawString(itemNames[HoveredIndex], Font, 
-                        new SolidBrush(HoveredForeColor), 
-                        new PointF(rect.X + HorizontalSpace, rect.Y + VerticalSpace));
-                }
-            }
-        }
-
-        // 系统主题变化监听
-        private void OnSystemThemeChanged(object sender, UserPreferenceChangedEventArgs e)
-        {
-            if (e.Category == UserPreferenceCategory.Color)
-            {
-                Debug.WriteLine("System theme changed. Updating colors...");
-                UpdateColors();
-            }
-        }
-
-        // 更新所有颜色的方法
-        private void UpdateColors()
-        {
-            Debug.WriteLine($"Updating colors. IsDarkMode: {IsDarkMode}");
-
-            // 更新文字颜色
-            ForeColor = IsDarkMode ? Color.White : SystemColors.ControlText;
-
-            // 更新分隔线颜色
-            SeparatorColor = IsDarkMode ? Color.White : SystemColors.ControlDark;
-
-            // 强制重绘
-            Invalidate();         // 刷新自身
-            Parent?.Invalidate(); // 刷新父容器
-            Refresh();            // 立即刷新界面
-        }
-
-        // 动画相关
-        private Timer animationTimer = new Timer { Interval = 1 };
-        private Stopwatch frameSw = new Stopwatch();
-        private int startTop, targetTop;
-        private const int AnimationDuration = 200;
-
-        private void RefreshItem(int index)
-        {
-            if (index < -1 || index >= itemNames?.Length) return;
-
-            animationTimer.Stop();
-            frameSw.Restart();
-
-            startTop = PnlSelected.Top;
-            targetTop = index < 0 ? -ItemHeight : (TopSpace + index * ItemHeight);
-            PnlSelected.Text = index < 0 ? null : ItemNames[index];
-
-            if (startTop != targetTop)
-            {
-                animationTimer.Start();
             }
             else
             {
-                PnlSelected.Top = targetTop;
-                SelectIndexChanged?.Invoke(this, EventArgs.Empty);
+                panel.Top = index < 0 ? -ItemHeight : TopSpace + index * ItemHeight;
             }
+            
+            panel.Text = index < 0 ? null : ItemNames?[index];
+            panel.Refresh();
         }
+        #endregion
 
-        private void AnimationTick(object sender, EventArgs e)
+        #region 绘制与交互逻辑
+        public int GetItemWidth(string str) =>
+            TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
+
+        private void PaintItems()
         {
-            double elapsed = frameSw.Elapsed.TotalMilliseconds;
-            float progress = Math.Min(1f, (float)(elapsed / AnimationDuration));
-
-            int newTop = (int)Math.Round(startTop + (targetTop - startTop) * CubicBezier(progress));
-
-            if (Math.Abs(PnlSelected.Top - newTop) >= 1 || progress >= 0.99f)
+            if(itemNames == null) return;
+            
+            BackgroundImage?.Dispose();
+            BackgroundImage = new Bitmap(Width, ItemHeight * itemNames.Length);
+            
+            using(Graphics g = Graphics.FromImage(BackgroundImage))
             {
-                PnlSelected.Top = newTop;
-                PnlSelected.Invalidate();
-            }
-
-            if (progress >= 1f)
-            {
-                animationTimer.Stop();
-                PnlSelected.Top = targetTop;
-                SelectIndexChanged?.Invoke(this, EventArgs.Empty);
+                g.Clear(BackColor);
+                
+                for(int i = 0; i < itemNames.Length; i++)
+                {
+                    if(itemNames[i] != null)
+                    {
+                        g.DrawString(itemNames[i], Font, new SolidBrush(ForeColor),
+                            new PointF(HorizontalSpace, TopSpace + i * ItemHeight + VerticalSpace));
+                    }
+                    else
+                    {
+                        g.DrawLine(new Pen(SeparatorColor),
+                            new PointF(HorizontalSpace, TopSpace + (i + 0.5F) * ItemHeight),
+                            new PointF(Width - HorizontalSpace, TopSpace + (i + 0.5F) * ItemHeight)
+                        );
+                    }
+                }
             }
         }
 
-        private float CubicBezier(float t) => t * t * (3f - 2f * t);
-
-        // 选中项绘制
-        private void PaintItem(object sender, PaintEventArgs e)
+        private void ShowItem(Panel panel, MouseEventArgs e)
         {
-            var panel = (Panel)sender;
-            if (panel == PnlSelected)
+            if(itemNames == null) return;
+            
+            int index = (e.Y - TopSpace) / ItemHeight;
+            
+            if(index >= itemNames.Length || index < 0 || 
+              string.IsNullOrEmpty(itemNames[index]) || index == SelectedIndex)
             {
-                e.Graphics.FillRectangle(new SolidBrush(SelectedBackColor), e.ClipRectangle);
-                e.Graphics.DrawString(panel.Text, Font, 
-                    new SolidBrush(SelectedForeColor), 
-                    new PointF(HorizontalSpace, VerticalSpace));
+                Cursor = Cursors.Default;
+                HoveredIndex = SelectedIndex;
+            }
+            else
+            {
+                Cursor = Cursors.Hand;
+                if(panel == PnlSelected) SelectedIndex = index;
+                else HoveredIndex = index;
             }
         }
 
-        // 鼠标事件处理
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            HoveredIndex = IsValidIndex(CalculateIndex(e)) ? CalculateIndex(e) : -1;
+            ShowItem(PnlHovered, e);
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            if (e.Button == MouseButtons.Left && IsValidIndex(CalculateIndex(e)))
-            {
-                SelectedIndex = CalculateIndex(e);
-            }
+            if(e.Button == MouseButtons.Left) ShowItem(PnlSelected, e);
         }
-
+        
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
-            HoveredIndex = -1;
+            HoveredIndex = SelectedIndex;
         }
-
-        // 辅助方法
-        private Rectangle GetItemRect(int index) => new Rectangle(
-            0, 
-            TopSpace + index * ItemHeight, 
-            Width, 
-            ItemHeight
-        );
-
-        private int CalculateIndex(MouseEventArgs e) => (e.Y - TopSpace) / ItemHeight;
-
-        private bool IsValidIndex(int index) => 
-            index >= 0 && index < itemNames?.Length && !string.IsNullOrEmpty(itemNames[index]);
-
-        // 资源释放
-        protected override void Dispose(bool disposing)
+        
+        private void PaintItem(object sender, PaintEventArgs e)
         {
-            if (disposing)
-            {
-                SystemEvents.UserPreferenceChanged -= OnSystemThemeChanged;
-            }
-            base.Dispose(disposing);
+            Control ctr = (Control)sender;
+            e.Graphics.DrawString(ctr.Text, Font,
+                new SolidBrush(ctr.ForeColor),
+                new PointF(HorizontalSpace, VerticalSpace));
         }
+        #endregion
 
-        // **新增/修复：添加 SelectedIndex 属性**
-        private int selectIndex;
+        #region 事件与索引管理
+        public event EventHandler SelectIndexChanged;
+        public event EventHandler HoverIndexChanged;
+
         public int SelectedIndex
         {
             get => selectIndex;
             set
             {
-                if (selectIndex == value) return;
-                RefreshItem(value);
+                if(selectIndex == value) return;
+                HoveredIndex = value;
+                RefreshItem(PnlSelected, value);
                 selectIndex = value;
+                SelectIndexChanged?.Invoke(this, null);
             }
         }
 
-        private int hoverIndex = -1;
         public int HoveredIndex
         {
             get => hoverIndex;
             set
             {
-                if (hoverIndex == value) return;
-                int oldIndex = hoverIndex;
+                if(hoverIndex == value) return;
+                RefreshItem(PnlHovered, value);
                 hoverIndex = value;
-
-                if (oldIndex != -1) Invalidate(GetItemRect(oldIndex));
-                if (hoverIndex != -1) Invalidate(GetItemRect(hoverIndex));
-                HoverIndexChanged?.Invoke(this, EventArgs.Empty);
+                HoverIndexChanged?.Invoke(this, null);
             }
         }
-
-        // 事件
-        public event EventHandler SelectIndexChanged;
-        public event EventHandler HoverIndexChanged;
+        #endregion
     }
 }
