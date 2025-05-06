@@ -13,6 +13,7 @@ namespace BluePointLilac.Controls
         private int selectIndex = -1;
         private int hoverIndex = -1;
         private int stepCounter = 0; // 动画步数计数器
+        private int lastHoverIndex = -1; // 悬浮状态缓存
         
         // 动画配置
         private const int AnimationSteps = 10; // 动画总帧数
@@ -59,11 +60,17 @@ namespace BluePointLilac.Controls
             BackColor = MyMainForm.ButtonSecond;
             BackgroundImageLayout = ImageLayout.None;
             
+            // 启用双缓冲
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | 
+                     ControlStyles.AllPaintingInWmPaint | 
+                     ControlStyles.UserPaint, true);
+            DoubleBuffered = true;
+
             Controls.AddRange(new Control[] { LblSeparator, PnlSelected, PnlHovered });
             PnlHovered.Paint += PaintItem;
             PnlSelected.Paint += PaintItem;
             
-            animationTimer = new Timer { Interval = 15 };
+            animationTimer = new Timer { Interval = 10 };
             animationTimer.Tick += AnimateSelection;
 
             // 延迟执行默认选中（保证布局完成）
@@ -157,7 +164,9 @@ namespace BluePointLilac.Controls
             {
                 targetTop = TopSpace + index * ItemHeight;
                 
-                // 关键修复：首次加载直接定位，后续操作启用动画
+                // 关键修复：仅当目标位置变化时启动动画
+                if(currentTop == targetTop) return;
+                
                 if(currentTop == -1) 
                 {
                     currentTop = targetTop;
@@ -174,8 +183,12 @@ namespace BluePointLilac.Controls
                 panel.Top = index < 0 ? -ItemHeight : TopSpace + index * ItemHeight;
             }
             
-            panel.Text = index < 0 ? null : ItemNames?[index];
-            panel.Refresh();
+            // 仅当文本变化时刷新
+            if(panel.Text != (index < 0 ? null : ItemNames?[index]))
+            {
+                panel.Text = index < 0 ? null : ItemNames?[index];
+                panel.Refresh();
+            }
         }
         #endregion
 
@@ -193,6 +206,7 @@ namespace BluePointLilac.Controls
             using(Graphics g = Graphics.FromImage(BackgroundImage))
             {
                 g.Clear(BackColor);
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
                 
                 for(int i = 0; i < itemNames.Length; i++)
                 {
@@ -228,7 +242,14 @@ namespace BluePointLilac.Controls
             {
                 Cursor = Cursors.Hand;
                 if(panel == PnlSelected) SelectedIndex = index;
-                else HoveredIndex = index;
+                else
+                {
+                    if(lastHoverIndex != index)
+                    {
+                        HoveredIndex = index;
+                        lastHoverIndex = index;
+                    }
+                }
             }
         }
 
@@ -253,9 +274,12 @@ namespace BluePointLilac.Controls
         private void PaintItem(object sender, PaintEventArgs e)
         {
             Control ctr = (Control)sender;
-            e.Graphics.DrawString(ctr.Text, Font,
-                new SolidBrush(ctr.ForeColor),
-                new PointF(HorizontalSpace, VerticalSpace));
+            using (Brush brush = new SolidBrush(ctr.ForeColor))
+            {
+                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                e.Graphics.DrawString(ctr.Text, Font, brush,
+                    new PointF(HorizontalSpace, VerticalSpace));
+            }
         }
         #endregion
 
