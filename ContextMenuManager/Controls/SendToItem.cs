@@ -129,12 +129,20 @@ namespace ContextMenuManager.Controls
                     using(RegistryKey root = Registry.ClassesRoot)
                     using(RegistryKey extensionKey = root.OpenSubKey(FileExtension))
                     {
-                        string guidPath = extensionKey.GetValue("")?.ToString();
-                        if(guidPath != null)
+                        // 检查extensionKey是否为null
+                        if (extensionKey != null)
                         {
-                            using(RegistryKey guidKey = root.OpenSubKey($@"{guidPath}\DefaultIcon"))
+                            string guidPath = extensionKey.GetValue("")?.ToString();
+                            if (!string.IsNullOrEmpty(guidPath))
                             {
-                                location = guidKey.GetValue("")?.ToString();
+                                using(RegistryKey guidKey = root.OpenSubKey($@"{guidPath}\DefaultIcon"))
+                                {
+                                    // 检查guidKey是否为null
+                                    if (guidKey != null)
+                                    {
+                                        location = guidKey.GetValue("")?.ToString();
+                                    }
+                                }
                             }
                         }
                     }
