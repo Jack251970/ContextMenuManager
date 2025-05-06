@@ -17,7 +17,7 @@ namespace BluePointLilac.Controls
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            //使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
+            // 使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
             base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
         }
     }
@@ -50,18 +50,18 @@ namespace BluePointLilac.Controls
             get => hoveredItem;
             set
             {
-                if(hoveredItem == value) return;
-                if(hoveredItem != null)
+                if (hoveredItem == value) return;
+                if (hoveredItem != null)
                 {
-                    hoveredItem.ForeColor = MyMainForm.FormFore;
+                    hoveredItem.StartColorAnimation(MyMainForm.FormFore);
                     hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
                 }
                 hoveredItem = value;
                 if (hoveredItem != null)
                 {
-                    value.ForeColor = MyMainForm.MainColor;
-                    value.Font = new Font(hoveredItem.Font, FontStyle.Bold);
-                    value.Focus();
+                    hoveredItem.StartColorAnimation(MyMainForm.MainColor);
+                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Bold);
+                    hoveredItem.Focus();
                 }
                 HoveredItemChanged?.Invoke(this, null);
             }
@@ -75,6 +75,23 @@ namespace BluePointLilac.Controls
             item.Parent = this;
             item.MouseEnter += (sender, e) => HoveredItem = item;
             MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
+
+            // 淡入动画
+            item.Opacity = 0;
+            Timer fadeTimer = new Timer { Interval = 15 };
+            fadeTimer.Tick += (sender, e) =>
+            {
+                if (item.Opacity >= 1)
+                {
+                    fadeTimer.Stop();
+                    fadeTimer.Dispose();
+                    return;
+                }
+                item.Opacity = Math.Min(item.Opacity + 0.1F, 1);
+                item.Invalidate(); // 触发重绘
+            };
+            fadeTimer.Start();
+
             void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
             Owner.Resize += (sender, e) => ResizeItem();
             ResizeItem();
@@ -103,16 +120,16 @@ namespace BluePointLilac.Controls
 
         public void InsertItem(MyListItem item, int index)
         {
-            if(item == null) return;
+            if (item == null) return;
             AddItem(item);
             SetItemIndex(item, index);
         }
 
         public virtual void ClearItems()
         {
-            if(Controls.Count == 0) return;
+            if (Controls.Count == 0) return;
             SuspendLayout();
-            for(int i = Controls.Count - 1; i >= 0; i--)
+            for (int i = Controls.Count - 1; i >= 0; i--)
             {
                 Control ctr = Controls[i];
                 Controls.Remove(ctr);
@@ -124,7 +141,7 @@ namespace BluePointLilac.Controls
         public void SortItemByText()
         {
             List<MyListItem> items = new List<MyListItem>();
-            foreach(MyListItem item in Controls) items.Add(item);
+            foreach (MyListItem item in Controls) items.Add(item);
             Controls.Clear();
             items.Sort(new TextComparer());
             items.ForEach(item => AddItem(item));
@@ -134,10 +151,10 @@ namespace BluePointLilac.Controls
         {
             public int Compare(MyListItem x, MyListItem y)
             {
-                if(x.Equals(y)) return 0;
+                if (x.Equals(y)) return 0;
                 string[] strs = { x.Text, y.Text };
                 Array.Sort(strs);
-                if(strs[0] == x.Text) return -1;
+                if (strs[0] == x.Text) return -1;
                 else return 1;
             }
         }
@@ -173,16 +190,19 @@ namespace BluePointLilac.Controls
             get => picImage.Image;
             set => picImage.Image = value;
         }
+
         public new string Text
         {
             get => lblText.Text;
             set => lblText.Text = value;
         }
+
         public new Font Font
         {
             get => lblText.Font;
             set => lblText.Font = value;
         }
+
         public new Color ForeColor
         {
             get => lblText.ForeColor;
@@ -206,6 +226,7 @@ namespace BluePointLilac.Controls
             AutoSize = true,
             Name = "Text"
         };
+
         private readonly PictureBox picImage = new PictureBox
         {
             SizeMode = PictureBoxSizeMode.AutoSize,
@@ -213,6 +234,7 @@ namespace BluePointLilac.Controls
             Enabled = false,
             Name = "Image"
         };
+
         private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel
         {
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
@@ -221,18 +243,20 @@ namespace BluePointLilac.Controls
             AutoSize = true,
             Name = "Controls"
         };
+
         private readonly Label lblSeparator = new Label
         {
             BackColor = MyMainForm.FormFore,
             Dock = DockStyle.Bottom,
             Name = "Separator",
             Height = 1
-        };//分割线
+        }; // 分割线
+
         private readonly Panel pnlScrollbar = new Panel
         {
             Width = SystemInformation.VerticalScrollBarWidth,
             Enabled = false
-        };//预留滚动条宽度
+        }; // 预留滚动条宽度
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -243,10 +267,10 @@ namespace BluePointLilac.Controls
         {
             void reSize()
             {
-                if(ctr.Parent == null) return;
+                if (ctr.Parent == null) return;
                 int top = (ClientSize.Height - ctr.Height) / 2;
                 ctr.Top = top;
-                if(ctr.Parent == flpControls)
+                if (ctr.Parent == flpControls)
                 {
                     ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
                 }
@@ -279,7 +303,7 @@ namespace BluePointLilac.Controls
 
         public void RemoveCtrAt(int index)
         {
-            if(flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
+            if (flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
         }
 
         public int GetCtrIndex(Control ctr)
@@ -290,6 +314,46 @@ namespace BluePointLilac.Controls
         public void SetCtrIndex(Control ctr, int newIndex)
         {
             flpControls.Controls.SetChildIndex(ctr, newIndex + 1);
+        }
+
+        private Timer colorAnimTimer;
+        private Color startColor;
+        private Color targetColor;
+        private const int AnimDuration = 200; // 动画时长(ms)
+        private const int AnimInterval = 15;  // 刷新间隔
+        public float Opacity { get; set; } = 1f; // 添加透明度属性
+
+        public void StartColorAnimation(Color newColor)
+        {
+            if (colorAnimTimer != null)
+            {
+                colorAnimTimer.Stop();
+                colorAnimTimer.Dispose();
+            }
+
+            startColor = this.ForeColor;
+            targetColor = newColor;
+            colorAnimTimer = new Timer { Interval = AnimInterval };
+
+            DateTime startTime = DateTime.Now;
+            colorAnimTimer.Tick += (sender, e) =>
+            {
+                double progress = (DateTime.Now - startTime).TotalMilliseconds / AnimDuration;
+                if (progress >= 1d)
+                {
+                    this.ForeColor = targetColor;
+                    colorAnimTimer.Stop();
+                    return;
+                }
+
+                int r = (int)(startColor.R + (targetColor.R - startColor.R) * progress);
+                int g = (int)(startColor.G + (targetColor.G - startColor.G) * progress);
+                int b = (int)(startColor.B + (targetColor.B - startColor.B) * progress);
+                this.ForeColor = Color.FromArgb(r, g, b);
+                this.Invalidate(); // 触发重绘
+            };
+
+            colorAnimTimer.Start();
         }
     }
 }

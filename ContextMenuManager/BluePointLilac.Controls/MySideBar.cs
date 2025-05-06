@@ -7,22 +7,82 @@ namespace BluePointLilac.Controls
 {
     public sealed class MySideBar : Panel
     {
-        public MySideBar()
+        #region 核心字段与动画参数
+        private string[] itemNames;
+        private int itemHeight;
+        private int selectIndex = -1;
+        private int hoverIndex = -1;
+        private int stepCounter = 0; // 动画步数计数器
+        private int lastHoverIndex = -1; // 悬浮状态缓存
+        
+        // 动画配置
+        private const int AnimationSteps = 10; // 动画总帧数
+        private Timer animationTimer;
+        private int targetTop = -1;   // 目标位置
+        private int currentTop = -1;  // 当前实际位置
+        
+        // 布局常量
+        public int TopSpace { get; set; } = 2.DpiZoom();
+        public int HorizontalSpace { get; set; } = 20.DpiZoom();
+        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;
+        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;
+        public bool IsFixedWidth { get; set; } = true;
+        #endregion
+
+        #region 控件实例与初始化
+        readonly Panel PnlSelected = new Panel
+        {
+            BackColor = MyMainForm.MainColor,
+            ForeColor = MyMainForm.FormFore,
+            Enabled = false
+        };
+
+        readonly Panel PnlHovered = new Panel
+        {
+            BackColor = MyMainForm.ButtonSecond,
+            ForeColor = MyMainForm.FormFore,
+            Enabled = false
+        };
+
+        readonly Label LblSeparator = new Label
+        {
+            BackColor = MyMainForm.FormFore,
+            Dock = DockStyle.Right,
+            Width = 1,
+        };
+
+        public MySideBar() : base()
         {
             Dock = DockStyle.Left;
             ItemHeight = 30.DpiZoom();
-            Font = SystemFonts.MenuFont;
-            Font = new Font(Font.FontFamily, Font.Size + 1F);
+            Font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.Size + 1F);
             ForeColor = MyMainForm.FormFore;
             BackColor = MyMainForm.ButtonSecond;
             BackgroundImageLayout = ImageLayout.None;
+            
+            // 启用双缓冲
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | 
+                     ControlStyles.AllPaintingInWmPaint | 
+                     ControlStyles.UserPaint, true);
+            DoubleBuffered = true;
+
             Controls.AddRange(new Control[] { LblSeparator, PnlSelected, PnlHovered });
             PnlHovered.Paint += PaintItem;
             PnlSelected.Paint += PaintItem;
-            SelectedIndex = -1;
-        }
+            
+            animationTimer = new Timer { Interval = 10 };
+            animationTimer.Tick += AnimateSelection;
 
-        private string[] itemNames;
+            // 强制刷新初始状态
+            if(ItemNames?.Length > 0) 
+            {
+                SelectedIndex = 0;
+                PnlSelected.Invalidate();
+            }
+        }
+        #endregion
+
+        #region 主要属性与资源管理
         public string[] ItemNames
         {
             get => itemNames;
@@ -37,81 +97,123 @@ namespace BluePointLilac.Controls
                 }
                 PnlHovered.Width = PnlSelected.Width = Width;
                 PaintItems();
-                SelectedIndex = -1;
+                
+                // 仅当长度变化时更新选中状态
+                if(value?.Length != itemNames?.Length)
+                {
+                    if(value?.Length > 0) 
+                    {
+                        selectIndex = -1; // 强制触发更新
+                        SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        SelectedIndex = -1;
+                    }
+                }
             }
         }
 
-        private int itemHeight;
         public int ItemHeight
         {
             get => itemHeight;
             set => PnlHovered.Height = PnlSelected.Height = itemHeight = value;
-        }//项上下边缘距离
-        public int TopSpace { get; set; } = 2.DpiZoom();//第一项顶部与上边缘的距离
-        public int HorizontalSpace { get; set; } = 20.DpiZoom();//项文字与项左右边缘距离
-        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;//项文字与项上下边缘距离
-        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;//项文字高度
-        public bool IsFixedWidth { get; set; } = true;//是否固定宽度
+        }
 
         public Color SeparatorColor
         {
             get => LblSeparator.BackColor;
             set => LblSeparator.BackColor = value;
-        }//分隔线颜色
+        }
+        
         public Color SelectedBackColor
         {
             get => PnlSelected.BackColor;
             set => PnlSelected.BackColor = value;
         }
+        
         public Color HoveredBackColor
         {
             get => PnlHovered.BackColor;
             set => PnlHovered.BackColor = value;
         }
+        
         public Color SelectedForeColor
         {
             get => PnlSelected.ForeColor;
             set => PnlSelected.ForeColor = value;
         }
+        
         public Color HoveredForeColor
         {
             get => PnlHovered.ForeColor;
             set => PnlHovered.ForeColor = value;
         }
+        #endregion
 
-        readonly Panel PnlSelected = new Panel
+        #region 动画增强功能
+        private void AnimateSelection(object sender, EventArgs e)
         {
-            BackColor = MyMainForm.MainColor,//侧边栏项目选中颜色
-            ForeColor = MyMainForm.FormFore,
-            Enabled = false
-        };
-        readonly Panel PnlHovered = new Panel
-        {
-            BackColor = MyMainForm.ButtonSecond,
-            ForeColor = MyMainForm.FormFore,
-            Enabled = false
-        };
-        readonly Label LblSeparator = new Label
-        {
-            BackColor = MyMainForm.FormFore,
-            Dock = DockStyle.Right,
-            Width = 1,
-        };
+            if(itemNames == null || itemNames.Length == 0) return;
+            if(currentTop == targetTop || stepCounter >= AnimationSteps)
+            {
+                animationTimer.Stop();
+                currentTop = targetTop;
+                PnlSelected.Invalidate(); // 强制重绘
+                return;
+            }
 
-        /// <summary>获取项目宽度</summary>
-        public int GetItemWidth(string str)
-        {
-            return TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
+            double progress = (double)++stepCounter / AnimationSteps;
+            PnlSelected.Top = (int)(currentTop + (targetTop - currentTop) * progress);
         }
 
-        /// <summary>绘制所有项目作为底图</summary>
+        private void RefreshItem(Panel panel, int index)
+        {
+            if(panel == PnlSelected && index != -1)
+            {
+                targetTop = TopSpace + index * ItemHeight;
+                
+                // 关键修复：强制位置同步
+                if(currentTop == -1 || selectIndex == -1) 
+                {
+                    currentTop = targetTop;
+                    PnlSelected.Top = currentTop;
+                }
+                else
+                {
+                    stepCounter = 0;
+                    animationTimer.Start();
+                }
+            }
+            else
+            {
+                panel.Top = index < 0 ? -ItemHeight : TopSpace + index * ItemHeight;
+            }
+            
+            if(panel.Text != (index < 0 ? null : ItemNames?[index]))
+            {
+                panel.Text = index < 0 ? null : ItemNames?[index];
+                panel.Refresh();
+            }
+        }
+        #endregion
+
+        #region 绘制与交互逻辑
+        public int GetItemWidth(string str) =>
+            TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
+
         private void PaintItems()
         {
-            BackgroundImage = new Bitmap(Width, ItemHeight * ItemNames.Length);
+            if(itemNames == null) return;
+            
+            BackgroundImage?.Dispose();
+            BackgroundImage = new Bitmap(Width, ItemHeight * itemNames.Length);
+            
             using(Graphics g = Graphics.FromImage(BackgroundImage))
             {
                 g.Clear(BackColor);
-                if(itemNames == null) return;
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                
                 for(int i = 0; i < itemNames.Length; i++)
                 {
                     if(itemNames[i] != null)
@@ -130,30 +232,14 @@ namespace BluePointLilac.Controls
             }
         }
 
-        /// <summary>刷新选中的项目</summary>
-        private void RefreshItem(Panel panel, int index)
-        {
-            panel.CreateGraphics().Clear(panel.BackColor);
-            panel.Top = index < 0 ? -ItemHeight : (TopSpace + index * ItemHeight);
-            panel.Text = index < 0 ? null : ItemNames[index];
-            panel.Refresh();
-        }
-
-        /// <summary>绘制选中的项目</summary>
-        private void PaintItem(object sender, PaintEventArgs e)
-        {
-            Control ctr = (Control)sender;
-            e.Graphics.DrawString(ctr.Text, Font,
-                new SolidBrush(ctr.ForeColor),
-                new PointF(HorizontalSpace, VerticalSpace));
-        }
-
-        /// <summary>显示选中的项目</summary>
         private void ShowItem(Panel panel, MouseEventArgs e)
         {
             if(itemNames == null) return;
+            
             int index = (e.Y - TopSpace) / ItemHeight;
-            if(index >= itemNames.Length || index < 0 || string.IsNullOrEmpty(itemNames[index]) || index == SelectedIndex)
+            
+            if(index >= itemNames.Length || index < 0 || 
+              string.IsNullOrEmpty(itemNames[index]) || index == SelectedIndex)
             {
                 Cursor = Cursors.Default;
                 HoveredIndex = SelectedIndex;
@@ -162,7 +248,14 @@ namespace BluePointLilac.Controls
             {
                 Cursor = Cursors.Hand;
                 if(panel == PnlSelected) SelectedIndex = index;
-                else HoveredIndex = index;
+                else
+                {
+                    if(lastHoverIndex != index)
+                    {
+                        HoveredIndex = index;
+                        lastHoverIndex = index;
+                    }
+                }
             }
         }
 
@@ -171,28 +264,50 @@ namespace BluePointLilac.Controls
             base.OnMouseMove(e);
             ShowItem(PnlHovered, e);
         }
+
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
             if(e.Button == MouseButtons.Left) ShowItem(PnlSelected, e);
         }
+        
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
             HoveredIndex = SelectedIndex;
         }
+        
+        private void PaintItem(object sender, PaintEventArgs e)
+        {
+            Control ctr = (Control)sender;
+            using (Brush brush = new SolidBrush(ctr.ForeColor))
+            {
+                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                e.Graphics.DrawString(ctr.Text, Font, brush,
+                    new PointF(HorizontalSpace, VerticalSpace));
+            }
+        }
+        #endregion
 
+        #region 事件与索引管理
         public event EventHandler SelectIndexChanged;
-
         public event EventHandler HoverIndexChanged;
 
-        private int selectIndex;
         public int SelectedIndex
         {
             get => selectIndex;
             set
             {
-                if(selectIndex == value) return;
+                if(selectIndex == value) 
+                {
+                    if(value >= 0 && value < ItemNames?.Length)
+                    {
+                        // 强制刷新当前项
+                        RefreshItem(PnlSelected, value);
+                    }
+                    return;
+                }
+                
                 HoveredIndex = value;
                 RefreshItem(PnlSelected, value);
                 selectIndex = value;
@@ -200,7 +315,6 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private int hoverIndex;
         public int HoveredIndex
         {
             get => hoverIndex;
@@ -212,5 +326,6 @@ namespace BluePointLilac.Controls
                 HoverIndexChanged?.Invoke(this, null);
             }
         }
+        #endregion
     }
 }
