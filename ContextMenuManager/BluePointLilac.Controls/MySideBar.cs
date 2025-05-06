@@ -51,7 +51,7 @@ namespace BluePointLilac.Controls
             Width = 1,
         };
 
-        public MySideBar()
+        public MySideBar() : base()
         {
             Dock = DockStyle.Left;
             ItemHeight = 30.DpiZoom();
@@ -73,14 +73,12 @@ namespace BluePointLilac.Controls
             animationTimer = new Timer { Interval = 10 };
             animationTimer.Tick += AnimateSelection;
 
-            // 延迟执行默认选中（保证布局完成）
-            var initTimer = new Timer { Interval = 1 };
-            initTimer.Tick += (s, e) =>
+            // 强制刷新初始状态
+            if(ItemNames?.Length > 0) 
             {
-                initTimer.Stop();
-                if(ItemNames?.Length > 0) SelectedIndex = 0;
-            };
-            initTimer.Start();
+                SelectedIndex = 0;
+                PnlSelected.Invalidate();
+            }
         }
         #endregion
 
@@ -99,9 +97,20 @@ namespace BluePointLilac.Controls
                 }
                 PnlHovered.Width = PnlSelected.Width = Width;
                 PaintItems();
-                SelectedIndex = -1;
                 
-                if(ItemNames?.Length > 0) SelectedIndex = 0;
+                // 仅当长度变化时更新选中状态
+                if(value?.Length != itemNames?.Length)
+                {
+                    if(value?.Length > 0) 
+                    {
+                        selectIndex = -1; // 强制触发更新
+                        SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        SelectedIndex = -1;
+                    }
+                }
             }
         }
 
@@ -164,10 +173,8 @@ namespace BluePointLilac.Controls
             {
                 targetTop = TopSpace + index * ItemHeight;
                 
-                // 关键修复：仅当目标位置变化时启动动画
-                if(currentTop == targetTop) return;
-                
-                if(currentTop == -1) 
+                // 关键修复：强制位置同步
+                if(currentTop == -1 || selectIndex == -1) 
                 {
                     currentTop = targetTop;
                     PnlSelected.Top = currentTop;
@@ -183,7 +190,6 @@ namespace BluePointLilac.Controls
                 panel.Top = index < 0 ? -ItemHeight : TopSpace + index * ItemHeight;
             }
             
-            // 仅当文本变化时刷新
             if(panel.Text != (index < 0 ? null : ItemNames?[index]))
             {
                 panel.Text = index < 0 ? null : ItemNames?[index];
@@ -292,7 +298,16 @@ namespace BluePointLilac.Controls
             get => selectIndex;
             set
             {
-                if(selectIndex == value) return;
+                if(selectIndex == value) 
+                {
+                    if(value >= 0 && value < ItemNames?.Length)
+                    {
+                        // 强制刷新当前项
+                        RefreshItem(PnlSelected, value);
+                    }
+                    return;
+                }
+                
                 HoveredIndex = value;
                 RefreshItem(PnlSelected, value);
                 selectIndex = value;
