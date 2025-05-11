@@ -23,29 +23,26 @@ namespace BluePointLilac.Controls
             get => _Checked == true;
             set
             {
-                if(_Checked == value) return;
+                if (_Checked == value) return;
                 Image = SwitchImage(value);
-                if(_Checked == null)
+                if (_Checked == null)
                 {
                     _Checked = value;
                     return;
                 }
-                if(PreCheckChanging != null && !PreCheckChanging.Invoke())
+                if (PreCheckChanging != null && !PreCheckChanging.Invoke())
                 {
                     Image = SwitchImage(!value);
                     return;
                 }
-                else CheckChanging?.Invoke();
-                if(PreCheckChanged != null && !PreCheckChanged.Invoke())
+                CheckChanging?.Invoke();
+                if (PreCheckChanged != null && !PreCheckChanged.Invoke())
                 {
                     Image = SwitchImage(!value);
                     return;
                 }
-                else
-                {
-                    _Checked = value;
-                    CheckChanged?.Invoke();
-                }
+                _Checked = value;
+                CheckChanged?.Invoke();
             }
         }
 
@@ -57,15 +54,12 @@ namespace BluePointLilac.Controls
         public Image TurnOnImage { get; set; } = TurnOn;
         public Image TurnOffImage { get; set; } = TurnOff;
 
-        private Image SwitchImage(bool value)
-        {
-            return value ? TurnOnImage : TurnOffImage;
-        }
+        private Image SwitchImage(bool value) => value ? TurnOnImage : TurnOffImage;
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            if(e.Button == MouseButtons.Left) Checked = !Checked;
+            if (e.Button == MouseButtons.Left) Checked = !Checked;
         }
 
         private static readonly Image TurnOn = DrawImage(true);
@@ -73,50 +67,67 @@ namespace BluePointLilac.Controls
 
         private static Image DrawImage(bool value)
         {
-            int w = 80.DpiZoom();
-            int r1 = 16.DpiZoom();
-            float r2 = 13F.DpiZoom();
-            int d1 = r1 * 2;
-            float d2 = r2 * 2;
-            float a = r1 - r2;
-            Bitmap bitmap = new Bitmap(w, d1);
-            using(Graphics g = Graphics.FromImage(bitmap))
+            int w = 80.DpiZoom(), h = 40.DpiZoom();
+            int r = h / 2, padding = 4.DpiZoom();
+            var bitmap = new Bitmap(w, h);
+
+            using (Graphics g = Graphics.FromImage(bitmap))
             {
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 g.CompositingQuality = CompositingQuality.HighQuality;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                using(GraphicsPath path = new GraphicsPath())
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                // 背景渐变
+                using (var bgPath = CreateRoundedRect(0, 0, w, h, r))
                 {
-                    path.AddArc(new RectangleF(0, 0, d1, d1), 90, 180);
-                    path.AddLine(new PointF(r1, 0), new PointF(w - r1, 0));
-                    path.AddArc(new RectangleF(w - d1, 0, d1, d1), -90, 180);
-                    path.AddLine(new PointF(w - r1, d1), new PointF(r1, d1));
-                    Color color = value ? MyMainForm.MainColor : Color.FromArgb(130, 136, 144);//Fixed color
-                    using(Brush brush = new SolidBrush(color))
+                    Color startColor = value ? MyMainForm.MainColor : Color.FromArgb(200, 200, 200);
+                    Color endColor = value ? Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B) :
+                                             Color.FromArgb(160, 160, 160);
+                    using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, w, h), startColor, endColor, 90f))
                     {
-                        g.FillPath(brush, path);
+                        g.FillPath(bgBrush, bgPath);
                     }
                 }
-                using(GraphicsPath path = new GraphicsPath())
+
+                // 按钮位置计算
+                int buttonX = value ? w - h + padding : padding;
+                int buttonY = padding;
+
+                // 按钮绘制（带阴影）
+                using (var shadowPath = CreateRoundedRect(buttonX - 2, buttonY - 2, h - padding * 2 + 4, h - padding * 2 + 4, (h - padding * 2) / 2))
+                using (var shadowBrush = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
                 {
-                    path.AddArc(new RectangleF(a, a, d2, d2), 90, 180);
-                    path.AddLine(new PointF(r1, a), new PointF(w - r1, a));
-                    path.AddArc(new RectangleF(w - d2 - a, a, d2, d2), -90, 180);
-                    path.AddLine(new PointF(w - r1, d2 + a), new PointF(r1, d2 + a));
-                    Color color = value ? MyMainForm.MainColor : Color.FromArgb(153, 160, 169);//Fixed color
-                    using (Brush brush = new SolidBrush(color))
+                    g.FillPath(shadowBrush, shadowPath);
+                }
+
+                using (var buttonPath = CreateRoundedRect(buttonX, buttonY, h - padding * 2, h - padding * 2, (h - padding * 2) / 2))
+                {
+                    using (var buttonBrush = new SolidBrush(Color.White))
                     {
-                        g.FillPath(brush, path);
+                        g.FillPath(buttonBrush, buttonPath);
                     }
                 }
-                using(GraphicsPath path = new GraphicsPath())
+
+                // 高光效果
+                using (var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, (h - padding * 2) / 2, (h - padding * 2) / 2, (h - padding * 2) / 4))
+                using (var highlightBrush = new SolidBrush(Color.FromArgb(100, 255, 255, 255)))
                 {
-                    path.AddEllipse(new RectangleF(value ? (w - d2 - a) : a, a, d2, d2));
-                    g.FillPath(Brushes.White, path);
+                    g.FillPath(highlightBrush, highlightPath);
                 }
             }
             return bitmap;
+        }
+
+        private static GraphicsPath CreateRoundedRect(float x, float y, float width, float height, float radius)
+        {
+            var path = new GraphicsPath();
+            path.AddArc(x, y, radius * 2, radius * 2, 180, 90); // 左上角
+            path.AddArc(x + width - radius * 2, y, radius * 2, radius * 2, 270, 90); // 右上角
+            path.AddArc(x + width - radius * 2, y + height - radius * 2, radius * 2, radius * 2, 0, 90); // 右下角
+            path.AddArc(x, y + height - radius * 2, radius * 2, radius * 2, 90, 90); // 左下角
+            path.CloseFigure();
+            return path;
         }
     }
 }
