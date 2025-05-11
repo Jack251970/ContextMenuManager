@@ -55,7 +55,7 @@ namespace ContextMenuManager.Methods
         public static string ConfigIni = $@"{ConfigDir}\Config.ini";
         public static string ComputerHostName = Dns.GetHostName();
         public static string RegBackupDir = $@"{ConfigDir}\RegBackup\{ComputerHostName}";
-        public static string MenuBackupRootDir = $@"{AppConfigDir}\MenuBackup";
+        public static string MenuBackupRootDir = $@"{ConfigDir}\MenuBackup";
         public static string MenuBackupDir = $@"{MenuBackupRootDir}\{ComputerHostName}";
         public static string LangsDir = $@"{ConfigDir}\Languages";
         public static string ProgramsDir = $@"{ConfigDir}\Programs";
