@@ -742,36 +742,37 @@ namespace ContextMenuManager.Controls
                         txts = new[] { AppString.ToolBar.Type, AppString.SideBar.LnkFile };
                         image = AppImage.LnkFile;
                         index1 = 1;
+                        index2 = 0; //MainForm.TypeShellScenes
                         break;
                     case Scenes.ExeFile:
                         txts = new[] { AppString.ToolBar.Type, AppString.SideBar.ExeFile };
                         using(Icon icon = ResourceIcon.GetExtensionIcon(TargetPath)) image = icon.ToBitmap();
                         index1 = 1;
-                        index2 = 2;
+                        index2 = 2; //MainForm.TypeShellScenes
                         break;
                     case Scenes.UnknownType:
                         txts = new[] { AppString.ToolBar.Type, AppString.SideBar.UnknownType };
                         image = AppImage.NotFound;
                         index1 = 1;
-                        index2 = 8;
+                        index2 = 8; //MainForm.TypeShellScenes
                         break;
                     case Scenes.CustomExtension:
                         txts = new[] { AppString.ToolBar.Type, AppString.SideBar.CustomExtension, Extension };
                         using(Icon icon = ResourceIcon.GetExtensionIcon(Extension)) image = icon.ToBitmap();
                         index1 = 1;
-                        index2 = 4;
+                        index2 = 5; //MainForm.TypeShellScenes
                         break;
                     case Scenes.PerceivedType:
                         txts = new[] { AppString.ToolBar.Type, AppString.SideBar.PerceivedType, GetPerceivedTypeName(PerceivedType) };
                         image = AppImage.File;
                         index1 = 1;
-                        index2 = 5;
+                        index2 = 6; //MainForm.TypeShellScenes
                         break;
                     case Scenes.DirectoryType:
                         txts = new[] { AppString.ToolBar.Type, AppString.SideBar.DirectoryType };
                         image = AppImage.Directory;
                         index1 = 1;
-                        index2 = 6;
+                        index2 = 7; //MainForm.TypeShellScenes
                         break;
                 }
                 Text = "[ " + string.Join(" ]  ▶  [ ", txts) + " ]";
@@ -785,7 +786,7 @@ namespace ContextMenuManager.Controls
                         case Scenes.PerceivedType:
                             CurrentPerceivedType = PerceivedType; break;
                     }
-                    ((MainForm)FindForm()).JumpItem(index1, index2);
+                    ((MainForm)FindForm()).JumpItem(index1, index2);//
                 };
                 btnJump.MouseDown += (sender, e) => SwitchTab();
                 DoubleClick += (sender, e) => SwitchTab();
