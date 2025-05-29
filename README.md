@@ -67,3 +67,9 @@
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
   [Gitee Releases]: https://gitee.com/Jack251970/ContextMenuManager/releases
   [.NET Framework运行库]: https://dotnet.microsoft.com/zh-cn/download/dotnet-framework/net48
+
+## ❤️ 感谢
+
+要是你觉得这插件好用，就请我喝杯咖啡支持一下吧！
+
+[<img style="float:left" src="https://user-images.githubusercontent.com/14358394/115450238-f39e8100-a21b-11eb-89d0-fa4b82cdbce8.png" width="200">](https://ko-fi.com/jackye)
