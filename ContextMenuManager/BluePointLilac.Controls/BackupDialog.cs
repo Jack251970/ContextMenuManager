@@ -355,6 +355,21 @@ namespace BluePointLilac.Controls
                 // 传递根节点Checked改变
                 for (int i = 0; i < treeView.Nodes.Count; i++)
                 {
+                    for (int j = 0; j < treeView.Nodes[i].Nodes.Count; j++)
+                    {
+                        treeView.Nodes[i].Nodes[j].Checked = checkAll.Checked;
+                        if (checkAll.Checked)
+                        {
+                            if (!tvSelectedItems.Contains(treeView.Nodes[i].Nodes[j].Text))
+                            {
+                                tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
+                            }
+                        }
+                        else
+                        {
+                            tvSelectedItems.Remove(treeView.Nodes[i].Nodes[j].Text);
+                        }
+                    }
                     treeView.Nodes[i].Checked = checkAll.Checked;
                 }
             }
