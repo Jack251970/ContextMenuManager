@@ -63,7 +63,7 @@ namespace BluePointLilac.Controls
                 // 如果正在动画，反转动画方向
                 if (isAnimating)
                 {
-                    // 反转动画进度
+                    // 反转动画方向
                     animationProgress = 1 - animationProgress;
                 }
                 else
@@ -95,30 +95,19 @@ namespace BluePointLilac.Controls
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
             // 更新动画进度
-            double direction = targetCheckedState == currentCheckedState ? 1 : -1;
-            animationProgress += 0.08 * direction; // 控制动画速度
+            animationProgress += 0.08; // 控制动画速度
             
-            // 限制进度在0-1之间
-            if (animationProgress > 1) animationProgress = 1;
-            if (animationProgress < 0) animationProgress = 0;
-            
-            // 检查动画是否完成
-            bool animationComplete = (direction > 0 && animationProgress >= 1) || 
-                                    (direction < 0 && animationProgress <= 0);
-            
-            if (animationComplete)
+            if (animationProgress >= 1)
             {
                 // 动画完成
+                animationProgress = 1;
                 isAnimating = false;
                 animationTimer.Stop();
                 
                 // 更新实际状态
-                if (targetCheckedState != currentCheckedState)
-                {
-                    currentCheckedState = targetCheckedState;
-                    _Checked = currentCheckedState;
-                    CheckChanged?.Invoke();
-                }
+                currentCheckedState = targetCheckedState;
+                _Checked = currentCheckedState;
+                CheckChanged?.Invoke();
             }
             
             // 重绘控件
@@ -150,34 +139,37 @@ namespace BluePointLilac.Controls
                 // 计算动画中间状态
                 double easedProgress = EaseInOutCubic(progress);
                 
-                // 确定当前视觉状态
-                bool visualState = progress > 0.5 ? targetState : currentState;
+                // 确定当前视觉状态 - 根据动画方向调整
+                bool isTurningOn = targetState;
+                bool visualState = isTurningOn ? 
+                    (progress > 0.5) : 
+                    (progress < 0.5);
                 
                 // 背景渐变 - 使用动画中间颜色
                 Color startColor, endColor;
                 if (visualState)
                 {
-                    // 正在切换到开启状态
+                    // 开启状态的颜色
                     startColor = InterpolateColor(
                         Color.FromArgb(200, 200, 200),
                         MyMainForm.MainColor,
-                        easedProgress);
+                        isTurningOn ? easedProgress : (1 - easedProgress));
                     endColor = InterpolateColor(
                         Color.FromArgb(160, 160, 160),
                         Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
-                        easedProgress);
+                        isTurningOn ? easedProgress : (1 - easedProgress));
                 }
                 else
                 {
-                    // 正在切换到关闭状态
+                    // 关闭状态的颜色
                     startColor = InterpolateColor(
                         MyMainForm.MainColor,
                         Color.FromArgb(200, 200, 200),
-                        easedProgress);
+                        isTurningOn ? easedProgress : (1 - easedProgress));
                     endColor = InterpolateColor(
                         Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
                         Color.FromArgb(160, 160, 160),
-                        easedProgress);
+                        isTurningOn ? easedProgress : (1 - easedProgress));
                 }
                 
                 using (var bgPath = CreateRoundedRect(0, 0, w, h, r))
@@ -187,15 +179,9 @@ namespace BluePointLilac.Controls
                 }
 
                 // 按钮位置计算 - 使用动画中间位置
-                int startX = targetState ? padding : w - h + padding;
+                int startX = currentState ? padding : w - h + padding;
                 int endX = targetState ? w - h + padding : padding;
-                int currentX = currentState ? padding : w - h + padding;
-                
-                // 根据当前状态和目标状态确定起始位置
-                int buttonStartX = currentState == targetState ? currentX : startX;
-                int buttonEndX = currentState == targetState ? currentX : endX;
-                
-                int buttonX = (int)(buttonStartX + (buttonEndX - buttonStartX) * easedProgress);
+                int buttonX = (int)(startX + (endX - startX) * easedProgress);
                 int buttonY = padding;
 
                 // 按钮绘制（带阴影）
