@@ -4,7 +4,7 @@
     <img width="700" src="/Logo/Logo.png"></img>
 </div>
 <h1 align="center">ContextMenuManager</h1>
-<h4 align="center">一个纯粹的Windows右键菜单管理器，支持 Windows 7 ~ 11。</h4>
+<h4 align="center">一个纯粹的Windows右键菜单管理器，支持 Windows 7 ~ 11</h4>
 
 <div align="center">
 
