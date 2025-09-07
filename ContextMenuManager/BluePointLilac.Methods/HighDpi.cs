@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
 
 namespace BluePointLilac.Methods
 {

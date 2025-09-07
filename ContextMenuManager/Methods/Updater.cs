@@ -2,6 +2,7 @@
 using BluePointLilac.Methods;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -17,7 +18,7 @@ namespace ContextMenuManager.Methods
             //如果上次检测更新时间加上时间间隔早于或等于今天以前就进行更新操作
             DateTime time = AppConfig.LastCheckUpdateTime.AddDays(day);
             //time = DateTime.Today;//测试用
-            if(time <= DateTime.Today) new Action<bool>(Update).BeginInvoke(false, null, null);
+            if(time <= DateTime.Today) _ = Task.Run(() => Update(false));
         }
 
         /// <summary>更新程序以及程序字典</summary>
