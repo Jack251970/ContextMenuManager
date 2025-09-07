@@ -8,17 +8,99 @@ namespace BluePointLilac.Controls
 {
     public class MyListBox : Panel
     {
+        private int targetScrollPosition;
+        private Timer scrollAnimationTimer;
+        private const int ScrollAnimationDuration = 300; // 动画持续时间(ms)
+        private const int ScrollAnimationInterval = 15;  // 动画刷新间隔(ms)
+
         public MyListBox()
         {
             AutoScroll = true;
             BackColor = MyMainForm.FormBack;
             ForeColor = MyMainForm.FormFore;
+            
+            // 初始化滚动动画计时器
+            scrollAnimationTimer = new Timer { Interval = ScrollAnimationInterval };
+            scrollAnimationTimer.Tick += ScrollAnimationTimer_Tick;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             // 使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
             base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
+        }
+
+        // 平滑滚动到指定位置
+        public void SmoothScrollTo(int position)
+        {
+            if (scrollAnimationTimer.Enabled)
+                scrollAnimationTimer.Stop();
+
+            targetScrollPosition = Math.Max(0, Math.Min(position, VerticalScroll.Maximum));
+            
+            if (VerticalScroll.Value == targetScrollPosition)
+                return;
+
+            scrollAnimationTimer.Tag = DateTime.Now;
+            scrollAnimationTimer.Start();
+        }
+
+        // 平滑滚动指定距离
+        public void SmoothScrollBy(int delta)
+        {
+            SmoothScrollTo(VerticalScroll.Value + delta);
+        }
+
+        // 平滑滚动到顶部
+        public void SmoothScrollToTop()
+        {
+            SmoothScrollTo(0);
+        }
+
+        // 平滑滚动到底部
+        public void SmoothScrollToBottom()
+        {
+            SmoothScrollTo(VerticalScroll.Maximum);
+        }
+
+        private void ScrollAnimationTimer_Tick(object sender, EventArgs e)
+        {
+            if (!(scrollAnimationTimer.Tag is DateTime startTime))
+                return;
+
+            double elapsed = (DateTime.Now - startTime).TotalMilliseconds;
+            double progress = Math.Min(elapsed / ScrollAnimationDuration, 1.0);
+            
+            // 使用缓动函数使动画更自然
+            double easedProgress = EaseOutCubic(progress);
+            
+            int currentScroll = VerticalScroll.Value;
+            int newScroll = currentScroll + (int)((targetScrollPosition - currentScroll) * easedProgress);
+            
+            // 设置滚动位置
+            VerticalScroll.Value = Math.Max(0, Math.Min(newScroll, VerticalScroll.Maximum));
+            
+            if (progress >= 1.0)
+            {
+                scrollAnimationTimer.Stop();
+                VerticalScroll.Value = targetScrollPosition; // 确保最终位置准确
+            }
+        }
+
+        // 缓动函数 - 三次方缓出
+        private double EaseOutCubic(double progress)
+        {
+            return 1 - Math.Pow(1 - progress, 3);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                scrollAnimationTimer?.Stop();
+                scrollAnimationTimer?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 
