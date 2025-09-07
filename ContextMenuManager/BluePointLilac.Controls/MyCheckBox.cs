@@ -13,8 +13,8 @@ namespace BluePointLilac.Controls
         private Timer animationTimer;
         private double animationProgress = 0;
         private bool isAnimating = false;
+        private bool animationDirection; // true: on->off, false: off->on
         private bool targetCheckedState;
-        private bool currentCheckedState;
         
         public MyCheckBox()
         {
@@ -40,7 +40,6 @@ namespace BluePointLilac.Controls
                 {
                     // 首次设置，不执行动画
                     _Checked = value;
-                    currentCheckedState = value;
                     Image = SwitchImage(value);
                     return;
                 }
@@ -57,13 +56,14 @@ namespace BluePointLilac.Controls
                     return;
                 }
                 
-                // 设置目标状态
+                // 设置目标状态和动画方向
                 targetCheckedState = value;
+                animationDirection = !value; // 简化方向判断
                 
                 // 如果正在动画，反转动画方向
                 if (isAnimating)
                 {
-                    // 反转动画方向
+                    // 反转动画进度
                     animationProgress = 1 - animationProgress;
                 }
                 else
@@ -105,13 +105,12 @@ namespace BluePointLilac.Controls
                 animationTimer.Stop();
                 
                 // 更新实际状态
-                currentCheckedState = targetCheckedState;
-                _Checked = currentCheckedState;
+                _Checked = targetCheckedState;
                 CheckChanged?.Invoke();
             }
             
             // 重绘控件
-            Image = DrawAnimatedImage(animationProgress, currentCheckedState, targetCheckedState);
+            Image = DrawAnimatedImage(animationProgress, animationDirection);
             Invalidate();
         }
 
@@ -120,10 +119,10 @@ namespace BluePointLilac.Controls
 
         private static Image DrawImage(bool value)
         {
-            return DrawAnimatedImage(1.0, value, value);
+            return DrawAnimatedImage(1.0, !value);
         }
         
-        private static Image DrawAnimatedImage(double progress, bool currentState, bool targetState)
+        private static Image DrawAnimatedImage(double progress, bool direction)
         {
             int w = 80.DpiZoom(), h = 40.DpiZoom();
             int r = h / 2, padding = 4.DpiZoom();
@@ -139,37 +138,29 @@ namespace BluePointLilac.Controls
                 // 计算动画中间状态
                 double easedProgress = EaseInOutCubic(progress);
                 
-                // 确定当前视觉状态 - 根据动画方向调整
-                bool isTurningOn = targetState;
-                bool visualState = isTurningOn ? 
-                    (progress > 0.5) : 
-                    (progress < 0.5);
-                
                 // 背景渐变 - 使用动画中间颜色
                 Color startColor, endColor;
-                if (visualState)
+                if (direction) // 关闭方向
                 {
-                    // 开启状态的颜色
                     startColor = InterpolateColor(
-                        Color.FromArgb(200, 200, 200),
                         MyMainForm.MainColor,
-                        isTurningOn ? easedProgress : (1 - easedProgress));
+                        Color.FromArgb(200, 200, 200),
+                        easedProgress);
                     endColor = InterpolateColor(
-                        Color.FromArgb(160, 160, 160),
                         Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
-                        isTurningOn ? easedProgress : (1 - easedProgress));
+                        Color.FromArgb(160, 160, 160),
+                        easedProgress);
                 }
-                else
+                else // 开启方向
                 {
-                    // 关闭状态的颜色
                     startColor = InterpolateColor(
-                        MyMainForm.MainColor,
                         Color.FromArgb(200, 200, 200),
-                        isTurningOn ? easedProgress : (1 - easedProgress));
+                        MyMainForm.MainColor,
+                        easedProgress);
                     endColor = InterpolateColor(
-                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
                         Color.FromArgb(160, 160, 160),
-                        isTurningOn ? easedProgress : (1 - easedProgress));
+                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
+                        easedProgress);
                 }
                 
                 using (var bgPath = CreateRoundedRect(0, 0, w, h, r))
@@ -179,8 +170,8 @@ namespace BluePointLilac.Controls
                 }
 
                 // 按钮位置计算 - 使用动画中间位置
-                int startX = currentState ? padding : w - h + padding;
-                int endX = targetState ? w - h + padding : padding;
+                int startX = direction ? w - h + padding : padding;
+                int endX = direction ? padding : w - h + padding;
                 int buttonX = (int)(startX + (endX - startX) * easedProgress);
                 int buttonY = padding;
 
