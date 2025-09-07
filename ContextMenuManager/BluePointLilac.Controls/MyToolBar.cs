@@ -2,7 +2,6 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Drawing.Drawing2D;
 
 namespace BluePointLilac.Controls
 {
@@ -32,16 +31,12 @@ namespace BluePointLilac.Controls
                 {
                     selectedButton.Opacity = UnSelctedOpacity; // 动画过渡到未选中状态
                     selectedButton.Cursor = Cursors.Hand;
-                    selectedButton.IsSelected = false;
-                    selectedButton.Invalidate(); // 强制重绘以更新选中状态
                 }
                 selectedButton = value;
                 if (selectedButton != null)
                 {
                     selectedButton.Opacity = SelctedOpacity; // 动画过渡到选中状态
                     selectedButton.Cursor = Cursors.Default;
-                    selectedButton.IsSelected = true;
-                    selectedButton.Invalidate(); // 强制重绘以更新选中状态
                 }
                 SelectedButtonChanged?.Invoke(this, null);
             }
@@ -95,24 +90,35 @@ namespace BluePointLilac.Controls
 
             var rect = ClientRectangle;
 
-            // 使用三色渐变色
-            Color color1 = Color.LightYellow; // 浅黄色
-            Color color2 = Color.Gold;        // 金色
-            Color color3 = Color.Orange;      // 橙色
-
-            // 创建三色渐变
-            using (var brush = new LinearGradientBrush(
-                rect, color1, color3, LinearGradientMode.Vertical))
+            Color startColor, endColor;
+            if (IsDarkMode())
             {
-                // 设置混合位置
-                var blend = new ColorBlend
-                {
-                    Colors = new[] { color1, color2, color3 },
-                    Positions = new[] { 0f, 0.5f, 1f }
-                };
-                brush.InterpolationColors = blend;
+                startColor = Color.FromArgb(30, 30, 30); // 深色模式起始颜色
+                endColor = Color.FromArgb(50, 50, 50);   // 深色模式结束颜色
+            }
+            else
+            {
+                startColor = Color.FromArgb(240, 240, 240); // 浅色模式起始颜色
+                endColor = Color.FromArgb(200, 200, 200);  // 浅色模式结束颜色
+            }
 
+            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
+                rect, startColor, endColor, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+            {
                 e.Graphics.FillRectangle(brush, rect);
+            }
+        }
+
+        private bool IsDarkMode()
+        {
+            try
+            {
+                var key = Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1);
+                return key != null && (int)key == 0; // 0 表示深色模式
+            }
+            catch
+            {
+                return false; // 默认返回浅色模式
             }
         }
     }
@@ -122,8 +128,6 @@ namespace BluePointLilac.Controls
         private float targetOpacity;
         private readonly Timer animationTimer = new Timer { Interval = 16 };
         private const float AnimationSpeed = 0.15f;
-        private const int CornerRadius = 12; // 圆角半径
-        private readonly Color selectedBackgroundColor = Color.FromArgb(204, 255, 255, 255); // 80%透明白色
 
         public MyToolBarButton(Image image, string text)
         {
@@ -176,7 +180,7 @@ namespace BluePointLilac.Controls
 
         public float Opacity
         {
-            get => targetOpacity;
+            get => BackColor.A / 255f;
             set
             {
                 value = Math.Max(0f, Math.Min(1f, value));
@@ -186,18 +190,24 @@ namespace BluePointLilac.Controls
             }
         }
 
-        public bool IsSelected { get; set; }
-
         private void UpdateAnimation()
         {
-            // 只需要触发重绘即可
-            this.Invalidate();
-            this.Update();
-            
-            // 检查是否需要停止定时器
-            if (Math.Abs(targetOpacity - Opacity) < 0.01f)
+            var currentOpacity = Opacity;
+            var newOpacity = currentOpacity + (targetOpacity - currentOpacity) * AnimationSpeed;
+            var difference = Math.Abs(newOpacity - targetOpacity);
+
+            if (difference < 0.01f)
             {
+                newOpacity = targetOpacity;
                 animationTimer.Stop();
+            }
+
+            BackColor = Color.FromArgb((int)(newOpacity * 255), MyMainForm.FormFore);
+
+            if (difference >= 0.01f)
+            {
+                this.Invalidate();
+                this.Update();
             }
         }
 
@@ -208,56 +218,6 @@ namespace BluePointLilac.Controls
             base.OnResize(e);
             lblText.Left = (Width - lblText.Width) / 2;
             picImage.Left = (Width - picImage.Width) / 2;
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            // 使用透明色清除背景，而不是黑色
-            using (var brush = new SolidBrush(Color.Transparent))
-            {
-                e.Graphics.FillRectangle(brush, ClientRectangle);
-            }
-            
-            // 如果是选中状态，绘制80%透明白色的圆角矩形
-            if (IsSelected)
-            {
-                using (var path = GetRoundedRectanglePath(ClientRectangle, CornerRadius))
-                using (var brush = new SolidBrush(selectedBackgroundColor))
-                {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    e.Graphics.FillPath(brush, path);
-                }
-            }
-            // 如果不是选中状态但有透明度（悬停状态），绘制半透明背景
-            else if (targetOpacity > 0)
-            {
-                using (var path = GetRoundedRectanglePath(ClientRectangle, CornerRadius))
-                using (var brush = new SolidBrush(Color.FromArgb((int)(targetOpacity * 255), 255, 255, 255)))
-                {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    e.Graphics.FillPath(brush, path);
-                }
-            }
-            
-            // 绘制图片和文本
-            base.OnPaint(e);
-        }
-
-        protected override void OnPaintBackground(PaintEventArgs e)
-        {
-            // 不绘制默认背景，避免覆盖透明效果
-            // base.OnPaintBackground(e);
-        }
-
-        private GraphicsPath GetRoundedRectanglePath(Rectangle rect, int radius)
-        {
-            var path = new GraphicsPath();
-            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
-            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
-            path.CloseFigure();
-            return path;
         }
     }
 }
