@@ -20,12 +20,26 @@ namespace BluePointLilac.Controls
         private static readonly Image TurnOn = DrawStaticImage(true);
         private static readonly Image TurnOff = DrawStaticImage(false);
         
+        // 预计算尺寸和位置
+        private static int WidthPx, HeightPx, RadiusPx, PaddingPx, ButtonSizePx;
+        
+        static MyCheckBox()
+        {
+            // 预计算尺寸，避免重复计算
+            HeightPx = 40.DpiZoom();
+            WidthPx = 80.DpiZoom();
+            RadiusPx = HeightPx / 2;
+            PaddingPx = 4.DpiZoom();
+            ButtonSizePx = HeightPx - PaddingPx * 2;
+        }
+        
         public MyCheckBox()
         {
             // 启用双缓冲
             this.SetStyle(ControlStyles.AllPaintingInWmPaint | 
                          ControlStyles.UserPaint | 
-                         ControlStyles.OptimizedDoubleBuffer, true);
+                         ControlStyles.OptimizedDoubleBuffer | 
+                         ControlStyles.ResizeRedraw, true);
             
             Image = TurnOff;
             Cursor = Cursors.Hand;
@@ -33,7 +47,7 @@ namespace BluePointLilac.Controls
             
             // 初始化动画计时器
             animationTimer = new Timer();
-            animationTimer.Interval = 10; // 提高帧率到约100FPS
+            animationTimer.Interval = 16; // 约60FPS
             animationTimer.Tick += AnimationTimer_Tick;
         }
 
@@ -104,7 +118,7 @@ namespace BluePointLilac.Controls
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
             // 更新动画进度
-            animationProgress += 0.12; // 增加动画速度
+            animationProgress += 0.10; // 调整动画速度
             
             if (animationProgress >= 1)
             {
@@ -126,16 +140,18 @@ namespace BluePointLilac.Controls
                 Image = DrawAnimatedImage(animationProgress, animationDirection);
             }
             
-            Invalidate();
+            // 使用BeginInvoke确保在UI线程上更新
+            BeginInvoke((MethodInvoker)delegate {
+                Refresh();
+            });
         }
 
         private static Image DrawStaticImage(bool value)
         {
-            int w = 80.DpiZoom(), h = 40.DpiZoom();
-            int r = h / 2, padding = 4.DpiZoom();
-            var bitmap = new Bitmap(w, h);
-
+            var bitmap = new Bitmap(WidthPx, HeightPx);
+            
             using (Graphics g = Graphics.FromImage(bitmap))
+            using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -152,31 +168,30 @@ namespace BluePointLilac.Controls
                     endColor = Color.FromArgb(160, 160, 160);
                 }
                 
-                using (var bgPath = CreateRoundedRect(0, 0, w, h, r))
-                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, w, h), startColor, endColor, 90f))
+                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), startColor, endColor, 90f))
                 {
                     g.FillPath(bgBrush, bgPath);
                 }
 
                 // 按钮位置
-                int buttonX = value ? w - h + padding : padding;
-                int buttonY = padding;
+                int buttonX = value ? WidthPx - HeightPx + PaddingPx : PaddingPx;
+                int buttonY = PaddingPx;
 
                 // 按钮绘制（带阴影）
-                using (var shadowPath = CreateRoundedRect(buttonX - 2, buttonY - 2, h - padding * 2 + 4, h - padding * 2 + 4, (h - padding * 2) / 2))
+                using (var shadowPath = CreateRoundedRect(buttonX - 2, buttonY - 2, ButtonSizePx + 4, ButtonSizePx + 4, ButtonSizePx / 2))
                 using (var shadowBrush = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
                 {
                     g.FillPath(shadowBrush, shadowPath);
                 }
 
-                using (var buttonPath = CreateRoundedRect(buttonX, buttonY, h - padding * 2, h - padding * 2, (h - padding * 2) / 2))
+                using (var buttonPath = CreateRoundedRect(buttonX, buttonY, ButtonSizePx, ButtonSizePx, ButtonSizePx / 2))
                 using (var buttonBrush = new SolidBrush(Color.White))
                 {
                     g.FillPath(buttonBrush, buttonPath);
                 }
 
                 // 高光效果
-                using (var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, (h - padding * 2) / 2, (h - padding * 2) / 2, (h - padding * 2) / 4))
+                using (var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, ButtonSizePx / 2, ButtonSizePx / 2, ButtonSizePx / 4))
                 using (var highlightBrush = new SolidBrush(Color.FromArgb(100, 255, 255, 255)))
                 {
                     g.FillPath(highlightBrush, highlightPath);
@@ -187,11 +202,10 @@ namespace BluePointLilac.Controls
         
         private static Image DrawAnimatedImage(double progress, bool direction)
         {
-            int w = 80.DpiZoom(), h = 40.DpiZoom();
-            int r = h / 2, padding = 4.DpiZoom();
-            var bitmap = new Bitmap(w, h);
-
+            var bitmap = new Bitmap(WidthPx, HeightPx);
+            
             using (Graphics g = Graphics.FromImage(bitmap))
+            using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -223,33 +237,32 @@ namespace BluePointLilac.Controls
                         easedProgress);
                 }
                 
-                using (var bgPath = CreateRoundedRect(0, 0, w, h, r))
-                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, w, h), startColor, endColor, 90f))
+                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), startColor, endColor, 90f))
                 {
                     g.FillPath(bgBrush, bgPath);
                 }
 
                 // 按钮位置计算 - 使用动画中间位置
-                int startX = direction ? w - h + padding : padding;
-                int endX = direction ? padding : w - h + padding;
+                int startX = direction ? WidthPx - HeightPx + PaddingPx : PaddingPx;
+                int endX = direction ? PaddingPx : WidthPx - HeightPx + PaddingPx;
                 int buttonX = (int)(startX + (endX - startX) * easedProgress);
-                int buttonY = padding;
+                int buttonY = PaddingPx;
 
                 // 按钮绘制（带阴影）
-                using (var shadowPath = CreateRoundedRect(buttonX - 2, buttonY - 2, h - padding * 2 + 4, h - padding * 2 + 4, (h - padding * 2) / 2))
+                using (var shadowPath = CreateRoundedRect(buttonX - 2, buttonY - 2, ButtonSizePx + 4, ButtonSizePx + 4, ButtonSizePx / 2))
                 using (var shadowBrush = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
                 {
                     g.FillPath(shadowBrush, shadowPath);
                 }
 
-                using (var buttonPath = CreateRoundedRect(buttonX, buttonY, h - padding * 2, h - padding * 2, (h - padding * 2) / 2))
+                using (var buttonPath = CreateRoundedRect(buttonX, buttonY, ButtonSizePx, ButtonSizePx, ButtonSizePx / 2))
                 using (var buttonBrush = new SolidBrush(Color.White))
                 {
                     g.FillPath(buttonBrush, buttonPath);
                 }
 
                 // 高光效果
-                using (var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, (h - padding * 2) / 2, (h - padding * 2) / 2, (h - padding * 2) / 4))
+                using (var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, ButtonSizePx / 2, ButtonSizePx / 2, ButtonSizePx / 4))
                 using (var highlightBrush = new SolidBrush(Color.FromArgb(100, 255, 255, 255)))
                 {
                     g.FillPath(highlightBrush, highlightPath);
