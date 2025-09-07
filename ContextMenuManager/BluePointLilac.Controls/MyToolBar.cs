@@ -32,12 +32,14 @@ namespace BluePointLilac.Controls
                 {
                     selectedButton.Opacity = UnSelctedOpacity; // 动画过渡到未选中状态
                     selectedButton.Cursor = Cursors.Hand;
+                    selectedButton.IsSelected = false;
                 }
                 selectedButton = value;
                 if (selectedButton != null)
                 {
                     selectedButton.Opacity = SelctedOpacity; // 动画过渡到选中状态
                     selectedButton.Cursor = Cursors.Default;
+                    selectedButton.IsSelected = true;
                 }
                 SelectedButtonChanged?.Invoke(this, null);
             }
@@ -118,6 +120,7 @@ namespace BluePointLilac.Controls
         private float targetOpacity;
         private readonly Timer animationTimer = new Timer { Interval = 16 };
         private const float AnimationSpeed = 0.15f;
+        private const int CornerRadius = 12; // 圆角半径
 
         public MyToolBarButton(Image image, string text)
         {
@@ -180,6 +183,8 @@ namespace BluePointLilac.Controls
             }
         }
 
+        public bool IsSelected { get; set; }
+
         private void UpdateAnimation()
         {
             var currentOpacity = Opacity;
@@ -208,6 +213,33 @@ namespace BluePointLilac.Controls
             base.OnResize(e);
             lblText.Left = (Width - lblText.Width) / 2;
             picImage.Left = (Width - picImage.Width) / 2;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            
+            // 如果处于选中状态，绘制圆角背景
+            if (IsSelected && Opacity > 0)
+            {
+                using (var path = GetRoundedRectanglePath(ClientRectangle, CornerRadius))
+                using (var brush = new SolidBrush(BackColor))
+                {
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.FillPath(brush, path);
+                }
+            }
+        }
+
+        private GraphicsPath GetRoundedRectanglePath(Rectangle rect, int radius)
+        {
+            var path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
         }
     }
 }
