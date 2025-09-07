@@ -176,7 +176,7 @@ namespace BluePointLilac.Controls
 
         public float Opacity
         {
-            get => BackColor.A / 255f;
+            get => targetOpacity;
             set
             {
                 value = Math.Max(0f, Math.Min(1f, value));
@@ -190,22 +190,15 @@ namespace BluePointLilac.Controls
 
         private void UpdateAnimation()
         {
-            var currentOpacity = Opacity;
-            var newOpacity = currentOpacity + (targetOpacity - currentOpacity) * AnimationSpeed;
-            var difference = Math.Abs(newOpacity - targetOpacity);
-
-            if (difference < 0.01f)
+            // 不再使用BackColor来存储透明度，而是直接使用targetOpacity
+            // 只需要触发重绘即可
+            this.Invalidate();
+            this.Update();
+            
+            // 检查是否需要停止定时器
+            if (Math.Abs(targetOpacity - Opacity) < 0.01f)
             {
-                newOpacity = targetOpacity;
                 animationTimer.Stop();
-            }
-
-            BackColor = Color.FromArgb((int)(newOpacity * 255), MyMainForm.FormFore);
-
-            if (difference >= 0.01f)
-            {
-                this.Invalidate();
-                this.Update();
             }
         }
 
@@ -220,24 +213,37 @@ namespace BluePointLilac.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            // 先绘制圆角背景
-            if (Opacity > 0)
+            // 清除背景，确保没有残留
+            e.Graphics.Clear(BackColor);
+            
+            // 如果是选中状态，绘制80%透明白色的圆角矩形
+            if (IsSelected)
             {
                 using (var path = GetRoundedRectanglePath(ClientRectangle, CornerRadius))
-                using (var brush = new SolidBrush(IsSelected ? selectedBackgroundColor : BackColor))
+                using (var brush = new SolidBrush(selectedBackgroundColor))
+                {
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.FillPath(brush, path);
+                }
+            }
+            // 如果不是选中状态但有透明度（悬停状态），绘制半透明背景
+            else if (Opacity > 0)
+            {
+                using (var path = GetRoundedRectanglePath(ClientRectangle, CornerRadius))
+                using (var brush = new SolidBrush(Color.FromArgb((int)(Opacity * 255), MyMainForm.FormFore)))
                 {
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     e.Graphics.FillPath(brush, path);
                 }
             }
             
-            // 然后绘制子控件
+            // 绘制图片和文本
             base.OnPaint(e);
         }
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
-            // 不绘制默认背景，避免覆盖圆角效果
+            // 不绘制默认背景
             // base.OnPaintBackground(e);
         }
 
