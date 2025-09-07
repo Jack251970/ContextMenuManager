@@ -26,9 +26,8 @@
   [GitHub Releases][GitHub Releases]<br>
   [Gitee Releases][Gitee Releases]<br>
 * 下载说明：在Assets文件列表里面下载zip（建议）或者直接下载exe
-* .NET版本说明：程序基于.NET4.8，适用于Win11、10、8.1、8、7<br>
-  Win8、8.1、10、11自带.NET4.8，win7不自带.NET4.8<br>
-  自带.NET可直接运行程序，不自带则需要安装对应版本的[.NET Framework运行库]
+* .NET版本说明：程序基于.NET9，适用于Win11、10、8.1、8、7<br>
+  如果您的设备不包含.NET9，则需要安装对应版本的[.NET Framework运行库]
 
 ## ⭐ 主要功能
 * 启用或禁用文件、文件夹、新建、发送到、打开方式、自定义文件格式、IE浏览器、WinX等右键菜单项目并对右键菜单进行备份和恢复
@@ -78,7 +77,7 @@
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
   [Gitee Releases]: https://gitee.com/Jack251970/ContextMenuManager/releases
-  [.NET Framework运行库]: https://dotnet.microsoft.com/zh-cn/download/dotnet-framework/net48
+  [.NET Framework运行库]: https://dotnet.microsoft.com/zh-cn/download/dotnet/9.0
 
 ## ❤️ 感谢
 
