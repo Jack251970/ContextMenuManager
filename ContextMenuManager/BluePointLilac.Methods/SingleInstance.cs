@@ -83,13 +83,13 @@ namespace BluePointLilac.Methods
 
             string vbsPath = Path.GetTempPath() + Guid.NewGuid() + ".vbs";
             File.WriteAllLines(vbsPath, contents.ToArray(), Encoding.Unicode);
-            Application.Exit();
             using(Process process = new Process())
             {
                 process.StartInfo.FileName = "wscript.exe";
                 process.StartInfo.Arguments = vbsPath;
                 process.Start();
             }
+            Application.Exit();
         }
     }
 }
