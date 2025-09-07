@@ -90,35 +90,14 @@ namespace BluePointLilac.Controls
 
             var rect = ClientRectangle;
 
-            Color startColor, endColor;
-            if (IsDarkMode())
-            {
-                startColor = Color.FromArgb(30, 30, 30); // 深色模式起始颜色
-                endColor = Color.FromArgb(50, 50, 50);   // 深色模式结束颜色
-            }
-            else
-            {
-                startColor = Color.FromArgb(240, 240, 240); // 浅色模式起始颜色
-                endColor = Color.FromArgb(200, 200, 200);  // 浅色模式结束颜色
-            }
+            // 使用黄色渐变色
+            Color startColor = Color.LightYellow; // 浅黄色
+            Color endColor = Color.Gold;          // 金色
 
             using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
                 rect, startColor, endColor, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
             {
                 e.Graphics.FillRectangle(brush, rect);
-            }
-        }
-
-        private bool IsDarkMode()
-        {
-            try
-            {
-                var key = Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1);
-                return key != null && (int)key == 0; // 0 表示深色模式
-            }
-            catch
-            {
-                return false; // 默认返回浅色模式
             }
         }
     }
