@@ -1,13 +1,26 @@
 **简体中文** | **[English](README-en.md)**
 
-# ContextMenuManager
-![](Logo/Logo.png)
-------
-> 🖱️ 一个纯粹的Windows右键菜单管理程序，支持 Windows 7 ~ 11。
+<div align="center">
+    <img width="800" src="/Logo/Logo.png"></img>
+</div>
+<h1 align="center">ContextMenuManager</h1>
+<h4 align="center">一个纯粹的Windows右键菜单管理器，支持 Windows 7 ~ 11。</h4>
+
+<div align="center">
+
+![GitHub Release](https://img.shields.io/github/v/release/Jack251970/ContextMenuManager?label=版本)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Jack251970/ContextMenuManager/total?label=下载量)
+[![Stars](https://img.shields.io/github/stars/Jack251970/ContextMenuManager?style=flat&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHBhdGggZD0iTTggLjI1YS43NS43NSAwIDAgMSAuNjczLjQxOGwxLjg4MiAzLjgxNSA0LjIxLjYxMmEuNzUuNzUgMCAwIDEgLjQxNiAxLjI3OWwtMy4wNDYgMi45Ny43MTkgNC4xOTJhLjc1MS43NTEgMCAwIDEtMS4wODguNzkxTDggMTIuMzQ3bC0zLjc2NiAxLjk4YS43NS43NSAwIDAgMS0xLjA4OC0uNzlsLjcyLTQuMTk0TC44MTggNi4zNzRhLjc1Ljc1IDAgMCAxIC40MTYtMS4yOGw0LjIxLS42MTFMNy4zMjcuNjY4QS43NS43NSAwIDAgMSA4IC4yNVoiIGZpbGw9IiNlYWM1NGYiLz48L3N2Zz4=&logoSize=auto&label=Stars)](https://github.com/Jack251970/ContextMenuManager/)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/Jack251970/ContextMenuManager)
+
+</div>
+
+---
 
 ## 💕 特别感谢
 * 本项目基于 [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager) 进行开发，感谢作者 [蓝点lilac](https://github.com/BluePointLilac)！
 * 感谢由 [蓝芸柒](https://github.com/LanYunSeven) 制作的的新图标！
+* 感谢由 [澜芸](https://github.com/LanYun2022) 制作的的新图标！
 
 ## 🚀 程序下载
 * [最新版本][Latest]<br>
