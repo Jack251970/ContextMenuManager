@@ -42,7 +42,7 @@ jobs:
       # Get package version
       - name: Get Package Version
         run: |
-         $version = [system.diagnostics.fileversioninfo]::getversioninfo("bin\Release\net9.0-windows\ContextMenuManager.dll").fileversion
+         $version = [system.diagnostics.fileversioninfo]::getversioninfo("ContextMenuManager\bin\Release\net9.0-windows\ContextMenuManager.dll").fileversion
          echo "release_version=$version" | out-file -filepath $env:github_env -encoding utf-8 -append
 
       # Publish the project
@@ -53,5 +53,5 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: bin\Publish\ContextMenuManager.exe
+          files: ContextMenuManager\bin\Publish\ContextMenuManager.exe
           tag_name: "${{ env.release_version }}"
