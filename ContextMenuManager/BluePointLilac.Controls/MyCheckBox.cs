@@ -10,11 +10,21 @@ namespace BluePointLilac.Controls
     [DefaultProperty("Checked")]
     public class MyCheckBox : PictureBox
     {
+        private Timer animationTimer;
+        private double animationProgress = 0;
+        private bool isAnimating = false;
+        private bool targetCheckedState;
+        
         public MyCheckBox()
         {
             Image = TurnOff;
             Cursor = Cursors.Hand;
             SizeMode = PictureBoxSizeMode.AutoSize;
+            
+            // 初始化动画计时器
+            animationTimer = new Timer();
+            animationTimer.Interval = 16; // 约60FPS
+            animationTimer.Tick += AnimationTimer_Tick;
         }
 
         private bool? _Checked = null;
@@ -24,25 +34,32 @@ namespace BluePointLilac.Controls
             set
             {
                 if (_Checked == value) return;
-                Image = SwitchImage(value);
+                
                 if (_Checked == null)
                 {
+                    // 首次设置，不执行动画
                     _Checked = value;
+                    Image = SwitchImage(value);
                     return;
                 }
+                
                 if (PreCheckChanging != null && !PreCheckChanging.Invoke())
                 {
-                    Image = SwitchImage(!value);
                     return;
                 }
+                
                 CheckChanging?.Invoke();
+                
                 if (PreCheckChanged != null && !PreCheckChanged.Invoke())
                 {
-                    Image = SwitchImage(!value);
                     return;
                 }
-                _Checked = value;
-                CheckChanged?.Invoke();
+                
+                // 开始动画
+                targetCheckedState = value;
+                isAnimating = true;
+                animationProgress = 0;
+                animationTimer.Start();
             }
         }
 
@@ -61,11 +78,38 @@ namespace BluePointLilac.Controls
             base.OnMouseDown(e);
             if (e.Button == MouseButtons.Left) Checked = !Checked;
         }
+        
+        private void AnimationTimer_Tick(object sender, EventArgs e)
+        {
+            // 更新动画进度
+            animationProgress += 0.08; // 控制动画速度
+            
+            if (animationProgress >= 1)
+            {
+                // 动画完成
+                animationProgress = 1;
+                isAnimating = false;
+                animationTimer.Stop();
+                
+                // 更新实际状态
+                _Checked = targetCheckedState;
+                CheckChanged?.Invoke();
+            }
+            
+            // 重绘控件
+            Image = DrawAnimatedImage(animationProgress, targetCheckedState);
+            Invalidate();
+        }
 
         private static readonly Image TurnOn = DrawImage(true);
         private static readonly Image TurnOff = DrawImage(false);
 
         private static Image DrawImage(bool value)
+        {
+            return DrawAnimatedImage(1.0, value);
+        }
+        
+        private static Image DrawAnimatedImage(double progress, bool targetState)
         {
             int w = 80.DpiZoom(), h = 40.DpiZoom();
             int r = h / 2, padding = 4.DpiZoom();
@@ -78,20 +122,46 @@ namespace BluePointLilac.Controls
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                // 背景渐变
-                using (var bgPath = CreateRoundedRect(0, 0, w, h, r))
+                // 计算动画中间状态
+                double easedProgress = EaseInOutCubic(progress);
+                
+                // 背景渐变 - 使用动画中间颜色
+                Color startColor, endColor;
+                if (targetState)
                 {
-                    Color startColor = value ? MyMainForm.MainColor : Color.FromArgb(200, 200, 200);
-                    Color endColor = value ? Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B) :
-                                             Color.FromArgb(160, 160, 160);
-                    using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, w, h), startColor, endColor, 90f))
-                    {
-                        g.FillPath(bgBrush, bgPath);
-                    }
+                    // 正在切换到开启状态
+                    startColor = InterpolateColor(
+                        Color.FromArgb(200, 200, 200),
+                        MyMainForm.MainColor,
+                        easedProgress);
+                    endColor = InterpolateColor(
+                        Color.FromArgb(160, 160, 160),
+                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
+                        easedProgress);
+                }
+                else
+                {
+                    // 正在切换到关闭状态
+                    startColor = InterpolateColor(
+                        MyMainForm.MainColor,
+                        Color.FromArgb(200, 200, 200),
+                        easedProgress);
+                    endColor = InterpolateColor(
+                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
+                        Color.FromArgb(160, 160, 160),
+                        easedProgress);
+                }
+                
+                using (var bgPath = CreateRoundedRect(0, 0, w, h, r))
+                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, w, h), startColor, endColor, 90f))
+                {
+                    g.FillPath(bgBrush, bgPath);
                 }
 
-                // 按钮位置计算
-                int buttonX = value ? w - h + padding : padding;
+                // 按钮位置计算 - 使用动画中间位置
+                int startX = targetState ? padding : w - h + padding;
+                int endX = targetState ? w - h + padding : padding;
+                int buttonX = (int)(startX + (endX - startX) * easedProgress);
                 int buttonY = padding;
 
                 // 按钮绘制（带阴影）
@@ -102,11 +172,9 @@ namespace BluePointLilac.Controls
                 }
 
                 using (var buttonPath = CreateRoundedRect(buttonX, buttonY, h - padding * 2, h - padding * 2, (h - padding * 2) / 2))
+                using (var buttonBrush = new SolidBrush(Color.White))
                 {
-                    using (var buttonBrush = new SolidBrush(Color.White))
-                    {
-                        g.FillPath(buttonBrush, buttonPath);
-                    }
+                    g.FillPath(buttonBrush, buttonPath);
                 }
 
                 // 高光效果
@@ -118,6 +186,21 @@ namespace BluePointLilac.Controls
             }
             return bitmap;
         }
+        
+        // 缓动函数 - 使动画更加自然
+        private static double EaseInOutCubic(double t)
+        {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
+        }
+        
+        // 颜色插值函数
+        private static Color InterpolateColor(Color start, Color end, double progress)
+        {
+            int r = (int)(start.R + (end.R - start.R) * progress);
+            int g = (int)(start.G + (end.G - start.G) * progress);
+            int b = (int)(start.B + (end.B - start.B) * progress);
+            return Color.FromArgb(r, g, b);
+        }
 
         private static GraphicsPath CreateRoundedRect(float x, float y, float width, float height, float radius)
         {
@@ -128,6 +211,15 @@ namespace BluePointLilac.Controls
             path.AddArc(x, y + height - radius * 2, radius * 2, radius * 2, 90, 90); // 左下角
             path.CloseFigure();
             return path;
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                animationTimer?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
