@@ -9,12 +9,19 @@ namespace BluePointLilac.Controls
 {
     public sealed class UAWebClient : WebClient
     {
-        public UAWebClient()
+        static UAWebClient()
         {
+            // 确保能在Win10上工作
+            ServicePointManager.Expect100Continue = true;
             //此类主要为了解决访问Github的一些问题
             //请求被中止: 未能创建 SSL/TLS 安全通道; 基础连接已经关闭: 发送时发生错误，一般添加TLS12即可
             //TLS12------0xc00，TLS11------0x300，TLS------0xc0，SSL------0x30;
-            ServicePointManager.SecurityProtocol = (SecurityProtocolType)(0xc00 | 0x300 | 0xc0 | 0x30);
+            ServicePointManager.SecurityProtocol |= /*SecurityProtocolType.Ssl3 | */SecurityProtocolType.Tls
+                | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+        }
+
+        public UAWebClient()
+        {
             //网络传输默认文本编码 UTF-8
             Encoding = Encoding.UTF8;
             //远程服务器返回错误: (403) 已禁止
