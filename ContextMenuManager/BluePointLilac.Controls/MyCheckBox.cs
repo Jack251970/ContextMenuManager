@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+﻿﻿using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -117,6 +117,13 @@ namespace BluePointLilac.Controls
         
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
+            // 检查控件是否已释放
+            if (this.IsDisposed)
+            {
+                animationTimer.Stop();
+                return;
+            }
+            
             // 更新动画进度
             animationProgress += 0.10; // 调整动画速度
             
@@ -129,10 +136,12 @@ namespace BluePointLilac.Controls
                 
                 // 更新实际状态
                 _Checked = targetCheckedState;
-                CheckChanged?.Invoke();
                 
                 // 使用静态图像以提高性能
                 Image = SwitchImage(targetCheckedState);
+                
+                // 触发事件
+                CheckChanged?.Invoke();
             }
             else
             {
@@ -140,10 +149,8 @@ namespace BluePointLilac.Controls
                 Image = DrawAnimatedImage(animationProgress, animationDirection);
             }
             
-            // 使用BeginInvoke确保在UI线程上更新
-            BeginInvoke((MethodInvoker)delegate {
-                Refresh();
-            });
+            // 直接刷新，不需要BeginInvoke
+            Refresh();
         }
 
         private static Image DrawStaticImage(bool value)
@@ -151,7 +158,6 @@ namespace BluePointLilac.Controls
             var bitmap = new Bitmap(WidthPx, HeightPx);
             
             using (Graphics g = Graphics.FromImage(bitmap))
-            using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -168,6 +174,7 @@ namespace BluePointLilac.Controls
                     endColor = Color.FromArgb(160, 160, 160);
                 }
                 
+                using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
                 using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), startColor, endColor, 90f))
                 {
                     g.FillPath(bgBrush, bgPath);
@@ -205,7 +212,6 @@ namespace BluePointLilac.Controls
             var bitmap = new Bitmap(WidthPx, HeightPx);
             
             using (Graphics g = Graphics.FromImage(bitmap))
-            using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -237,6 +243,7 @@ namespace BluePointLilac.Controls
                         easedProgress);
                 }
                 
+                using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
                 using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), startColor, endColor, 90f))
                 {
                     g.FillPath(bgBrush, bgPath);
@@ -301,7 +308,10 @@ namespace BluePointLilac.Controls
         {
             if (disposing)
             {
+                // 停止并释放计时器
+                animationTimer?.Stop();
                 animationTimer?.Dispose();
+                animationTimer = null;
             }
             base.Dispose(disposing);
         }
