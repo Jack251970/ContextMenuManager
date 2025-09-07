@@ -109,8 +109,7 @@ namespace ContextMenuManager.Methods
                     using(UAWebClient client = new UAWebClient())
                     {
                         string fileUrl = $"{dirUrl}/{Path.GetFileName(filePath)}";
-                        var func = new Func<string, string, bool>(client.WebStringToFile);
-                        bool flag = func.EndInvoke(func.BeginInvoke(filePath, fileUrl, null, null));
+                        bool flag = client.WebStringToFile(filePath, fileUrl);
                         string item = "\r\n ● " + Path.GetFileName(filePath);
                         if(flag) succeeded += item;
                         else failed += item;
