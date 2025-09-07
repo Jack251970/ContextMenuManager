@@ -1,13 +1,25 @@
 **[简体中文](README.md)** | **English**
 
-# ContextMenuManager
-![](Logo/Logo.png)
-------
-> 🖱️ A program to manage the Windows right-click context menu with support of Windows 7 - 11.
+<div align="center">
+    <img width="700" src="/Logo/Logo.png"></img>
+</div>
+<h1 align="center">ContextMenuManager</h1>
+<h4 align="center">A program to manage the Windows right-click context menu with support of Windows 7 - 11.</h4>
+
+<div align="center">
+
+![GitHub Release](https://img.shields.io/github/v/release/Jack251970/ContextMenuManager?label=Version)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Jack251970/ContextMenuManager/total?label=Downloads)
+[![Stars](https://img.shields.io/github/stars/Jack251970/ContextMenuManager?style=flat&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHBhdGggZD0iTTggLjI1YS43NS43NSAwIDAgMSAuNjczLjQxOGwxLjg4MiAzLjgxNSA0LjIxLjYxMmEuNzUuNzUgMCAwIDEgLjQxNiAxLjI3OWwtMy4wNDYgMi45Ny43MTkgNC4xOTJhLjc1MS43NTEgMCAwIDEtMS4wODguNzkxTDggMTIuMzQ3bC0zLjc2NiAxLjk4YS43NS43NSAwIDAgMS0xLjA4OC0uNzlsLjcyLTQuMTk0TC44MTggNi4zNzRhLjc1Ljc1IDAgMCAxIC40MTYtMS4yOGw0LjIxLS42MTFMNy4zMjcuNjY4QS43NS43NSAwIDAgMSA4IC4yNVoiIGZpbGw9IiNlYWM1NGYiLz48L3N2Zz4=&logoSize=auto&label=Stars)](https://github.com/Jack251970/ContextMenuManager/)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/Jack251970/ContextMenuManager?label=Issues)
+
+</div>
+
+---
 
 ## 💕 Thanks
 * This project is based on [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager), thanks to [蓝点lilac](https://github.com/BluePointLilac)!
-* Thanks to [蓝芸柒](https://github.com/LanYunSeven) for new icons!
+* Thanks to [澜芸](https://github.com/LanYun2022) for new icons!
 
 ## 🚀 Download
 * [Latest Version][Latest]<br>
