@@ -149,7 +149,14 @@ namespace ContextMenuManager.Methods
                 {
                     if(Directory.Exists(dirPath) && Directory.GetFileSystemEntries(dirPath).Length == 0)
                     {
-                        Directory.Delete(dirPath);
+                        try
+                        {
+                            Directory.Delete(dirPath);
+                        }
+                        catch
+                        {
+
+                        }
                     }
                 };
             }
