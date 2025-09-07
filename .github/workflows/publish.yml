@@ -1,0 +1,57 @@
+name: publish
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  build:
+
+    permissions:
+      contents: write
+    
+    runs-on: windows-latest
+
+    env:
+      Project_Path: ContextMenuManager/ContextMenuManager.csproj
+
+    steps:
+
+      # Checkout codes
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Install the .NET Core workload
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            9.0.x
+
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.Project_Path }}
+
+      # Build the project
+      - name: Build
+        run: dotnet build ${{ env.Project_Path }} --configuration Release --no-restore
+
+      # Get package version
+      - name: Get Package Version
+        run: |
+         $version = [system.diagnostics.fileversioninfo]::getversioninfo("bin\Release\net9.0-windows\ContextMenuManager.dll").fileversion
+         echo "release_version=$version" | out-file -filepath $env:github_env -encoding utf-8 -append
+
+      # Publish the project
+      - name: Publish
+        run: dotnet publish ${{ env.Project_Path }} -p:PublishProfile=Net9.0-Win64.pubxml
+
+      # Publish to GitHub releases
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: bin\Publish\ContextMenuManager.exe
+          tag_name: "v${{ env.release_version }}"
