@@ -190,7 +190,6 @@ namespace BluePointLilac.Controls
 
         private void UpdateAnimation()
         {
-            // 不再使用BackColor来存储透明度，而是直接使用targetOpacity
             // 只需要触发重绘即可
             this.Invalidate();
             this.Update();
@@ -213,8 +212,11 @@ namespace BluePointLilac.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            // 清除背景，确保没有残留
-            e.Graphics.Clear(BackColor);
+            // 使用透明色清除背景，而不是黑色
+            using (var brush = new SolidBrush(Color.Transparent))
+            {
+                e.Graphics.FillRectangle(brush, ClientRectangle);
+            }
             
             // 如果是选中状态，绘制80%透明白色的圆角矩形
             if (IsSelected)
@@ -227,10 +229,10 @@ namespace BluePointLilac.Controls
                 }
             }
             // 如果不是选中状态但有透明度（悬停状态），绘制半透明背景
-            else if (Opacity > 0)
+            else if (targetOpacity > 0)
             {
                 using (var path = GetRoundedRectanglePath(ClientRectangle, CornerRadius))
-                using (var brush = new SolidBrush(Color.FromArgb((int)(Opacity * 255), MyMainForm.FormFore)))
+                using (var brush = new SolidBrush(Color.FromArgb((int)(targetOpacity * 255), 255, 255, 255)))
                 {
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     e.Graphics.FillPath(brush, path);
@@ -243,7 +245,7 @@ namespace BluePointLilac.Controls
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
-            // 不绘制默认背景
+            // 不绘制默认背景，避免覆盖透明效果
             // base.OnPaintBackground(e);
         }
 
