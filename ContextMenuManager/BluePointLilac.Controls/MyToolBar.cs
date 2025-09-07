@@ -33,6 +33,7 @@ namespace BluePointLilac.Controls
                     selectedButton.Opacity = UnSelctedOpacity; // 动画过渡到未选中状态
                     selectedButton.Cursor = Cursors.Hand;
                     selectedButton.IsSelected = false;
+                    selectedButton.Invalidate(); // 强制重绘以更新选中状态
                 }
                 selectedButton = value;
                 if (selectedButton != null)
@@ -40,6 +41,7 @@ namespace BluePointLilac.Controls
                     selectedButton.Opacity = SelctedOpacity; // 动画过渡到选中状态
                     selectedButton.Cursor = Cursors.Default;
                     selectedButton.IsSelected = true;
+                    selectedButton.Invalidate(); // 强制重绘以更新选中状态
                 }
                 SelectedButtonChanged?.Invoke(this, null);
             }
@@ -121,6 +123,7 @@ namespace BluePointLilac.Controls
         private readonly Timer animationTimer = new Timer { Interval = 16 };
         private const float AnimationSpeed = 0.15f;
         private const int CornerRadius = 12; // 圆角半径
+        private readonly Color selectedBackgroundColor = Color.FromArgb(204, 255, 255, 255); // 80%透明白色
 
         public MyToolBarButton(Image image, string text)
         {
@@ -217,18 +220,25 @@ namespace BluePointLilac.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
-            
-            // 如果处于选中状态，绘制圆角背景
-            if (IsSelected && Opacity > 0)
+            // 先绘制圆角背景
+            if (Opacity > 0)
             {
                 using (var path = GetRoundedRectanglePath(ClientRectangle, CornerRadius))
-                using (var brush = new SolidBrush(BackColor))
+                using (var brush = new SolidBrush(IsSelected ? selectedBackgroundColor : BackColor))
                 {
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     e.Graphics.FillPath(brush, path);
                 }
             }
+            
+            // 然后绘制子控件
+            base.OnPaint(e);
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            // 不绘制默认背景，避免覆盖圆角效果
+            // base.OnPaintBackground(e);
         }
 
         private GraphicsPath GetRoundedRectanglePath(Rectangle rect, int radius)
