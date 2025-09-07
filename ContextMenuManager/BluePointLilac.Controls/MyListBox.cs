@@ -12,6 +12,8 @@ namespace BluePointLilac.Controls
         private Timer scrollAnimationTimer;
         private const int ScrollAnimationDuration = 300; // 动画持续时间(ms)
         private const int ScrollAnimationInterval = 15;  // 动画刷新间隔(ms)
+        private DateTime scrollStartTime;
+        private int scrollStartPosition;
 
         public MyListBox()
         {
@@ -22,12 +24,18 @@ namespace BluePointLilac.Controls
             // 初始化滚动动画计时器
             scrollAnimationTimer = new Timer { Interval = ScrollAnimationInterval };
             scrollAnimationTimer.Tick += ScrollAnimationTimer_Tick;
+            
+            // 启用双缓冲以减少闪烁
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | 
+                         ControlStyles.UserPaint | 
+                         ControlStyles.OptimizedDoubleBuffer, true);
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            // 使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
-            base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
+            // 取消默认的滚动行为，改为平滑滚动
+            int scrollAmount = Math.Sign(e.Delta) * 50.DpiZoom();
+            SmoothScrollBy(-scrollAmount); // 负号是因为滚轮方向与滚动方向相反
         }
 
         // 平滑滚动到指定位置
@@ -41,7 +49,8 @@ namespace BluePointLilac.Controls
             if (VerticalScroll.Value == targetScrollPosition)
                 return;
 
-            scrollAnimationTimer.Tag = DateTime.Now;
+            scrollStartPosition = VerticalScroll.Value;
+            scrollStartTime = DateTime.Now;
             scrollAnimationTimer.Start();
         }
 
@@ -65,25 +74,32 @@ namespace BluePointLilac.Controls
 
         private void ScrollAnimationTimer_Tick(object sender, EventArgs e)
         {
-            if (!(scrollAnimationTimer.Tag is DateTime startTime))
-                return;
-
-            double elapsed = (DateTime.Now - startTime).TotalMilliseconds;
+            double elapsed = (DateTime.Now - scrollStartTime).TotalMilliseconds;
             double progress = Math.Min(elapsed / ScrollAnimationDuration, 1.0);
             
             // 使用缓动函数使动画更自然
             double easedProgress = EaseOutCubic(progress);
             
-            int currentScroll = VerticalScroll.Value;
-            int newScroll = currentScroll + (int)((targetScrollPosition - currentScroll) * easedProgress);
+            int newScroll = scrollStartPosition + (int)((targetScrollPosition - scrollStartPosition) * easedProgress);
             
             // 设置滚动位置
-            VerticalScroll.Value = Math.Max(0, Math.Min(newScroll, VerticalScroll.Maximum));
+            SetScrollPosition(newScroll);
             
             if (progress >= 1.0)
             {
                 scrollAnimationTimer.Stop();
-                VerticalScroll.Value = targetScrollPosition; // 确保最终位置准确
+                SetScrollPosition(targetScrollPosition); // 确保最终位置准确
+            }
+        }
+        
+        // 设置滚动位置，确保在有效范围内
+        private void SetScrollPosition(int position)
+        {
+            if (VerticalScroll.Visible)
+            {
+                position = Math.Max(VerticalScroll.Minimum, Math.Min(position, VerticalScroll.Maximum));
+                VerticalScroll.Value = position;
+                Invalidate(); // 触发重绘
             }
         }
 
@@ -91,6 +107,17 @@ namespace BluePointLilac.Controls
         private double EaseOutCubic(double progress)
         {
             return 1 - Math.Pow(1 - progress, 3);
+        }
+        
+        // 确保滚动条范围正确
+        protected override void OnLayout(LayoutEventArgs levent)
+        {
+            base.OnLayout(levent);
+            // 在布局变化时更新滚动条范围
+            if (VerticalScroll.Visible && targetScrollPosition > VerticalScroll.Maximum)
+            {
+                targetScrollPosition = VerticalScroll.Maximum;
+            }
         }
 
         protected override void Dispose(bool disposing)
