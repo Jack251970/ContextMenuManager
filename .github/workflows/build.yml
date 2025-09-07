@@ -23,7 +23,7 @@ jobs:
 
       # Checkout codes
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Install the .NET Core workload
       - name: Setup .NET
