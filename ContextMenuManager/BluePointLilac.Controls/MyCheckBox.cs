@@ -14,6 +14,7 @@ namespace BluePointLilac.Controls
         private double animationProgress = 0;
         private bool isAnimating = false;
         private bool targetCheckedState;
+        private bool currentCheckedState;
         
         public MyCheckBox()
         {
@@ -39,6 +40,7 @@ namespace BluePointLilac.Controls
                 {
                     // 首次设置，不执行动画
                     _Checked = value;
+                    currentCheckedState = value;
                     Image = SwitchImage(value);
                     return;
                 }
@@ -55,11 +57,22 @@ namespace BluePointLilac.Controls
                     return;
                 }
                 
-                // 开始动画
+                // 设置目标状态
                 targetCheckedState = value;
-                isAnimating = true;
-                animationProgress = 0;
-                animationTimer.Start();
+                
+                // 如果正在动画，反转动画方向
+                if (isAnimating)
+                {
+                    // 反转动画进度
+                    animationProgress = 1 - animationProgress;
+                }
+                else
+                {
+                    // 开始新动画
+                    animationProgress = 0;
+                    isAnimating = true;
+                    animationTimer.Start();
+                }
             }
         }
 
@@ -82,22 +95,34 @@ namespace BluePointLilac.Controls
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
             // 更新动画进度
-            animationProgress += 0.08; // 控制动画速度
+            double direction = targetCheckedState == currentCheckedState ? 1 : -1;
+            animationProgress += 0.08 * direction; // 控制动画速度
             
-            if (animationProgress >= 1)
+            // 限制进度在0-1之间
+            if (animationProgress > 1) animationProgress = 1;
+            if (animationProgress < 0) animationProgress = 0;
+            
+            // 检查动画是否完成
+            bool animationComplete = (direction > 0 && animationProgress >= 1) || 
+                                    (direction < 0 && animationProgress <= 0);
+            
+            if (animationComplete)
             {
                 // 动画完成
-                animationProgress = 1;
                 isAnimating = false;
                 animationTimer.Stop();
                 
                 // 更新实际状态
-                _Checked = targetCheckedState;
-                CheckChanged?.Invoke();
+                if (targetCheckedState != currentCheckedState)
+                {
+                    currentCheckedState = targetCheckedState;
+                    _Checked = currentCheckedState;
+                    CheckChanged?.Invoke();
+                }
             }
             
             // 重绘控件
-            Image = DrawAnimatedImage(animationProgress, targetCheckedState);
+            Image = DrawAnimatedImage(animationProgress, currentCheckedState, targetCheckedState);
             Invalidate();
         }
 
@@ -106,10 +131,10 @@ namespace BluePointLilac.Controls
 
         private static Image DrawImage(bool value)
         {
-            return DrawAnimatedImage(1.0, value);
+            return DrawAnimatedImage(1.0, value, value);
         }
         
-        private static Image DrawAnimatedImage(double progress, bool targetState)
+        private static Image DrawAnimatedImage(double progress, bool currentState, bool targetState)
         {
             int w = 80.DpiZoom(), h = 40.DpiZoom();
             int r = h / 2, padding = 4.DpiZoom();
@@ -125,9 +150,12 @@ namespace BluePointLilac.Controls
                 // 计算动画中间状态
                 double easedProgress = EaseInOutCubic(progress);
                 
+                // 确定当前视觉状态
+                bool visualState = progress > 0.5 ? targetState : currentState;
+                
                 // 背景渐变 - 使用动画中间颜色
                 Color startColor, endColor;
-                if (targetState)
+                if (visualState)
                 {
                     // 正在切换到开启状态
                     startColor = InterpolateColor(
@@ -161,7 +189,13 @@ namespace BluePointLilac.Controls
                 // 按钮位置计算 - 使用动画中间位置
                 int startX = targetState ? padding : w - h + padding;
                 int endX = targetState ? w - h + padding : padding;
-                int buttonX = (int)(startX + (endX - startX) * easedProgress);
+                int currentX = currentState ? padding : w - h + padding;
+                
+                // 根据当前状态和目标状态确定起始位置
+                int buttonStartX = currentState == targetState ? currentX : startX;
+                int buttonEndX = currentState == targetState ? currentX : endX;
+                
+                int buttonX = (int)(buttonStartX + (buttonEndX - buttonStartX) * easedProgress);
                 int buttonY = padding;
 
                 // 按钮绘制（带阴影）
