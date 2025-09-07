@@ -31,12 +31,12 @@
     <ManifestCertificateThumbprint>BEFE3AE42DB8F7604D715C01388001CABFF0FABF</ManifestCertificateThumbprint>
     <ManifestKeyFile>ContextMenuManager_TemporaryKey.pfx</ManifestKeyFile>
     <ApplicationManifest>Properties\App.manifest</ApplicationManifest>
-    <PostBuildEvent>mkdir $(TargetDir)\Config\Languages
+    <!--<PostBuildEvent>mkdir $(TargetDir)\Config\Languages
 mkdir $(TargetDir)\Config\Dictionaries\Web
 xcopy $(ProjectDir)\Properties\Resources\Texts\AppLanguageDic.ini $(SolutionDir)\Languages\zh-CN.ini /y
 xcopy $(SolutionDir)\Languages $(TargetDir)\config\Languages /y
 xcopy $(ProjectDir)\Properties\Resources\Texts $(TargetDir)\Config\Dictionaries\Web /y
-del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>
+del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
   </PropertyGroup>
