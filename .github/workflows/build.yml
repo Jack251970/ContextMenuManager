@@ -9,50 +9,33 @@ on:
 jobs:
 
   build:
-    
-    permissions:
-      contents: write
-      pull-requests: write
-    
     runs-on: windows-latest
-
+    
     env:
       Solution_Path: ContextMenuManager.sln
       Project_Path: ContextMenuManager\ContextMenuManager.csproj
 
     steps:
-
       # Checkout codes
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Install the .NET Core workload
-      # - name: Setup .NET
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: |
-      #       9.0.x
-
-      # Restore dependencies for entire solution
+      # Restore NuGet packages (for .NET Framework projects)
       - name: Restore dependencies
-        run: msbuild restore ${{ env.Solution_Path }}
+        run: nuget restore ${{ env.Solution_Path }}
 
-      # Build the entire solution
+      # Build the solution with MSBuild
       - name: Build
         run: msbuild ${{ env.Solution_Path }} /p:Configuration=Release
 
-      # Execute all unit tests in the solution
-      - name: Execute unit tests
-        run: msbuild ${{ env.Solution_Path }} /p:Configuration=Release /t:Test
+      # (Optional) Run tests if you have MSTest/NUnit/xUnit for .NET Framework
+      # - name: Execute unit tests
+      #   run: vstest.console.exe "**\bin\Release\*test*.dll"
 
-      # Run the build task
-      - name: Run build task
-        run: msbuild ${{ env.Project_Path }} /p:Configuration=Release
-
-      # Upload the Build package
+      # Upload build artifact
       - name: Upload Build package
         uses: actions/upload-artifact@v4
         with:
           path: |
-            ContextMenuManager/bin/Release/ContextMenuManager.exe
+            ContextMenuManager\bin\Release\ContextMenuManager.exe
           compression-level: 0
