@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace BluePointLilac.Controls
 {
@@ -90,13 +91,23 @@ namespace BluePointLilac.Controls
 
             var rect = ClientRectangle;
 
-            // 使用黄色渐变色
-            Color startColor = Color.LightYellow; // 浅黄色
-            Color endColor = Color.Gold;          // 金色
+            // 使用三色渐变色
+            Color color1 = Color.LightYellow; // 浅黄色
+            Color color2 = Color.Gold;        // 金色
+            Color color3 = Color.Orange;      // 橙色
 
-            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                rect, startColor, endColor, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+            // 创建三色渐变
+            using (var brush = new LinearGradientBrush(
+                rect, color1, color3, LinearGradientMode.Vertical))
             {
+                // 设置混合位置
+                var blend = new ColorBlend
+                {
+                    Colors = new[] { color1, color2, color3 },
+                    Positions = new[] { 0f, 0.5f, 1f }
+                };
+                brush.InterpolationColors = blend;
+
                 e.Graphics.FillRectangle(brush, rect);
             }
         }
