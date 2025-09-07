@@ -1,0 +1,53 @@
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+  pull_request:
+
+jobs:
+
+  build:
+    
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    runs-on: windows-latest
+
+    env:
+      Solution_Path: ContextMenuManager.sln
+
+    steps:
+
+      # Checkout codes
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install the .NET Core workload
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+
+      # Restore dependencies for entire solution
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.Solution_Path }}
+
+      # Build the entire solution
+      - name: Build
+        run: dotnet build ${{ env.Solution_Path }} --configuration Release
+
+      # Execute all unit tests in the solution
+      - name: Execute unit tests
+        run: dotnet test ${{ env.Solution_Path }} --configuration Release --no-build
+
+      # Upload the Build package
+      - name: Upload Build package
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            ContextMenuManager/bin/Publish
+          compression-level: 0
