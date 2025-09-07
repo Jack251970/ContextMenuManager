@@ -1,7 +1,7 @@
 **简体中文** | **[English](README-en.md)**
 
 <div align="center">
-    <img width="800" src="/Logo/Logo.png"></img>
+    <img width="700" src="/Logo/Logo.png"></img>
 </div>
 <h1 align="center">ContextMenuManager</h1>
 <h4 align="center">一个纯粹的Windows右键菜单管理器，支持 Windows 7 ~ 11。</h4>
