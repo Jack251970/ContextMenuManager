@@ -213,7 +213,8 @@ namespace BluePointLilac.Controls
                 animationTimer.Stop();
             }
 
-            BackColor = Color.FromArgb((int)(newOpacity * 255), MyMainForm.FormFore);
+            // 修改为白色背景，调整透明度
+            BackColor = Color.FromArgb((int)(newOpacity * 255), Color.White);
 
             if (difference >= 0.01f)
             {
