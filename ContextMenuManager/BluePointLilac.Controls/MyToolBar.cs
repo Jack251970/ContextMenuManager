@@ -90,21 +90,32 @@ namespace BluePointLilac.Controls
 
             var rect = ClientRectangle;
 
-            Color startColor, endColor;
+            Color color1, color2, color3;
             if (IsDarkMode())
             {
-                startColor = Color.FromArgb(30, 30, 30); // 深色模式起始颜色
-                endColor = Color.FromArgb(50, 50, 50);   // 深色模式结束颜色
+                // 深色模式三色渐变
+                color1 = Color.FromArgb(25, 25, 25);   // 顶部颜色
+                color2 = Color.FromArgb(40, 40, 40);   // 中间颜色
+                color3 = Color.FromArgb(60, 60, 60);   // 底部颜色
             }
             else
             {
-                startColor = Color.FromArgb(240, 240, 240); // 浅色模式起始颜色
-                endColor = Color.FromArgb(200, 200, 200);  // 浅色模式结束颜色
+                // 浅色模式三色渐变
+                color1 = Color.FromArgb(245, 245, 245); // 顶部颜色
+                color2 = Color.FromArgb(230, 230, 230); // 中间颜色
+                color3 = Color.FromArgb(210, 210, 210); // 底部颜色
             }
 
+            // 创建三色渐变
             using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                rect, startColor, endColor, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+                rect, Color.Empty, Color.Empty, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
             {
+                // 使用ColorBlend创建三色渐变
+                var colorBlend = new System.Drawing.Drawing2D.ColorBlend(3);
+                colorBlend.Colors = new Color[] { color1, color2, color3 };
+                colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
+                brush.InterpolationColors = colorBlend;
+                
                 e.Graphics.FillRectangle(brush, rect);
             }
         }
