@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace BluePointLilac.Controls
 {
@@ -37,9 +38,57 @@ namespace BluePointLilac.Controls
             PnlSelected.BackColor = SelectedBackColor;
             PnlHovered.BackColor = HoveredBackColor;
 
+            // 初始化动画计时器
+            InitializeAnimationTimer();
+
             // 初始状态
             SelectedIndex = -1;
         }
+
+        #region 动画实现
+        private Timer AnimationTimer;
+        private int AnimationTargetTop;
+        private int AnimationCurrentTop;
+        private const int AnimationSteps = 10;
+        private int CurrentStep;
+
+        private void InitializeAnimationTimer()
+        {
+            AnimationTimer = new Timer();
+            AnimationTimer.Interval = 15; // 约60FPS
+            AnimationTimer.Tick += AnimationTimer_Tick;
+        }
+
+        private void AnimationTimer_Tick(object sender, EventArgs e)
+        {
+            if (CurrentStep >= AnimationSteps)
+            {
+                AnimationTimer.Stop();
+                PnlSelected.Top = AnimationTargetTop;
+                return;
+            }
+
+            // 使用缓动函数使动画更平滑
+            double progress = (double)CurrentStep / AnimationSteps;
+            double easedProgress = 1 - Math.Pow(1 - progress, 2); // 缓出效果
+
+            int newTop = AnimationCurrentTop + (int)((AnimationTargetTop - AnimationCurrentTop) * easedProgress);
+            PnlSelected.Top = newTop;
+
+            CurrentStep++;
+        }
+
+        private void StartSelectionAnimation(int targetTop)
+        {
+            if (AnimationTimer.Enabled)
+                AnimationTimer.Stop();
+
+            AnimationCurrentTop = PnlSelected.Top;
+            AnimationTargetTop = targetTop;
+            CurrentStep = 0;
+            AnimationTimer.Start();
+        }
+        #endregion
 
         private void UpdateBackground()
         {
@@ -55,7 +104,7 @@ namespace BluePointLilac.Controls
                 BackgroundImage = new Bitmap(bgWidth, bgHeight);
                 using (var g = Graphics.FromImage(BackgroundImage))
                 {
-                    DrawGradientBackground(g, bgWidth, bgHeight); // 正确传递三个参数
+                    DrawGradientBackground(g, bgWidth, bgHeight);
                     if (ShouldDrawItems())
                     {
                         DrawTextItems(g);
@@ -70,13 +119,12 @@ namespace BluePointLilac.Controls
             }
         }
 
-
         private void DrawGradientBackground(Graphics g, int width, int height)
         {
             using (var brush = new LinearGradientBrush(
                 new Rectangle(0, 0, width, height),
-                IsDarkTheme ? Color.FromArgb(38, 38, 38) : Color.FromArgb(240, 240, 240), // 浅色起始
-                IsDarkTheme ? Color.FromArgb(13, 13, 13) : Color.FromArgb(200, 200, 200), // 浅色结束
+                IsDarkTheme ? Color.FromArgb(38, 38, 38) : Color.FromArgb(240, 240, 240),
+                IsDarkTheme ? Color.FromArgb(13, 13, 13) : Color.FromArgb(200, 200, 200),
                 0f))
             {
                 g.FillRectangle(brush, new Rectangle(0, 0, width, height));
@@ -101,19 +149,20 @@ namespace BluePointLilac.Controls
                 && Height > 0;
         }
 
-
         #region 主题管理系统
         private bool IsDarkTheme => ControlPaint.Light(BackColor).GetBrightness() < 0.5f;
         
         private Color BaseColor => IsDarkTheme ? 
-            Color.FromArgb(26, 26, 26) :  // 深色模式基础黑
+            Color.FromArgb(26, 26, 26) : 
             SystemColors.Control;
         
+        // 修改选中颜色为黄色
         private Color HighlightColor => IsDarkTheme ? 
-            Color.FromArgb(0, 102, 204) : // 深色模式强调色
-            SystemColors.Highlight;
+            Color.FromArgb(255, 204, 0) : // 深色模式下的黄色
+            Color.FromArgb(255, 230, 50); // 浅色模式下的黄色
         #endregion
-        #region 修复2：增强颜色绑定逻辑
+
+        #region 颜色绑定逻辑
         private void InitializeColors()
         {
             BackColor = BaseColor;
@@ -128,6 +177,10 @@ namespace BluePointLilac.Controls
             LblSeparator.BackColor = SeparatorColor = IsDarkTheme ?
                 Color.FromArgb(64, 64, 64) :
                 Color.FromArgb(200, 200, 200);
+
+            // 设置选中和悬停文字颜色
+            SelectedForeColor = IsDarkTheme ? Color.Black : Color.Black;
+            HoveredForeColor = IsDarkTheme ? Color.White : SystemColors.ControlText;
         }
         #endregion
 
@@ -152,25 +205,21 @@ namespace BluePointLilac.Controls
             }
         }
 
-        #region 增强尺寸校验
         private int itemHeight = 30;
         public int ItemHeight
         {
             get => itemHeight;
-            set => itemHeight = Math.Max(1, value); // 强制最小高度为1
+            set => itemHeight = Math.Max(1, value);
         }
 
         protected override void SetBoundsCore(int x, int y,
             int width, int height, BoundsSpecified specified)
         {
-            // 强制有效尺寸设置
             base.SetBoundsCore(x, y,
                 Math.Max(1, width),
                 Math.Max(1, height),
                 specified);
         }
-        #endregion
-
 
         public int TopSpace { get; set; } = 2.DpiZoom();
         public int HorizontalSpace { get; set; } = 20.DpiZoom();
@@ -213,34 +262,19 @@ namespace BluePointLilac.Controls
 
         private void PaintItems()
         {
-        UpdateBackground();
+            UpdateBackground();
         }
-
-        private void DrawGradientBackground(Graphics g)
-        {
-            using(var brush = new LinearGradientBrush(
-                new Rectangle(0, 0, Width, Height),
-                IsDarkTheme ? Color.FromArgb(38, 38, 38) : Color.AliceBlue,
-                IsDarkTheme ? Color.FromArgb(13, 13, 13) : Color.LightSteelBlue,
-                0f))
-            {
-                g.FillRectangle(brush, ClientRectangle);
-            }
-        }
-
 
         private void DrawTextItems(Graphics g)
         {
-            // 添加双重验证
-            if (ItemNames == null || ItemNames.Length == 0) return; // 关键修复4
+            if (ItemNames == null || ItemNames.Length == 0) return;
 
             using (var textBrush = new SolidBrush(ForeColor))
             {
                 for (int i = 0; i < ItemNames.Length; i++)
                 {
-                    // 添加元素级空值检查
                     var item = ItemNames[i];
-                    if (string.IsNullOrEmpty(item)) continue; // 关键修复5
+                    if (string.IsNullOrEmpty(item)) continue;
 
                     float yPos = TopSpace + i * ItemHeight + VerticalSpace;
                     g.DrawString(item, Font, textBrush,
@@ -264,20 +298,20 @@ namespace BluePointLilac.Controls
             }
         }
         #endregion
+
         private int CalculateItemIndex(int yPos)
         {
-            // 修正索引计算逻辑（关键修复4）
             if (ItemNames == null || ItemHeight <= 0) return -1;
 
             int relativeY = yPos - TopSpace;
             int index = relativeY / ItemHeight;
 
-            // 添加范围验证
             if (index < 0 || index >= ItemNames.Length) return -1;
             if (string.IsNullOrEmpty(ItemNames[index])) return -1;
 
             return index;
         }
+
         #region 修复选中高度异常的关键修改
         private void RefreshItem(Panel panel, int index)
         {
@@ -288,24 +322,36 @@ namespace BluePointLilac.Controls
             }
             else
             {
-                // 修正定位计算（关键修复1）
                 int actualTop = TopSpace + index * ItemHeight;
-
-                // 添加边界检查（关键修复2）
                 actualTop = Math.Max(0, Math.Min(actualTop, Height - ItemHeight));
 
-                panel.Top = actualTop;
+                // 如果是选中面板，使用动画效果
+                if (panel == PnlSelected)
+                {
+                    StartSelectionAnimation(actualTop);
+                }
+                else
+                {
+                    panel.Top = actualTop;
+                }
+                
                 panel.Text = ItemNames[index];
             }
-            panel.Height = ItemHeight; // 强制保持正确高度（关键修复3）
+            panel.Height = ItemHeight;
             panel.Refresh();
         }
 
-        #region 修复3：优化选中状态绘制逻辑
         private void PaintItem(object sender, PaintEventArgs e)
         {
             var ctr = (Control)sender;
             if (string.IsNullOrEmpty(ctr.Text)) return;
+
+            // 确定文字颜色
+            Color textColor = ForeColor;
+            if (ctr == PnlSelected)
+                textColor = SelectedForeColor;
+            else if (ctr == PnlHovered)
+                textColor = HoveredForeColor;
 
             // 先绘制背景色再绘制文字
             e.Graphics.FillRectangle(new SolidBrush(ctr.BackColor),
@@ -315,7 +361,7 @@ namespace BluePointLilac.Controls
             e.Graphics.TextRenderingHint =
                 System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            using (var brush = new SolidBrush(ctr.ForeColor))
+            using (var brush = new SolidBrush(textColor))
             {
                 e.Graphics.DrawString(ctr.Text, Font, brush,
                     new PointF(HorizontalSpace, VerticalSpace));
@@ -328,7 +374,6 @@ namespace BluePointLilac.Controls
         {
             if (ItemNames == null) return;
 
-            // 使用修正后的计算方法（关键修复5）
             int index = CalculateItemIndex(e.Y);
 
             bool isValid = index != -1 && index != SelectedIndex;
@@ -401,7 +446,6 @@ namespace BluePointLilac.Controls
         }
         #endregion
 
-        
         protected override void OnBackColorChanged(EventArgs e)
         {
             base.OnBackColorChanged(e);
@@ -415,7 +459,5 @@ namespace BluePointLilac.Controls
             ResumeLayout(true);
             PaintItems();
         }
-
     }
-    #endregion
 }
