@@ -7,8 +7,9 @@ namespace BluePointLilac.Controls
 {
     public sealed class MyToolBar : FlowLayoutPanel
     {
-        public const float SelctedOpacity = 0.3F;
-        public const float HoveredOpacity = 0.2F;
+        // 提高不透明度值，使白色背景更加明显
+        public const float SelctedOpacity = 0.6F;  // 从0.3提高到0.6
+        public const float HoveredOpacity = 0.4F;  // 从0.2提高到0.4
         public const float UnSelctedOpacity = 0;
 
         public MyToolBar()
@@ -213,7 +214,7 @@ namespace BluePointLilac.Controls
                 animationTimer.Stop();
             }
 
-            // 修改为白色背景，调整透明度
+            // 使用白色背景
             BackColor = Color.FromArgb((int)(newOpacity * 255), Color.White);
 
             if (difference >= 0.01f)
