@@ -114,22 +114,26 @@ namespace BluePointLilac.Controls
         // 更新列表位置
         private void UpdateListPosition()
         {
-            if (Controls.Count > 0 && Controls[0] is MyList list)
+            foreach (Control control in Controls)
             {
-                list.Top = -scrollOffset;
+                if (control is MyList list)
+                {
+                    list.Top = -scrollOffset;
+                    break; // 只处理第一个MyList控件
+                }
             }
         }
         
         // 计算最大滚动偏移量
         internal void CalculateMaxScrollOffset()
         {
-            if (Controls.Count > 0 && Controls[0] is MyList list)
+            foreach (Control control in Controls)
             {
-                maxScrollOffset = Math.Max(0, list.Height - this.Height);
-            }
-            else
-            {
-                maxScrollOffset = 0;
+                if (control is MyList list)
+                {
+                    maxScrollOffset = Math.Max(0, list.Height - this.Height);
+                    break; // 只处理第一个MyList控件
+                }
             }
             
             // 确保当前滚动位置在有效范围内
@@ -149,6 +153,17 @@ namespace BluePointLilac.Controls
         protected override void OnLayout(LayoutEventArgs levent)
         {
             base.OnLayout(levent);
+            
+            // 确保MyList宽度正确
+            foreach (Control control in Controls)
+            {
+                if (control is MyList list)
+                {
+                    list.Width = this.Width;
+                    break; // 只处理第一个MyList控件
+                }
+            }
+            
             CalculateMaxScrollOffset();
             UpdateListPosition();
         }
@@ -263,7 +278,7 @@ namespace BluePointLilac.Controls
         public MyList()
         {
             AutoSize = true;
-            WrapContents = true;
+            WrapContents = false; // 改为false，确保项目垂直排列
             Dock = DockStyle.None; // 改为None，使用自定义定位
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -306,6 +321,9 @@ namespace BluePointLilac.Controls
             item.MouseEnter += (sender, e) => HoveredItem = item;
             MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
 
+            // 确保项目宽度正确
+            item.Width = this.Width - item.Margin.Horizontal;
+
             // 淡入动画
             item.Opacity = 0;
             Timer fadeTimer = new Timer { Interval = 15 };
@@ -322,17 +340,14 @@ namespace BluePointLilac.Controls
             };
             fadeTimer.Start();
 
-            void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
-            Owner.Resize += (sender, e) => ResizeItem();
-            ResizeItem();
-            ResumeLayout();
-            
             // 更新滚动范围
             if (Owner != null)
             {
                 Owner.CalculateMaxScrollOffset();
                 Owner.Invalidate();
             }
+            
+            ResumeLayout();
         }
 
         public void AddItems(MyListItem[] items)
