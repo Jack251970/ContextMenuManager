@@ -277,7 +277,7 @@ namespace BluePointLilac.Controls
         public void SortItemByText()
         {
             List<MyListItem> items = new List<MyListItem>();
-            foreach (MyListItem item in Controls) items.Add(item;
+            foreach (MyListItem item in Controls) items.Add(item);
             Controls.Clear();
             items.Sort(new TextComparer());
             items.ForEach(item => AddItem(item));
