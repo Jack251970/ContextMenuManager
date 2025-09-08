@@ -314,6 +314,21 @@ namespace BluePointLilac.Controls
                          ControlStyles.AllPaintingInWmPaint | 
                          ControlStyles.UserPaint, true);
             
+            // 创建FlowLayoutPanel并设置其属性
+            flpControls = new FlowLayoutPanel
+            {
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                FlowDirection = FlowDirection.RightToLeft,
+                Anchor = AnchorStyles.Right,
+                AutoSize = true,
+                Name = "Controls"
+            };
+            
+            // 使用反射设置DoubleBuffered属性，因为它是受保护的
+            typeof(FlowLayoutPanel).GetProperty("DoubleBuffered", 
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                ?.SetValue(flpControls, true, null);
+            
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
@@ -377,16 +392,7 @@ namespace BluePointLilac.Controls
             Name = "Image"
         };
 
-        private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel
-        {
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlowDirection = FlowDirection.RightToLeft,
-            Anchor = AnchorStyles.Right,
-            AutoSize = true,
-            Name = "Controls",
-            // 优化性能
-            DoubleBuffered = true
-        };
+        private FlowLayoutPanel flpControls;
 
         private readonly Label lblSeparator = new Label
         {
@@ -472,7 +478,6 @@ namespace BluePointLilac.Controls
             if (colorAnimTimer != null)
             {
                 colorAnimTimer.Stop();
-                colorAnimTimer.Dispose();
             }
 
             startColor = this.ForeColor;
@@ -487,6 +492,7 @@ namespace BluePointLilac.Controls
                 {
                     this.ForeColor = targetColor;
                     colorAnimTimer.Stop();
+                    colorAnimTimer.Dispose();
                     return;
                 }
 
