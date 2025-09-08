@@ -1,4 +1,4 @@
-﻿﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -38,51 +38,35 @@ namespace BluePointLilac.Controls
             PnlSelected.BackColor = SelectedBackColor;
             PnlHovered.BackColor = HoveredBackColor;
 
-            // 初始化高性能动画计时器
+            // 初始化动画计时器
             InitializeAnimationTimer();
 
             // 初始状态
             SelectedIndex = -1;
         }
 
-        #region 优化的动画实现
-        private System.Diagnostics.Stopwatch animationStopwatch;
-        private int AnimationTargetTop;
-        private int AnimationStartTop;
+        #region 简化的动画实现
+        private Timer animationTimer;
+        private int animationTargetTop;
+        private int animationStartTop;
+        private DateTime animationStartTime;
         private const int AnimationDuration = 200; // 动画持续时间(毫秒)
-        private bool isAnimating = false;
 
         private void InitializeAnimationTimer()
         {
-            // 使用高性能计时器替代标准Timer
-            animationStopwatch = new System.Diagnostics.Stopwatch();
-            
-            // 使用CompositionTarget渲染事件实现平滑动画
-            if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
-            {
-                Application.Idle += Application_Idle;
-            }
+            animationTimer = new Timer();
+            animationTimer.Interval = 16; // 约60FPS
+            animationTimer.Tick += AnimationTimer_Tick;
         }
 
-        private void Application_Idle(object sender, EventArgs e)
+        private void AnimationTimer_Tick(object sender, EventArgs e)
         {
-            if (isAnimating)
-            {
-                UpdateAnimation();
-            }
-        }
-
-        private void UpdateAnimation()
-        {
-            if (!animationStopwatch.IsRunning) return;
-            
-            long elapsed = animationStopwatch.ElapsedMilliseconds;
+            long elapsed = (DateTime.Now - animationStartTime).Milliseconds;
             if (elapsed >= AnimationDuration)
             {
                 // 动画完成
-                PnlSelected.Top = AnimationTargetTop;
-                isAnimating = false;
-                animationStopwatch.Stop();
+                PnlSelected.Top = animationTargetTop;
+                animationTimer.Stop();
                 return;
             }
 
@@ -90,12 +74,12 @@ namespace BluePointLilac.Controls
             double progress = (double)elapsed / AnimationDuration;
             double easedProgress = EaseOutCubic(progress);
 
-            int newTop = AnimationStartTop + (int)((AnimationTargetTop - AnimationStartTop) * easedProgress);
+            int newTop = animationStartTop + (int)((animationTargetTop - animationStartTop) * easedProgress);
             PnlSelected.Top = newTop;
             
-            // 只重绘选中区域，而不是整个控件
-            Rectangle invalidateRect = new Rectangle(0, Math.Min(AnimationStartTop, newTop), 
-                Width, Math.Abs(AnimationTargetTop - AnimationStartTop) + ItemHeight);
+            // 只重绘选中区域
+            Rectangle invalidateRect = new Rectangle(0, Math.Min(animationStartTop, newTop), 
+                Width, Math.Abs(animationTargetTop - animationStartTop) + ItemHeight);
             Invalidate(invalidateRect);
         }
 
@@ -109,11 +93,11 @@ namespace BluePointLilac.Controls
         {
             if (targetTop == PnlSelected.Top) return;
             
-            AnimationStartTop = PnlSelected.Top;
-            AnimationTargetTop = targetTop;
+            animationStartTop = PnlSelected.Top;
+            animationTargetTop = targetTop;
+            animationStartTime = DateTime.Now;
             
-            isAnimating = true;
-            animationStopwatch.Restart();
+            animationTimer.Start();
         }
         #endregion
 
@@ -372,7 +356,7 @@ namespace BluePointLilac.Controls
             panel.Height = ItemHeight;
             
             // 只在非动画状态下刷新
-            if (!isAnimating || panel != PnlSelected)
+            if (!animationTimer.Enabled || panel != PnlSelected)
             {
                 panel.Refresh();
             }
@@ -455,8 +439,8 @@ namespace BluePointLilac.Controls
         {
             if (disposing)
             {
-                Application.Idle -= Application_Idle;
-                animationStopwatch?.Stop();
+                animationTimer?.Stop();
+                animationTimer?.Dispose();
             }
             base.Dispose(disposing);
         }
