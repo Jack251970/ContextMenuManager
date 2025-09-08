@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+﻿﻿using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -170,26 +170,34 @@ namespace BluePointLilac.Controls
                 if (visualState)
                 {
                     // 开启状态的颜色
-                    startColor = InterpolateColor(
-                        Color.FromArgb(200, 200, 200),
-                        MyMainForm.MainColor,
-                        isAnimating ? easedProgress : 1);
-                    endColor = InterpolateColor(
-                        Color.FromArgb(160, 160, 160),
-                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
-                        isAnimating ? easedProgress : 1);
+                    startColor = MyMainForm.MainColor;
+                    endColor = Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B);
                 }
                 else
                 {
                     // 关闭状态的颜色
-                    startColor = InterpolateColor(
-                        MyMainForm.MainColor,
-                        Color.FromArgb(200, 200, 200),
-                        isAnimating ? easedProgress : 1);
-                    endColor = InterpolateColor(
-                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
-                        Color.FromArgb(160, 160, 160),
-                        isAnimating ? easedProgress : 1);
+                    startColor = Color.FromArgb(200, 200, 200);
+                    endColor = Color.FromArgb(160, 160, 160);
+                }
+                
+                // 如果是动画状态，进行颜色插值
+                if (isAnimating)
+                {
+                    Color targetStartColor, targetEndColor;
+                    
+                    if (targetCheckedState)
+                    {
+                        targetStartColor = MyMainForm.MainColor;
+                        targetEndColor = Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B);
+                    }
+                    else
+                    {
+                        targetStartColor = Color.FromArgb(200, 200, 200);
+                        targetEndColor = Color.FromArgb(160, 160, 160);
+                    }
+                    
+                    startColor = InterpolateColor(startColor, targetStartColor, easedProgress);
+                    endColor = InterpolateColor(endColor, targetEndColor, easedProgress);
                 }
                 
                 // 绘制背景
