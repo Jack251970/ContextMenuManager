@@ -1,4 +1,4 @@
-﻿﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -207,9 +207,10 @@ namespace BluePointLilac.Controls
                     g.FillPath(bgBrush, bgPath);
                 }
 
-                // 按钮位置计算
-                int startX = currentCheckedState ? PaddingPx : WidthPx - HeightPx + PaddingPx;
-                int endX = targetCheckedState ? WidthPx - HeightPx + PaddingPx : PaddingPx;
+                // 按钮位置计算 - 修复开关方向
+                // 开启状态：按钮在右侧；关闭状态：按钮在左侧
+                int startX = currentCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
+                int endX = targetCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
                 int buttonX = (int)(startX + (endX - startX) * easedProgress);
                 int buttonY = PaddingPx;
 
