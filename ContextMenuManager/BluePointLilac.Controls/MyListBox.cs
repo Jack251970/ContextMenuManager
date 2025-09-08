@@ -9,17 +9,19 @@ namespace BluePointLilac.Controls
 {
     public class MyListBox : Panel
     {
-        private int targetScrollPosition;
+        private int scrollOffset;
+        private int maxScrollOffset;
         private Timer scrollAnimationTimer;
-        private const int ScrollAnimationDuration = 250; // 缩短动画持续时间(ms)
-        private const int ScrollAnimationInterval = 10;  // 减少动画刷新间隔(ms)
-        private DateTime scrollStartTime;
-        private int scrollStartPosition;
+        private const int ScrollAnimationDuration = 250;
+        private const int ScrollAnimationInterval = 10;
         private Stopwatch animationStopwatch;
+        private int scrollStartOffset;
+        private int targetScrollOffset;
+        private bool isScrolling;
 
         public MyListBox()
         {
-            AutoScroll = true;
+            AutoScroll = false; // 禁用系统滚动条
             BackColor = MyMainForm.FormBack;
             ForeColor = MyMainForm.FormFore;
             
@@ -33,36 +35,35 @@ namespace BluePointLilac.Controls
                          ControlStyles.UserPaint | 
                          ControlStyles.OptimizedDoubleBuffer | 
                          ControlStyles.ResizeRedraw, true);
-        }
-
-        protected override void OnMouseWheel(MouseEventArgs e)
-        {
-            // 取消默认的滚动行为，改为平滑滚动
-            int scrollAmount = Math.Sign(e.Delta) * 60.DpiZoom(); // 增加滚动幅度
-            SmoothScrollBy(-scrollAmount); // 负号是因为滚轮方向与滚动方向相反
+            
+            // 处理鼠标滚轮事件
+            this.MouseWheel += (sender, e) => {
+                int scrollAmount = Math.Sign(e.Delta) * 60.DpiZoom();
+                SmoothScrollBy(-scrollAmount);
+            };
         }
 
         // 平滑滚动到指定位置
-        public void SmoothScrollTo(int position)
+        public void SmoothScrollTo(int offset)
         {
             if (scrollAnimationTimer.Enabled)
                 scrollAnimationTimer.Stop();
 
-            targetScrollPosition = Math.Max(0, Math.Min(position, VerticalScroll.Maximum));
+            targetScrollOffset = Math.Max(0, Math.Min(offset, maxScrollOffset));
             
-            if (VerticalScroll.Value == targetScrollPosition)
+            if (scrollOffset == targetScrollOffset)
                 return;
 
-            scrollStartPosition = VerticalScroll.Value;
-            scrollStartTime = DateTime.Now;
+            scrollStartOffset = scrollOffset;
             animationStopwatch.Restart();
             scrollAnimationTimer.Start();
+            isScrolling = true;
         }
 
         // 平滑滚动指定距离
         public void SmoothScrollBy(int delta)
         {
-            SmoothScrollTo(VerticalScroll.Value + delta);
+            SmoothScrollTo(scrollOffset + delta);
         }
 
         // 平滑滚动到顶部
@@ -74,7 +75,7 @@ namespace BluePointLilac.Controls
         // 平滑滚动到底部
         public void SmoothScrollToBottom()
         {
-            SmoothScrollTo(VerticalScroll.Maximum);
+            SmoothScrollTo(maxScrollOffset);
         }
 
         private void ScrollAnimationTimer_Tick(object sender, EventArgs e)
@@ -85,60 +86,153 @@ namespace BluePointLilac.Controls
             // 使用缓动函数使动画更自然
             double easedProgress = EaseOutQuart(progress);
             
-            int newScroll = scrollStartPosition + (int)((targetScrollPosition - scrollStartPosition) * easedProgress);
+            int newOffset = scrollStartOffset + (int)((targetScrollOffset - scrollStartOffset) * easedProgress);
             
             // 设置滚动位置
-            SetScrollPosition(newScroll);
+            SetScrollOffset(newOffset);
             
             if (progress >= 1.0)
             {
                 scrollAnimationTimer.Stop();
-                SetScrollPosition(targetScrollPosition); // 确保最终位置准确
+                SetScrollOffset(targetScrollOffset); // 确保最终位置准确
                 animationStopwatch.Stop();
+                isScrolling = false;
             }
         }
         
-        // 设置滚动位置，确保在有效范围内
-        private void SetScrollPosition(int position)
+        // 设置滚动偏移量
+        private void SetScrollOffset(int offset)
         {
-            if (VerticalScroll.Visible)
+            if (scrollOffset != offset)
             {
-                position = Math.Max(VerticalScroll.Minimum, Math.Min(position, VerticalScroll.Maximum));
-                
-                // 只有当位置确实改变时才更新
-                if (VerticalScroll.Value != position)
-                {
-                    VerticalScroll.Value = position;
-                    // 使用更高效的重绘方法
-                    this.Update();
-                }
+                scrollOffset = Math.Max(0, Math.Min(offset, maxScrollOffset));
+                UpdateListPosition();
+                this.Invalidate(); // 重绘以显示滚动条
+            }
+        }
+        
+        // 更新列表位置
+        private void UpdateListPosition()
+        {
+            if (Controls.Count > 0 && Controls[0] is MyList list)
+            {
+                list.Top = -scrollOffset;
+            }
+        }
+        
+        // 计算最大滚动偏移量
+        private void CalculateMaxScrollOffset()
+        {
+            if (Controls.Count > 0 && Controls[0] is MyList list)
+            {
+                maxScrollOffset = Math.Max(0, list.Height - this.Height);
+            }
+            else
+            {
+                maxScrollOffset = 0;
+            }
+            
+            // 确保当前滚动位置在有效范围内
+            if (scrollOffset > maxScrollOffset)
+            {
+                SetScrollOffset(maxScrollOffset);
             }
         }
 
-        // 缓动函数 - 四次方缓出（比三次方更平滑）
+        // 缓动函数 - 四次方缓出
         private double EaseOutQuart(double progress)
         {
             return 1 - Math.Pow(1 - progress, 4);
         }
         
-        // 确保滚动条范围正确
+        // 确保布局正确
         protected override void OnLayout(LayoutEventArgs levent)
         {
             base.OnLayout(levent);
-            // 在布局变化时更新滚动条范围
-            if (VerticalScroll.Visible && targetScrollPosition > VerticalScroll.Maximum)
-            {
-                targetScrollPosition = VerticalScroll.Maximum;
-            }
+            CalculateMaxScrollOffset();
+            UpdateListPosition();
         }
-
-        // 优化绘制性能
+        
+        // 绘制自定义滚动条
         protected override void OnPaint(PaintEventArgs e)
         {
-            // 只绘制可见区域
-            Rectangle clipRect = e.ClipRectangle;
-            e.Graphics.SetClip(clipRect);
             base.OnPaint(e);
+            
+            // 如果需要滚动条且内容高度大于控件高度
+            if (maxScrollOffset > 0)
+            {
+                int scrollbarWidth = 8.DpiZoom();
+                int scrollbarRight = this.Width - scrollbarWidth - 2;
+                
+                // 计算滚动条高度和位置
+                float visibleRatio = (float)this.Height / (this.Height + maxScrollOffset);
+                int scrollbarHeight = Math.Max(30.DpiZoom(), (int)(this.Height * visibleRatio));
+                
+                float scrollRatio = (float)scrollOffset / maxScrollOffset;
+                int scrollbarTop = (int)((this.Height - scrollbarHeight) * scrollRatio);
+                
+                // 绘制滚动条背景
+                using (var bgBrush = new SolidBrush(Color.FromArgb(50, Color.Gray)))
+                {
+                    e.Graphics.FillRectangle(bgBrush, 
+                        scrollbarRight, 0, scrollbarWidth, this.Height);
+                }
+                
+                // 绘制滚动条
+                using (var scrollBrush = new SolidBrush(Color.FromArgb(150, Color.DarkGray)))
+                {
+                    e.Graphics.FillRectangle(scrollBrush, 
+                        scrollbarRight, scrollbarTop, scrollbarWidth, scrollbarHeight);
+                }
+            }
+        }
+        
+        // 处理鼠标拖动滚动
+        private Point dragStartPoint;
+        private int dragStartOffset;
+        private bool isDragging;
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+            
+            // 检查是否点击在滚动条区域
+            int scrollbarWidth = 8.DpiZoom();
+            int scrollbarRight = this.Width - scrollbarWidth - 2;
+            
+            if (e.X >= scrollbarRight && e.X <= this.Width && maxScrollOffset > 0)
+            {
+                isDragging = true;
+                dragStartPoint = e.Location;
+                dragStartOffset = scrollOffset;
+            }
+        }
+        
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            
+            if (isDragging && maxScrollOffset > 0)
+            {
+                int deltaY = e.Y - dragStartPoint.Y;
+                float scrollRatio = (float)maxScrollOffset / (this.Height - 8.DpiZoom());
+                int newOffset = dragStartOffset + (int)(deltaY * scrollRatio);
+                
+                SetScrollOffset(newOffset);
+                this.Invalidate();
+            }
+        }
+        
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            isDragging = false;
+        }
+        
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            base.OnMouseLeave(e);
+            isDragging = false;
         }
 
         protected override void Dispose(bool disposing)
@@ -170,7 +264,7 @@ namespace BluePointLilac.Controls
         {
             AutoSize = true;
             WrapContents = true;
-            Dock = DockStyle.Top;
+            Dock = DockStyle.None; // 改为None，使用自定义定位
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             
@@ -232,6 +326,13 @@ namespace BluePointLilac.Controls
             Owner.Resize += (sender, e) => ResizeItem();
             ResizeItem();
             ResumeLayout();
+            
+            // 更新滚动范围
+            if (Owner != null)
+            {
+                Owner.CalculateMaxScrollOffset();
+                Owner.Invalidate();
+            }
         }
 
         public void AddItems(MyListItem[] items)
@@ -272,6 +373,13 @@ namespace BluePointLilac.Controls
                 ctr.Dispose();
             }
             ResumeLayout();
+            
+            // 更新滚动范围
+            if (Owner != null)
+            {
+                Owner.CalculateMaxScrollOffset();
+                Owner.Invalidate();
+            }
         }
 
         public void SortItemByText()
@@ -324,7 +432,7 @@ namespace BluePointLilac.Controls
                 Name = "Controls"
             };
             
-            // 使用反射设置DoubleBuffered属性，因为它是受保护的
+            // 使用反射设置DoubleBuffered属性
             typeof(FlowLayoutPanel).GetProperty("DoubleBuffered", 
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                 ?.SetValue(flpControls, true, null);
