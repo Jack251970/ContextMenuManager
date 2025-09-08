@@ -8,30 +8,16 @@ using System.Windows.Forms;
 namespace BluePointLilac.Controls
 {
     [DefaultProperty("Checked")]
-    public class MyCheckBox : PictureBox
+    public class MyCheckBox : Control
     {
         private Timer animationTimer;
         private double animationProgress = 0;
         private bool isAnimating = false;
-        private bool animationDirection; // true: on->off, false: off->on
         private bool targetCheckedState;
-        
-        // 缓存静态图像，避免重复绘制
-        private static readonly Image TurnOn = DrawStaticImage(true);
-        private static readonly Image TurnOff = DrawStaticImage(false);
+        private bool currentCheckedState;
         
         // 预计算尺寸和位置
-        private static int WidthPx, HeightPx, RadiusPx, PaddingPx, ButtonSizePx;
-        
-        static MyCheckBox()
-        {
-            // 预计算尺寸，避免重复计算
-            HeightPx = 40.DpiZoom();
-            WidthPx = 80.DpiZoom();
-            RadiusPx = HeightPx / 2;
-            PaddingPx = 4.DpiZoom();
-            ButtonSizePx = HeightPx - PaddingPx * 2;
-        }
+        private int WidthPx, HeightPx, RadiusPx, PaddingPx, ButtonSizePx;
         
         public MyCheckBox()
         {
@@ -41,9 +27,17 @@ namespace BluePointLilac.Controls
                          ControlStyles.OptimizedDoubleBuffer | 
                          ControlStyles.ResizeRedraw, true);
             
-            Image = TurnOff;
+            // 计算尺寸
+            HeightPx = 40.DpiZoom();
+            WidthPx = 80.DpiZoom();
+            RadiusPx = HeightPx / 2;
+            PaddingPx = 4.DpiZoom();
+            ButtonSizePx = HeightPx - PaddingPx * 2;
+            
+            // 设置控件大小
+            this.Size = new Size(WidthPx, HeightPx);
+            
             Cursor = Cursors.Hand;
-            SizeMode = PictureBoxSizeMode.AutoSize;
             
             // 初始化动画计时器
             animationTimer = new Timer();
@@ -63,7 +57,8 @@ namespace BluePointLilac.Controls
                 {
                     // 首次设置，不执行动画
                     _Checked = value;
-                    Image = SwitchImage(value);
+                    currentCheckedState = value;
+                    Invalidate();
                     return;
                 }
                 
@@ -79,9 +74,8 @@ namespace BluePointLilac.Controls
                     return;
                 }
                 
-                // 设置目标状态和动画方向
+                // 设置目标状态
                 targetCheckedState = value;
-                animationDirection = !value;
                 
                 // 如果正在动画，反转动画方向
                 if (isAnimating)
@@ -104,11 +98,6 @@ namespace BluePointLilac.Controls
         public Action CheckChanging;
         public Action CheckChanged;
 
-        public Image TurnOnImage { get; set; } = TurnOn;
-        public Image TurnOffImage { get; set; } = TurnOff;
-
-        private Image SwitchImage(bool value) => value ? TurnOnImage : TurnOffImage;
-
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -117,141 +106,102 @@ namespace BluePointLilac.Controls
         
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
-            // 检查控件是否已释放
-            if (this.IsDisposed)
+            // 检查控件是否已释放或不可见
+            if (this.IsDisposed || !this.Visible)
             {
                 animationTimer.Stop();
+                isAnimating = false;
                 return;
             }
             
-            // 更新动画进度
-            animationProgress += 0.10; // 调整动画速度
-            
-            if (animationProgress >= 1)
+            try
             {
-                // 动画完成
-                animationProgress = 1;
-                isAnimating = false;
+                // 更新动画进度
+                animationProgress += 0.10;
+                
+                if (animationProgress >= 1)
+                {
+                    // 动画完成
+                    animationProgress = 1;
+                    isAnimating = false;
+                    animationTimer.Stop();
+                    
+                    // 更新实际状态
+                    currentCheckedState = targetCheckedState;
+                    _Checked = currentCheckedState;
+                    
+                    // 触发事件
+                    CheckChanged?.Invoke();
+                }
+                
+                // 请求重绘
+                Invalidate();
+            }
+            catch
+            {
+                // 发生异常时停止动画
                 animationTimer.Stop();
-                
-                // 更新实际状态
-                _Checked = targetCheckedState;
-                
-                // 使用静态图像以提高性能
-                Image = SwitchImage(targetCheckedState);
-                
-                // 触发事件
-                CheckChanged?.Invoke();
+                isAnimating = false;
             }
-            else
-            {
-                // 重绘控件
-                Image = DrawAnimatedImage(animationProgress, animationDirection);
-            }
-            
-            // 直接刷新，不需要BeginInvoke
-            Refresh();
         }
-
-        private static Image DrawStaticImage(bool value)
+        
+        protected override void OnPaint(PaintEventArgs e)
         {
-            var bitmap = new Bitmap(WidthPx, HeightPx);
+            base.OnPaint(e);
             
-            using (Graphics g = Graphics.FromImage(bitmap))
+            // 检查控件是否已释放
+            if (this.IsDisposed) return;
+            
+            try
             {
+                Graphics g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-
+                
+                // 计算动画中间状态
+                double easedProgress = EaseInOutCubic(animationProgress);
+                
+                // 确定当前视觉状态
+                bool visualState = isAnimating ? 
+                    (animationProgress > 0.5 ? targetCheckedState : currentCheckedState) : 
+                    currentCheckedState;
+                
                 // 背景渐变
                 Color startColor, endColor;
-                if (value)
+                if (visualState)
                 {
-                    startColor = MyMainForm.MainColor;
-                    endColor = Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B);
+                    // 开启状态的颜色
+                    startColor = InterpolateColor(
+                        Color.FromArgb(200, 200, 200),
+                        MyMainForm.MainColor,
+                        isAnimating ? easedProgress : 1);
+                    endColor = InterpolateColor(
+                        Color.FromArgb(160, 160, 160),
+                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
+                        isAnimating ? easedProgress : 1);
                 }
                 else
                 {
-                    startColor = Color.FromArgb(200, 200, 200);
-                    endColor = Color.FromArgb(160, 160, 160);
+                    // 关闭状态的颜色
+                    startColor = InterpolateColor(
+                        MyMainForm.MainColor,
+                        Color.FromArgb(200, 200, 200),
+                        isAnimating ? easedProgress : 1);
+                    endColor = InterpolateColor(
+                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
+                        Color.FromArgb(160, 160, 160),
+                        isAnimating ? easedProgress : 1);
                 }
                 
+                // 绘制背景
                 using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
                 using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), startColor, endColor, 90f))
                 {
                     g.FillPath(bgBrush, bgPath);
                 }
 
-                // 按钮位置
-                int buttonX = value ? WidthPx - HeightPx + PaddingPx : PaddingPx;
-                int buttonY = PaddingPx;
-
-                // 按钮绘制（带阴影）
-                using (var shadowPath = CreateRoundedRect(buttonX - 2, buttonY - 2, ButtonSizePx + 4, ButtonSizePx + 4, ButtonSizePx / 2))
-                using (var shadowBrush = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
-                {
-                    g.FillPath(shadowBrush, shadowPath);
-                }
-
-                using (var buttonPath = CreateRoundedRect(buttonX, buttonY, ButtonSizePx, ButtonSizePx, ButtonSizePx / 2))
-                using (var buttonBrush = new SolidBrush(Color.White))
-                {
-                    g.FillPath(buttonBrush, buttonPath);
-                }
-
-                // 高光效果
-                using (var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, ButtonSizePx / 2, ButtonSizePx / 2, ButtonSizePx / 4))
-                using (var highlightBrush = new SolidBrush(Color.FromArgb(100, 255, 255, 255)))
-                {
-                    g.FillPath(highlightBrush, highlightPath);
-                }
-            }
-            return bitmap;
-        }
-        
-        private static Image DrawAnimatedImage(double progress, bool direction)
-        {
-            var bitmap = new Bitmap(WidthPx, HeightPx);
-            
-            using (Graphics g = Graphics.FromImage(bitmap))
-            {
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                // 计算动画中间状态
-                double easedProgress = EaseInOutCubic(progress);
-                
-                // 背景渐变 - 使用动画中间颜色
-                Color startColor, endColor;
-                if (direction) // 关闭方向
-                {
-                    startColor = InterpolateColor(
-                        MyMainForm.MainColor,
-                        Color.FromArgb(200, 200, 200),
-                        easedProgress);
-                    endColor = InterpolateColor(
-                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
-                        Color.FromArgb(160, 160, 160),
-                        easedProgress);
-                }
-                else // 开启方向
-                {
-                    startColor = InterpolateColor(
-                        Color.FromArgb(200, 200, 200),
-                        MyMainForm.MainColor,
-                        easedProgress);
-                    endColor = InterpolateColor(
-                        Color.FromArgb(160, 160, 160),
-                        Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B),
-                        easedProgress);
-                }
-                
-                using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
-                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), startColor, endColor, 90f))
-                {
-                    g.FillPath(bgBrush, bgPath);
-                }
-
-                // 按钮位置计算 - 使用动画中间位置
-                int startX = direction ? WidthPx - HeightPx + PaddingPx : PaddingPx;
-                int endX = direction ? PaddingPx : WidthPx - HeightPx + PaddingPx;
+                // 按钮位置计算
+                int startX = currentCheckedState ? PaddingPx : WidthPx - HeightPx + PaddingPx;
+                int endX = targetCheckedState ? WidthPx - HeightPx + PaddingPx : PaddingPx;
                 int buttonX = (int)(startX + (endX - startX) * easedProgress);
                 int buttonY = PaddingPx;
 
@@ -275,7 +225,10 @@ namespace BluePointLilac.Controls
                     g.FillPath(highlightBrush, highlightPath);
                 }
             }
-            return bitmap;
+            catch
+            {
+                // 绘制过程中发生异常，忽略
+            }
         }
         
         // 缓动函数 - 使动画更加自然
@@ -309,9 +262,12 @@ namespace BluePointLilac.Controls
             if (disposing)
             {
                 // 停止并释放计时器
-                animationTimer?.Stop();
-                animationTimer?.Dispose();
-                animationTimer = null;
+                if (animationTimer != null)
+                {
+                    animationTimer.Stop();
+                    animationTimer.Dispose();
+                    animationTimer = null;
+                }
             }
             base.Dispose(disposing);
         }
