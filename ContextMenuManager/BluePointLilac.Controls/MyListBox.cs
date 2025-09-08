@@ -121,7 +121,7 @@ namespace BluePointLilac.Controls
         }
         
         // 计算最大滚动偏移量
-        private void CalculateMaxScrollOffset()
+        internal void CalculateMaxScrollOffset()
         {
             if (Controls.Count > 0 && Controls[0] is MyList list)
             {
