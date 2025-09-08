@@ -38,9 +38,6 @@ namespace BluePointLilac.Controls
             PnlSelected.BackColor = SelectedBackColor;
             PnlHovered.BackColor = HoveredBackColor;
 
-            // 初始化动画计时器
-            InitializeAnimationTimer();
-
             // 初始状态
             SelectedIndex = -1;
         }
@@ -52,8 +49,17 @@ namespace BluePointLilac.Controls
         private DateTime animationStartTime;
         private const int AnimationDuration = 200; // 动画持续时间(毫秒)
 
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            // 在控件句柄创建后初始化计时器
+            InitializeAnimationTimer();
+        }
+
         private void InitializeAnimationTimer()
         {
+            if (animationTimer != null) return;
+            
             animationTimer = new Timer();
             animationTimer.Interval = 16; // 约60FPS
             animationTimer.Tick += AnimationTimer_Tick;
@@ -61,7 +67,7 @@ namespace BluePointLilac.Controls
 
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
-            long elapsed = (DateTime.Now - animationStartTime).Milliseconds;
+            long elapsed = (int)(DateTime.Now - animationStartTime).TotalMilliseconds;
             if (elapsed >= AnimationDuration)
             {
                 // 动画完成
@@ -78,8 +84,9 @@ namespace BluePointLilac.Controls
             PnlSelected.Top = newTop;
             
             // 只重绘选中区域
-            Rectangle invalidateRect = new Rectangle(0, Math.Min(animationStartTop, newTop), 
-                Width, Math.Abs(animationTargetTop - animationStartTop) + ItemHeight);
+            int minTop = Math.Min(animationStartTop, newTop);
+            int maxTop = Math.Max(animationStartTop, newTop);
+            Rectangle invalidateRect = new Rectangle(0, minTop, Width, maxTop - minTop + ItemHeight);
             Invalidate(invalidateRect);
         }
 
@@ -97,7 +104,8 @@ namespace BluePointLilac.Controls
             animationTargetTop = targetTop;
             animationStartTime = DateTime.Now;
             
-            animationTimer.Start();
+            if (animationTimer != null)
+                animationTimer.Start();
         }
         #endregion
 
@@ -356,7 +364,7 @@ namespace BluePointLilac.Controls
             panel.Height = ItemHeight;
             
             // 只在非动画状态下刷新
-            if (!animationTimer.Enabled || panel != PnlSelected)
+            if (animationTimer == null || !animationTimer.Enabled || panel != PnlSelected)
             {
                 panel.Refresh();
             }
@@ -441,6 +449,7 @@ namespace BluePointLilac.Controls
             {
                 animationTimer?.Stop();
                 animationTimer?.Dispose();
+                animationTimer = null;
             }
             base.Dispose(disposing);
         }

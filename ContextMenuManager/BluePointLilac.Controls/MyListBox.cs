@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace BluePointLilac.Controls
 {
@@ -10,10 +11,11 @@ namespace BluePointLilac.Controls
     {
         private int targetScrollPosition;
         private Timer scrollAnimationTimer;
-        private const int ScrollAnimationDuration = 300; // 动画持续时间(ms)
-        private const int ScrollAnimationInterval = 15;  // 动画刷新间隔(ms)
+        private const int ScrollAnimationDuration = 250; // 缩短动画持续时间(ms)
+        private const int ScrollAnimationInterval = 10;  // 减少动画刷新间隔(ms)
         private DateTime scrollStartTime;
         private int scrollStartPosition;
+        private Stopwatch animationStopwatch;
 
         public MyListBox()
         {
@@ -24,17 +26,19 @@ namespace BluePointLilac.Controls
             // 初始化滚动动画计时器
             scrollAnimationTimer = new Timer { Interval = ScrollAnimationInterval };
             scrollAnimationTimer.Tick += ScrollAnimationTimer_Tick;
+            animationStopwatch = new Stopwatch();
             
-            // 启用双缓冲以减少闪烁
+            // 启用双缓冲和优化绘制
             this.SetStyle(ControlStyles.AllPaintingInWmPaint | 
                          ControlStyles.UserPaint | 
-                         ControlStyles.OptimizedDoubleBuffer, true);
+                         ControlStyles.OptimizedDoubleBuffer | 
+                         ControlStyles.ResizeRedraw, true);
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             // 取消默认的滚动行为，改为平滑滚动
-            int scrollAmount = Math.Sign(e.Delta) * 50.DpiZoom();
+            int scrollAmount = Math.Sign(e.Delta) * 60.DpiZoom(); // 增加滚动幅度
             SmoothScrollBy(-scrollAmount); // 负号是因为滚轮方向与滚动方向相反
         }
 
@@ -51,6 +55,7 @@ namespace BluePointLilac.Controls
 
             scrollStartPosition = VerticalScroll.Value;
             scrollStartTime = DateTime.Now;
+            animationStopwatch.Restart();
             scrollAnimationTimer.Start();
         }
 
@@ -74,11 +79,11 @@ namespace BluePointLilac.Controls
 
         private void ScrollAnimationTimer_Tick(object sender, EventArgs e)
         {
-            double elapsed = (DateTime.Now - scrollStartTime).TotalMilliseconds;
+            double elapsed = animationStopwatch.ElapsedMilliseconds;
             double progress = Math.Min(elapsed / ScrollAnimationDuration, 1.0);
             
             // 使用缓动函数使动画更自然
-            double easedProgress = EaseOutCubic(progress);
+            double easedProgress = EaseOutQuart(progress);
             
             int newScroll = scrollStartPosition + (int)((targetScrollPosition - scrollStartPosition) * easedProgress);
             
@@ -89,6 +94,7 @@ namespace BluePointLilac.Controls
             {
                 scrollAnimationTimer.Stop();
                 SetScrollPosition(targetScrollPosition); // 确保最终位置准确
+                animationStopwatch.Stop();
             }
         }
         
@@ -98,15 +104,21 @@ namespace BluePointLilac.Controls
             if (VerticalScroll.Visible)
             {
                 position = Math.Max(VerticalScroll.Minimum, Math.Min(position, VerticalScroll.Maximum));
-                VerticalScroll.Value = position;
-                Invalidate(); // 触发重绘
+                
+                // 只有当位置确实改变时才更新
+                if (VerticalScroll.Value != position)
+                {
+                    VerticalScroll.Value = position;
+                    // 使用更高效的重绘方法
+                    this.Update();
+                }
             }
         }
 
-        // 缓动函数 - 三次方缓出
-        private double EaseOutCubic(double progress)
+        // 缓动函数 - 四次方缓出（比三次方更平滑）
+        private double EaseOutQuart(double progress)
         {
-            return 1 - Math.Pow(1 - progress, 3);
+            return 1 - Math.Pow(1 - progress, 4);
         }
         
         // 确保滚动条范围正确
@@ -120,12 +132,22 @@ namespace BluePointLilac.Controls
             }
         }
 
+        // 优化绘制性能
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            // 只绘制可见区域
+            Rectangle clipRect = e.ClipRectangle;
+            e.Graphics.SetClip(clipRect);
+            base.OnPaint(e);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 scrollAnimationTimer?.Stop();
                 scrollAnimationTimer?.Dispose();
+                animationStopwatch?.Stop();
             }
             base.Dispose(disposing);
         }
@@ -151,6 +173,11 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Top;
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            
+            // 优化性能
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | 
+                         ControlStyles.AllPaintingInWmPaint | 
+                         ControlStyles.UserPaint, true);
         }
 
         private MyListItem hoveredItem;
@@ -250,7 +277,7 @@ namespace BluePointLilac.Controls
         public void SortItemByText()
         {
             List<MyListItem> items = new List<MyListItem>();
-            foreach (MyListItem item in Controls) items.Add(item);
+            foreach (MyListItem item in Controls) items.Add(item;
             Controls.Clear();
             items.Sort(new TextComparer());
             items.ForEach(item => AddItem(item));
@@ -281,6 +308,12 @@ namespace BluePointLilac.Controls
             Font = SystemFonts.IconTitleFont;
             ForeColor = MyMainForm.FormFore;
             BackColor = MyMainForm.FormBack;
+            
+            // 优化性能
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | 
+                         ControlStyles.AllPaintingInWmPaint | 
+                         ControlStyles.UserPaint, true);
+            
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
@@ -350,7 +383,9 @@ namespace BluePointLilac.Controls
             FlowDirection = FlowDirection.RightToLeft,
             Anchor = AnchorStyles.Right,
             AutoSize = true,
-            Name = "Controls"
+            Name = "Controls",
+            // 优化性能
+            DoubleBuffered = true
         };
 
         private readonly Label lblSeparator = new Label
