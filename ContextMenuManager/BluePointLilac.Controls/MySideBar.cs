@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+﻿﻿using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -38,55 +38,82 @@ namespace BluePointLilac.Controls
             PnlSelected.BackColor = SelectedBackColor;
             PnlHovered.BackColor = HoveredBackColor;
 
-            // 初始化动画计时器
+            // 初始化高性能动画计时器
             InitializeAnimationTimer();
 
             // 初始状态
             SelectedIndex = -1;
         }
 
-        #region 动画实现
-        private Timer AnimationTimer;
+        #region 优化的动画实现
+        private System.Diagnostics.Stopwatch animationStopwatch;
         private int AnimationTargetTop;
-        private int AnimationCurrentTop;
-        private const int AnimationSteps = 10;
-        private int CurrentStep;
+        private int AnimationStartTop;
+        private const int AnimationDuration = 200; // 动画持续时间(毫秒)
+        private bool isAnimating = false;
 
         private void InitializeAnimationTimer()
         {
-            AnimationTimer = new Timer();
-            AnimationTimer.Interval = 15; // 约60FPS
-            AnimationTimer.Tick += AnimationTimer_Tick;
+            // 使用高性能计时器替代标准Timer
+            animationStopwatch = new System.Diagnostics.Stopwatch();
+            
+            // 使用CompositionTarget渲染事件实现平滑动画
+            if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
+            {
+                Application.Idle += Application_Idle;
+            }
         }
 
-        private void AnimationTimer_Tick(object sender, EventArgs e)
+        private void Application_Idle(object sender, EventArgs e)
         {
-            if (CurrentStep >= AnimationSteps)
+            if (isAnimating)
             {
-                AnimationTimer.Stop();
+                UpdateAnimation();
+            }
+        }
+
+        private void UpdateAnimation()
+        {
+            if (!animationStopwatch.IsRunning) return;
+            
+            long elapsed = animationStopwatch.ElapsedMilliseconds;
+            if (elapsed >= AnimationDuration)
+            {
+                // 动画完成
                 PnlSelected.Top = AnimationTargetTop;
+                isAnimating = false;
+                animationStopwatch.Stop();
                 return;
             }
 
             // 使用缓动函数使动画更平滑
-            double progress = (double)CurrentStep / AnimationSteps;
-            double easedProgress = 1 - Math.Pow(1 - progress, 2); // 缓出效果
+            double progress = (double)elapsed / AnimationDuration;
+            double easedProgress = EaseOutCubic(progress);
 
-            int newTop = AnimationCurrentTop + (int)((AnimationTargetTop - AnimationCurrentTop) * easedProgress);
+            int newTop = AnimationStartTop + (int)((AnimationTargetTop - AnimationStartTop) * easedProgress);
             PnlSelected.Top = newTop;
+            
+            // 只重绘选中区域，而不是整个控件
+            Rectangle invalidateRect = new Rectangle(0, Math.Min(AnimationStartTop, newTop), 
+                Width, Math.Abs(AnimationTargetTop - AnimationStartTop) + ItemHeight);
+            Invalidate(invalidateRect);
+        }
 
-            CurrentStep++;
+        // 三次方缓出函数，提供更平滑的动画效果
+        private double EaseOutCubic(double progress)
+        {
+            return 1 - Math.Pow(1 - progress, 3);
         }
 
         private void StartSelectionAnimation(int targetTop)
         {
-            if (AnimationTimer.Enabled)
-                AnimationTimer.Stop();
-
-            AnimationCurrentTop = PnlSelected.Top;
+            if (targetTop == PnlSelected.Top) return;
+            
+            AnimationStartTop = PnlSelected.Top;
             AnimationTargetTop = targetTop;
-            CurrentStep = 0;
-            AnimationTimer.Start();
+            
+            isAnimating = true;
+            animationStopwatch.Restart();
         }
         #endregion
 
@@ -101,8 +128,8 @@ namespace BluePointLilac.Controls
 
             try
             {
-                BackgroundImage = new Bitmap(bgWidth, bgHeight);
-                using (var g = Graphics.FromImage(BackgroundImage))
+                var newBackground = new Bitmap(bgWidth, bgHeight);
+                using (var g = Graphics.FromImage(newBackground))
                 {
                     DrawGradientBackground(g, bgWidth, bgHeight);
                     if (ShouldDrawItems())
@@ -111,6 +138,11 @@ namespace BluePointLilac.Controls
                         DrawSeparators(g);
                     }
                 }
+                
+                // 避免频繁创建和销毁位图
+                var oldBackground = BackgroundImage;
+                BackgroundImage = newBackground;
+                oldBackground?.Dispose();
             }
             catch (ArgumentException)
             {
@@ -338,7 +370,12 @@ namespace BluePointLilac.Controls
                 panel.Text = ItemNames[index];
             }
             panel.Height = ItemHeight;
-            panel.Refresh();
+            
+            // 只在非动画状态下刷新
+            if (!isAnimating || panel != PnlSelected)
+            {
+                panel.Refresh();
+            }
         }
 
         private void PaintItem(object sender, PaintEventArgs e)
@@ -411,6 +448,17 @@ namespace BluePointLilac.Controls
         {
             base.OnMouseLeave(e);
             HoveredIndex = SelectedIndex;
+        }
+        
+        // 清理资源
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Application.Idle -= Application_Idle;
+                animationStopwatch?.Stop();
+            }
+            base.Dispose(disposing);
         }
         #endregion
 
