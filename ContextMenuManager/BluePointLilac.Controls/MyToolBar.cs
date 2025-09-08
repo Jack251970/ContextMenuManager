@@ -94,16 +94,16 @@ namespace BluePointLilac.Controls
             if (IsDarkMode())
             {
                 // 深色模式三色渐变
-                color1 = Color.FromArgb(25, 25, 25);   // 顶部颜色
-                color2 = Color.FromArgb(40, 40, 40);   // 中间颜色
-                color3 = Color.FromArgb(60, 60, 60);   // 底部颜色
+                color1 = Color.FromArgb(128, 128, 128);   // 顶部颜色
+                color2 = Color.FromArgb(56, 56, 56);   // 中间颜色
+                color3 = Color.FromArgb(128, 128, 128);   // 底部颜色
             }
             else
             {
                 // 浅色模式三色渐变
-                color1 = Color.FromArgb(245, 245, 245); // 顶部颜色
-                color2 = Color.FromArgb(230, 230, 230); // 中间颜色
-                color3 = Color.FromArgb(210, 210, 210); // 底部颜色
+                color1 = Color.FromArgb(255, 235, 59); // 顶部颜色
+                color2 = Color.FromArgb(255, 196, 0); // 中间颜色
+                color3 = Color.FromArgb(255, 235, 59); // 底部颜色
             }
 
             // 创建三色渐变
