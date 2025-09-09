@@ -1,0 +1,55 @@
+name: 错误报告
+description: 报告 ContextMenuManager 出现的错误
+title: "[Bug]: "
+labels: [ "bug" ]
+body:
+    -   type: markdown
+        attributes:
+            value: "# ContextMenuManager 错误报告"
+    -   type: checkboxes
+        id: bug_check
+        attributes:
+            label: 检查项
+            description: 在报告前，请确认以下内容：
+            options:
+                -   label: 此错误未被报告过（可以在[这里](https://github.com/ELFTS/wwgjx/issues?q=is%3Aissue)进行搜索）
+                    required: true
+                -   label: 我已将 ContextMenuManager 更新到最新版本
+                    required: true
+                -   label: 我已知晓：任何不合规定的 issue 都有可能被直接关闭
+                    required: true
+    -   type: dropdown
+        id: bug_os
+        attributes:
+            label: Windows
+            description: 您使用的Windows版本
+            options:
+                - Windows 7
+                - Windows 8.x
+                - Windows 10
+                - Windows 11
+            default: 4
+        validations:
+            required: true
+    -   type: input
+        id: bug_version
+        attributes:
+            label: 版本
+            description: 您发现此错误使用的 ContextMenuManager 版本
+            placeholder: ContextMenuManager版本：Vx.x.x.x
+        validations:
+            required: true
+    -   type: textarea
+        id: bug_reproducer
+        attributes:
+            label: 复现流程
+            description: 请简单描述如何触发这一个错误
+            placeholder: |
+                1. xxx
+                2. xxx
+                3. xxx
+        validations:
+            required: true
+    -   type: markdown
+        attributes:
+            value: "### 感谢您对 ContextMenuManager 的支持！"
