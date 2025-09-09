@@ -15,30 +15,30 @@ namespace BluePointLilac.Controls
         private bool isAnimating = false;
         private bool targetCheckedState;
         private bool currentCheckedState;
-        
+
         // 预计算尺寸和位置
         private int WidthPx, HeightPx, RadiusPx, PaddingPx, ButtonSizePx;
-        
+
         public MyCheckBox()
         {
             // 启用双缓冲
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint | 
-                         ControlStyles.UserPaint | 
-                         ControlStyles.OptimizedDoubleBuffer | 
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint |
+                         ControlStyles.UserPaint |
+                         ControlStyles.OptimizedDoubleBuffer |
                          ControlStyles.ResizeRedraw, true);
-            
+
             // 计算尺寸
             HeightPx = 40.DpiZoom();
             WidthPx = 80.DpiZoom();
             RadiusPx = HeightPx / 2;
             PaddingPx = 4.DpiZoom();
             ButtonSizePx = HeightPx - PaddingPx * 2;
-            
+
             // 设置控件大小
             this.Size = new Size(WidthPx, HeightPx);
-            
+
             Cursor = Cursors.Hand;
-            
+
             // 初始化动画计时器
             animationTimer = new Timer();
             animationTimer.Interval = 16; // 约60FPS
@@ -52,7 +52,7 @@ namespace BluePointLilac.Controls
             set
             {
                 if (_Checked == value) return;
-                
+
                 if (_Checked == null)
                 {
                     // 首次设置，不执行动画
@@ -61,22 +61,22 @@ namespace BluePointLilac.Controls
                     Invalidate();
                     return;
                 }
-                
+
                 if (PreCheckChanging != null && !PreCheckChanging.Invoke())
                 {
                     return;
                 }
-                
+
                 CheckChanging?.Invoke();
-                
+
                 if (PreCheckChanged != null && !PreCheckChanged.Invoke())
                 {
                     return;
                 }
-                
+
                 // 设置目标状态
                 targetCheckedState = value;
-                
+
                 // 如果正在动画，反转动画方向
                 if (isAnimating)
                 {
@@ -103,7 +103,7 @@ namespace BluePointLilac.Controls
             base.OnMouseDown(e);
             if (e.Button == MouseButtons.Left) Checked = !Checked;
         }
-        
+
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
             // 检查控件是否已释放或不可见
@@ -113,27 +113,27 @@ namespace BluePointLilac.Controls
                 isAnimating = false;
                 return;
             }
-            
+
             try
             {
                 // 更新动画进度
                 animationProgress += 0.10;
-                
+
                 if (animationProgress >= 1)
                 {
                     // 动画完成
                     animationProgress = 1;
                     isAnimating = false;
                     animationTimer.Stop();
-                    
+
                     // 更新实际状态
                     currentCheckedState = targetCheckedState;
                     _Checked = currentCheckedState;
-                    
+
                     // 触发事件
                     CheckChanged?.Invoke();
                 }
-                
+
                 // 请求重绘
                 Invalidate();
             }
@@ -144,71 +144,121 @@ namespace BluePointLilac.Controls
                 isAnimating = false;
             }
         }
-        
+
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            
+
             // 检查控件是否已释放
             if (this.IsDisposed) return;
-            
+
             try
             {
                 Graphics g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                
+
                 // 计算动画中间状态
                 double easedProgress = EaseInOutCubic(animationProgress);
-                
+
                 // 确定当前视觉状态
-                bool visualState = isAnimating ? 
-                    (animationProgress > 0.5 ? targetCheckedState : currentCheckedState) : 
+                bool visualState = isAnimating ?
+                    (animationProgress > 0.5 ? targetCheckedState : currentCheckedState) :
                     currentCheckedState;
-                
-                // 背景渐变
-                Color startColor, endColor;
-                if (visualState)
+
+                // 绘制背景 - 使用三色渐变色
+                using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
                 {
-                    // 开启状态的颜色
-                    startColor = MyMainForm.MainColor;
-                    endColor = Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B);
-                }
-                else
-                {
-                    // 关闭状态的颜色
-                    startColor = Color.FromArgb(200, 200, 200);
-                    endColor = Color.FromArgb(160, 160, 160);
-                }
-                
-                // 如果是动画状态，进行颜色插值
-                if (isAnimating)
-                {
-                    Color targetStartColor, targetEndColor;
-                    
-                    if (targetCheckedState)
+                    if (visualState)
                     {
-                        targetStartColor = MyMainForm.MainColor;
-                        targetEndColor = Color.FromArgb(160, MyMainForm.MainColor.R, MyMainForm.MainColor.G, MyMainForm.MainColor.B);
+                        // 开启状态的三色渐变
+                        Color topColor = Color.FromArgb(255, 235, 59);
+                        Color middleColor = Color.FromArgb(255, 196, 0);
+                        Color bottomColor = Color.FromArgb(255, 235, 59);
+
+                        // 如果是动画状态，进行颜色插值
+                        if (isAnimating)
+                        {
+                            Color targetTopColor, targetMiddleColor, targetBottomColor;
+
+                            if (targetCheckedState)
+                            {
+                                targetTopColor = Color.FromArgb(255, 235, 59);
+                                targetMiddleColor = Color.FromArgb(255, 196, 0);
+                                targetBottomColor = Color.FromArgb(255, 235, 59);
+                            }
+                            else
+                            {
+                                targetTopColor = Color.FromArgb(255, 235, 59);
+                                targetMiddleColor = Color.FromArgb(255, 196, 0);
+                                targetBottomColor = Color.FromArgb(255, 235, 59);
+                            }
+
+                            topColor = InterpolateColor(topColor, targetTopColor, easedProgress);
+                            middleColor = InterpolateColor(middleColor, targetMiddleColor, easedProgress);
+                            bottomColor = InterpolateColor(bottomColor, targetBottomColor, easedProgress);
+                        }
+
+                        // 创建三色渐变
+                        using (var bgBrush = new LinearGradientBrush(
+                            new Rectangle(0, 0, WidthPx, HeightPx),
+                            Color.Empty, Color.Empty,
+                            90f))
+                        {
+                            var colorBlend = new ColorBlend(3);
+                            colorBlend.Colors = new Color[] { topColor, middleColor, bottomColor };
+                            colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
+                            bgBrush.InterpolationColors = colorBlend;
+
+                            g.FillPath(bgBrush, bgPath);
+                        }
                     }
                     else
                     {
-                        targetStartColor = Color.FromArgb(200, 200, 200);
-                        targetEndColor = Color.FromArgb(160, 160, 160);
+                        // 关闭状态的三色渐变
+                        Color topColor = Color.FromArgb(255, 255, 255);
+                        Color middleColor = Color.FromArgb(230, 230, 230);
+                        Color bottomColor = Color.FromArgb(255, 255, 255);
+
+                        // 如果是动画状态，进行颜色插值
+                        if (isAnimating)
+                        {
+                            Color targetTopColor, targetMiddleColor, targetBottomColor;
+
+                            if (targetCheckedState)
+                            {
+                                targetTopColor = Color.FromArgb(255, 235, 59);
+                                targetMiddleColor = Color.FromArgb(255, 196, 0);
+                                targetBottomColor = Color.FromArgb(255, 235, 59);
+                            }
+                            else
+                            {
+                                targetTopColor = Color.FromArgb(255, 255, 255);
+                                targetMiddleColor = Color.FromArgb(230, 230, 230);
+                                targetBottomColor = Color.FromArgb(255, 255, 255);
+                            }
+
+                            topColor = InterpolateColor(topColor, targetTopColor, easedProgress);
+                            middleColor = InterpolateColor(middleColor, targetMiddleColor, easedProgress);
+                            bottomColor = InterpolateColor(bottomColor, targetBottomColor, easedProgress);
+                        }
+
+                        // 创建三色渐变
+                        using (var bgBrush = new LinearGradientBrush(
+                            new Rectangle(0, 0, WidthPx, HeightPx),
+                            Color.Empty, Color.Empty,
+                            90f))
+                        {
+                            var colorBlend = new ColorBlend(3);
+                            colorBlend.Colors = new Color[] { topColor, middleColor, bottomColor };
+                            colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
+                            bgBrush.InterpolationColors = colorBlend;
+
+                            g.FillPath(bgBrush, bgPath);
+                        }
                     }
-                    
-                    startColor = InterpolateColor(startColor, targetStartColor, easedProgress);
-                    endColor = InterpolateColor(endColor, targetEndColor, easedProgress);
-                }
-                
-                // 绘制背景
-                using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
-                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), startColor, endColor, 90f))
-                {
-                    g.FillPath(bgBrush, bgPath);
                 }
 
-                // 按钮位置计算 - 修复开关方向
-                // 开启状态：按钮在右侧；关闭状态：按钮在左侧
+                // 按钮位置计算
                 int startX = currentCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
                 int endX = targetCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
                 int buttonX = (int)(startX + (endX - startX) * easedProgress);
@@ -239,13 +289,13 @@ namespace BluePointLilac.Controls
                 // 绘制过程中发生异常，忽略
             }
         }
-        
+
         // 缓动函数 - 使动画更加自然
         private static double EaseInOutCubic(double t)
         {
             return t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
         }
-        
+
         // 颜色插值函数
         private static Color InterpolateColor(Color start, Color end, double progress)
         {
@@ -265,7 +315,7 @@ namespace BluePointLilac.Controls
             path.CloseFigure();
             return path;
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
