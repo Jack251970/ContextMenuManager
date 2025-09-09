@@ -1,6 +1,7 @@
 ﻿using BluePointLilac.Methods;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -116,7 +117,7 @@ namespace BluePointLilac.Controls
                 colorBlend.Colors = new Color[] { color1, color2, color3 };
                 colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
                 brush.InterpolationColors = colorBlend;
-                
+
                 e.Graphics.FillRectangle(brush, rect);
             }
         }
@@ -138,8 +139,10 @@ namespace BluePointLilac.Controls
     public sealed class MyToolBarButton : Panel
     {
         private float targetOpacity;
+        private float currentOpacity;
         private readonly Timer animationTimer = new Timer { Interval = 16 };
         private const float AnimationSpeed = 0.15f;
+        private int borderRadius = 12; // 圆角半径
 
         public MyToolBarButton(Image image, string text)
         {
@@ -149,6 +152,10 @@ namespace BluePointLilac.Controls
             BackColor = Color.Transparent;
             Cursor = Cursors.Hand;
             Size = new Size(72, 72).DpiZoom();
+
+            // 启用透明背景
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+            SetStyle(ControlStyles.Opaque, false);
 
             animationTimer.Tick += (s, e) => UpdateAnimation();
 
@@ -192,7 +199,7 @@ namespace BluePointLilac.Controls
 
         public float Opacity
         {
-            get => BackColor.A / 255f;
+            get => currentOpacity;
             set
             {
                 value = Math.Max(0f, Math.Min(1f, value));
@@ -202,26 +209,53 @@ namespace BluePointLilac.Controls
             }
         }
 
+        // 重写OnPaint方法以实现圆角效果
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            // 调用基类绘制以确保子控件正确显示
+            base.OnPaint(e);
+
+            // 创建圆角矩形路径
+            using (var path = CreateRoundedRectanglePath(ClientRectangle, borderRadius))
+            {
+                // 使用当前不透明度计算颜色
+                Color fillColor = Color.FromArgb((int)(currentOpacity * 255), Color.White);
+
+                // 使用计算出的颜色填充圆角矩形
+                using (var brush = new SolidBrush(fillColor))
+                {
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.FillPath(brush, path);
+                }
+            }
+        }
+
+        // 创建圆角矩形路径的辅助方法
+        private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
+        {
+            var path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+            path.AddArc(rect.Right - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+            path.AddArc(rect.Right - radius * 2, rect.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
         private void UpdateAnimation()
         {
-            var currentOpacity = Opacity;
-            var newOpacity = currentOpacity + (targetOpacity - currentOpacity) * AnimationSpeed;
-            var difference = Math.Abs(newOpacity - targetOpacity);
+            currentOpacity += (targetOpacity - currentOpacity) * AnimationSpeed;
+            var difference = Math.Abs(currentOpacity - targetOpacity);
 
             if (difference < 0.01f)
             {
-                newOpacity = targetOpacity;
+                currentOpacity = targetOpacity;
                 animationTimer.Stop();
             }
 
-            // 使用白色背景
-            BackColor = Color.FromArgb((int)(newOpacity * 255), Color.White);
-
-            if (difference >= 0.01f)
-            {
-                this.Invalidate();
-                this.Update();
-            }
+            // 强制重绘
+            this.Invalidate();
+            this.Update();
         }
 
         public bool CanBeSelected { get; set; } = true;
@@ -231,6 +265,18 @@ namespace BluePointLilac.Controls
             base.OnResize(e);
             lblText.Left = (Width - lblText.Width) / 2;
             picImage.Left = (Width - picImage.Width) / 2;
+            this.Invalidate(); // 重绘以确保圆角正确显示
+        }
+
+        // 确保透明背景正确渲染
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x20; // 添加 WS_EX_TRANSPARENT 样式
+                return cp;
+            }
         }
     }
 }
