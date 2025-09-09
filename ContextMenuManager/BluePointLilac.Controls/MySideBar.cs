@@ -3,111 +3,221 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace BluePointLilac.Controls
 {
     public sealed class MySideBar : Panel
     {
+        // 控件实例
+        private readonly Panel PnlSelected = new Panel
+        {
+            Enabled = false,
+            BackColor = Color.Transparent
+        };
+
+        private readonly Panel PnlHovered = new Panel
+        {
+            Enabled = false,
+            BackColor = Color.Transparent
+        };
+
+        private readonly Label LblSeparator = new Label
+        {
+            Dock = DockStyle.Right,
+            Width = 1
+        };
+
+        // 私有字段
+        private string[] itemNames;
+        private int itemHeight = 30;
+        private int selectIndex = -1;
+        private int hoverIndex = -1;
+        private Color baseColor;
+        private Color highlightColor;
+        private Color separatorColor;
+        private Color selectedBackColor;
+        private Color hoveredBackColor;
+
+        // 黄色系三色渐变属性
+        public Color SelectedGradientColor1 { get; set; } = Color.FromArgb(255, 235, 59);   // 亮黄色
+        public Color SelectedGradientColor2 { get; set; } = Color.FromArgb(255, 196, 0); // 浅黄色
+        public Color SelectedGradientColor3 { get; set; } = Color.FromArgb(255, 235, 59);   // 亮黄色
+
+        // 新增：侧边栏背景三色渐变属性
+        public Color BackgroundGradientColor1 { get; set; } = Color.FromArgb(240, 240, 240); // 浅灰色
+        public Color BackgroundGradientColor2 { get; set; } = Color.FromArgb(220, 220, 220); // 中灰色
+        public Color BackgroundGradientColor3 { get; set; } = Color.FromArgb(200, 200, 200); // 深灰色
+
+        // 公共属性
+        public string[] ItemNames
+        {
+            get => itemNames;
+            set
+            {
+                itemNames = value;
+                if (value != null && !IsFixedWidth)
+                {
+                    int maxWidth = 0;
+                    Array.ForEach(value, str =>
+                        maxWidth = Math.Max(maxWidth, GetItemWidth(str)));
+                    Width = maxWidth + 2 * HorizontalSpace;
+                }
+                PnlHovered.Width = PnlSelected.Width = Width;
+                UpdateBackground();
+                SelectedIndex = -1;
+            }
+        }
+
+        public int ItemHeight
+        {
+            get => itemHeight;
+            set => itemHeight = Math.Max(1, value);
+        }
+
+        public int TopSpace { get; set; } = 2.DpiZoom();
+        public int HorizontalSpace { get; set; } = 20.DpiZoom();
+        public bool IsFixedWidth { get; set; } = true;
+
+        public Color SeparatorColor
+        {
+            get => separatorColor;
+            set
+            {
+                separatorColor = value;
+                LblSeparator.BackColor = value;
+            }
+        }
+
+        public Color SelectedBackColor
+        {
+            get => selectedBackColor;
+            set
+            {
+                selectedBackColor = value;
+                PnlSelected.BackColor = value;
+            }
+        }
+
+        public Color HoveredBackColor
+        {
+            get => hoveredBackColor;
+            set
+            {
+                hoveredBackColor = value;
+                PnlHovered.BackColor = value;
+            }
+        }
+
+        public Color SelectedForeColor { get; set; } = Color.Black;
+        public Color HoveredForeColor { get; set; }
+
+        // 计算属性
+        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;
+        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;
+        private bool IsDarkTheme => ControlPaint.Light(BackColor).GetBrightness() < 0.5f;
+
+        // 事件
+        public event EventHandler SelectIndexChanged;
+        public event EventHandler HoverIndexChanged;
+
+        public int SelectedIndex
+        {
+            get => selectIndex;
+            set
+            {
+                if (selectIndex == value) return;
+                selectIndex = value;
+                RefreshItem(PnlSelected, value);
+                HoveredIndex = value;
+                SelectIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public int HoveredIndex
+        {
+            get => hoverIndex;
+            set
+            {
+                if (hoverIndex == value) return;
+                hoverIndex = value;
+                RefreshItem(PnlHovered, value);
+                HoverIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        // 构造函数
         public MySideBar()
         {
             // 基础布局设置
             Dock = DockStyle.Left;
-            ItemHeight = 30.DpiZoom();
-            ItemNames = Array.Empty<string>();
             MinimumSize = new Size(1, 1);
             BackgroundImageLayout = ImageLayout.None;
-            DoubleBuffered = true; // 启用双缓冲防止闪烁
-            
+            DoubleBuffered = true;
+
             // 字体设置
-            Font = new Font(SystemFonts.MenuFont.FontFamily, 
+            Font = new Font(SystemFonts.MenuFont.FontFamily,
                 SystemFonts.MenuFont.Size + 1F);
-            
+
             // 动态颜色初始化
             InitializeColors();
-            
+
             // 控件组装
             Controls.AddRange(new Control[] { LblSeparator, PnlSelected, PnlHovered });
 
-            // 新增尺寸变化处理
-            SizeChanged += (sender, e) => UpdateBackground();
-
             // 事件绑定
-            PnlHovered.Paint += PaintItem;
-            PnlSelected.Paint += PaintItem;
-            PnlSelected.BackColor = SelectedBackColor;
-            PnlHovered.BackColor = HoveredBackColor;
+            SizeChanged += (sender, e) => UpdateBackground();
+            PnlHovered.Paint += PaintHoveredItem;
+            PnlSelected.Paint += PaintSelectedItem;
 
             // 初始状态
             SelectedIndex = -1;
         }
 
-        #region 简化的动画实现
-        private Timer animationTimer;
-        private int animationTargetTop;
-        private int animationStartTop;
-        private DateTime animationStartTime;
-        private const int AnimationDuration = 200; // 动画持续时间(毫秒)
+        // 公共方法
+        public void BeginUpdate() => SuspendLayout();
 
-        protected override void OnHandleCreated(EventArgs e)
+        public void EndUpdate()
         {
-            base.OnHandleCreated(e);
-            // 在控件句柄创建后初始化计时器
-            InitializeAnimationTimer();
+            ResumeLayout(true);
+            UpdateBackground();
         }
 
-        private void InitializeAnimationTimer()
+        public int GetItemWidth(string str)
         {
-            if (animationTimer != null) return;
-            
-            animationTimer = new Timer();
-            animationTimer.Interval = 16; // 约60FPS
-            animationTimer.Tick += AnimationTimer_Tick;
+            return TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
         }
 
-        private void AnimationTimer_Tick(object sender, EventArgs e)
+        // 私有方法
+        private void InitializeColors()
         {
-            long elapsed = (int)(DateTime.Now - animationStartTime).TotalMilliseconds;
-            if (elapsed >= AnimationDuration)
+            // 计算主题相关颜色
+            baseColor = IsDarkTheme ? Color.FromArgb(26, 26, 26) : SystemColors.Control;
+            highlightColor = IsDarkTheme ? Color.FromArgb(0, 102, 204) : SystemColors.Highlight;
+
+            // 设置颜色
+            BackColor = baseColor;
+            ForeColor = IsDarkTheme ? Color.WhiteSmoke : SystemColors.ControlText;
+
+            HoveredBackColor = IsDarkTheme ? Color.FromArgb(51, 51, 51) : Color.FromArgb(230, 230, 230);
+            SeparatorColor = IsDarkTheme ? Color.FromArgb(64, 64, 64) : Color.FromArgb(200, 200, 200);
+
+            // 选中状态使用渐变，不设置单一背景色
+            PnlSelected.BackColor = Color.Transparent;
+
+            // 设置背景渐变颜色
+            if (IsDarkTheme)
             {
-                // 动画完成
-                PnlSelected.Top = animationTargetTop;
-                animationTimer.Stop();
-                return;
+                BackgroundGradientColor1 = Color.FromArgb(128, 128, 128);
+                BackgroundGradientColor2 = Color.FromArgb(56, 56, 56);
+                BackgroundGradientColor3 = Color.FromArgb(128, 128, 128);
             }
-
-            // 使用缓动函数使动画更平滑
-            double progress = (double)elapsed / AnimationDuration;
-            double easedProgress = EaseOutCubic(progress);
-
-            int newTop = animationStartTop + (int)((animationTargetTop - animationStartTop) * easedProgress);
-            PnlSelected.Top = newTop;
-            
-            // 只重绘选中区域
-            int minTop = Math.Min(animationStartTop, newTop);
-            int maxTop = Math.Max(animationStartTop, newTop);
-            Rectangle invalidateRect = new Rectangle(0, minTop, Width, maxTop - minTop + ItemHeight);
-            Invalidate(invalidateRect);
+            else
+            {
+                BackgroundGradientColor1 = Color.FromArgb(255, 255, 255);
+                BackgroundGradientColor2 = Color.FromArgb(230, 230, 230);
+                BackgroundGradientColor3 = Color.FromArgb(255, 255, 255);
+            }
         }
-
-        // 三次方缓出函数，提供更平滑的动画效果
-        private double EaseOutCubic(double progress)
-        {
-            return 1 - Math.Pow(1 - progress, 3);
-        }
-
-        private void StartSelectionAnimation(int targetTop)
-        {
-            if (targetTop == PnlSelected.Top) return;
-            
-            animationStartTop = PnlSelected.Top;
-            animationTargetTop = targetTop;
-            animationStartTime = DateTime.Now;
-            
-            if (animationTimer != null)
-                animationTimer.Start();
-        }
-        #endregion
 
         private void UpdateBackground()
         {
@@ -120,38 +230,24 @@ namespace BluePointLilac.Controls
 
             try
             {
-                var newBackground = new Bitmap(bgWidth, bgHeight);
-                using (var g = Graphics.FromImage(newBackground))
+                var oldBackground = BackgroundImage;
+                BackgroundImage = new Bitmap(bgWidth, bgHeight);
+                oldBackground?.Dispose();
+
+                using (var g = Graphics.FromImage(BackgroundImage))
                 {
-                    DrawGradientBackground(g, bgWidth, bgHeight);
+                    DrawBackgroundGradient(g, bgWidth, bgHeight);
                     if (ShouldDrawItems())
                     {
                         DrawTextItems(g);
                         DrawSeparators(g);
                     }
                 }
-                
-                // 避免频繁创建和销毁位图
-                var oldBackground = BackgroundImage;
-                BackgroundImage = newBackground;
-                oldBackground?.Dispose();
             }
             catch (ArgumentException)
             {
                 BackgroundImage?.Dispose();
                 BackgroundImage = null;
-            }
-        }
-
-        private void DrawGradientBackground(Graphics g, int width, int height)
-        {
-            using (var brush = new LinearGradientBrush(
-                new Rectangle(0, 0, width, height),
-                IsDarkTheme ? Color.FromArgb(38, 38, 38) : Color.FromArgb(240, 240, 240),
-                IsDarkTheme ? Color.FromArgb(13, 13, 13) : Color.FromArgb(200, 200, 200),
-                0f))
-            {
-                g.FillRectangle(brush, new Rectangle(0, 0, width, height));
             }
         }
 
@@ -173,120 +269,24 @@ namespace BluePointLilac.Controls
                 && Height > 0;
         }
 
-        #region 主题管理系统
-        private bool IsDarkTheme => ControlPaint.Light(BackColor).GetBrightness() < 0.5f;
-        
-        private Color BaseColor => IsDarkTheme ? 
-            Color.FromArgb(26, 26, 26) : 
-            SystemColors.Control;
-        
-        // 修改选中颜色为黄色
-        private Color HighlightColor => IsDarkTheme ? 
-            Color.FromArgb(255, 204, 0) : // 深色模式下的黄色
-            Color.FromArgb(255, 230, 50); // 浅色模式下的黄色
-        #endregion
-
-        #region 颜色绑定逻辑
-        private void InitializeColors()
+        // 修改：使用三色渐变绘制背景
+        private void DrawBackgroundGradient(Graphics g, int width, int height)
         {
-            BackColor = BaseColor;
-            ForeColor = IsDarkTheme ? Color.WhiteSmoke : SystemColors.ControlText;
-
-            // 确保颜色绑定生效
-            PnlSelected.BackColor = SelectedBackColor = HighlightColor;
-            PnlHovered.BackColor = HoveredBackColor = IsDarkTheme ?
-                Color.FromArgb(51, 51, 51) :
-                Color.FromArgb(230, 230, 230);
-
-            LblSeparator.BackColor = SeparatorColor = IsDarkTheme ?
-                Color.FromArgb(64, 64, 64) :
-                Color.FromArgb(200, 200, 200);
-
-            // 设置选中和悬停文字颜色
-            SelectedForeColor = IsDarkTheme ? Color.Black : Color.Black;
-            HoveredForeColor = IsDarkTheme ? Color.White : SystemColors.ControlText;
-        }
-        #endregion
-
-        #region 属性声明
-        private string[] itemNames;
-        public string[] ItemNames
-        {
-            get => itemNames;
-            set
+            using (var brush = new LinearGradientBrush(
+                new Rectangle(0, 0, width, height),
+                Color.Empty, Color.Empty, 0f))
             {
-                itemNames = value;
-                if(value != null && !IsFixedWidth)
+                // 设置三色渐变
+                var blend = new ColorBlend
                 {
-                    int maxWidth = 0;
-                    Array.ForEach(value, str => 
-                        maxWidth = Math.Max(maxWidth, GetItemWidth(str)));
-                    Width = maxWidth + 2 * HorizontalSpace;
-                }
-                PnlHovered.Width = PnlSelected.Width = Width;
-                PaintItems();
-                SelectedIndex = -1;
+                    Colors = new[] { BackgroundGradientColor1, BackgroundGradientColor2, BackgroundGradientColor3 },
+                    Positions = new[] { 0f, 0.5f, 1f }
+                };
+                brush.InterpolationColors = blend;
+
+                // 填充渐变背景
+                g.FillRectangle(brush, new Rectangle(0, 0, width, height));
             }
-        }
-
-        private int itemHeight = 30;
-        public int ItemHeight
-        {
-            get => itemHeight;
-            set => itemHeight = Math.Max(1, value);
-        }
-
-        protected override void SetBoundsCore(int x, int y,
-            int width, int height, BoundsSpecified specified)
-        {
-            base.SetBoundsCore(x, y,
-                Math.Max(1, width),
-                Math.Max(1, height),
-                specified);
-        }
-
-        public int TopSpace { get; set; } = 2.DpiZoom();
-        public int HorizontalSpace { get; set; } = 20.DpiZoom();
-        private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;
-        private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;
-        public bool IsFixedWidth { get; set; } = true;
-
-        public Color SeparatorColor { get; set; }
-        public Color SelectedBackColor { get; set; }
-        public Color HoveredBackColor { get; set; }
-        public Color SelectedForeColor { get; set; }
-        public Color HoveredForeColor { get; set; }
-        #endregion
-
-        #region 控件实例
-        private readonly Panel PnlSelected = new Panel
-        {
-            Enabled = false,
-            BackColor = Color.Transparent
-        };
-
-        private readonly Panel PnlHovered = new Panel
-        {
-            Enabled = false,
-            BackColor = Color.Transparent
-        };
-
-        private readonly Label LblSeparator = new Label
-        {
-            Dock = DockStyle.Right,
-            Width = 1
-        };
-        #endregion
-
-        #region 核心绘制逻辑
-        public int GetItemWidth(string str)
-        {
-            return TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
-        }
-
-        private void PaintItems()
-        {
-            UpdateBackground();
         }
 
         private void DrawTextItems(Graphics g)
@@ -309,19 +309,18 @@ namespace BluePointLilac.Controls
 
         private void DrawSeparators(Graphics g)
         {
-            using(var pen = new Pen(SeparatorColor))
+            using (var pen = new Pen(SeparatorColor))
             {
-                for(int i = 0; i < ItemNames.Length; i++)
+                for (int i = 0; i < ItemNames.Length; i++)
                 {
-                    if(ItemNames[i] != null) continue;
-                    
+                    if (ItemNames[i] != null) continue;
+
                     float yPos = TopSpace + (i + 0.5F) * ItemHeight;
-                    g.DrawLine(pen, HorizontalSpace, yPos, 
+                    g.DrawLine(pen, HorizontalSpace, yPos,
                         Width - HorizontalSpace, yPos);
                 }
             }
         }
-        #endregion
 
         private int CalculateItemIndex(int yPos)
         {
@@ -336,7 +335,6 @@ namespace BluePointLilac.Controls
             return index;
         }
 
-        #region 修复选中高度异常的关键修改
         private void RefreshItem(Panel panel, int index)
         {
             if (index < 0 || index >= ItemNames?.Length)
@@ -348,63 +346,73 @@ namespace BluePointLilac.Controls
             {
                 int actualTop = TopSpace + index * ItemHeight;
                 actualTop = Math.Max(0, Math.Min(actualTop, Height - ItemHeight));
-
-                // 如果是选中面板，使用动画效果
-                if (panel == PnlSelected)
-                {
-                    StartSelectionAnimation(actualTop);
-                }
-                else
-                {
-                    panel.Top = actualTop;
-                }
-                
+                panel.Top = actualTop;
                 panel.Text = ItemNames[index];
             }
             panel.Height = ItemHeight;
-            
-            // 只在非动画状态下刷新
-            if (animationTimer == null || !animationTimer.Enabled || panel != PnlSelected)
-            {
-                panel.Refresh();
-            }
+            panel.Refresh();
         }
 
-        private void PaintItem(object sender, PaintEventArgs e)
+        // 悬停状态绘制方法
+        private void PaintHoveredItem(object sender, PaintEventArgs e)
         {
             var ctr = (Control)sender;
             if (string.IsNullOrEmpty(ctr.Text)) return;
 
-            // 确定文字颜色
-            Color textColor = ForeColor;
-            if (ctr == PnlSelected)
-                textColor = SelectedForeColor;
-            else if (ctr == PnlHovered)
-                textColor = HoveredForeColor;
-
-            // 先绘制背景色再绘制文字
-            e.Graphics.FillRectangle(new SolidBrush(ctr.BackColor),
+            // 悬停状态使用单色背景
+            e.Graphics.FillRectangle(new SolidBrush(HoveredBackColor),
                 new Rectangle(0, 0, ctr.Width, ctr.Height));
 
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint =
-                System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            DrawItemText(e, ctr, HoveredForeColor);
+        }
 
-            using (var brush = new SolidBrush(textColor))
+        // 选中状态使用黄色系三色渐变
+        private void PaintSelectedItem(object sender, PaintEventArgs e)
+        {
+            var ctr = (Control)sender;
+            if (string.IsNullOrEmpty(ctr.Text)) return;
+
+            // 创建三色渐变
+            using (var brush = new LinearGradientBrush(
+                new Rectangle(0, 0, ctr.Width, ctr.Height),
+                Color.Empty, Color.Empty, 0f))
+            {
+                // 设置黄色系三色渐变
+                var blend = new ColorBlend
+                {
+                    Colors = new[] { SelectedGradientColor1, SelectedGradientColor2, SelectedGradientColor3 },
+                    Positions = new[] { 0f, 0.5f, 1f }
+                };
+                brush.InterpolationColors = blend;
+
+                // 填充渐变背景
+                e.Graphics.FillRectangle(brush, new Rectangle(0, 0, ctr.Width, ctr.Height));
+            }
+
+            DrawItemText(e, ctr, SelectedForeColor);
+        }
+
+        // 提取文本绘制逻辑
+        private void DrawItemText(PaintEventArgs e, Control ctr, Color textColor)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+            // 如果未指定文字颜色，则使用默认前景色
+            Color useColor = textColor == Color.Empty ? ForeColor : textColor;
+
+            using (var brush = new SolidBrush(useColor))
             {
                 e.Graphics.DrawString(ctr.Text, Font, brush,
                     new PointF(HorizontalSpace, VerticalSpace));
             }
         }
-        #endregion
 
-        #region 修正鼠标事件处理
         private void ShowItem(Panel panel, MouseEventArgs e)
         {
             if (ItemNames == null) return;
 
             int index = CalculateItemIndex(e.Y);
-
             bool isValid = index != -1 && index != SelectedIndex;
             Cursor = isValid ? Cursors.Hand : Cursors.Default;
 
@@ -420,9 +428,8 @@ namespace BluePointLilac.Controls
                 HoveredIndex = SelectedIndex;
             }
         }
-        #endregion
 
-        #region 事件处理
+        // 事件处理
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -432,7 +439,7 @@ namespace BluePointLilac.Controls
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            if(e.Button == MouseButtons.Left) 
+            if (e.Button == MouseButtons.Left)
                 ShowItem(PnlSelected, e);
         }
 
@@ -441,64 +448,21 @@ namespace BluePointLilac.Controls
             base.OnMouseLeave(e);
             HoveredIndex = SelectedIndex;
         }
-        
-        // 清理资源
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                animationTimer?.Stop();
-                animationTimer?.Dispose();
-                animationTimer = null;
-            }
-            base.Dispose(disposing);
-        }
-        #endregion
-
-        #region 状态管理系统
-        public event EventHandler SelectIndexChanged;
-        public event EventHandler HoverIndexChanged;
-
-        private int selectIndex;
-        public int SelectedIndex
-        {
-            get => selectIndex;
-            set
-            {
-                if(selectIndex == value) return;
-                selectIndex = value;
-                RefreshItem(PnlSelected, value);
-                HoveredIndex = value;
-                SelectIndexChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        private int hoverIndex;
-        public int HoveredIndex
-        {
-            get => hoverIndex;
-            set
-            {
-                if(hoverIndex == value) return;
-                hoverIndex = value;
-                RefreshItem(PnlHovered, value);
-                HoverIndexChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-        #endregion
 
         protected override void OnBackColorChanged(EventArgs e)
         {
             base.OnBackColorChanged(e);
             InitializeColors();
-            PaintItems();
+            UpdateBackground();
         }
 
-        public void BeginUpdate() => SuspendLayout();
-        public void EndUpdate()
+        protected override void SetBoundsCore(int x, int y,
+            int width, int height, BoundsSpecified specified)
         {
-            ResumeLayout(true);
-            PaintItems();
+            base.SetBoundsCore(x, y,
+                Math.Max(1, width),
+                Math.Max(1, height),
+                specified);
         }
     }
 }
