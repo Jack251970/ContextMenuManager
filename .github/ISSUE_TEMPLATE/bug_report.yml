@@ -12,7 +12,7 @@ body:
             label: 检查项
             description: 在报告前，请确认以下内容：
             options:
-                -   label: 此错误未被报告过（可以在[这里](https://github.com/ELFTS/wwgjx/issues?q=is%3Aissue)进行搜索）
+                -   label: 此错误未被报告过（可以在[这里](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue)进行搜索）
                     required: true
                 -   label: 我已将 ContextMenuManager 更新到最新版本
                     required: true
