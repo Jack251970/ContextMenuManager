@@ -1,4 +1,5 @@
-﻿using BluePointLilac.Methods;
+﻿
+using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -264,13 +265,24 @@ namespace BluePointLilac.Controls
                 int buttonX = (int)(startX + (endX - startX) * easedProgress);
                 int buttonY = PaddingPx;
 
-                // 按钮绘制（带阴影）
-                using (var shadowPath = CreateRoundedRect(buttonX - 2, buttonY - 2, ButtonSizePx + 4, ButtonSizePx + 4, ButtonSizePx / 2))
-                using (var shadowBrush = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
+                // 改进的阴影效果 - 多层阴影
+                for (int i = 3; i > 0; i--)
                 {
-                    g.FillPath(shadowBrush, shadowPath);
+                    int shadowSize = i * 2;
+                    int shadowOffset = i;
+                    using (var shadowPath = CreateRoundedRect(
+                        buttonX - shadowSize / 2 + shadowOffset / 2,
+                        buttonY - shadowSize / 2 + shadowOffset,
+                        ButtonSizePx + shadowSize,
+                        ButtonSizePx + shadowSize,
+                        (ButtonSizePx + shadowSize) / 2))
+                    using (var shadowBrush = new SolidBrush(Color.FromArgb(20 / i, 0, 0, 0)))
+                    {
+                        g.FillPath(shadowBrush, shadowPath);
+                    }
                 }
 
+                // 按钮绘制
                 using (var buttonPath = CreateRoundedRect(buttonX, buttonY, ButtonSizePx, ButtonSizePx, ButtonSizePx / 2))
                 using (var buttonBrush = new SolidBrush(Color.White))
                 {
