@@ -142,7 +142,7 @@ namespace BluePointLilac.Controls
         private float currentOpacity;
         private readonly Timer animationTimer = new Timer { Interval = 16 };
         private const float AnimationSpeed = 0.15f;
-        private int borderRadius = 12; // 圆角半径
+        private int borderRadius = 10; // 圆角半径
 
         public MyToolBarButton(Image image, string text)
         {
