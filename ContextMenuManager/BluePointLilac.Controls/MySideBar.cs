@@ -29,7 +29,7 @@ namespace BluePointLilac.Controls
 
         // 私有字段
         private string[] itemNames;
-        private int itemHeight = 30;
+        private int itemHeight = 36; // 从30增加到40
         private int selectIndex = -1;
         private int hoverIndex = -1;
         private Color baseColor;
@@ -74,7 +74,7 @@ namespace BluePointLilac.Controls
             set => itemHeight = Math.Max(1, value);
         }
 
-        public int TopSpace { get; set; } = 2.DpiZoom();
+        public int TopSpace { get; set; } = 4.DpiZoom(); // 从2增加到4以保持比例
         public int HorizontalSpace { get; set; } = 20.DpiZoom();
         public bool IsFixedWidth { get; set; } = true;
 
