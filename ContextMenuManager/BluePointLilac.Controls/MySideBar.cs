@@ -38,15 +38,15 @@ namespace BluePointLilac.Controls
         private Color selectedBackColor;
         private Color hoveredBackColor;
 
-        // 黄色系三色渐变属性
-        public Color SelectedGradientColor1 { get; set; } = Color.FromArgb(255, 235, 59);   // 亮黄色
-        public Color SelectedGradientColor2 { get; set; } = Color.FromArgb(255, 196, 0); // 浅黄色
-        public Color SelectedGradientColor3 { get; set; } = Color.FromArgb(255, 235, 59);   // 亮黄色
+        // 橘色系三色渐变属性
+        public Color SelectedGradientColor1 { get; set; } = Color.FromArgb(255, 195, 0);
+        public Color SelectedGradientColor2 { get; set; } = Color.FromArgb(255, 141, 26);
+        public Color SelectedGradientColor3 { get; set; } = Color.FromArgb(255, 195, 0);
 
         // 新增：侧边栏背景三色渐变属性
-        public Color BackgroundGradientColor1 { get; set; } = Color.FromArgb(240, 240, 240); // 浅灰色
-        public Color BackgroundGradientColor2 { get; set; } = Color.FromArgb(220, 220, 220); // 中灰色
-        public Color BackgroundGradientColor3 { get; set; } = Color.FromArgb(200, 200, 200); // 深灰色
+        public Color BackgroundGradientColor1 { get; set; } = Color.FromArgb(240, 240, 240);
+        public Color BackgroundGradientColor2 { get; set; } = Color.FromArgb(220, 220, 220);
+        public Color BackgroundGradientColor3 { get; set; } = Color.FromArgb(200, 200, 200);
 
         // 公共属性
         public string[] ItemNames

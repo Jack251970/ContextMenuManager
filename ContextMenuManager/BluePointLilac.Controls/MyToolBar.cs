@@ -33,12 +33,14 @@ namespace BluePointLilac.Controls
                 {
                     selectedButton.Opacity = UnSelctedOpacity; // 动画过渡到未选中状态
                     selectedButton.Cursor = Cursors.Hand;
+                    selectedButton.UpdateTextColor(); // 更新文字颜色
                 }
                 selectedButton = value;
                 if (selectedButton != null)
                 {
                     selectedButton.Opacity = SelctedOpacity; // 动画过渡到选中状态
                     selectedButton.Cursor = Cursors.Default;
+                    selectedButton.UpdateTextColor(); // 更新文字颜色
                 }
                 SelectedButtonChanged?.Invoke(this, null);
             }
@@ -67,13 +69,19 @@ namespace BluePointLilac.Controls
             button.MouseEnter += (sender, e) =>
             {
                 if (button != SelectedButton)
+                {
                     button.Opacity = HoveredOpacity; // 动画过渡到悬停状态
+                    button.UpdateTextColor(); // 更新文字颜色
+                }
             };
 
             button.MouseLeave += (sender, e) =>
             {
                 if (button != SelectedButton)
+                {
                     button.Opacity = UnSelctedOpacity; // 动画过渡到未选中状态
+                    button.UpdateTextColor(); // 更新文字颜色
+                }
             };
 
             ResumeLayout();
@@ -103,9 +111,9 @@ namespace BluePointLilac.Controls
             else
             {
                 // 浅色模式三色渐变
-                color1 = Color.FromArgb(255, 235, 59); // 顶部颜色
-                color2 = Color.FromArgb(255, 196, 0); // 中间颜色
-                color3 = Color.FromArgb(255, 235, 59); // 底部颜色
+                color1 = Color.FromArgb(255, 255, 255); // 顶部颜色
+                color2 = Color.FromArgb(230, 230, 230); // 中间颜色
+                color3 = Color.FromArgb(255, 255, 255); // 底部颜色
             }
 
             // 创建三色渐变
@@ -122,7 +130,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private bool IsDarkMode()
+        public bool IsDarkMode()
         {
             try
             {
@@ -218,8 +226,22 @@ namespace BluePointLilac.Controls
             // 创建圆角矩形路径
             using (var path = CreateRoundedRectanglePath(ClientRectangle, borderRadius))
             {
-                // 使用当前不透明度计算颜色
-                Color fillColor = Color.FromArgb((int)(currentOpacity * 255), Color.White);
+                // 根据当前模式选择颜色
+                bool isDarkMode = false;
+                if (Parent is MyToolBar toolbar)
+                {
+                    isDarkMode = toolbar.IsDarkMode();
+                }
+
+                // 深色模式使用白色，浅色模式使用黑色
+                Color baseColor = isDarkMode ? Color.White : Color.Black;
+
+                // 减少浅色模式的不透明度（增加透明度）
+                float opacityFactor = isDarkMode ? 1.0f : 0.6f; // 浅色模式减少40%的不透明度
+                int alpha = (int)(currentOpacity * 255 * opacityFactor);
+                alpha = Math.Max(0, Math.Min(255, alpha)); // 确保alpha值在有效范围内
+
+                Color fillColor = Color.FromArgb(alpha, baseColor);
 
                 // 使用计算出的颜色填充圆角矩形
                 using (var brush = new SolidBrush(fillColor))
@@ -227,6 +249,26 @@ namespace BluePointLilac.Controls
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     e.Graphics.FillPath(brush, path);
                 }
+            }
+        }
+
+        // 更新文字颜色的方法
+        public void UpdateTextColor()
+        {
+            bool isDarkMode = false;
+            if (Parent is MyToolBar toolbar)
+            {
+                isDarkMode = toolbar.IsDarkMode();
+            }
+
+            // 浅色模式下，当按钮被选中或悬停时，文字颜色改为白色
+            if (!isDarkMode && currentOpacity > 0.1f)
+            {
+                lblText.ForeColor = Color.White;
+            }
+            else
+            {
+                lblText.ForeColor = MyMainForm.FormFore;
             }
         }
 
@@ -252,6 +294,9 @@ namespace BluePointLilac.Controls
                 currentOpacity = targetOpacity;
                 animationTimer.Stop();
             }
+
+            // 更新文字颜色
+            UpdateTextColor();
 
             // 强制重绘
             this.Invalidate();

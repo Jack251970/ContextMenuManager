@@ -172,9 +172,9 @@ namespace BluePointLilac.Controls
                     if (visualState)
                     {
                         // 开启状态的三色渐变
-                        Color topColor = Color.FromArgb(255, 235, 59);
-                        Color middleColor = Color.FromArgb(255, 196, 0);
-                        Color bottomColor = Color.FromArgb(255, 235, 59);
+                        Color topColor = Color.FromArgb(255, 195, 0);
+                        Color middleColor = Color.FromArgb(255, 141, 26);
+                        Color bottomColor = Color.FromArgb(255, 195, 0);
 
                         // 如果是动画状态，进行颜色插值
                         if (isAnimating)
@@ -183,15 +183,15 @@ namespace BluePointLilac.Controls
 
                             if (targetCheckedState)
                             {
-                                targetTopColor = Color.FromArgb(255, 235, 59);
-                                targetMiddleColor = Color.FromArgb(255, 196, 0);
-                                targetBottomColor = Color.FromArgb(255, 235, 59);
+                                targetTopColor = Color.FromArgb(255, 195, 0);
+                                targetMiddleColor = Color.FromArgb(255, 141, 26);
+                                targetBottomColor = Color.FromArgb(255, 195, 0);
                             }
                             else
                             {
-                                targetTopColor = Color.FromArgb(255, 235, 59);
-                                targetMiddleColor = Color.FromArgb(255, 196, 0);
-                                targetBottomColor = Color.FromArgb(255, 235, 59);
+                                targetTopColor = Color.FromArgb(255, 195, 0);
+                                targetMiddleColor = Color.FromArgb(255, 141, 26);
+                                targetBottomColor = Color.FromArgb(255, 195, 0);
                             }
 
                             topColor = InterpolateColor(topColor, targetTopColor, easedProgress);
@@ -227,9 +227,9 @@ namespace BluePointLilac.Controls
 
                             if (targetCheckedState)
                             {
-                                targetTopColor = Color.FromArgb(255, 235, 59);
-                                targetMiddleColor = Color.FromArgb(255, 196, 0);
-                                targetBottomColor = Color.FromArgb(255, 235, 59);
+                                targetTopColor = Color.FromArgb(255, 195, 0);
+                                targetMiddleColor = Color.FromArgb(255, 141, 26);
+                                targetBottomColor = Color.FromArgb(255, 195, 0);
                             }
                             else
                             {
