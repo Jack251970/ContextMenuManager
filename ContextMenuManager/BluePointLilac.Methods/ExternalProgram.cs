@@ -159,20 +159,22 @@ namespace BluePointLilac.Methods
         /// <summary>重启Explorer</summary>
         public static void RestartExplorer()
         {
-            using(Process process = new Process())
+            using(Process kill = Process.Start(new ProcessStartInfo
             {
-                //有些系统有tskill.exe可以直接调用tskill explorer命令
-                process.StartInfo = new ProcessStartInfo
-                {
-                    FileName = "taskkill.exe",
-                    Arguments = "-f -im explorer.exe",
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                process.Start();
-                process.WaitForExit();
-                process.StartInfo = new ProcessStartInfo("explorer.exe");
-                process.Start();
+                FileName = "taskkill.exe",
+                Arguments = "-f -im explorer.exe",
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                UseShellExecute = false
+            }))
+            {
+                kill?.WaitForExit();
             }
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                UseShellExecute = true
+            });
         }
 
         /// <summary>调用默认浏览器打开指定网址</summary>
