@@ -11,9 +11,8 @@ namespace BluePointLilac.Controls
     {
         private int targetScrollPosition;
         private Timer scrollAnimationTimer;
-        private const int ScrollAnimationDuration = 250; // 缩短动画持续时间(ms)
-        private const int ScrollAnimationInterval = 10;  // 减少动画刷新间隔(ms)
-        private DateTime scrollStartTime;
+        private const int ScrollAnimationDuration = 150; // 进一步缩短动画持续时间
+        private const int ScrollAnimationInterval = 16;  // 约60fps
         private int scrollStartPosition;
         private Stopwatch animationStopwatch;
 
@@ -33,12 +32,22 @@ namespace BluePointLilac.Controls
                          ControlStyles.UserPaint |
                          ControlStyles.OptimizedDoubleBuffer |
                          ControlStyles.ResizeRedraw, true);
+
+            // 启用平滑滚动
+            this.SetStyle(ControlStyles.EnableNotifyMessage, true);
+        }
+
+        protected override void OnNotifyMessage(Message m)
+        {
+            // 过滤掉WM_MOUSEWHEEL消息，避免默认滚动行为
+            if (m.Msg != 0x20A) // WM_MOUSEWHEEL
+                base.OnNotifyMessage(m);
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             // 取消默认的滚动行为，改为平滑滚动
-            int scrollAmount = Math.Sign(e.Delta) * 60.DpiZoom(); // 增加滚动幅度
+            int scrollAmount = Math.Sign(e.Delta) * SystemInformation.MouseWheelScrollDelta;
             SmoothScrollBy(-scrollAmount); // 负号是因为滚轮方向与滚动方向相反
         }
 
@@ -48,15 +57,20 @@ namespace BluePointLilac.Controls
             if (scrollAnimationTimer.Enabled)
                 scrollAnimationTimer.Stop();
 
-            targetScrollPosition = Math.Max(0, Math.Min(position, VerticalScroll.Maximum));
+            targetScrollPosition = Math.Max(0, Math.Min(position, GetScrollRange()));
 
             if (VerticalScroll.Value == targetScrollPosition)
                 return;
 
             scrollStartPosition = VerticalScroll.Value;
-            scrollStartTime = DateTime.Now;
             animationStopwatch.Restart();
             scrollAnimationTimer.Start();
+        }
+
+        // 获取实际滚动范围
+        private int GetScrollRange()
+        {
+            return Math.Max(0, VerticalScroll.Maximum - ClientSize.Height + SystemInformation.HorizontalScrollBarHeight);
         }
 
         // 平滑滚动指定距离
@@ -74,7 +88,7 @@ namespace BluePointLilac.Controls
         // 平滑滚动到底部
         public void SmoothScrollToBottom()
         {
-            SmoothScrollTo(VerticalScroll.Maximum);
+            SmoothScrollTo(GetScrollRange());
         }
 
         private void ScrollAnimationTimer_Tick(object sender, EventArgs e)
@@ -83,7 +97,7 @@ namespace BluePointLilac.Controls
             double progress = Math.Min(elapsed / ScrollAnimationDuration, 1.0);
 
             // 使用缓动函数使动画更自然
-            double easedProgress = EaseOutQuart(progress);
+            double easedProgress = EaseOutCubic(progress);
 
             int newScroll = scrollStartPosition + (int)((targetScrollPosition - scrollStartPosition) * easedProgress);
 
@@ -103,22 +117,23 @@ namespace BluePointLilac.Controls
         {
             if (VerticalScroll.Visible)
             {
-                position = Math.Max(VerticalScroll.Minimum, Math.Min(position, VerticalScroll.Maximum));
+                int maxScroll = GetScrollRange();
+                position = Math.Max(0, Math.Min(position, maxScroll));
 
                 // 只有当位置确实改变时才更新
                 if (VerticalScroll.Value != position)
                 {
                     VerticalScroll.Value = position;
                     // 使用更高效的重绘方法
-                    this.Update();
+                    this.Invalidate();
                 }
             }
         }
 
-        // 缓动函数 - 四次方缓出（比三次方更平滑）
-        private double EaseOutQuart(double progress)
+        // 缓动函数 - 三次方缓出
+        private double EaseOutCubic(double progress)
         {
-            return 1 - Math.Pow(1 - progress, 4);
+            return 1 - Math.Pow(1 - progress, 3);
         }
 
         // 确保滚动条范围正确
@@ -126,18 +141,26 @@ namespace BluePointLilac.Controls
         {
             base.OnLayout(levent);
             // 在布局变化时更新滚动条范围
-            if (VerticalScroll.Visible && targetScrollPosition > VerticalScroll.Maximum)
+            if (VerticalScroll.Visible && targetScrollPosition > GetScrollRange())
             {
-                targetScrollPosition = VerticalScroll.Maximum;
+                targetScrollPosition = GetScrollRange();
             }
         }
 
-        // 优化绘制性能
+        // 优化绘制性能 - 只绘制需要绘制的区域
         protected override void OnPaint(PaintEventArgs e)
         {
             // 只绘制可见区域
             Rectangle clipRect = e.ClipRectangle;
             e.Graphics.SetClip(clipRect);
+
+            // 填充背景
+            using (SolidBrush brush = new SolidBrush(BackColor))
+            {
+                e.Graphics.FillRectangle(brush, clipRect);
+            }
+
+            // 调用基类绘制以绘制子控件
             base.OnPaint(e);
         }
 
@@ -169,7 +192,8 @@ namespace BluePointLilac.Controls
         public MyList()
         {
             AutoSize = true;
-            WrapContents = true;
+            WrapContents = false;
+            FlowDirection = FlowDirection.TopDown;
             Dock = DockStyle.Top;
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -192,8 +216,21 @@ namespace BluePointLilac.Controls
             item.Parent = this;
             MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
 
-            // 移除淡入动画，直接设置为完全不透明
-            item.Opacity = 1f;
+            // 淡入动画
+            item.Opacity = 0;
+            Timer fadeTimer = new Timer { Interval = 15 };
+            fadeTimer.Tick += (sender, e) =>
+            {
+                if (item.Opacity >= 1)
+                {
+                    fadeTimer.Stop();
+                    fadeTimer.Dispose();
+                    return;
+                }
+                item.Opacity = Math.Min(item.Opacity + 0.1F, 1);
+                item.Invalidate(); // 触发重绘
+            };
+            fadeTimer.Start();
 
             void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
             Owner.Resize += (sender, e) => ResizeItem();
@@ -432,5 +469,22 @@ namespace BluePointLilac.Controls
         }
 
         public float Opacity { get; set; } = 1f; // 添加透明度属性
+
+        // 优化绘制性能
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            // 只绘制需要绘制的区域
+            Rectangle clipRect = e.ClipRectangle;
+            e.Graphics.SetClip(clipRect);
+
+            // 填充背景
+            using (SolidBrush brush = new SolidBrush(BackColor))
+            {
+                e.Graphics.FillRectangle(brush, clipRect);
+            }
+
+            // 绘制子控件
+            base.OnPaint(e);
+        }
     }
 }
