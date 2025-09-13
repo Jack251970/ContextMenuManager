@@ -1,0 +1,37 @@
+name: 新功能提交
+description: 写下您对添加新功能的一些建议
+title: "[Feat]: "
+labels: [ "enhancement" ]
+body:
+    -   type: markdown
+        attributes:
+            value: "# ContextMenuManager 新功能请求"
+    -   type: checkboxes
+        id: feature_check
+        attributes:
+            label: 检查项
+            description: 在提交前，请确认以下内容：
+            options:
+                -   label: 此功能未被提出过（可以在[这里](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue)进行搜索）
+                    required: true
+                -   label: ContextMenuManager 的最新版本并未添加此功能
+                    required: true
+                -   label: 我已知晓：如果只是某些想法，而不是具体的新功能，需要在 [Discussions](https://github.com/Jack251970/ContextMenuManager/discussions/new?category=%E6%83%B3%E6%B3%95) 中提交
+                    required: true
+    -   type: input
+        id: feature_summary
+        attributes:
+            label: 简述
+            description: 请简要叙述您所希望添加的新功能
+            placeholder: |
+                <对此功能的简要描述>
+    -   type: textarea
+        id: feature_details
+        attributes:
+            label: 详细内容
+            description: 请详细描述需要此功能的原因，以及此功能的内容
+            placeholder: |
+                <需要此功能的原因，以及此功能的详细内容>
+    -   type: markdown
+        attributes:
+            value: "### 感谢您对 ContextMenuManager 的支持！"

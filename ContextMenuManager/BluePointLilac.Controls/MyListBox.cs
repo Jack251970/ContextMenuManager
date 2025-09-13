@@ -3,22 +3,176 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace BluePointLilac.Controls
 {
     public class MyListBox : Panel
     {
+        private int targetScrollPosition;
+        private Timer scrollAnimationTimer;
+        private const int ScrollAnimationDuration = 150; // 进一步缩短动画持续时间
+        private const int ScrollAnimationInterval = 16;  // 约60fps
+        private int scrollStartPosition;
+        private Stopwatch animationStopwatch;
+
         public MyListBox()
         {
             AutoScroll = true;
             BackColor = MyMainForm.FormBack;
             ForeColor = MyMainForm.FormFore;
+
+            // 初始化滚动动画计时器
+            scrollAnimationTimer = new Timer { Interval = ScrollAnimationInterval };
+            scrollAnimationTimer.Tick += ScrollAnimationTimer_Tick;
+            animationStopwatch = new Stopwatch();
+
+            // 启用双缓冲和优化绘制
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint |
+                         ControlStyles.UserPaint |
+                         ControlStyles.OptimizedDoubleBuffer |
+                         ControlStyles.ResizeRedraw, true);
+
+            // 启用平滑滚动
+            this.SetStyle(ControlStyles.EnableNotifyMessage, true);
+        }
+
+        protected override void OnNotifyMessage(Message m)
+        {
+            // 过滤掉WM_MOUSEWHEEL消息，避免默认滚动行为
+            if (m.Msg != 0x20A) // WM_MOUSEWHEEL
+                base.OnNotifyMessage(m);
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            // 使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
-            base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
+            // 取消默认的滚动行为，改为平滑滚动
+            int scrollAmount = Math.Sign(e.Delta) * SystemInformation.MouseWheelScrollDelta;
+            SmoothScrollBy(-scrollAmount); // 负号是因为滚轮方向与滚动方向相反
+        }
+
+        // 平滑滚动到指定位置
+        public void SmoothScrollTo(int position)
+        {
+            if (scrollAnimationTimer.Enabled)
+                scrollAnimationTimer.Stop();
+
+            targetScrollPosition = Math.Max(0, Math.Min(position, GetScrollRange()));
+
+            if (VerticalScroll.Value == targetScrollPosition)
+                return;
+
+            scrollStartPosition = VerticalScroll.Value;
+            animationStopwatch.Restart();
+            scrollAnimationTimer.Start();
+        }
+
+        // 获取实际滚动范围
+        private int GetScrollRange()
+        {
+            return Math.Max(0, VerticalScroll.Maximum - ClientSize.Height + SystemInformation.HorizontalScrollBarHeight);
+        }
+
+        // 平滑滚动指定距离
+        public void SmoothScrollBy(int delta)
+        {
+            SmoothScrollTo(VerticalScroll.Value + delta);
+        }
+
+        // 平滑滚动到顶部
+        public void SmoothScrollToTop()
+        {
+            SmoothScrollTo(0);
+        }
+
+        // 平滑滚动到底部
+        public void SmoothScrollToBottom()
+        {
+            SmoothScrollTo(GetScrollRange());
+        }
+
+        private void ScrollAnimationTimer_Tick(object sender, EventArgs e)
+        {
+            double elapsed = animationStopwatch.ElapsedMilliseconds;
+            double progress = Math.Min(elapsed / ScrollAnimationDuration, 1.0);
+
+            // 使用缓动函数使动画更自然
+            double easedProgress = EaseOutCubic(progress);
+
+            int newScroll = scrollStartPosition + (int)((targetScrollPosition - scrollStartPosition) * easedProgress);
+
+            // 设置滚动位置
+            SetScrollPosition(newScroll);
+
+            if (progress >= 1.0)
+            {
+                scrollAnimationTimer.Stop();
+                SetScrollPosition(targetScrollPosition); // 确保最终位置准确
+                animationStopwatch.Stop();
+            }
+        }
+
+        // 设置滚动位置，确保在有效范围内
+        private void SetScrollPosition(int position)
+        {
+            if (VerticalScroll.Visible)
+            {
+                int maxScroll = GetScrollRange();
+                position = Math.Max(0, Math.Min(position, maxScroll));
+
+                // 只有当位置确实改变时才更新
+                if (VerticalScroll.Value != position)
+                {
+                    VerticalScroll.Value = position;
+                    // 使用更高效的重绘方法
+                    this.Invalidate();
+                }
+            }
+        }
+
+        // 缓动函数 - 三次方缓出
+        private double EaseOutCubic(double progress)
+        {
+            return 1 - Math.Pow(1 - progress, 3);
+        }
+
+        // 确保滚动条范围正确
+        protected override void OnLayout(LayoutEventArgs levent)
+        {
+            base.OnLayout(levent);
+            // 在布局变化时更新滚动条范围
+            if (VerticalScroll.Visible && targetScrollPosition > GetScrollRange())
+            {
+                targetScrollPosition = GetScrollRange();
+            }
+        }
+
+        // 优化绘制性能 - 只绘制需要绘制的区域
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            // 只绘制可见区域
+            Rectangle clipRect = e.ClipRectangle;
+            e.Graphics.SetClip(clipRect);
+
+            // 填充背景
+            using (SolidBrush brush = new SolidBrush(BackColor))
+            {
+                e.Graphics.FillRectangle(brush, clipRect);
+            }
+
+            // 调用基类绘制以绘制子控件
+            base.OnPaint(e);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                scrollAnimationTimer?.Stop();
+                scrollAnimationTimer?.Dispose();
+                animationStopwatch?.Stop();
+            }
+            base.Dispose(disposing);
         }
     }
 
@@ -38,42 +192,28 @@ namespace BluePointLilac.Controls
         public MyList()
         {
             AutoSize = true;
-            WrapContents = true;
+            WrapContents = false;
+            FlowDirection = FlowDirection.TopDown;
             Dock = DockStyle.Top;
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
+
+            // 优化性能
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
+                         ControlStyles.AllPaintingInWmPaint |
+                         ControlStyles.UserPaint, true);
         }
 
-        private MyListItem hoveredItem;
-        public MyListItem HoveredItem
-        {
-            get => hoveredItem;
-            set
-            {
-                if (hoveredItem == value) return;
-                if (hoveredItem != null)
-                {
-                    hoveredItem.StartColorAnimation(MyMainForm.FormFore);
-                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
-                }
-                hoveredItem = value;
-                if (hoveredItem != null)
-                {
-                    hoveredItem.StartColorAnimation(MyMainForm.MainColor);
-                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Bold);
-                    hoveredItem.Focus();
-                }
-                HoveredItemChanged?.Invoke(this, null);
-            }
-        }
+        // 保留HoveredItem属性以供外部访问，但移除内部悬停检测逻辑
+        public MyListItem HoveredItem { get; private set; }
 
+        // 保留事件以供外部订阅
         public event EventHandler HoveredItemChanged;
 
         public void AddItem(MyListItem item)
         {
             SuspendLayout();
             item.Parent = this;
-            item.MouseEnter += (sender, e) => HoveredItem = item;
             MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
 
             // 淡入动画
@@ -172,10 +312,30 @@ namespace BluePointLilac.Controls
             Font = SystemFonts.IconTitleFont;
             ForeColor = MyMainForm.FormFore;
             BackColor = MyMainForm.FormBack;
+
+            // 优化性能
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
+                         ControlStyles.AllPaintingInWmPaint |
+                         ControlStyles.UserPaint, true);
+
+            // 创建FlowLayoutPanel并设置其属性
+            flpControls = new FlowLayoutPanel
+            {
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                FlowDirection = FlowDirection.RightToLeft,
+                Anchor = AnchorStyles.Right,
+                AutoSize = true,
+                Name = "Controls"
+            };
+
+            // 使用反射设置DoubleBuffered属性，因为它是受保护的
+            typeof(FlowLayoutPanel).GetProperty("DoubleBuffered",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                ?.SetValue(flpControls, true, null);
+
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
-            flpControls.MouseEnter += (sender, e) => OnMouseEnter(e);
             flpControls.MouseDown += (sender, e) => OnMouseDown(e);
             lblSeparator.SetEnabled(false);
             lblText.SetEnabled(false);
@@ -235,14 +395,7 @@ namespace BluePointLilac.Controls
             Name = "Image"
         };
 
-        private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel
-        {
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlowDirection = FlowDirection.RightToLeft,
-            Anchor = AnchorStyles.Right,
-            AutoSize = true,
-            Name = "Controls"
-        };
+        private FlowLayoutPanel flpControls;
 
         private readonly Label lblSeparator = new Label
         {
@@ -260,7 +413,7 @@ namespace BluePointLilac.Controls
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            base.OnMouseDown(e); OnMouseEnter(null);
+            base.OnMouseDown(e);
         }
 
         private void CenterControl(Control ctr)
@@ -290,8 +443,7 @@ namespace BluePointLilac.Controls
             SuspendLayout();
             ctr.Parent = flpControls;
             ctr.Margin = new Padding(0, 0, space, 0);
-            ctr.MouseEnter += (sender, e) => OnMouseEnter(e);
-            ctr.MouseDown += (sender, e) => OnMouseEnter(e);
+            ctr.MouseDown += (sender, e) => OnMouseDown(e);
             CenterControl(ctr);
             ResumeLayout();
         }
@@ -316,44 +468,23 @@ namespace BluePointLilac.Controls
             flpControls.Controls.SetChildIndex(ctr, newIndex + 1);
         }
 
-        private Timer colorAnimTimer;
-        private Color startColor;
-        private Color targetColor;
-        private const int AnimDuration = 200; // 动画时长(ms)
-        private const int AnimInterval = 15;  // 刷新间隔
         public float Opacity { get; set; } = 1f; // 添加透明度属性
 
-        public void StartColorAnimation(Color newColor)
+        // 优化绘制性能
+        protected override void OnPaint(PaintEventArgs e)
         {
-            if (colorAnimTimer != null)
+            // 只绘制需要绘制的区域
+            Rectangle clipRect = e.ClipRectangle;
+            e.Graphics.SetClip(clipRect);
+
+            // 填充背景
+            using (SolidBrush brush = new SolidBrush(BackColor))
             {
-                colorAnimTimer.Stop();
-                colorAnimTimer.Dispose();
+                e.Graphics.FillRectangle(brush, clipRect);
             }
 
-            startColor = this.ForeColor;
-            targetColor = newColor;
-            colorAnimTimer = new Timer { Interval = AnimInterval };
-
-            DateTime startTime = DateTime.Now;
-            colorAnimTimer.Tick += (sender, e) =>
-            {
-                double progress = (DateTime.Now - startTime).TotalMilliseconds / AnimDuration;
-                if (progress >= 1d)
-                {
-                    this.ForeColor = targetColor;
-                    colorAnimTimer.Stop();
-                    return;
-                }
-
-                int r = (int)(startColor.R + (targetColor.R - startColor.R) * progress);
-                int g = (int)(startColor.G + (targetColor.G - startColor.G) * progress);
-                int b = (int)(startColor.B + (targetColor.B - startColor.B) * progress);
-                this.ForeColor = Color.FromArgb(r, g, b);
-                this.Invalidate(); // 触发重绘
-            };
-
-            colorAnimTimer.Start();
+            // 绘制子控件
+            base.OnPaint(e);
         }
     }
 }
