@@ -9,8 +9,8 @@ namespace BluePointLilac.Controls
     public sealed class MyToolBar : FlowLayoutPanel
     {
         // 提高不透明度值，使白色背景更加明显
-        public const float SelctedOpacity = 0.6F;  // 从0.3提高到0.6
-        public const float HoveredOpacity = 0.4F;  // 从0.2提高到0.4
+        public const float SelctedOpacity = 0.8F;
+        public const float HoveredOpacity = 0.4F;
         public const float UnSelctedOpacity = 0;
 
         public MyToolBar()
@@ -236,8 +236,8 @@ namespace BluePointLilac.Controls
                 // 深色模式使用白色，浅色模式使用黑色
                 Color baseColor = isDarkMode ? Color.White : Color.Black;
 
-                // 减少浅色模式的不透明度（增加透明度）
-                float opacityFactor = isDarkMode ? 1.0f : 0.6f; // 浅色模式减少40%的不透明度
+                // 减少两种模式的不透明度
+                float opacityFactor = isDarkMode ? 0.4f : 0.6f; // 深色模式减少更多（0.4），浅色模式减少较少（0.6）
                 int alpha = (int)(currentOpacity * 255 * opacityFactor);
                 alpha = Math.Max(0, Math.Min(255, alpha)); // 确保alpha值在有效范围内
 
