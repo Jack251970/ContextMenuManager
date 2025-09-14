@@ -42,20 +42,9 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private static bool IsDarkTheme()
-        {
-            using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-            {
-                var registryValueObject = key?.GetValue("AppsUseLightTheme");
-
-                if (registryValueObject == null) return false;
-                return (int)registryValueObject <= 0;
-            }
-        }
-
         public bool InitTheme()
         {
-            bool newDarkTheme = IsDarkTheme();
+            bool newDarkTheme = MyMainForm.IsDarkTheme();
             bool changed = darkTheme != newDarkTheme;
             darkTheme = newDarkTheme;
 

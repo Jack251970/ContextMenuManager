@@ -101,7 +101,7 @@ namespace BluePointLilac.Controls
             var rect = ClientRectangle;
 
             Color color1, color2, color3;
-            if (IsDarkMode())
+            if (MyMainForm.IsDarkTheme())
             {
                 // 深色模式三色渐变
                 color1 = Color.FromArgb(128, 128, 128);   // 顶部颜色
@@ -127,19 +127,6 @@ namespace BluePointLilac.Controls
                 brush.InterpolationColors = colorBlend;
 
                 e.Graphics.FillRectangle(brush, rect);
-            }
-        }
-
-        public bool IsDarkMode()
-        {
-            try
-            {
-                var key = Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1);
-                return key != null && (int)key == 0; // 0 表示深色模式
-            }
-            catch
-            {
-                return false; // 默认返回浅色模式
             }
         }
     }
@@ -230,7 +217,7 @@ namespace BluePointLilac.Controls
                 bool isDarkMode = false;
                 if (Parent is MyToolBar toolbar)
                 {
-                    isDarkMode = toolbar.IsDarkMode();
+                    isDarkMode = MyMainForm.IsDarkTheme();
                 }
 
                 // 深色模式使用白色，浅色模式使用黑色
@@ -258,7 +245,7 @@ namespace BluePointLilac.Controls
             bool isDarkMode = false;
             if (Parent is MyToolBar toolbar)
             {
-                isDarkMode = toolbar.IsDarkMode();
+                isDarkMode = MyMainForm.IsDarkTheme();
             }
 
             // 浅色模式下，当按钮被选中或悬停时，文字颜色改为白色
