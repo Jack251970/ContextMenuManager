@@ -216,9 +216,9 @@ namespace BluePointLilac.Controls
                     else
                     {
                         // 关闭状态的三色渐变
-                        Color topColor = Color.FromArgb(255, 255, 255);
-                        Color middleColor = Color.FromArgb(230, 230, 230);
-                        Color bottomColor = Color.FromArgb(255, 255, 255);
+                        Color topColor = Color.FromArgb(200, 200, 200);
+                        Color middleColor = Color.FromArgb(150, 150, 150);
+                        Color bottomColor = Color.FromArgb(200, 200, 200);
 
                         // 如果是动画状态，进行颜色插值
                         if (isAnimating)
@@ -233,9 +233,9 @@ namespace BluePointLilac.Controls
                             }
                             else
                             {
-                                targetTopColor = Color.FromArgb(255, 255, 255);
-                                targetMiddleColor = Color.FromArgb(230, 230, 230);
-                                targetBottomColor = Color.FromArgb(255, 255, 255);
+                                targetTopColor = Color.FromArgb(200, 200, 200);
+                                targetMiddleColor = Color.FromArgb(150, 150, 150);
+                                targetBottomColor = Color.FromArgb(200, 200, 200);
                             }
 
                             topColor = InterpolateColor(topColor, targetTopColor, easedProgress);
