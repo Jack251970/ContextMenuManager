@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using System;
+using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -31,7 +34,7 @@ namespace BluePointLilac.Controls
         /// </summary>
         private void InitializeComponent()
         {
-            progressBar = new ProgressBar();
+            progressBar = new NewProgressBar();
             panel1 = new Panel();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -43,9 +46,11 @@ namespace BluePointLilac.Controls
             progressBar.Margin = new Padding(5, 6, 5, 6);
             progressBar.Name = "progressBar";
             progressBar.Size = new System.Drawing.Size(560, 40);
-            progressBar.Style = ProgressBarStyle.Marquee;
+            progressBar.Style = ProgressBarStyle.Blocks;
             progressBar.TabIndex = 0;
-            progressBar.Value = 100;
+            progressBar.Value = 0;
+            progressBar.Maximum = 100;
+            progressBar.Minimum = 0;
             // 
             // panel1
             // 
@@ -88,6 +93,31 @@ namespace BluePointLilac.Controls
 
         #endregion
         private Panel panel1;
-        private ProgressBar progressBar;
+        private NewProgressBar progressBar;
+    }
+
+    public class NewProgressBar : ProgressBar
+    {
+        private Color foreColor = MyMainForm.MainColor;
+        private Color backColor = MyMainForm.ButtonMain;
+
+        public NewProgressBar()
+        {
+            this.SetStyle(ControlStyles.UserPaint, true);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            Rectangle rec = e.ClipRectangle;
+
+            rec.Width = (int)(rec.Width * ((double)Value / Maximum)) - 4;
+            if (ProgressBarRenderer.IsSupported)
+                ProgressBarRenderer.DrawHorizontalBar(e.Graphics, e.ClipRectangle);
+            rec.Height = rec.Height - 4;
+            using (Brush backBrush = new SolidBrush(backColor))
+                e.Graphics.FillRectangle(backBrush, 2, 2, e.ClipRectangle.Width - 4, rec.Height);
+            using (Brush foreBrush = new SolidBrush(foreColor))
+                e.Graphics.FillRectangle(foreBrush, 2, 2, rec.Width, rec.Height);
+        }
     }
 }

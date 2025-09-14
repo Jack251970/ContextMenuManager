@@ -27,6 +27,9 @@ namespace BluePointLilac.Controls
 
             Text = title;
 
+            ForeColor = MyMainForm.FormFore;
+            BackColor = MyMainForm.FormBack;
+
             UseWaitCursor = true;
 
             _controller = new LoadingDialogInterface(this);
