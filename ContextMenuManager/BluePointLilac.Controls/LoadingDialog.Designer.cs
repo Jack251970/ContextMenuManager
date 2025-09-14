@@ -128,8 +128,9 @@ namespace BluePointLilac.Controls
                     rect.Width = (int)(rect.Width * ((double)this.Value / this.Maximum));
                     if (rect.Width == 0) rect.Width = 1; // Can't draw rec with width of 0.
 
-                    LinearGradientBrush brush = new LinearGradientBrush(rect, backColor, foreColor, LinearGradientMode.Vertical);
-                    offscreen.FillRectangle(brush, inset, inset, rect.Width, rect.Height);
+                    /*LinearGradientBrush brush = new LinearGradientBrush(rect, backColor, foreColor, LinearGradientMode.Vertical);*/
+                    using (SolidBrush brush = new SolidBrush(foreColor))
+                        offscreen.FillRectangle(brush, inset, inset, rect.Width, rect.Height);
 
                     e.Graphics.DrawImage(offscreenImage, 0, 0);
                 }
