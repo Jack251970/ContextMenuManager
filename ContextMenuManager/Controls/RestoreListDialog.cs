@@ -24,7 +24,7 @@ namespace ContextMenuManager.Controls
                     frm.ShowDonateList(RestoreData);
                     frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
                     frm.Top = mainForm.Top + 150.DpiZoom();
-                    frm.TopMost = AppConfig.TopMost;
+                    frm.TopMost = true;
                     frm.ShowDialog();
                 }
             }

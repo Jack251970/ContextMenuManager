@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls
                 var location = GuidInfo.GetIconLocation(GroupGuid);
                 frm.Icon = ResourceIcon.GetIcon(location.IconPath, location.IconIndex);
                 frm.Text = AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid));
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
                 frm.AddList(list);
                 list.GroupGuid = GroupGuid;
                 list.UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid];

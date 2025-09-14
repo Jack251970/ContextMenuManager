@@ -21,7 +21,7 @@ namespace ContextMenuManager.Controls
         {
             using(ShellStoreForm frm = new ShellStoreForm(ShellPath, Filter, IsReference))
             {
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 if(flag) SelectedKeyNames = frm.SelectedKeyNames;
                 return flag;

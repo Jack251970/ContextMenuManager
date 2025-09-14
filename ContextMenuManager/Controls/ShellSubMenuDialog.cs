@@ -44,7 +44,7 @@ namespace ContextMenuManager.Controls
             {
                 frm.Text = Text;
                 frm.Icon = Icon;
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
 
                 if(isPublic)
                 {
