@@ -161,7 +161,7 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private static bool IsDarkTheme()
+        public static bool IsDarkTheme()
         {
             using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
             {
