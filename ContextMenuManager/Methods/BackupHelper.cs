@@ -139,10 +139,12 @@ namespace ContextMenuManager.Methods
         }
 
         // 备份指定场景内容
-        public void BackupItems(List<string> sceneTexts, BackupMode backupMode)
+        public void BackupItems(List<string> sceneTexts, BackupMode backupMode, LoadingDialogInterface dialogInterface)
         {
             ClearBackupList();
-            GetBackupRestoreScenes(sceneTexts);
+            var count = GetBackupRestoreScenes(sceneTexts);
+            dialogInterface.SetMaximum(count + 1);
+            dialogInterface.SetProgress(0);
             backup = true;
             this.backupMode = backupMode;
             DateTime dateTime = DateTime.Now;
@@ -156,26 +158,30 @@ namespace ContextMenuManager.Methods
             metaData.BackupScenes = currentScenes;
             metaData.Version = BackupVersion;
             // 加载备份文件到缓冲区
-            BackupRestoreItems();
+            BackupRestoreItems(dialogInterface);
             // 保存缓冲区的备份文件
             SaveBackupList(filePath);
             backupCount = GetBackupListCount();
             ClearBackupList();
+            dialogInterface.SetProgress(count + 1);
         }
 
         // 恢复指定场景内容
-        public void RestoreItems(string filePath, List<string> sceneTexts, RestoreMode restoreMode)
+        public void RestoreItems(string filePath, List<string> sceneTexts, RestoreMode restoreMode, LoadingDialogInterface dialogInterface)
         {
             ClearBackupList();
-            GetBackupRestoreScenes(sceneTexts);
+            var count = GetBackupRestoreScenes(sceneTexts);
+            dialogInterface.SetMaximum(count + 1);
+            dialogInterface.SetProgress(0);
             backup = false;
             this.restoreMode = restoreMode;
             restoreList.Clear();
             // 加载备份文件到缓冲区
             LoadBackupList(filePath);
             // 还原缓冲区的备份文件
-            BackupRestoreItems();
+            BackupRestoreItems(dialogInterface);
             ClearBackupList();
+            dialogInterface.SetProgress(count + 1);
         }
 
         /*******************************内部变量、函数************************************/
@@ -224,7 +230,7 @@ namespace ContextMenuManager.Methods
         }
 
         // 获取目前备份恢复场景
-        private void GetBackupRestoreScenes(List<string> sceneTexts)
+        private int GetBackupRestoreScenes(List<string> sceneTexts)
         {
             currentScenes.Clear();
             for (int i = 0; i < BackupScenesText.Length; i++)
@@ -236,10 +242,11 @@ namespace ContextMenuManager.Methods
                     currentScenes.Add((Scenes)i);
                 }
             }
+            return currentScenes.Count;
         }
 
         // 按照目前处理场景逐个备份或恢复
-        private void BackupRestoreItems()
+        private void BackupRestoreItems(LoadingDialogInterface dialogInterface)
         {
             foreach(Scenes scene in currentScenes)
             {
@@ -250,6 +257,7 @@ namespace ContextMenuManager.Methods
                     LoadTempRestoreList(currentScene);
                 }
                 GetBackupItems();
+                dialogInterface?.SetProgress(currentScenes.IndexOf(scene) + 1);
             }
         }
 
