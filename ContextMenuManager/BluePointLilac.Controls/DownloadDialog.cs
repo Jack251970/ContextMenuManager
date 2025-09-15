@@ -103,7 +103,7 @@ namespace BluePointLilac.Controls
                 if(Owner == null) StartPosition = FormStartPosition.CenterScreen;
                 else
                 {
-                    TopMost = Owner.TopMost;
+                    TopMost = true;
                     StartPosition = FormStartPosition.CenterParent;
                 }
                 base.OnLoad(e);

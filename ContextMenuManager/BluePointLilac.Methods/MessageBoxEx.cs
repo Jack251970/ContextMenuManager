@@ -236,7 +236,7 @@ namespace BluePointLilac.Methods
                 if(Owner == null) StartPosition = FormStartPosition.CenterScreen;
                 else
                 {
-                    TopMost = Owner.TopMost;
+                    TopMost = true;
                     StartPosition = FormStartPosition.CenterParent;
                     if(CanMoveParent) this.MoveAsMove(Owner);
                 }

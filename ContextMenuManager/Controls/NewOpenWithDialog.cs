@@ -16,7 +16,7 @@ namespace ContextMenuManager.Controls
         {
             using(NewOpenWithForm frm = new NewOpenWithForm())
             {
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 if(flag) RegPath = frm.RegPath;
                 return flag;

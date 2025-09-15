@@ -23,7 +23,7 @@ namespace ContextMenuManager.Controls
                 ShellPath = ShellPath
             })
             {
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 if(flag) NewItemRegPath = frm.NewItemRegPath;
                 return flag;

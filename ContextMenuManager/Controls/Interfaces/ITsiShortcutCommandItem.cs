@@ -51,7 +51,7 @@ namespace ContextMenuManager.Controls.Interfaces
                 {
                     frm.Command = Command;
                     frm.Arguments = Arguments;
-                    frm.TopMost = AppConfig.TopMost;
+                    frm.TopMost = true;
                     bool flag = frm.ShowDialog() == DialogResult.OK;
                     if(flag)
                     {
