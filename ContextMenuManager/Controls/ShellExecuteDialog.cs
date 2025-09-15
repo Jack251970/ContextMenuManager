@@ -18,7 +18,7 @@ namespace ContextMenuManager.Controls
         {
             using(ShellExecuteForm frm = new ShellExecuteForm())
             {
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 if(flag)
                 {

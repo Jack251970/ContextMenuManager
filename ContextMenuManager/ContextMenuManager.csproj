@@ -55,7 +55,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Management" Version="9.0.8" />
+    <PackageReference Include="System.Management" Version="9.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.0.0" />
   </ItemGroup>

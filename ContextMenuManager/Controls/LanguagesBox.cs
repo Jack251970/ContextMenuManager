@@ -265,7 +265,7 @@ namespace ContextMenuManager.Controls
             {
                 using(TranslateForm frm = new TranslateForm())
                 {
-                    frm.TopMost = AppConfig.TopMost;
+                    frm.TopMost = true;
                     return frm.ShowDialog() == DialogResult.OK;
                 }
             }

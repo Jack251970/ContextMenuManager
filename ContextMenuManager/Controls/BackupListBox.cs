@@ -79,7 +79,11 @@ namespace ContextMenuManager.Controls
             }
             // 开始备份项目
             Cursor = Cursors.WaitCursor;
-            helper.BackupItems(backupScenes, backupMode);
+            _ = LoadingDialog.ShowDialog(FindForm(), AppString.SideBar.BackupRestore,
+                dialogInterface =>
+                {
+                    helper.BackupItems(backupScenes, backupMode, dialogInterface);
+                });
             Cursor = Cursors.Default;
             // 新增备份项目（项目已加载元数据）
             string deviceName = BackupList.metaData.Device;
@@ -135,7 +139,11 @@ namespace ContextMenuManager.Controls
             }
             // 开始恢复项目
             Cursor = Cursors.WaitCursor;
-            helper.RestoreItems(filePath, restoreScenes, restoreMode);
+            _ = LoadingDialog.ShowDialog(FindForm(), AppString.SideBar.BackupRestore,
+                dialogInterface =>
+                {
+                    helper.RestoreItems(filePath, restoreScenes, restoreMode, dialogInterface);
+                });
             // 弹窗提示结果
             List<RestoreChangedItem> restoreList = helper.restoreList;
             ShowRestoreDialog(restoreList);

@@ -18,7 +18,7 @@ namespace ContextMenuManager.Controls
             {
                 frm.Text = AppString.SideBar.EnhanceMenu;
                 frm.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
                 frm.AddList(list);
                 list.ScenePath = ScenePath;
                 list.UseUserDic = XmlDicHelper.EnhanceMenuPathDic[ScenePath];

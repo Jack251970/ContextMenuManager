@@ -163,7 +163,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     frm.ItemIcon = ItemIcon;
                     frm.ItemIconPath = ItemIconPath;
                     frm.ItemIconIndex = ItemIconIndex;
-                    frm.TopMost = AppConfig.TopMost;
+                    frm.TopMost = true;
                     bool flag = frm.ShowDialog() == DialogResult.OK;
                     if(flag)
                     {

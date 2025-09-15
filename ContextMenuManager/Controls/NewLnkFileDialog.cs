@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls
             using(NewLnkForm frm = new NewLnkForm())
             {
                 frm.FileFilter = FileFilter;
-                frm.TopMost = AppConfig.TopMost;
+                frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 if(flag)
                 {

@@ -34,7 +34,7 @@ namespace BluePointLilac.Controls
                 frm.TvItems = TvItems;
                 if (CmbSelectedText != null) frm.CmbSelectedText = CmbSelectedText;
                 else frm.CmbSelectedIndex = CmbSelectedIndex;
-                if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = owner.TopMost;
+                if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
                 if(flag)
                 {
