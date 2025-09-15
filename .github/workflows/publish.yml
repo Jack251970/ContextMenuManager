@@ -53,5 +53,5 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: ContextMenuManager.exe
+          files: bin\Publish\ContextMenuManager.exe
           tag_name: "${{ env.release_version }}"
