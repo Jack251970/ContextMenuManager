@@ -36,7 +36,7 @@ body:
         attributes:
             label: Version
             description: The ContextMenuManager version where you found this bug
-            placeholder: "ContextMenuManager version: Vx.x.x.x"
+            placeholder: "ContextMenuManager version: x.x.x.x"
         validations:
             required: true
     -   type: textarea

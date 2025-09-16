@@ -36,7 +36,7 @@ body:
         attributes:
             label: 版本
             description: 您发现此错误使用的 ContextMenuManager 版本
-            placeholder: ContextMenuManager版本：Vx.x.x.x
+            placeholder: ContextMenuManager版本：x.x.x.x
         validations:
             required: true
     -   type: textarea

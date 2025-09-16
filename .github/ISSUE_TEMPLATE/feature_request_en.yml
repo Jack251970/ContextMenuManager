@@ -22,7 +22,7 @@ body:
         id: feature_summary
         attributes:
             label: Summary
-            description: "Briefly describe the feature you’d like to add"
+            description: "Briefly describe the feature you'd like to add"
             placeholder: |
                 <A brief description of the feature>
     -   type: textarea
