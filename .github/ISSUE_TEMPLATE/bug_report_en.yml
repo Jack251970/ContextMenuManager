@@ -10,13 +10,13 @@ body:
         id: bug_check
         attributes:
             label: Checklist
-            description: Before submitting, please confirm the following:
+            description: "Before submitting, please confirm the following:"
             options:
-                -   label: This bug has not already been reported (search [here](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue))
+                -   label: "This bug has not already been reported (search [here](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue))"
                     required: true
-                -   label: I have updated ContextMenuManager to the latest version
+                -   label: "I have updated ContextMenuManager to the latest version"
                     required: true
-                -   label: I understand that any issue not following the guidelines may be closed directly
+                -   label: "I understand that any issue not following the guidelines may be closed directly"
                     required: true
     -   type: dropdown
         id: bug_os
@@ -36,7 +36,7 @@ body:
         attributes:
             label: Version
             description: The ContextMenuManager version where you found this bug
-            placeholder: ContextMenuManager version: Vx.x.x.x
+            placeholder: "ContextMenuManager version: Vx.x.x.x"
         validations:
             required: true
     -   type: textarea

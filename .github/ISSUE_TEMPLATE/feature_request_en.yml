@@ -10,26 +10,26 @@ body:
         id: feature_check
         attributes:
             label: Checklist
-            description: Before submitting, please confirm the following:
+            description: "Before submitting, please confirm the following:"
             options:
-                -   label: This feature has not already been requested (search [here](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue))
+                -   label: "This feature has not already been requested (search [here](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue))"
                     required: true
-                -   label: The latest version of ContextMenuManager does not include this feature
+                -   label: "The latest version of ContextMenuManager does not include this feature"
                     required: true
-                -   label: I understand: general ideas (not specific features) should be posted in [Discussions](https://github.com/Jack251970/ContextMenuManager/discussions/new?category=%E6%83%B3%E6%B3%95)
+                -   label: "I understand: general ideas (not specific features) should be posted in [Discussions](https://github.com/Jack251970/ContextMenuManager/discussions/new?category=%E6%83%B3%E6%B3%95)"
                     required: true
     -   type: input
         id: feature_summary
         attributes:
             label: Summary
-            description: Briefly describe the feature you’d like to add
+            description: "Briefly describe the feature you’d like to add"
             placeholder: |
                 <A brief description of the feature>
     -   type: textarea
         id: feature_details
         attributes:
             label: Details
-            description: Describe why this feature is needed and what it should do
+            description: "Describe why this feature is needed and what it should do"
             placeholder: |
                 <Why this feature is needed and what it should include>
     -   type: markdown
