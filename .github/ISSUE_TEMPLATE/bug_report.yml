@@ -28,7 +28,7 @@ body:
                 - Windows 8.x
                 - Windows 10
                 - Windows 11
-            default: 4
+            default: 3
         validations:
             required: true
     -   type: input
