@@ -1,0 +1,55 @@
+name: Bug Report
+description: Report a bug in ContextMenuManager
+title: "[Bug]: "
+labels: [ "bug" ]
+body:
+    -   type: markdown
+        attributes:
+            value: "# ContextMenuManager Bug Report"
+    -   type: checkboxes
+        id: bug_check
+        attributes:
+            label: Checklist
+            description: Before submitting, please confirm the following:
+            options:
+                -   label: This bug has not already been reported (search [here](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue))
+                    required: true
+                -   label: I have updated ContextMenuManager to the latest version
+                    required: true
+                -   label: I understand that any issue not following the guidelines may be closed directly
+                    required: true
+    -   type: dropdown
+        id: bug_os
+        attributes:
+            label: Windows
+            description: Your Windows version
+            options:
+                - Windows 7
+                - Windows 8.x
+                - Windows 10
+                - Windows 11
+            default: 3
+        validations:
+            required: true
+    -   type: input
+        id: bug_version
+        attributes:
+            label: Version
+            description: The ContextMenuManager version where you found this bug
+            placeholder: ContextMenuManager version: Vx.x.x.x
+        validations:
+            required: true
+    -   type: textarea
+        id: bug_reproducer
+        attributes:
+            label: Steps to Reproduce
+            description: Please briefly describe how to trigger this bug
+            placeholder: |
+                1. xxx
+                2. xxx
+                3. xxx
+        validations:
+            required: true
+    -   type: markdown
+        attributes:
+            value: "### Thank you for supporting ContextMenuManager!"

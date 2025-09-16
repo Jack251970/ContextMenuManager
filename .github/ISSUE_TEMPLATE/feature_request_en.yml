@@ -1,0 +1,37 @@
+name: Feature Request
+description: Share your suggestions for new features
+title: "[Feat]: "
+labels: [ "enhancement" ]
+body:
+    -   type: markdown
+        attributes:
+            value: "# ContextMenuManager Feature Request"
+    -   type: checkboxes
+        id: feature_check
+        attributes:
+            label: Checklist
+            description: Before submitting, please confirm the following:
+            options:
+                -   label: This feature has not already been requested (search [here](https://github.com/Jack251970/ContextMenuManager/issues?q=is%3Aissue))
+                    required: true
+                -   label: The latest version of ContextMenuManager does not include this feature
+                    required: true
+                -   label: I understand: general ideas (not specific features) should be posted in [Discussions](https://github.com/Jack251970/ContextMenuManager/discussions/new?category=%E6%83%B3%E6%B3%95)
+                    required: true
+    -   type: input
+        id: feature_summary
+        attributes:
+            label: Summary
+            description: Briefly describe the feature you’d like to add
+            placeholder: |
+                <A brief description of the feature>
+    -   type: textarea
+        id: feature_details
+        attributes:
+            label: Details
+            description: Describe why this feature is needed and what it should do
+            placeholder: |
+                <Why this feature is needed and what it should include>
+    -   type: markdown
+        attributes:
+            value: "### Thank you for supporting ContextMenuManager!"
