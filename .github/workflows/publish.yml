@@ -47,11 +47,12 @@ jobs:
 
       # Publish the project
       - name: Publish
-        run: dotnet publish ${{ env.Project_Path }} -p:PublishProfile=Net9.0-Win64.pubxml
+        run: dotnet publish ${{ env.Project_Path }} -p:PublishProfile=Net9.0-Any CPU.pubxml
 
       # Publish to GitHub releases
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: bin\Publish\ContextMenuManager.exe
+          files: |
+            Output/ContextMenuManager*
           tag_name: "${{ env.release_version }}"
