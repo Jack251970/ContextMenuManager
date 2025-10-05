@@ -47,7 +47,7 @@ jobs:
 
       # Publish the project
       - name: Publish
-        run: dotnet publish ${{ env.Project_Path }} -p:PublishProfile=Net9.0-Any CPU.pubxml
+        run: dotnet publish ${{ env.Project_Path }} -p:PublishProfile=Net9.0-AnyCPU.pubxml
 
       # Publish to GitHub releases
       - name: Publish
