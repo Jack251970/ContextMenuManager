@@ -50,6 +50,11 @@ body:
                 3. xxx
         validations:
             required: true
+    -   type: textarea
+        id: bug_logs
+        attributes:
+            label: Crash logs
+            description: Paste the log that appears when the program crashes into the text box
     -   type: markdown
         attributes:
             value: "### Thank you for supporting ContextMenuManager!"
