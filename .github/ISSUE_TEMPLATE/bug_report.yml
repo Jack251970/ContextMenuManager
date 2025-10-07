@@ -55,7 +55,6 @@ body:
         attributes:
             label: 崩溃日志
             description: 粘贴程序崩溃时出现的日志到文本框里
-            placeholder: |
     -   type: markdown
         attributes:
             value: "### 感谢您对 ContextMenuManager 的支持！"
