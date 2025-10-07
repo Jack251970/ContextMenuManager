@@ -50,6 +50,13 @@ body:
                 3. xxx
         validations:
             required: true
+    -   type: textarea
+        id: bug_logs
+        attributes:
+            label: 
+            description: 崩溃日志
+            placeholder: |
+                复制程序崩溃时出现的日志
     -   type: markdown
         attributes:
             value: "### 感谢您对 ContextMenuManager 的支持！"
