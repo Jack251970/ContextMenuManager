@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -19,6 +20,81 @@ namespace BluePointLilac.Controls
         {
             //使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
             base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
+        }
+
+        // 搜索功能
+        public virtual void SearchItems(string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                // 清空搜索，显示所有项
+                foreach (Control control in Controls)
+                {
+                    if (control is MyList list)
+                    {
+                        foreach (Control item in list.Controls)
+                        {
+                            if (item is MyListItem listItem)
+                            {
+                                listItem.Visible = true;
+                                listItem.HighlightText = null;
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+
+            // 搜索所有列表项
+            foreach (Control control in Controls)
+            {
+                if (control is MyList list)
+                {
+                    foreach (Control item in list.Controls)
+                    {
+                        if (item is MyListItem listItem)
+                        {
+                            bool matches = listItem.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                            listItem.Visible = matches;
+                            if (matches)
+                            {
+                                listItem.HighlightText = searchText;
+                            }
+                            else
+                            {
+                                listItem.HighlightText = null;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 获取所有可见的列表项
+        public virtual IEnumerable<MyListItem> GetAllItems()
+        {
+            foreach (Control control in Controls)
+            {
+                if (control is MyList list)
+                {
+                    foreach (Control item in list.Controls)
+                    {
+                        if (item is MyListItem listItem)
+                        {
+                            yield return listItem;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 清除搜索高亮
+        public virtual void ClearSearchHighlight()
+        {
+            foreach (var item in GetAllItems())
+            {
+                item.HighlightText = null;
+            }
         }
     }
 
@@ -44,36 +120,19 @@ namespace BluePointLilac.Controls
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
         }
 
-        private MyListItem hoveredItem;
-        public MyListItem HoveredItem
-        {
-            get => hoveredItem;
-            set
-            {
-                if(hoveredItem == value) return;
-                if(hoveredItem != null)
-                {
-                    hoveredItem.ForeColor = MyMainForm.FormFore;
-                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
-                }
-                hoveredItem = value;
-                if (hoveredItem != null)
-                {
-                    value.ForeColor = MyMainForm.MainColor;
-                    value.Font = new Font(hoveredItem.Font, FontStyle.Bold);
-                    value.Focus();
-                }
-                HoveredItemChanged?.Invoke(this, null);
-            }
-        }
-
-        public event EventHandler HoveredItemChanged;
+        // 移除悬停项相关代码
+        // private MyListItem hoveredItem;
+        // public MyListItem HoveredItem { ... }
+        // public event EventHandler HoveredItemChanged;
 
         public void AddItem(MyListItem item)
         {
             SuspendLayout();
             item.Parent = this;
-            item.MouseEnter += (sender, e) => HoveredItem = item;
+
+            // 移除悬停事件
+            // item.MouseEnter += (sender, e) => HoveredItem = item;
+
             MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
             void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
             Owner.Resize += (sender, e) => ResizeItem();
@@ -103,16 +162,16 @@ namespace BluePointLilac.Controls
 
         public void InsertItem(MyListItem item, int index)
         {
-            if(item == null) return;
+            if (item == null) return;
             AddItem(item);
             SetItemIndex(item, index);
         }
 
         public virtual void ClearItems()
         {
-            if(Controls.Count == 0) return;
+            if (Controls.Count == 0) return;
             SuspendLayout();
-            for(int i = Controls.Count - 1; i >= 0; i--)
+            for (int i = Controls.Count - 1; i >= 0; i--)
             {
                 Control ctr = Controls[i];
                 Controls.Remove(ctr);
@@ -124,7 +183,7 @@ namespace BluePointLilac.Controls
         public void SortItemByText()
         {
             List<MyListItem> items = new List<MyListItem>();
-            foreach(MyListItem item in Controls) items.Add(item);
+            foreach (MyListItem item in Controls) items.Add(item);
             Controls.Clear();
             items.Sort(new TextComparer());
             items.ForEach(item => AddItem(item));
@@ -134,17 +193,68 @@ namespace BluePointLilac.Controls
         {
             public int Compare(MyListItem x, MyListItem y)
             {
-                if(x.Equals(y)) return 0;
+                if (x.Equals(y)) return 0;
                 string[] strs = { x.Text, y.Text };
                 Array.Sort(strs);
-                if(strs[0] == x.Text) return -1;
+                if (strs[0] == x.Text) return -1;
                 else return 1;
+            }
+        }
+
+        // 搜索功能
+        public virtual void SearchItems(string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                // 清空搜索，显示所有项
+                foreach (Control control in Controls)
+                {
+                    if (control is MyListItem item)
+                    {
+                        item.Visible = true;
+                        item.HighlightText = null;
+                    }
+                }
+                return;
+            }
+
+            // 搜索所有列表项
+            foreach (Control control in Controls)
+            {
+                if (control is MyListItem item)
+                {
+                    bool matches = item.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                    item.Visible = matches;
+                    if (matches)
+                    {
+                        item.HighlightText = searchText;
+                    }
+                    else
+                    {
+                        item.HighlightText = null;
+                    }
+                }
+            }
+        }
+
+        // 获取所有列表项
+        public virtual IEnumerable<MyListItem> GetAllItems()
+        {
+            foreach (Control control in Controls)
+            {
+                if (control is MyListItem item)
+                {
+                    yield return item;
+                }
             }
         }
     }
 
     public class MyListItem : Panel
     {
+        private string highlightText;
+        private Color highlightColor = Color.Yellow;
+
         public MyListItem()
         {
             SuspendLayout();
@@ -158,7 +268,10 @@ namespace BluePointLilac.Controls
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
-            flpControls.MouseEnter += (sender, e) => OnMouseEnter(e);
+
+            // 移除悬停事件
+            // flpControls.MouseEnter += (sender, e) => OnMouseEnter(e);
+
             flpControls.MouseDown += (sender, e) => OnMouseDown(e);
             lblSeparator.SetEnabled(false);
             lblText.SetEnabled(false);
@@ -189,6 +302,31 @@ namespace BluePointLilac.Controls
             set => lblText.ForeColor = value;
         }
 
+        // 高亮文本属性
+        public string HighlightText
+        {
+            get => highlightText;
+            set
+            {
+                if (highlightText != value)
+                {
+                    highlightText = value;
+                    Invalidate(); // 重绘以显示高亮
+                }
+            }
+        }
+
+        // 高亮颜色
+        public Color HighlightColor
+        {
+            get => highlightColor;
+            set
+            {
+                highlightColor = value;
+                Invalidate();
+            }
+        }
+
         private bool hasImage;
         public bool HasImage
         {
@@ -204,7 +342,8 @@ namespace BluePointLilac.Controls
         private readonly Label lblText = new Label
         {
             AutoSize = true,
-            Name = "Text"
+            Name = "Text",
+            BackColor = Color.Transparent
         };
         private readonly PictureBox picImage = new PictureBox
         {
@@ -236,17 +375,61 @@ namespace BluePointLilac.Controls
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            base.OnMouseDown(e); OnMouseEnter(null);
+            base.OnMouseDown(e);
+            // 移除悬停效果
+            // OnMouseEnter(null);
+        }
+
+        // 移除悬停效果
+        // protected override void OnMouseEnter(EventArgs e)
+        // {
+        //     base.OnMouseEnter(e);
+        //     // 移除悬停时的颜色和字体变化
+        // }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+
+            // 如果有高亮文本，绘制高亮背景
+            if (!string.IsNullOrEmpty(highlightText) && !string.IsNullOrEmpty(Text))
+            {
+                var text = Text;
+                var searchText = highlightText;
+                var index = text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase);
+
+                if (index >= 0)
+                {
+                    // 计算文本位置
+                    var textSize = TextRenderer.MeasureText(text, Font);
+                    var charWidth = textSize.Width / text.Length;
+                    var highlightStart = index * charWidth;
+                    var highlightWidth = searchText.Length * charWidth;
+
+                    // 确保高亮区域在标签范围内
+                    var highlightRect = new Rectangle(
+                        lblText.Left + highlightStart,
+                        lblText.Top,
+                        Math.Min(highlightWidth, lblText.Width - highlightStart),
+                        lblText.Height
+                    );
+
+                    using (var brush = new SolidBrush(HighlightColor))
+                    {
+                        e.Graphics.FillRectangle(brush, highlightRect);
+                    }
+                }
+            }
         }
 
         private void CenterControl(Control ctr)
         {
             void reSize()
             {
-                if(ctr.Parent == null) return;
+                if (ctr.Parent == null) return;
                 int top = (ClientSize.Height - ctr.Height) / 2;
                 ctr.Top = top;
-                if(ctr.Parent == flpControls)
+                if (ctr.Parent == flpControls)
                 {
                     ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
                 }
@@ -266,8 +449,11 @@ namespace BluePointLilac.Controls
             SuspendLayout();
             ctr.Parent = flpControls;
             ctr.Margin = new Padding(0, 0, space, 0);
-            ctr.MouseEnter += (sender, e) => OnMouseEnter(e);
-            ctr.MouseDown += (sender, e) => OnMouseEnter(e);
+
+            // 移除悬停事件
+            // ctr.MouseEnter += (sender, e) => OnMouseEnter(e);
+
+            ctr.MouseDown += (sender, e) => OnMouseDown(e);
             CenterControl(ctr);
             ResumeLayout();
         }
@@ -279,7 +465,7 @@ namespace BluePointLilac.Controls
 
         public void RemoveCtrAt(int index)
         {
-            if(flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
+            if (flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
         }
 
         public int GetCtrIndex(Control ctr)
