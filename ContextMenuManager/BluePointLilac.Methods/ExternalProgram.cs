@@ -1,10 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace BluePointLilac.Methods
 {
@@ -181,14 +183,30 @@ namespace BluePointLilac.Methods
         /// <param name="url">网址</param>
         public static void OpenWebUrl(string url)
         {
-            if(url == null) return;
-            //替换网址转义符
-            url = url.Replace("%", "%25").Replace("#", "%23").Replace("&", "%26").Replace("+", "%2B");
-            using(Process process = new Process())
+            if (string.IsNullOrEmpty(url)) return;
+
+            try
             {
-                //通过explorer来调用默认浏览器打开链接，避免管理员权限影响
-                process.StartInfo = new ProcessStartInfo($"\"{url}\"");
-                process.Start();
+                // 使用Uri类验证并规范化URL
+                Uri uri = new Uri(url);
+                using (Process process = new Process())
+                {
+                    // 显式设置使用Shell执行（关键修复）
+                    process.StartInfo.UseShellExecute = true;
+                    // 直接将URL作为文件名，由系统默认浏览器处理
+                    process.StartInfo.FileName = uri.AbsoluteUri;
+                    process.Start();
+                }
+            }
+            catch (UriFormatException)
+            {
+                // 处理无效URL格式的情况
+                MessageBoxEx.Show("无效的网址格式：" + url, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Win32Exception ex)
+            {
+                // 处理打开失败的情况
+                MessageBoxEx.Show("无法打开网址：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
