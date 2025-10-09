@@ -54,6 +54,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Svg" Version="3.4.7" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Management" Version="9.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.0.0" />
@@ -327,4 +328,5 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Content Include="Properties\Resources\Images\Donate.png" />
     <Content Include="Properties\Resources\Texts\DetailedEditDic.xml" />
   </ItemGroup>
+
 </Project>
