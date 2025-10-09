@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Windows.Forms;
+using BluePointLilac.Methods;
+using Svg;
 
 namespace BluePointLilac.Controls
 {
@@ -10,29 +13,28 @@ namespace BluePointLilac.Controls
         private TextBox searchTextBox;
         private bool isFocused = false;
         private bool isMouseOverIcon = false;
-        private int borderRadius = 8;
-        private Color borderColor;
-        private Color hoverBorderColor;
-        private Color focusBorderColor;
+        private int borderRadius = 14;
+        private Color borderColor, hoverBorderColor, focusBorderColor, backgroundColor, textColor;
         private Rectangle iconRect;
+        private Bitmap cachedIconBitmap;
+        private Color lastIconColor = Color.Empty;
+
+        private readonly Color orangePrimary = Color.FromArgb(255, 107, 0);
+        private readonly Color orangeLight = Color.FromArgb(255, 145, 60);
+        private readonly Color orangeDark = Color.FromArgb(220, 85, 0);
+        private readonly Color subtleShadow = Color.FromArgb(15, 0, 0, 0);
 
         public event EventHandler SearchPerformed;
 
         public ModernSearchBox()
         {
-            InitializeComponent();
             DoubleBuffered = true;
-            UpdateColors();
+            SetStyle(ControlStyles.SupportsTransparentBackColor | ControlStyles.ResizeRedraw |
+                     ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
+                     ControlStyles.OptimizedDoubleBuffer, true);
 
-            // 启用透明背景支持
-            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-            SetStyle(ControlStyles.Opaque, false);
-            BackColor = Color.Transparent;
-
-            // 设置图标区域
+            InitializeComponent();
             UpdateIconRect();
-
-            // 添加全局鼠标点击事件监听
             Application.AddMessageFilter(new GlobalMouseMessageFilter(this));
         }
 
@@ -44,36 +46,24 @@ namespace BluePointLilac.Controls
 
         private void InitializeComponent()
         {
-            // 设置面板大小
-            Size = new Size(200, 32);
+            Size = new Size(260.DpiZoom(), 40.DpiZoom());
 
-            // 创建搜索文本框
             searchTextBox = new TextBox
             {
-                Location = new Point(12, 6),
-                Size = new Size(160, 20),
-                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                PlaceholderText = "搜索...",
-                BorderStyle = BorderStyle.None,
-                BackColor = GetBackgroundColor(),
-                ForeColor = MyMainForm.FormFore
+                Location = new Point(16.DpiZoom(), 10.DpiZoom()),
+                Size = new Size(200.DpiZoom(), 22.DpiZoom()),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
+                PlaceholderText = "搜索内容...",
+                BorderStyle = BorderStyle.None
             };
 
-            // 事件处理
-            searchTextBox.GotFocus += (s, e) =>
-            {
-                isFocused = true;
-                Invalidate();
-            };
+            searchTextBox.SetStyle(ControlStyles.SupportsTransparentBackColor |
+                                 ControlStyles.OptimizedDoubleBuffer |
+                                 ControlStyles.AllPaintingInWmPaint, true);
 
-            searchTextBox.LostFocus += (s, e) =>
-            {
-                isFocused = false;
-                Invalidate();
-            };
-
+            searchTextBox.GotFocus += (s, e) => { isFocused = true; Invalidate(); };
+            searchTextBox.LostFocus += (s, e) => { isFocused = false; Invalidate(); };
             searchTextBox.TextChanged += (s, e) => Invalidate();
-
             searchTextBox.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Enter)
@@ -83,21 +73,14 @@ namespace BluePointLilac.Controls
                 }
             };
 
-            // 添加控件
             Controls.Add(searchTextBox);
 
-            // 鼠标事件
             MouseEnter += (s, e) => Invalidate();
-            MouseLeave += (s, e) =>
-            {
-                isMouseOverIcon = false;
-                Invalidate();
-            };
+            MouseLeave += (s, e) => { isMouseOverIcon = false; Invalidate(); };
             MouseMove += (s, e) =>
             {
                 bool wasOverIcon = isMouseOverIcon;
                 isMouseOverIcon = iconRect.Contains(e.Location);
-
                 if (wasOverIcon != isMouseOverIcon)
                 {
                     Cursor = isMouseOverIcon ? Cursors.Hand : Cursors.Default;
@@ -107,49 +90,51 @@ namespace BluePointLilac.Controls
             MouseClick += (s, e) =>
             {
                 if (iconRect.Contains(e.Location) && e.Button == MouseButtons.Left)
-                {
                     PerformSearch();
-                }
             };
 
             searchTextBox.MouseEnter += (s, e) => Invalidate();
             searchTextBox.MouseLeave += (s, e) => Invalidate();
+
+            InitializeColors();
         }
 
-        private void UpdateColors()
+        private void InitializeColors()
         {
             if (MyMainForm.IsDarkTheme())
             {
-                // 深色主题
-                borderColor = Color.FromArgb(80, 80, 80);
-                hoverBorderColor = Color.FromArgb(120, 120, 120);
-                focusBorderColor = MyMainForm.MainColor;
+                backgroundColor = Color.FromArgb(45, 45, 48);
+                textColor = Color.FromArgb(245, 245, 245);
+                borderColor = Color.FromArgb(70, 70, 75);
+                hoverBorderColor = orangeLight;
+                focusBorderColor = orangePrimary;
             }
             else
             {
-                // 浅色主题
-                borderColor = Color.FromArgb(180, 180, 180);
-                hoverBorderColor = Color.FromArgb(140, 140, 140);
-                focusBorderColor = MyMainForm.MainColor;
+                backgroundColor = Color.FromArgb(250, 250, 252);
+                textColor = Color.FromArgb(25, 25, 25);
+                borderColor = Color.FromArgb(210, 210, 215);
+                hoverBorderColor = orangeLight;
+                focusBorderColor = orangePrimary;
             }
-        }
 
-        private Color GetBackgroundColor()
-        {
-            return MyMainForm.IsDarkTheme()
-                ? Color.FromArgb(45, 45, 45)
-                : Color.FromArgb(250, 250, 250);
+            if (searchTextBox != null)
+            {
+                searchTextBox.ForeColor = textColor;
+                searchTextBox.BackColor = backgroundColor;
+            }
         }
 
         private void UpdateIconRect()
         {
-            iconRect = new Rectangle(Width - 28, 8, 16, 16);
+            int iconSize = 18.DpiZoom();
+            int margin = 12.DpiZoom();
+            int y = (Height - iconSize) / 2;
+            int x = Math.Max(margin, Width - iconSize - margin);
+            iconRect = new Rectangle(x, y, iconSize, iconSize);
         }
 
-        private void PerformSearch()
-        {
-            SearchPerformed?.Invoke(this, EventArgs.Empty);
-        }
+        private void PerformSearch() => SearchPerformed?.Invoke(this, EventArgs.Empty);
 
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -157,208 +142,243 @@ namespace BluePointLilac.Controls
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            // 确定边框颜色
+            if (!MyMainForm.IsDarkTheme())
+            {
+                using (var shadowPath = CreateRoundedRectanglePath(new Rectangle(1, 2, Width - 2, Height - 2), borderRadius.DpiZoom()))
+                using (var shadowBrush = new SolidBrush(subtleShadow))
+                    g.FillPath(shadowBrush, shadowPath);
+            }
+
             Color currentBorderColor = borderColor;
+            float borderWidth = 1.2f;
+
             if (isFocused)
             {
                 currentBorderColor = focusBorderColor;
+                borderWidth = 2.2f;
             }
             else if (ClientRectangle.Contains(PointToClient(MousePosition)) || isMouseOverIcon)
             {
                 currentBorderColor = hoverBorderColor;
+                borderWidth = 1.8f;
             }
 
-            // 绘制圆角背景
-            using (var path = CreateRoundedRectanglePath(ClientRectangle, borderRadius))
+            var drawRect = new Rectangle(0, 0, Width - 1, Height - 1);
+            using (var path = CreateRoundedRectanglePath(drawRect, borderRadius.DpiZoom()))
             {
-                // 背景颜色
-                Color bgColor = GetBackgroundColor();
-                using (var brush = new SolidBrush(bgColor))
-                {
-                    g.FillPath(brush, path);
-                }
-
-                // 边框
-                using (var pen = new Pen(currentBorderColor, isFocused ? 1.5f : 1f))
-                {
-                    g.DrawPath(pen, path);
-                }
+                FillGradientBackground(g, path);
+                DrawRefinedBorder(g, path, currentBorderColor, borderWidth);
             }
 
-            // 绘制搜索图标
-            DrawSearchIcon(g, iconRect.Location, iconRect.Size);
+            DrawSearchIcon(g, iconRect);
         }
 
-        private void DrawSearchIcon(Graphics g, Point location, Size size)
+        private void FillGradientBackground(Graphics g, GraphicsPath path)
         {
-            var iconColor = isMouseOverIcon ? focusBorderColor :
+            var rect = path.GetBounds();
+            Color color1, color2;
+
+            if (MyMainForm.IsDarkTheme())
+            {
+                color1 = Color.FromArgb(50, 50, 53);
+                color2 = Color.FromArgb(40, 40, 43);
+            }
+            else
+            {
+                color1 = Color.FromArgb(253, 253, 255);
+                color2 = Color.FromArgb(247, 247, 249);
+            }
+
+            using (var brush = new LinearGradientBrush(new PointF(rect.X, rect.Y), new PointF(rect.X, rect.Bottom), color1, color2))
+            {
+                var blend = new ColorBlend
+                {
+                    Positions = new[] { 0f, 0.5f, 1f },
+                    Colors = new[] { color1, Color.FromArgb((color1.R + color2.R) / 2, (color1.G + color2.G) / 2, (color1.B + color2.B) / 2), color2 }
+                };
+                brush.InterpolationColors = blend;
+                g.FillPath(brush, path);
+            }
+        }
+
+        private void DrawRefinedBorder(Graphics g, GraphicsPath path, Color borderColor, float borderWidth)
+        {
+            using (var pen = new Pen(borderColor, borderWidth))
+            {
+                pen.Alignment = PenAlignment.Center;
+                pen.LineJoin = LineJoin.Round;
+                g.DrawPath(pen, path);
+            }
+        }
+
+        private void DrawSearchIcon(Graphics g, Rectangle iconRect)
+        {
+            if (iconRect.Right > Width || iconRect.Bottom > Height || iconRect.Width <= 0 || iconRect.Height <= 0)
+                UpdateIconRect();
+
+            var iconColor = isMouseOverIcon ? orangeDark :
                            isFocused ? focusBorderColor :
                            ClientRectangle.Contains(PointToClient(MousePosition)) ? hoverBorderColor :
                            borderColor;
 
-            using (var pen = new Pen(iconColor, 1.5f))
+            if (cachedIconBitmap == null || lastIconColor != iconColor ||
+                cachedIconBitmap?.Width != iconRect.Width || cachedIconBitmap?.Height != iconRect.Height)
             {
-                // 绘制放大镜圆形
-                int circleDiameter = 8;
-                Rectangle circleRect = new Rectangle(
-                    location.X + 2,
-                    location.Y + 2,
-                    circleDiameter,
-                    circleDiameter
-                );
-                g.DrawArc(pen, circleRect, 0, 360);
-
-                // 绘制放大镜手柄
-                Point lineStart = new Point(
-                    location.X + circleDiameter,
-                    location.Y + circleDiameter
-                );
-                Point lineEnd = new Point(
-                    location.X + size.Width - 2,
-                    location.Y + size.Height - 2
-                );
-                g.DrawLine(pen, lineStart, lineEnd);
+                cachedIconBitmap?.Dispose();
+                cachedIconBitmap = GenerateModernSearchIcon(iconRect.Size, iconColor);
+                lastIconColor = iconColor;
             }
+
+            if (cachedIconBitmap != null)
+                g.DrawImage(cachedIconBitmap, iconRect);
+        }
+
+        private Bitmap GenerateModernSearchIcon(Size size, Color color)
+        {
+            try
+            {
+                if (size.Width <= 0 || size.Height <= 0)
+                    size = new Size(18.DpiZoom(), 18.DpiZoom());
+
+                var svgDocument = new SvgDocument
+                {
+                    Width = size.Width,
+                    Height = size.Height,
+                    ViewBox = new SvgViewBox(0, 0, 24, 24)
+                };
+
+                var searchPath = new SvgPath
+                {
+                    PathData = SvgPathBuilder.Parse("M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"),
+                    Fill = new SvgColourServer(Color.Transparent),
+                    Stroke = new SvgColourServer(color),
+                    StrokeWidth = 1.8f,
+                    StrokeLineCap = SvgStrokeLineCap.Round,
+                    StrokeLineJoin = SvgStrokeLineJoin.Round
+                };
+
+                svgDocument.Children.Add(searchPath);
+                return svgDocument.Draw(size.Width, size.Height);
+            }
+            catch
+            {
+                return GenerateModernFallbackIcon(size, color);
+            }
+        }
+
+        private Bitmap GenerateModernFallbackIcon(Size size, Color color)
+        {
+            if (size.Width < 16) size = new Size(16, size.Height);
+            if (size.Height < 16) size = new Size(size.Width, 16);
+
+            var bitmap = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(bitmap))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                int margin = Math.Max(2, size.Width / 8);
+                int drawSize = Math.Min(size.Width, size.Height) - margin * 2;
+                if (drawSize < 8) drawSize = 8;
+
+                int x = (size.Width - drawSize) / 2;
+                int y = (size.Height - drawSize) / 2;
+
+                using (var pen = new Pen(color, Math.Max(1.6f, drawSize / 10f)))
+                {
+                    pen.StartCap = LineCap.Round;
+                    int circleDiameter = (int)(drawSize * 0.65f);
+                    if (circleDiameter < 6) circleDiameter = 6;
+
+                    int circleX = x + (drawSize - circleDiameter) / 2;
+                    int circleY = y + (drawSize - circleDiameter) / 2;
+
+                    RectangleF circleRect = new RectangleF(circleX + pen.Width / 2, circleY + pen.Width / 2,
+                                                         circleDiameter - pen.Width, circleDiameter - pen.Width);
+                    g.DrawEllipse(pen, circleRect);
+
+                    float angle = 45f;
+                    float handleLength = drawSize * 0.35f;
+                    if (handleLength < 4) handleLength = 4;
+
+                    double radian = angle * Math.PI / 180;
+                    float centerX = circleX + circleDiameter / 2f;
+                    float centerY = circleY + circleDiameter / 2f;
+                    float radius = circleDiameter / 2f;
+
+                    float startX = centerX + (float)(radius * Math.Cos(radian));
+                    float startY = centerY + (float)(radius * Math.Sin(radian));
+                    float endX = startX + (float)(handleLength * Math.Cos(radian));
+                    float endY = startY + (float)(handleLength * Math.Sin(radian));
+
+                    g.DrawLine(pen, startX, startY, endX, endY);
+                }
+            }
+            return bitmap;
         }
 
         private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
         {
             var path = new GraphicsPath();
+            float diameter = radius * 2f;
 
-            // 左上角
-            path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
-            // 右上角
-            path.AddArc(rect.Right - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
-            // 右下角
-            path.AddArc(rect.Right - radius * 2, rect.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
-            // 左下角
-            path.AddArc(rect.X, rect.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
+            path.AddArc(rect.Right - diameter, rect.Y, diameter, diameter, 270, 90);
+            path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - diameter, diameter, diameter, 90, 90);
 
             path.CloseFigure();
             return path;
         }
 
-        public void FocusSearch()
+        protected override void Dispose(bool disposing)
         {
-            searchTextBox.Focus();
-            searchTextBox.SelectAll();
+            if (disposing) cachedIconBitmap?.Dispose();
+            base.Dispose(disposing);
         }
 
-        public void ClearSearch()
-        {
-            searchTextBox.Text = string.Empty;
-        }
-
-        public void LoseFocus()
-        {
-            // 将焦点转移到父控件或其他控件
-            if (Parent != null)
-            {
-                Parent.Focus();
-            }
-        }
-
-        public TextBox GetTextBox()
-        {
-            return searchTextBox;
-        }
+        public void FocusSearch() { searchTextBox?.Focus(); searchTextBox?.SelectAll(); }
+        public void ClearSearch() { searchTextBox.Text = string.Empty; }
+        public void LoseFocus() { Parent?.Focus(); }
+        public TextBox GetTextBox() { return searchTextBox; }
 
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-
-            if (searchTextBox != null)
+            if (searchTextBox != null && !searchTextBox.IsDisposed)
             {
-                searchTextBox.Width = Width - 40; // 留出图标和边距空间
-                searchTextBox.Location = new Point(8, (Height - searchTextBox.Height) / 2);
+                int iconAreaWidth = 50.DpiZoom();
+                searchTextBox.Width = Width - iconAreaWidth;
+                searchTextBox.Height = 22.DpiZoom();
+                int textBoxY = (Height - searchTextBox.Height) / 2;
+                searchTextBox.Location = new Point(12.DpiZoom(), textBoxY);
             }
 
+            cachedIconBitmap?.Dispose();
+            cachedIconBitmap = null;
             UpdateIconRect();
             Invalidate();
         }
 
-        // 确保透明背景正确渲染
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x20; // 添加 WS_EX_TRANSPARENT 样式
-                return cp;
-            }
-        }
-
-        protected override void OnBackColorChanged(EventArgs e)
-        {
-            base.OnBackColorChanged(e);
-            UpdateColors();
-            Invalidate();
-        }
-
-        // 防止点击搜索图标时失去焦点
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            base.OnMouseDown(e);
-            if (iconRect.Contains(e.Location))
-            {
-                // 点击图标时不转移焦点，保持搜索框的焦点状态
-                return;
-            }
-        }
-
-        // 防止鼠标移动到其他控件时失去焦点
-        protected override void OnMouseLeave(EventArgs e)
-        {
-            base.OnMouseLeave(e);
-            // 不自动失去焦点，只有当用户点击其他地方时才失去焦点
-        }
-
-        // 内部类：全局鼠标消息过滤器
         private class GlobalMouseMessageFilter : IMessageFilter
         {
             private readonly ModernSearchBox searchBox;
-
-            public GlobalMouseMessageFilter(ModernSearchBox searchBox)
-            {
-                this.searchBox = searchBox;
-            }
+            public GlobalMouseMessageFilter(ModernSearchBox searchBox) => this.searchBox = searchBox;
 
             public bool PreFilterMessage(ref Message m)
             {
-                // 监听鼠标按下消息
-                if (m.Msg == 0x201 || m.Msg == 0x202) // WM_LBUTTONDOWN 或 WM_LBUTTONUP
-                {
-                    // 检查点击是否在搜索框内
-                    if (!searchBox.IsMouseInside(searchBox, Control.MousePosition))
-                    {
-                        // 点击在搜索框外部，取消焦点
-                        searchBox.LoseFocus();
-                    }
-                }
+                if ((m.Msg == 0x201 || m.Msg == 0x202) && !searchBox.IsMouseInside(searchBox, Control.MousePosition))
+                    searchBox.LoseFocus();
                 return false;
             }
         }
 
-        // 检查鼠标是否在控件内
         private bool IsMouseInside(Control control, Point screenPoint)
         {
-            // 将屏幕坐标转换为控件相对坐标
+            if (control == null || control.IsDisposed) return false;
             Point clientPoint = control.PointToClient(screenPoint);
 
-            // 检查是否在控件客户区内
-            if (control.ClientRectangle.Contains(clientPoint))
-            {
-                return true;
-            }
-
-            // 递归检查子控件
+            if (control.ClientRectangle.Contains(clientPoint)) return true;
             foreach (Control child in control.Controls)
-            {
-                if (IsMouseInside(child, screenPoint))
-                {
-                    return true;
-                }
-            }
+                if (!child.IsDisposed && IsMouseInside(child, screenPoint)) return true;
 
             return false;
         }

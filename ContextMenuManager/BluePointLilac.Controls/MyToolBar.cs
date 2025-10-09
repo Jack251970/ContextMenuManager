@@ -7,12 +7,14 @@ using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
 {
-    public sealed class MyToolBar : FlowLayoutPanel
+    public sealed class MyToolBar : Panel
     {
         // 提高不透明度值，使白色背景更加明显
         public const float SelctedOpacity = 0.8F;
         public const float HoveredOpacity = 0.4F;
         public const float UnSelctedOpacity = 0;
+
+        private FlowLayoutPanel buttonPanel;
 
         public MyToolBar()
         {
@@ -26,8 +28,26 @@ namespace BluePointLilac.Controls
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             SetStyle(ControlStyles.Opaque, false);
 
+            // 创建按钮面板
+            InitializeButtonPanel();
+
             // 添加搜索框
             InitializeSearchBox();
+        }
+
+        private void InitializeButtonPanel()
+        {
+            buttonPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Color.Transparent,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false
+            };
+
+            Controls.Add(buttonPanel);
         }
 
         private MyToolBarButton selectedButton;
@@ -57,7 +77,7 @@ namespace BluePointLilac.Controls
         // 搜索框相关属性
         private ModernSearchBox searchBox;
         private Panel searchPanel;
-        public string SearchText => searchBox.SearchText;
+        public string SearchText => searchBox?.SearchText ?? string.Empty;
         public event EventHandler SearchTextChanged;
         public event EventHandler SearchPerformed;
 
@@ -68,41 +88,41 @@ namespace BluePointLilac.Controls
             get
             {
                 if (SelectedButton == null) return -1;
-                // 只从 MyToolBarButton 类型的控件中查找索引
-                var buttons = Controls.OfType<MyToolBarButton>().ToList();
+                // 从 buttonPanel 中查找按钮索引
+                var buttons = buttonPanel.Controls.OfType<MyToolBarButton>().ToList();
                 return buttons.IndexOf(SelectedButton);
             }
             set
             {
-                // 只从 MyToolBarButton 类型的控件中获取按钮
-                var buttons = Controls.OfType<MyToolBarButton>().ToList();
+                // 从 buttonPanel 中获取按钮
+                var buttons = buttonPanel.Controls.OfType<MyToolBarButton>().ToList();
                 SelectedButton = value < 0 || value >= buttons.Count ? null : buttons[value];
             }
         }
 
         // 获取所有工具栏按钮（不包括搜索框）
-        public MyToolBarButton[] ToolBarButtons => Controls.OfType<MyToolBarButton>().ToArray();
+        public MyToolBarButton[] ToolBarButtons => buttonPanel.Controls.OfType<MyToolBarButton>().ToArray();
 
         private void InitializeSearchBox()
         {
-            // 创建搜索面板 - 使用 Anchor 定位到右侧
+            // 创建搜索面板 - 固定在右侧
             searchPanel = new Panel
             {
                 Height = 40.DpiZoom(),
                 Width = 220.DpiZoom(),
                 Anchor = AnchorStyles.Right | AnchorStyles.Top,
-                Location = new Point(ClientSize.Width - 240.DpiZoom(), 20.DpiZoom())
+                BackColor = Color.Transparent
             };
 
             // 启用透明背景支持
             searchPanel.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-            searchPanel.BackColor = Color.Transparent;
+            searchPanel.SetStyle(ControlStyles.Opaque, false);
 
             // 创建现代化搜索框
             searchBox = new ModernSearchBox
             {
                 Size = new Size(200.DpiZoom(), 32.DpiZoom()),
-                Location = new Point(0, 0)
+                Location = new Point(10, 4)
             };
 
             // 搜索事件
@@ -120,11 +140,14 @@ namespace BluePointLilac.Controls
             // 将搜索框添加到搜索面板
             searchPanel.Controls.Add(searchBox);
 
-            // 将搜索面板添加到父容器
-            Parent?.Controls.Add(searchPanel);
+            // 将搜索面板添加到工具栏
+            Controls.Add(searchPanel);
 
             // 设置搜索面板在最前面
             searchPanel.BringToFront();
+
+            // 初始定位
+            AdjustSearchBoxPosition();
         }
 
         // 公开获取内部文本框的方法
@@ -136,13 +159,7 @@ namespace BluePointLilac.Controls
         protected override void OnParentChanged(EventArgs e)
         {
             base.OnParentChanged(e);
-            // 当父控件改变时，重新添加搜索面板
-            if (searchPanel != null && Parent != null && !Parent.Controls.Contains(searchPanel))
-            {
-                Parent.Controls.Add(searchPanel);
-                searchPanel.BringToFront();
-                AdjustSearchBoxPosition();
-            }
+            AdjustSearchBoxPosition();
         }
 
         protected override void OnVisibleChanged(EventArgs e)
@@ -160,30 +177,30 @@ namespace BluePointLilac.Controls
 
         private void AdjustSearchBoxPosition()
         {
-            if (searchPanel != null && Parent != null)
+            if (searchPanel != null)
             {
                 // 定位到工具栏的右侧
                 searchPanel.Location = new Point(
-                    Parent.ClientSize.Width - searchPanel.Width - 20.DpiZoom(),
-                    this.Top + (this.Height - searchPanel.Height) / 2
+                    this.ClientSize.Width - searchPanel.Width - 20.DpiZoom(),
+                    (this.Height - searchPanel.Height) / 2
                 );
             }
         }
 
         public void ClearSearch()
         {
-            searchBox.ClearSearch();
+            searchBox?.ClearSearch();
         }
 
         public void FocusSearchBox()
         {
-            searchBox.FocusSearch();
+            searchBox?.FocusSearch();
         }
 
         public void AddButton(MyToolBarButton button)
         {
-            SuspendLayout();
-            button.Parent = this;
+            buttonPanel.SuspendLayout();
+            button.Parent = buttonPanel;
             button.Margin = new Padding(12, 4, 0, 0).DpiZoom();
 
             button.MouseDown += (sender, e) =>
@@ -210,7 +227,7 @@ namespace BluePointLilac.Controls
                 }
             };
 
-            ResumeLayout();
+            buttonPanel.ResumeLayout(true);
         }
 
         public void AddButtons(MyToolBarButton[] buttons)
@@ -348,7 +365,7 @@ namespace BluePointLilac.Controls
             {
                 // 根据当前模式选择颜色
                 bool isDarkMode = false;
-                if (Parent is MyToolBar toolbar)
+                if (Parent?.Parent is MyToolBar toolbar)
                 {
                     isDarkMode = MyMainForm.IsDarkTheme();
                 }
@@ -376,7 +393,7 @@ namespace BluePointLilac.Controls
         public void UpdateTextColor()
         {
             bool isDarkMode = false;
-            if (Parent is MyToolBar toolbar)
+            if (Parent?.Parent is MyToolBar toolbar)
             {
                 isDarkMode = MyMainForm.IsDarkTheme();
             }
