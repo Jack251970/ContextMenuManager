@@ -22,6 +22,12 @@ namespace BluePointLilac.Controls
             base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
         }
 
+        // 添加 LoadItems 方法
+        public virtual void LoadItems()
+        {
+            // 基类实现为空，派生类需要重写此方法
+        }
+
         // 搜索功能
         public virtual void SearchItems(string searchText)
         {
@@ -120,18 +126,16 @@ namespace BluePointLilac.Controls
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
         }
 
-        // 移除悬停项相关代码
-        // private MyListItem hoveredItem;
-        // public MyListItem HoveredItem { ... }
-        // public event EventHandler HoveredItemChanged;
+        // 添加 LoadItems 方法
+        public virtual void LoadItems()
+        {
+            // 基类实现为空，派生类需要重写此方法
+        }
 
         public void AddItem(MyListItem item)
         {
             SuspendLayout();
             item.Parent = this;
-
-            // 移除悬停事件
-            // item.MouseEnter += (sender, e) => HoveredItem = item;
 
             MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
             void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
@@ -267,10 +271,6 @@ namespace BluePointLilac.Controls
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
-
-            // 移除悬停事件
-            // flpControls.MouseEnter += (sender, e) => OnMouseEnter(e);
-
             flpControls.MouseDown += (sender, e) => OnMouseDown(e);
             lblSeparator.SetEnabled(false);
             lblText.SetEnabled(false);
@@ -385,16 +385,7 @@ namespace BluePointLilac.Controls
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            // 移除悬停效果
-            // OnMouseEnter(null);
         }
-
-        // 移除悬停效果
-        // protected override void OnMouseEnter(EventArgs e)
-        // {
-        //     base.OnMouseEnter(e);
-        //     // 移除悬停时的颜色和字体变化
-        // }
 
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -458,10 +449,6 @@ namespace BluePointLilac.Controls
             SuspendLayout();
             ctr.Parent = flpControls;
             ctr.Margin = new Padding(0, 0, space, 0);
-
-            // 移除悬停事件
-            // ctr.MouseEnter += (sender, e) => OnMouseEnter(e);
-
             ctr.MouseDown += (sender, e) => OnMouseDown(e);
             CenterControl(ctr);
             ResumeLayout();
