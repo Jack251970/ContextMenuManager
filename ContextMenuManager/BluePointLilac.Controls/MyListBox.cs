@@ -253,7 +253,7 @@ namespace BluePointLilac.Controls
     public class MyListItem : Panel
     {
         private string highlightText;
-        private Color highlightColor = Color.Yellow;
+        private Color highlightColor = Color.FromArgb(255, 100, 70, 0); // 改为暗橙色，更适合暗色模式
 
         public MyListItem()
         {
@@ -376,16 +376,8 @@ namespace BluePointLilac.Controls
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            // 移除悬停效果
-            // OnMouseEnter(null);
         }
 
-        // 移除悬停效果
-        // protected override void OnMouseEnter(EventArgs e)
-        // {
-        //     base.OnMouseEnter(e);
-        //     // 移除悬停时的颜色和字体变化
-        // }
 
         protected override void OnPaint(PaintEventArgs e)
         {
