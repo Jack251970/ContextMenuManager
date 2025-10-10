@@ -19,10 +19,22 @@ namespace BluePointLilac.Controls
         private Bitmap cachedIconBitmap;
         private Color lastIconColor = Color.Empty;
 
+        // 动画相关变量
+        private Timer animationTimer;
+        private float currentBorderWidth = 1.2f;
+        private float targetBorderWidth = 1.2f;
+        private Color currentBorderColor;
+        private Color targetBorderColor;
+        private float iconScale = 1.0f;
+        private float targetIconScale = 1.0f;
+        private float focusGlowAlpha = 0f;
+        private float targetFocusGlowAlpha = 0f;
+
         private readonly Color orangePrimary = Color.FromArgb(255, 107, 0);
         private readonly Color orangeLight = Color.FromArgb(255, 145, 60);
         private readonly Color orangeDark = Color.FromArgb(220, 85, 0);
         private readonly Color subtleShadow = Color.FromArgb(15, 0, 0, 0);
+        private readonly Color focusGlowColor = Color.FromArgb(80, 255, 145, 60);
 
         public event EventHandler SearchPerformed;
 
@@ -34,6 +46,7 @@ namespace BluePointLilac.Controls
                      ControlStyles.OptimizedDoubleBuffer, true);
 
             InitializeComponent();
+            InitializeAnimation();
             UpdateIconRect();
             Application.AddMessageFilter(new GlobalMouseMessageFilter(this));
         }
@@ -42,6 +55,72 @@ namespace BluePointLilac.Controls
         {
             get => searchTextBox.Text;
             set => searchTextBox.Text = value;
+        }
+
+        private void InitializeAnimation()
+        {
+            animationTimer = new Timer
+            {
+                Interval = 16 // ~60 FPS
+            };
+            animationTimer.Tick += (s, e) => UpdateAnimation();
+            animationTimer.Start();
+
+            // 初始化动画状态
+            currentBorderColor = borderColor;
+            targetBorderColor = borderColor;
+        }
+
+        private void UpdateAnimation()
+        {
+            bool needsInvalidate = false;
+
+            // 边框宽度动画
+            if (Math.Abs(currentBorderWidth - targetBorderWidth) > 0.01f)
+            {
+                currentBorderWidth = Lerp(currentBorderWidth, targetBorderWidth, 0.3f);
+                needsInvalidate = true;
+            }
+
+            // 边框颜色动画
+            if (currentBorderColor != targetBorderColor)
+            {
+                currentBorderColor = ColorLerp(currentBorderColor, targetBorderColor, 0.25f);
+                needsInvalidate = true;
+            }
+
+            // 图标缩放动画
+            if (Math.Abs(iconScale - targetIconScale) > 0.01f)
+            {
+                iconScale = Lerp(iconScale, targetIconScale, 0.4f);
+                needsInvalidate = true;
+            }
+
+            // 焦点光晕动画
+            if (Math.Abs(focusGlowAlpha - targetFocusGlowAlpha) > 0.01f)
+            {
+                focusGlowAlpha = Lerp(focusGlowAlpha, targetFocusGlowAlpha, 0.2f);
+                needsInvalidate = true;
+            }
+
+            if (needsInvalidate)
+            {
+                Invalidate();
+            }
+        }
+
+        private float Lerp(float a, float b, float t)
+        {
+            return a + (b - a) * t;
+        }
+
+        private Color ColorLerp(Color color1, Color color2, float t)
+        {
+            var r = (int)(color1.R + (color2.R - color1.R) * t);
+            var g = (int)(color1.G + (color2.G - color1.G) * t);
+            var b = (int)(color1.B + (color2.B - color1.B) * t);
+            var a = (int)(color1.A + (color2.A - color1.A) * t);
+            return Color.FromArgb(a, r, g, b);
         }
 
         private void InitializeComponent()
@@ -61,22 +140,41 @@ namespace BluePointLilac.Controls
                                  ControlStyles.OptimizedDoubleBuffer |
                                  ControlStyles.AllPaintingInWmPaint, true);
 
-            searchTextBox.GotFocus += (s, e) => { isFocused = true; Invalidate(); };
-            searchTextBox.LostFocus += (s, e) => { isFocused = false; Invalidate(); };
+            searchTextBox.GotFocus += (s, e) =>
+            {
+                isFocused = true;
+                UpdateAnimationTargets();
+                Invalidate();
+            };
+            searchTextBox.LostFocus += (s, e) =>
+            {
+                isFocused = false;
+                UpdateAnimationTargets();
+                Invalidate();
+            };
             searchTextBox.TextChanged += (s, e) => Invalidate();
             searchTextBox.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Enter)
                 {
-                    PerformSearch();
+                    PerformSearchWithAnimation();
                     e.Handled = e.SuppressKeyPress = true;
                 }
             };
 
             Controls.Add(searchTextBox);
 
-            MouseEnter += (s, e) => Invalidate();
-            MouseLeave += (s, e) => { isMouseOverIcon = false; Invalidate(); };
+            MouseEnter += (s, e) =>
+            {
+                UpdateAnimationTargets();
+                Invalidate();
+            };
+            MouseLeave += (s, e) =>
+            {
+                isMouseOverIcon = false;
+                UpdateAnimationTargets();
+                Invalidate();
+            };
             MouseMove += (s, e) =>
             {
                 bool wasOverIcon = isMouseOverIcon;
@@ -84,19 +182,72 @@ namespace BluePointLilac.Controls
                 if (wasOverIcon != isMouseOverIcon)
                 {
                     Cursor = isMouseOverIcon ? Cursors.Hand : Cursors.Default;
+                    UpdateAnimationTargets();
                     Invalidate();
                 }
             };
             MouseClick += (s, e) =>
             {
                 if (iconRect.Contains(e.Location) && e.Button == MouseButtons.Left)
-                    PerformSearch();
+                    PerformSearchWithAnimation();
             };
 
-            searchTextBox.MouseEnter += (s, e) => Invalidate();
-            searchTextBox.MouseLeave += (s, e) => Invalidate();
+            searchTextBox.MouseEnter += (s, e) =>
+            {
+                UpdateAnimationTargets();
+                Invalidate();
+            };
+            searchTextBox.MouseLeave += (s, e) =>
+            {
+                UpdateAnimationTargets();
+                Invalidate();
+            };
 
             InitializeColors();
+        }
+
+        private void UpdateAnimationTargets()
+        {
+            // 更新边框宽度目标值
+            if (isFocused)
+            {
+                targetBorderWidth = 2.2f;
+                targetFocusGlowAlpha = 1.0f;
+            }
+            else if (ClientRectangle.Contains(PointToClient(MousePosition)) || isMouseOverIcon)
+            {
+                targetBorderWidth = 1.8f;
+                targetFocusGlowAlpha = 0f;
+            }
+            else
+            {
+                targetBorderWidth = 1.2f;
+                targetFocusGlowAlpha = 0f;
+            }
+
+            // 更新边框颜色目标值
+            if (isFocused)
+            {
+                targetBorderColor = focusBorderColor;
+            }
+            else if (ClientRectangle.Contains(PointToClient(MousePosition)) || isMouseOverIcon)
+            {
+                targetBorderColor = hoverBorderColor;
+            }
+            else
+            {
+                targetBorderColor = borderColor;
+            }
+
+            // 更新图标缩放目标值
+            if (isMouseOverIcon)
+            {
+                targetIconScale = 1.1f;
+            }
+            else
+            {
+                targetIconScale = 1.0f;
+            }
         }
 
         private void InitializeColors()
@@ -123,11 +274,15 @@ namespace BluePointLilac.Controls
                 searchTextBox.ForeColor = textColor;
                 searchTextBox.BackColor = backgroundColor;
             }
+
+            // 初始化动画颜色
+            currentBorderColor = borderColor;
+            targetBorderColor = borderColor;
         }
 
         private void UpdateIconRect()
         {
-            int iconSize = 18.DpiZoom();
+            int iconSize = (int)(18.DpiZoom() * iconScale);
             int margin = 12.DpiZoom();
             int y = (Height - iconSize) / 2;
             int x = Math.Max(margin, Width - iconSize - margin);
@@ -135,6 +290,16 @@ namespace BluePointLilac.Controls
         }
 
         private void PerformSearch() => SearchPerformed?.Invoke(this, EventArgs.Empty);
+
+        private async void PerformSearchWithAnimation()
+        {
+            // 图标点击动画
+            targetIconScale = 0.8f;
+            await System.Threading.Tasks.Task.Delay(100);
+            targetIconScale = 1.0f;
+
+            PerformSearch();
+        }
 
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -149,25 +314,21 @@ namespace BluePointLilac.Controls
                     g.FillPath(shadowBrush, shadowPath);
             }
 
-            Color currentBorderColor = borderColor;
-            float borderWidth = 1.2f;
-
-            if (isFocused)
+            // 绘制焦点光晕效果
+            if (focusGlowAlpha > 0.01f)
             {
-                currentBorderColor = focusBorderColor;
-                borderWidth = 2.2f;
-            }
-            else if (ClientRectangle.Contains(PointToClient(MousePosition)) || isMouseOverIcon)
-            {
-                currentBorderColor = hoverBorderColor;
-                borderWidth = 1.8f;
+                using (var glowPath = CreateRoundedRectanglePath(new Rectangle(-2, -2, Width + 3, Height + 3), (borderRadius + 2).DpiZoom()))
+                using (var glowBrush = new SolidBrush(Color.FromArgb((int)(focusGlowAlpha * 80), focusGlowColor)))
+                {
+                    g.FillPath(glowBrush, glowPath);
+                }
             }
 
             var drawRect = new Rectangle(0, 0, Width - 1, Height - 1);
             using (var path = CreateRoundedRectanglePath(drawRect, borderRadius.DpiZoom()))
             {
                 FillGradientBackground(g, path);
-                DrawRefinedBorder(g, path, currentBorderColor, borderWidth);
+                DrawRefinedBorder(g, path, currentBorderColor, currentBorderWidth);
             }
 
             DrawSearchIcon(g, iconRect);
@@ -230,7 +391,16 @@ namespace BluePointLilac.Controls
             }
 
             if (cachedIconBitmap != null)
-                g.DrawImage(cachedIconBitmap, iconRect);
+            {
+                // 应用图标缩放变换
+                var scaledRect = new Rectangle(
+                    iconRect.X + (int)(iconRect.Width * (1 - iconScale) / 2),
+                    iconRect.Y + (int)(iconRect.Height * (1 - iconScale) / 2),
+                    (int)(iconRect.Width * iconScale),
+                    (int)(iconRect.Height * iconScale)
+                );
+                g.DrawImage(cachedIconBitmap, scaledRect);
+            }
         }
 
         private Bitmap GenerateModernSearchIcon(Size size, Color color)
@@ -331,7 +501,12 @@ namespace BluePointLilac.Controls
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing) cachedIconBitmap?.Dispose();
+            if (disposing)
+            {
+                animationTimer?.Stop();
+                animationTimer?.Dispose();
+                cachedIconBitmap?.Dispose();
+            }
             base.Dispose(disposing);
         }
 
