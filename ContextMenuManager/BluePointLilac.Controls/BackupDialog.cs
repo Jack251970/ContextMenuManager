@@ -128,21 +128,20 @@ namespace BluePointLilac.Controls
             readonly Label cmbInfo = new Label { AutoSize = true };
             readonly RComboBox cmbItems = new RComboBox
             {
-                // 修复：当 DropDownStyle 为 DropDownList 时，AutoCompleteMode 必须为 None
-                AutoCompleteMode = AutoCompleteMode.None,
-                AutoCompleteSource = AutoCompleteSource.None,
+                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
+                AutoCompleteSource = AutoCompleteSource.ListItems,
                 DropDownHeight = 300.DpiZoom(),
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 ImeMode = ImeMode.Disable
             };
 
-            readonly MyButton btnOK = new MyButton
+            readonly Button btnOK = new Button
             {
                 DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
-            readonly MyButton btnCancel = new MyButton
+            readonly Button btnCancel = new Button
             {
                 DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using BluePointLilac.Controls;
+using System;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Methods
 {
     public static class ComboBoxExtension
     {
-        public static void AutosizeDropDownWidth(this ComboBox box)
+        public static void AutosizeDropDownWidth(this RComboBox box)
         {
             box.DropDown += (sender, e) =>
             {
