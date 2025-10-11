@@ -328,7 +328,4 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Content Include="Properties\Resources\Images\Donate.png" />
     <Content Include="Properties\Resources\Texts\DetailedEditDic.xml" />
   </ItemGroup>
-
 </Project>
-
-
