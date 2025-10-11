@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
 using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
 using Svg;
 
 namespace BluePointLilac.Controls
@@ -132,7 +133,7 @@ namespace BluePointLilac.Controls
                 Location = new Point(16.DpiZoom(), 10.DpiZoom()),
                 Size = new Size(200.DpiZoom(), 22.DpiZoom()),
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
-                PlaceholderText = "搜索内容...",
+                PlaceholderText = AppString.Other.SearchContent,
                 BorderStyle = BorderStyle.None
             };
 

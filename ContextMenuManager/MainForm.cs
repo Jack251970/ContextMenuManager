@@ -707,7 +707,7 @@ namespace ContextMenuManager
             }
             else
             {
-                StatusBar.Text = $"搜索 '{searchText}' - 找到 {visibleCount} 个结果（共 {totalCount} 项）";
+                StatusBar.Text = AppString.Other.StatusSearch.Replace("%searchText", searchText).Replace("%visibleCount", visibleCount.ToString()).Replace("%totalCount", totalCount.ToString());
             }
         }
 
