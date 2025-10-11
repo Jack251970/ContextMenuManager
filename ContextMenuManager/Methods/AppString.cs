@@ -361,6 +361,8 @@ namespace ContextMenuManager.Methods
             public static string TopMost { get; set; }
             public static string Unknown { get; set; }
             public static string RestoreItemText { get; set; }
+            public static string SearchContent { get; set; }
+            public static string StatusSearch { get; set; }
         }
     }
 }

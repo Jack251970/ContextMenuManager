@@ -10,22 +10,20 @@ namespace BluePointLilac.Controls
 {
     public class BackupDialog : CommonDialog
     {
-        public string Title { get; set; }   // 窗口标题
-
-        public string CmbTitle { get; set; }    // cmb标题
-        public string[] CmbItems { get; set; }  // cmb可供选择内容
-        public int CmbSelectedIndex { get; set; }   // cmb选择内容索引
-        public string CmbSelectedText { get; set; } // cmb选择内容文字
-
-        public string TvTitle { get; set; }    // tv可供选择内容
-        public string[] TvItems { get; set; }  // tv选择内容索引
-        public List<string> TvSelectedItems { get; set; }  // tv选择内容文字
+        public string Title { get; set; }
+        public string CmbTitle { get; set; }
+        public string[] CmbItems { get; set; }
+        public int CmbSelectedIndex { get; set; }
+        public string CmbSelectedText { get; set; }
+        public string TvTitle { get; set; }
+        public string[] TvItems { get; set; }
+        public List<string> TvSelectedItems { get; set; }
 
         public override void Reset() { }
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(SelectForm frm = new SelectForm())
+            using (SelectForm frm = new SelectForm())
             {
                 frm.Text = Title;
                 frm.CmbTitle = CmbTitle;
@@ -36,7 +34,7 @@ namespace BluePointLilac.Controls
                 else frm.CmbSelectedIndex = CmbSelectedIndex;
                 if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if(flag)
+                if (flag)
                 {
                     CmbSelectedText = frm.CmbSelectedText;
                     CmbSelectedIndex = frm.CmbSelectedIndex;
@@ -48,8 +46,6 @@ namespace BluePointLilac.Controls
 
         sealed class SelectForm : RForm
         {
-            /*************************************外部函数***********************************/
-
             public SelectForm()
             {
                 SuspendLayout();
@@ -65,12 +61,11 @@ namespace BluePointLilac.Controls
                 InitTheme();
             }
 
-            /*************************************外部属性***********************************/
-
             public string CmbTitle
             {
                 get => cmbInfo.Text;
-                set {
+                set
+                {
                     cmbInfo.Text = value;
                     cmbItems.Left = cmbInfo.Right;
                     cmbItems.Width -= cmbInfo.Width;
@@ -84,19 +79,13 @@ namespace BluePointLilac.Controls
                     cmbItems.Items.CopyTo(value, 0);
                     return value;
                 }
-                set
-                {
-                    cmbItems.Items.Clear();
-                    cmbItems.Items.AddRange(value);
-                }
+                set => cmbItems.Items.AddRange(value);
             }
-            // cmb选中项目索引
             public int CmbSelectedIndex
             {
                 get => cmbItems.SelectedIndex;
                 set => cmbItems.SelectedIndex = value;
             }
-            // cmb选中项目内容
             public string CmbSelectedText
             {
                 get => cmbItems.Text;
@@ -111,24 +100,11 @@ namespace BluePointLilac.Controls
             private string[] tvValue;
             public string[] TvItems
             {
-                get
-                {
-                    return tvValue;
-                }
-                set
-                {
-                    tvValue = value;
-                    ShowTreeView();
-                }
+                get => tvValue;
+                set { tvValue = value; ShowTreeView(); }
             }
-            // tv选中的项目
             private readonly List<string> tvSelectedItems = new List<string>();
-            public List<string> TvSelectedItems
-            {
-                get => GetSortedTvSelectedItems();
-            }
-
-            /*************************************内部控件***********************************/
+            public List<string> TvSelectedItems => GetSortedTvSelectedItems();
 
             readonly Label tvInfo = new Label { AutoSize = true };
             readonly TreeView treeView = new TreeView
@@ -155,7 +131,7 @@ namespace BluePointLilac.Controls
                 AutoCompleteMode = AutoCompleteMode.SuggestAppend,
                 AutoCompleteSource = AutoCompleteSource.ListItems,
                 DropDownHeight = 300.DpiZoom(),
-                DropDownStyle = ComboBoxStyle.DropDownList, // 用户不可增加新项目
+                DropDownStyle = ComboBoxStyle.DropDownList,
                 ImeMode = ImeMode.Disable
             };
 
@@ -171,8 +147,6 @@ namespace BluePointLilac.Controls
                 Text = ResourceString.Cancel,
                 AutoSize = true
             };
-
-            /*************************************内部函数***********************************/
 
             private void InitializeComponents()
             {
@@ -193,7 +167,7 @@ namespace BluePointLilac.Controls
                 ClientSize = new Size(cmbItems.Right + margin, btnCancel.Bottom + margin);
                 treeView.Width = ClientSize.Width - 2 * margin;
                 checkAll.Left = treeView.Right - checkAll.Width;
-                checkAll.Click += (sender, e) => { CheckAll_CheckBoxMouseClick(sender, e); };
+                checkAll.Click += (sender, e) => CheckAll_CheckBoxMouseClick(sender, e);
                 cmbItems.AutosizeDropDownWidth();
             }
 
@@ -206,25 +180,16 @@ namespace BluePointLilac.Controls
                 for (int i = 0; i < TvItems.Length; i++)
                 {
                     string treeNodeText = TvItems[i];
-
-                    // 判断treeNodeText是否在BackupHelper.HomeBackupScenesText中
                     if (BackupHelper.HomeBackupScenesText.Contains(treeNodeText))
-                    {
                         treeView.Nodes[0].Nodes.Add(new TreeNode(treeNodeText));
-                    }
                     else if (BackupHelper.TypeBackupScenesText.Contains(treeNodeText))
-                    {
                         treeView.Nodes[1].Nodes.Add(new TreeNode(treeNodeText));
-                    }
                     else if (BackupHelper.RuleBackupScenesText.Contains(treeNodeText))
-                    {
                         treeView.Nodes[2].Nodes.Add(new TreeNode(treeNodeText));
-                    }
                 }
 
                 for (int i = 0; i < treeView.Nodes.Count; i++)
                 {
-                    // 如果该根节点下不存在任何子节点，则删除该根节点
                     if (treeView.Nodes[i].Nodes.Count == 0)
                     {
                         treeView.Nodes.RemoveAt(i);
@@ -232,19 +197,13 @@ namespace BluePointLilac.Controls
                     }
                 }
 
-                // 取消第一个根节点CheckBox的默认选中状态
                 treeView.BeforeCheck += TreeView_BeforeCheck;
-
-                // 点击节点文字事件
                 treeView.AfterSelect += TreeView_AfterSelect;
-
-                // 节点Checked改变事件
                 treeView.AfterCheck += TreeView_AfterCheck;
             }
 
             private void TreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
             {
-                // 第一次取消第一个根节点的CheckBox选中状态
                 if (e.Node == treeView.Nodes[0] && isFirst)
                 {
                     e.Cancel = true;
@@ -259,81 +218,26 @@ namespace BluePointLilac.Controls
                     TreeNode node = e.Node;
                     bool isChecked = node.Checked;
                     string nodeText = e.Node.Text;
-
                     changeDone = true;
 
-                    if ((nodeText == AppString.ToolBar.Home) || (nodeText == AppString.ToolBar.Type) || (nodeText == AppString.ToolBar.Rule))
+                    if (nodeText == AppString.ToolBar.Home || nodeText == AppString.ToolBar.Type || nodeText == AppString.ToolBar.Rule)
                     {
-                        // 所有子节点状态同父节点
                         for (int i = 0; i < node.Nodes.Count; i++)
                         {
                             TreeNode childNode = node.Nodes[i];
                             childNode.Checked = isChecked;
-                            if (isChecked)
-                            {
-                                if (!tvSelectedItems.Contains(childNode.Text))
-                                {
-                                    tvSelectedItems.Add(childNode.Text);
-                                }
-                                if (tvSelectedItems.Count == tvValue.Length)
-                                {
-                                    checkAll.Checked = true;
-                                }
-                            } 
-                            else
-                            {
-                                tvSelectedItems.Remove(childNode.Text);
-                                if (tvSelectedItems.Count < tvValue.Length)
-                                {
-                                    checkAll.Checked = false;
-                                }
-                            }
+                            if (isChecked) tvSelectedItems.Add(childNode.Text);
+                            else tvSelectedItems.Remove(childNode.Text);
                         }
                     }
                     else
                     {
-                        // 兄弟节点被选中的个数 
-                        int brotherNodeCheckedCount = 0;
-                        foreach (TreeNode tn in node.Parent.Nodes)
-                        {
-                            if (tn.Checked == true)
-                            {
-                                brotherNodeCheckedCount++;
-                            }
-                        }
-
-                        // 兄弟节点全没选，其父节点也不选 
-                        if (brotherNodeCheckedCount == 0)
-                        {
-                            node.Parent.Checked = false;
-                        }
-                        // 兄弟节点只要有一个被选，其父节点也被选 
-                        if (brotherNodeCheckedCount >= 1)
-                        {
-                            node.Parent.Checked = true;
-                        }
-
-                        if (isChecked)
-                        {
-                            if (!tvSelectedItems.Contains(node.Text))
-                            {
-                                tvSelectedItems.Add(node.Text);
-                            }
-                            if (tvSelectedItems.Count == tvValue.Length)
-                            {
-                                checkAll.Checked = true;
-                            }
-                        }
-                        else
-                        {
-                            tvSelectedItems.Remove(node.Text);
-                            if (tvSelectedItems.Count < tvValue.Length)
-                            {
-                                checkAll.Checked = false;
-                            }
-                        }
+                        int brotherNodeCheckedCount = node.Parent.Nodes.Cast<TreeNode>().Count(tn => tn.Checked);
+                        node.Parent.Checked = brotherNodeCheckedCount >= 1;
+                        if (isChecked) tvSelectedItems.Add(node.Text);
+                        else tvSelectedItems.Remove(node.Text);
                     }
-
+                    checkAll.Checked = tvSelectedItems.Count == tvValue.Length;
                     changeDone = false;
                 }
             }
@@ -342,33 +246,20 @@ namespace BluePointLilac.Controls
             {
                 if (e.Node != null)
                 {
-                    // 传递节点Checked改变
                     e.Node.Checked = !e.Node.Checked;
-
-                    // 取消选中，去除蓝色背景
                     treeView.SelectedNode = null;
                 }
             }
 
             private void CheckAll_CheckBoxMouseClick(object sender, EventArgs e)
             {
-                // 传递根节点Checked改变
                 for (int i = 0; i < treeView.Nodes.Count; i++)
                 {
                     for (int j = 0; j < treeView.Nodes[i].Nodes.Count; j++)
                     {
                         treeView.Nodes[i].Nodes[j].Checked = checkAll.Checked;
-                        if (checkAll.Checked)
-                        {
-                            if (!tvSelectedItems.Contains(treeView.Nodes[i].Nodes[j].Text))
-                            {
-                                tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
-                            }
-                        }
-                        else
-                        {
-                            tvSelectedItems.Remove(treeView.Nodes[i].Nodes[j].Text);
-                        }
+                        if (checkAll.Checked) tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
+                        else tvSelectedItems.Remove(treeView.Nodes[i].Nodes[j].Text);
                     }
                     treeView.Nodes[i].Checked = checkAll.Checked;
                 }
@@ -376,42 +267,23 @@ namespace BluePointLilac.Controls
 
             private List<string> GetSortedTvSelectedItems()
             {
-                // 获取Checked的节点
                 List<string> tvSelectedItems = new List<string>();
                 for (int i = 0; i < treeView.Nodes.Count; i++)
                 {
                     for (int j = 0; j < treeView.Nodes[i].Nodes.Count; j++)
                     {
                         if (treeView.Nodes[i].Nodes[j].Checked)
-                        {
                             tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
-                        }
                     }
                 }
 
-                // 对节点文字进行排序
                 List<string> sortedTvSelectedItems = new List<string>();
-                for (int i = 0; i < BackupHelper.HomeBackupScenesText.Length; i++)
-                {
-                    if (tvSelectedItems.Contains(BackupHelper.HomeBackupScenesText[i]))
-                    {
-                        sortedTvSelectedItems.Add(BackupHelper.HomeBackupScenesText[i]);
-                    }
-                }
-                for (int i = 0; i < BackupHelper.TypeBackupScenesText.Length; i++)
-                {
-                    if (tvSelectedItems.Contains(BackupHelper.TypeBackupScenesText[i]))
-                    {
-                        sortedTvSelectedItems.Add(BackupHelper.TypeBackupScenesText[i]);
-                    }
-                }
-                for (int i = 0; i < BackupHelper.RuleBackupScenesText.Length; i++)
-                {
-                    if (tvSelectedItems.Contains(BackupHelper.RuleBackupScenesText[i]))
-                    {
-                        sortedTvSelectedItems.Add(BackupHelper.RuleBackupScenesText[i]);
-                    }
-                }
+                foreach (var item in BackupHelper.HomeBackupScenesText.Where(tvSelectedItems.Contains))
+                    sortedTvSelectedItems.Add(item);
+                foreach (var item in BackupHelper.TypeBackupScenesText.Where(tvSelectedItems.Contains))
+                    sortedTvSelectedItems.Add(item);
+                foreach (var item in BackupHelper.RuleBackupScenesText.Where(tvSelectedItems.Contains))
+                    sortedTvSelectedItems.Add(item);
 
                 return sortedTvSelectedItems;
             }
