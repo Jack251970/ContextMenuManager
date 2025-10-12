@@ -112,13 +112,13 @@ namespace BluePointLilac.Methods
         public static void OpenDirectory(string dirPath)
         {
             if(!Directory.Exists(dirPath)) return;
-            using(Process process = new Process())
+            using var explorer = new Process();
+            explorer.StartInfo = new ProcessStartInfo
             {
-                process.StartInfo.FileName = "explorer.exe";
-                process.StartInfo.Arguments = $"\"{dirPath}\"";
-                process.StartInfo.UseShellExecute = false;
-                process.Start();
-            }
+                FileName = dirPath,
+                UseShellExecute = true
+            };
+            explorer.Start();
         }
 
         /// <summary>打开文件或文件夹的属性对话框</summary>
