@@ -79,7 +79,11 @@ namespace BluePointLilac.Controls
                     cmbItems.Items.CopyTo(value, 0);
                     return value;
                 }
-                set => cmbItems.Items.AddRange(value);
+                set
+                {
+                    cmbItems.Items.Clear();
+                    cmbItems.Items.AddRange(value);
+                }
             }
             public int CmbSelectedIndex
             {
@@ -167,7 +171,7 @@ namespace BluePointLilac.Controls
                 ClientSize = new Size(cmbItems.Right + margin, btnCancel.Bottom + margin);
                 treeView.Width = ClientSize.Width - 2 * margin;
                 checkAll.Left = treeView.Right - checkAll.Width;
-                checkAll.Click += (sender, e) => CheckAll_CheckBoxMouseClick(sender, e);
+                checkAll.Click += CheckAll_CheckBoxMouseClick;
                 cmbItems.AutosizeDropDownWidth();
             }
 
@@ -226,16 +230,26 @@ namespace BluePointLilac.Controls
                         {
                             TreeNode childNode = node.Nodes[i];
                             childNode.Checked = isChecked;
-                            if (isChecked) tvSelectedItems.Add(childNode.Text);
-                            else tvSelectedItems.Remove(childNode.Text);
+                            if (isChecked)
+                            {
+                                if (!tvSelectedItems.Contains(childNode.Text))
+                                    tvSelectedItems.Add(childNode.Text);
+                            }
+                            else
+                                tvSelectedItems.Remove(childNode.Text);
                         }
                     }
                     else
                     {
                         int brotherNodeCheckedCount = node.Parent.Nodes.Cast<TreeNode>().Count(tn => tn.Checked);
                         node.Parent.Checked = brotherNodeCheckedCount >= 1;
-                        if (isChecked) tvSelectedItems.Add(node.Text);
-                        else tvSelectedItems.Remove(node.Text);
+                        if (isChecked)
+                        {
+                            if (!tvSelectedItems.Contains(node.Text))
+                                tvSelectedItems.Add(node.Text);
+                        }
+                        else
+                            tvSelectedItems.Remove(node.Text);
                     }
                     checkAll.Checked = tvSelectedItems.Count == tvValue.Length;
                     changeDone = false;
@@ -253,31 +267,35 @@ namespace BluePointLilac.Controls
 
             private void CheckAll_CheckBoxMouseClick(object sender, EventArgs e)
             {
+                // 修复：设置 changeDone 为 true 防止递归调用
+                changeDone = true;
+
+                bool isChecked = checkAll.Checked;
                 for (int i = 0; i < treeView.Nodes.Count; i++)
                 {
                     for (int j = 0; j < treeView.Nodes[i].Nodes.Count; j++)
                     {
-                        treeView.Nodes[i].Nodes[j].Checked = checkAll.Checked;
-                        if (checkAll.Checked) tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
-                        else tvSelectedItems.Remove(treeView.Nodes[i].Nodes[j].Text);
+                        treeView.Nodes[i].Nodes[j].Checked = isChecked;
+                        if (isChecked)
+                        {
+                            if (!tvSelectedItems.Contains(treeView.Nodes[i].Nodes[j].Text))
+                                tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
+                        }
+                        else
+                            tvSelectedItems.Remove(treeView.Nodes[i].Nodes[j].Text);
                     }
-                    treeView.Nodes[i].Checked = checkAll.Checked;
+                    treeView.Nodes[i].Checked = isChecked;
                 }
+
+                changeDone = false;
             }
 
             private List<string> GetSortedTvSelectedItems()
             {
-                List<string> tvSelectedItems = new List<string>();
-                for (int i = 0; i < treeView.Nodes.Count; i++)
-                {
-                    for (int j = 0; j < treeView.Nodes[i].Nodes.Count; j++)
-                    {
-                        if (treeView.Nodes[i].Nodes[j].Checked)
-                            tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
-                    }
-                }
-
+                // 直接从 tvSelectedItems 获取已选项，而不是重新遍历树节点
                 List<string> sortedTvSelectedItems = new List<string>();
+
+                // 按照原始顺序排序
                 foreach (var item in BackupHelper.HomeBackupScenesText.Where(tvSelectedItems.Contains))
                     sortedTvSelectedItems.Add(item);
                 foreach (var item in BackupHelper.TypeBackupScenesText.Where(tvSelectedItems.Contains))
