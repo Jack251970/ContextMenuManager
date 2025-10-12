@@ -67,7 +67,8 @@ namespace ContextMenuManager.Controls
                 ReadOnly = true
             };
 
-            readonly Label lblRestore = new Label {
+            readonly Label lblRestore = new Label
+            {
                 Width = 480.DpiZoom()
             };
 

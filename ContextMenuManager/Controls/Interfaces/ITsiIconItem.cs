@@ -22,15 +22,15 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             Click += (sender, e) =>
             {
-                using(IconDialog dlg = new IconDialog())
+                using (IconDialog dlg = new IconDialog())
                 {
                     dlg.IconPath = item.IconPath;
                     dlg.IconIndex = item.IconIndex;
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
-                    using(Icon icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex))
+                    if (dlg.ShowDialog() != DialogResult.OK) return;
+                    using (Icon icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex))
                     {
                         Image image = icon?.ToBitmap();
-                        if(image == null) return;
+                        if (image == null) return;
                         item.Image = image;
                         item.IconPath = dlg.IconPath;
                         item.IconIndex = dlg.IconIndex;

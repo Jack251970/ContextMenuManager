@@ -34,7 +34,7 @@ namespace ContextMenuManager.Controls
             {
                 bool flag = base.Visible != value && Parent != null;
                 base.Visible = value;
-                if(flag) Parent.Height += value ? Height : -Height;
+                if (flag) Parent.Height += value ? Height : -Height;
             }
         }
 

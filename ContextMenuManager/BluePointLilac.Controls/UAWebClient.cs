@@ -57,7 +57,7 @@ namespace BluePointLilac.Controls
         {
             string contents = GetWebString(fileUrl);
             bool flag = contents != null;
-            if(flag) File.WriteAllText(filePath, contents, Encoding.Unicode);
+            if (flag) File.WriteAllText(filePath, contents, Encoding.Unicode);
             return flag;
         }
 
@@ -67,7 +67,7 @@ namespace BluePointLilac.Controls
             try
             {
                 byte[] bytes = DownloadData(url);
-                using(XmlReader xReader = JsonReaderWriterFactory.CreateJsonReader(bytes, XmlDictionaryReaderQuotas.Max))
+                using (XmlReader xReader = JsonReaderWriterFactory.CreateJsonReader(bytes, XmlDictionaryReaderQuotas.Max))
                 {
                     XmlDocument doc = new XmlDocument();
                     doc.Load(xReader);

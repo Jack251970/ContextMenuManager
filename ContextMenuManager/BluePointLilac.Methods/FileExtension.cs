@@ -55,25 +55,25 @@ namespace BluePointLilac.Methods
 
         public static string GetOpenMode(string extension)
         {
-            if(string.IsNullOrEmpty(extension)) return null;
+            if (string.IsNullOrEmpty(extension)) return null;
             string mode;
             bool CheckMode()
             {
-                if(mode.IsNullOrWhiteSpace()) return false;
-                if(mode.Length > 255) return false;
-                if(mode.ToLower().StartsWith(@"applications\")) return false;
-                using(RegistryKey root = Registry.ClassesRoot)
-                using(RegistryKey key = root.OpenSubKey(mode))
+                if (mode.IsNullOrWhiteSpace()) return false;
+                if (mode.Length > 255) return false;
+                if (mode.ToLower().StartsWith(@"applications\")) return false;
+                using (RegistryKey root = Registry.ClassesRoot)
+                using (RegistryKey key = root.OpenSubKey(mode))
                 {
                     return key != null;
                 }
             }
             mode = Registry.GetValue($@"{FILEEXTSPATH}\{extension}\UserChoice", "ProgId", null)?.ToString();
-            if(CheckMode()) return mode;
+            if (CheckMode()) return mode;
             mode = Registry.GetValue($@"{HKLMCLASSES}\{extension}", "", null)?.ToString();
-            if(CheckMode()) return mode;
+            if (CheckMode()) return mode;
             mode = Registry.GetValue($@"{HKCRCLASSES}\{extension}", "", null)?.ToString();
-            if(CheckMode()) return mode;
+            if (CheckMode()) return mode;
             return null;
         }
     }

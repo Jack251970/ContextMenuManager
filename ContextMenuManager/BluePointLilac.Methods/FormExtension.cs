@@ -10,12 +10,12 @@ namespace BluePointLilac.Methods
         /// <param name="frm2">同时被移动的窗体</param>
         public static void MoveAsMove(this Form frm1, Form frm2)
         {
-            if(frm2 == null) return;
+            if (frm2 == null) return;
             Point pLast = Point.Empty;
             frm1.Load += (sender, e) => pLast = frm1.Location;
             frm1.LocationChanged += (sender, e) =>
             {
-                if(pLast == Point.Empty) return;
+                if (pLast == Point.Empty) return;
                 frm2.Left += frm1.Left - pLast.X;
                 frm2.Top += frm1.Top - pLast.Y;
                 pLast = frm1.Location;

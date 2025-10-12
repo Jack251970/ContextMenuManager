@@ -20,24 +20,24 @@ namespace BluePointLilac.Controls
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
-            if(m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
+            if (m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
             {
                 IntPtr hNowhere = new IntPtr((int)HitTest.Nowhere);
-                switch((HitTest)m.Result)
+                switch ((HitTest)m.Result)
                 {
                     case HitTest.Top:
                     case HitTest.Bottom:
-                        if(!VerticalResizable) m.Result = hNowhere;
+                        if (!VerticalResizable) m.Result = hNowhere;
                         break;
                     case HitTest.Left:
                     case HitTest.Right:
-                        if(!HorizontalResizable) m.Result = hNowhere;
+                        if (!HorizontalResizable) m.Result = hNowhere;
                         break;
                     case HitTest.TopLeft:
                     case HitTest.TopRight:
                     case HitTest.BottomLeft:
                     case HitTest.BottomRight:
-                        if(!VerticalResizable || !HorizontalResizable) m.Result = hNowhere;
+                        if (!VerticalResizable || !HorizontalResizable) m.Result = hNowhere;
                         break;
                 }
             }

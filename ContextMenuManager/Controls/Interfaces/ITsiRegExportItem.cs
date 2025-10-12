@@ -20,12 +20,12 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             item.ContextMenuStrip.Opening += (sender, e) =>
             {
-                using(var key = RegistryEx.GetRegistryKey(item.RegPath))
+                using (var key = RegistryEx.GetRegistryKey(item.RegPath))
                     Visible = key != null;
             };
             Click += (sender, e) =>
             {
-                using(SaveFileDialog dlg = new SaveFileDialog())
+                using (SaveFileDialog dlg = new SaveFileDialog())
                 {
                     string date = DateTime.Today.ToString("yyyy-MM-dd");
                     string time = DateTime.Now.ToString("HH-mm-ss");
@@ -36,11 +36,11 @@ namespace ContextMenuManager.Controls.Interfaces
                     dlg.FileName = fileName;
                     dlg.InitialDirectory = dirPath;
                     dlg.Filter = $"{AppString.Dialog.RegistryFile}|*.reg";
-                    if(dlg.ShowDialog() == DialogResult.OK)
+                    if (dlg.ShowDialog() == DialogResult.OK)
                     {
                         ExternalProgram.ExportRegistry(item.RegPath, dlg.FileName);
                     }
-                    if(Directory.GetFileSystemEntries(dirPath).Length == 0)
+                    if (Directory.GetFileSystemEntries(dirPath).Length == 0)
                     {
                         Directory.Delete(dirPath);
                     }

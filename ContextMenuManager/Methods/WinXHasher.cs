@@ -209,11 +209,11 @@ namespace ContextMenuManager.Methods
 
         private static string GetGeneralizePath(string filePath)
         {
-            if(string.IsNullOrEmpty(filePath)) return filePath;
-            foreach(var kv in GeneralizePathDic)
+            if (string.IsNullOrEmpty(filePath)) return filePath;
+            foreach (var kv in GeneralizePathDic)
             {
                 string dirPath = Environment.ExpandEnvironmentVariables(kv.Key);
-                if(filePath.StartsWith(dirPath + "\\", StringComparison.OrdinalIgnoreCase))
+                if (filePath.StartsWith(dirPath + "\\", StringComparison.OrdinalIgnoreCase))
                 {
                     filePath = filePath.Replace(dirPath, kv.Value); break;
                 }

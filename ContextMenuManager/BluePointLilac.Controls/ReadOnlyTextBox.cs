@@ -22,7 +22,7 @@ namespace BluePointLilac.Controls
         const int WM_KILLFOCUS = 0x0008;
         protected override void WndProc(ref Message m)
         {
-            switch(m.Msg)
+            switch (m.Msg)
             {
                 case WM_SETFOCUS:
                     m.Msg = WM_KILLFOCUS; break;
@@ -35,7 +35,7 @@ namespace BluePointLilac.Controls
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
-            if(firstEnter) Focus();
+            if (firstEnter) Focus();
             firstEnter = false;
         }
     }
@@ -58,7 +58,7 @@ namespace BluePointLilac.Controls
 
         protected override void WndProc(ref Message m)
         {
-            switch(m.Msg)
+            switch (m.Msg)
             {
                 case WM_SETFOCUS:
                     m.Msg = WM_KILLFOCUS; break;
@@ -71,7 +71,7 @@ namespace BluePointLilac.Controls
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
-            if(firstEnter) Focus();
+            if (firstEnter) Focus();
             firstEnter = false;
         }
 

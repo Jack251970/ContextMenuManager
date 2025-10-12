@@ -20,14 +20,14 @@ namespace BluePointLilac.Methods
         /// <remarks>若正在运行激活窗口</remarks>
         public static bool IsRunning()
         {
-            using(Process current = Process.GetCurrentProcess())
+            using (Process current = Process.GetCurrentProcess())
             {
-                foreach(Process process in Process.GetProcessesByName(current.ProcessName))
+                foreach (Process process in Process.GetProcessesByName(current.ProcessName))
                 {
-                    using(process)
+                    using (process)
                     {
-                        if(process.Id == current.Id) continue;
-                        if(process.MainModule.FileName == current.MainModule.FileName)
+                        if (process.Id == current.Id) continue;
+                        if (process.MainModule.FileName == current.MainModule.FileName)
                         {
                             const int SW_RESTORE = 9;
                             ShowWindowAsync(process.MainWindowHandle, SW_RESTORE);
@@ -47,7 +47,7 @@ namespace BluePointLilac.Methods
         {
             string appPath = Application.ExecutablePath;
             string command = appPath;
-            if(args != null && args.Length > 0) command += "," + string.Join(" ", args);
+            if (args != null && args.Length > 0) command += "," + string.Join(" ", args);
             List<string> contents = new List<string>();
             //vbs命令逐行执行不等待，故加些代码确定上一条命令执行是否完成
             contents.AddRange(new[]
@@ -59,7 +59,7 @@ namespace BluePointLilac.Methods
                 "Set fso = CreateObject(\"Scripting.FileSystemObject\")",
             });
 
-            if(File.Exists(updatePath))
+            if (File.Exists(updatePath))
             {
                 contents.AddRange(new[]
                 {
@@ -83,7 +83,7 @@ namespace BluePointLilac.Methods
 
             string vbsPath = Path.GetTempPath() + Guid.NewGuid() + ".vbs";
             File.WriteAllLines(vbsPath, contents.ToArray(), Encoding.Unicode);
-            using(Process process = new Process())
+            using (Process process = new Process())
             {
                 process.StartInfo.FileName = "wscript.exe";
                 process.StartInfo.Arguments = vbsPath;

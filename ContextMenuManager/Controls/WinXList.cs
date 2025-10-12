@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls
 
         public void LoadItems()
         {
-            if(WinOsVersion.Current >= WinOsVersion.Win8)
+            if (WinOsVersion.Current >= WinOsVersion.Win8)
             {
                 AppConfig.BackupWinX();
                 AddItem(new WinXSortableItem(this));
@@ -50,7 +50,7 @@ namespace ContextMenuManager.Controls
 
             // 检查WinX项目是否排序并初始化界面
             bool sorted = false;
-            foreach(string dirKeyPath in dirKeyPaths)
+            foreach (string dirKeyPath in dirKeyPaths)
             {
                 string dirPath1 = $@"{WinXPath}\{dirKeyPath}";
                 string dirPath2 = $@"{BackupWinXPath}\{dirKeyPath}";
@@ -59,17 +59,17 @@ namespace ContextMenuManager.Controls
                 AddItem(groupItem);
 
                 List<string> lnkPaths;
-                if(AppConfig.WinXSortable)
+                if (AppConfig.WinXSortable)
                 {
                     lnkPaths = GetSortedPaths(dirKeyPath, out bool flag);
-                    if(flag) sorted = true;
+                    if (flag) sorted = true;
                 }
                 else
                 {
                     lnkPaths = GetInkFiles(dirKeyPath);
                 }
 
-                foreach(string path in lnkPaths)
+                foreach (string path in lnkPaths)
                 {
                     WinXItem winXItem = new WinXItem(path, groupItem);
                     winXItem.BtnMoveDown.Visible = winXItem.BtnMoveUp.Visible = AppConfig.WinXSortable;
@@ -77,7 +77,7 @@ namespace ContextMenuManager.Controls
                     groupItem.AddWinXItem(winXItem);
                 }
             }
-            if(sorted)
+            if (sorted)
             {
                 ExplorerRestarter.Show();
                 AppMessageBox.Show(AppString.Message.WinXSorted);
@@ -175,7 +175,7 @@ namespace ContextMenuManager.Controls
                 // 序号正确且为两位以上数字无需进行重新编号
                 if (index >= 2 && int.TryParse(name.Substring(0, index), out int num) && num == i + 1)
                 {
-                    sortedPaths.Add(lnkFilePath); i--;  continue;
+                    sortedPaths.Add(lnkFilePath); i--; continue;
                 }
 
                 // 序号不正确或数字位数不足则进行重新编号
@@ -190,7 +190,7 @@ namespace ContextMenuManager.Controls
                 resorted = true;
                 i--;
             }
-            
+
             return sortedPaths;
         }
 
@@ -204,7 +204,7 @@ namespace ContextMenuManager.Controls
             btnCreateDir.MouseDown += (sender, e) => CreateNewGroup();
             newItem.AddNewItem += () =>
             {
-                using(NewLnkFileDialog dlg1 = new NewLnkFileDialog())
+                using (NewLnkFileDialog dlg1 = new NewLnkFileDialog())
                 {
                     void AddNewLnkFile(string dirName, string itemText, string targetPath, string arguments, bool isWinX)
                     {
@@ -249,18 +249,18 @@ namespace ContextMenuManager.Controls
                     }
 
                     if (dlg1.ShowDialog() != DialogResult.OK) return;
-                    using(SelectDialog dlg2 = new SelectDialog())
+                    using (SelectDialog dlg2 = new SelectDialog())
                     {
                         dlg2.Title = AppString.Dialog.SelectGroup;
                         dlg2.Items = GetGroupNames();
-                        if(dlg2.ShowDialog() != DialogResult.OK) return;
+                        if (dlg2.ShowDialog() != DialogResult.OK) return;
 
                         AddNewLnkFile(dlg2.Selected, dlg1.ItemText, dlg1.ItemFilePath, dlg1.Arguments, true);
                         if (WinOsVersion.Current >= WinOsVersion.Win11)
                         {
                             AddNewLnkFile(dlg2.Selected, dlg1.ItemText, dlg1.ItemFilePath, dlg1.Arguments, false);
                         }
-                        
+
                         ExplorerRestarter.Show();
                     }
                 }
@@ -295,7 +295,7 @@ namespace ContextMenuManager.Controls
         {
             List<string> items = new List<string>();
             DirectoryInfo winxDi = new DirectoryInfo(WinXPath);
-            foreach(DirectoryInfo di in winxDi.GetDirectories()) items.Add(di.Name);
+            foreach (DirectoryInfo di in winxDi.GetDirectories()) items.Add(di.Name);
             items.Reverse();
             return items.ToArray();
         }
@@ -310,7 +310,9 @@ namespace ContextMenuManager.Controls
                 Image = AppImage.Sort;
                 AddCtr(chkWinXSortable);
                 chkWinXSortable.Checked = AppConfig.WinXSortable;
-                chkWinXSortable.CheckChanged += () => { AppConfig.WinXSortable = chkWinXSortable.Checked; list.ClearItems(); list.LoadItems();
+                chkWinXSortable.CheckChanged += () =>
+                {
+                    AppConfig.WinXSortable = chkWinXSortable.Checked; list.ClearItems(); list.LoadItems();
                 };
             }
         }

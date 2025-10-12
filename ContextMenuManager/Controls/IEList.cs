@@ -21,20 +21,20 @@ namespace ContextMenuManager.Controls
         private void LoadIEItems()
         {
             List<string> names = new List<string>();
-            using(RegistryKey ieKey = RegistryEx.GetRegistryKey(IEPath))
+            using (RegistryKey ieKey = RegistryEx.GetRegistryKey(IEPath))
             {
-                if(ieKey == null) return;
-                foreach(string part in IEItem.MeParts)
+                if (ieKey == null) return;
+                foreach (string part in IEItem.MeParts)
                 {
-                    using(RegistryKey meKey = ieKey.OpenSubKey(part))
+                    using (RegistryKey meKey = ieKey.OpenSubKey(part))
                     {
-                        if(meKey == null) continue;
-                        foreach(string keyName in meKey.GetSubKeyNames())
+                        if (meKey == null) continue;
+                        foreach (string keyName in meKey.GetSubKeyNames())
                         {
-                            if(names.Contains(keyName, StringComparer.OrdinalIgnoreCase)) continue;
-                            using(RegistryKey key = meKey.OpenSubKey(keyName))
+                            if (names.Contains(keyName, StringComparer.OrdinalIgnoreCase)) continue;
+                            using (RegistryKey key = meKey.OpenSubKey(keyName))
                             {
-                                if(!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
+                                if (!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
                                 {
                                     AddItem(new IEItem(key.Name));
                                     names.Add(keyName);
@@ -52,9 +52,9 @@ namespace ContextMenuManager.Controls
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using(NewIEDialog dlg = new NewIEDialog())
+                using (NewIEDialog dlg = new NewIEDialog())
                 {
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
+                    if (dlg.ShowDialog() != DialogResult.OK) return;
                     InsertItem(new IEItem(dlg.RegPath), 1);
                 }
             };

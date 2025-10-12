@@ -1,7 +1,6 @@
 ﻿using BluePointLilac.Methods;
 using ContextMenuManager.Properties;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
@@ -99,7 +98,7 @@ namespace ContextMenuManager.Methods
 
         private static Image GetIconImage(string dllName, int iconIndex)
         {
-            using(Icon icon = ResourceIcon.GetIcon(dllName, iconIndex)) return icon?.ToBitmap();
+            using (Icon icon = ResourceIcon.GetIcon(dllName, iconIndex)) return icon?.ToBitmap();
         }
     }
 }

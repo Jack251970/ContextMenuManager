@@ -14,7 +14,7 @@ namespace ContextMenuManager.Controls
         {
             InitializeComponents();
             Value = value;
-            if(GuidEx.TryParse(value, out Guid guid))
+            if (GuidEx.TryParse(value, out Guid guid))
             {
                 Guid = guid;
                 Image = GuidInfo.GetImage(guid);
@@ -36,12 +36,12 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                foreach(string path in GuidBlockedList.BlockedPaths)
+                foreach (string path in GuidBlockedList.BlockedPaths)
                 {
-                    using(var key = RegistryEx.GetRegistryKey(path))
+                    using (var key = RegistryEx.GetRegistryKey(path))
                     {
-                        if(key == null) continue;
-                        if(key.GetValueNames().Contains(Value, StringComparer.OrdinalIgnoreCase)) return path;
+                        if (key == null) continue;
+                        if (key.GetValueNames().Contains(Value, StringComparer.OrdinalIgnoreCase)) return path;
                     }
                 }
                 return null;
@@ -53,7 +53,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 string text;
-                if(GuidEx.TryParse(Value, out Guid guid)) text = GuidInfo.GetText(guid);
+                if (GuidEx.TryParse(Value, out Guid guid)) text = GuidInfo.GetText(guid);
                 else text = AppString.Message.MalformedGuid;
                 text += "\n" + Value;
                 return text;
@@ -92,9 +92,9 @@ namespace ContextMenuManager.Controls
 
         public void DeleteMe()
         {
-            if(AppMessageBox.Show(AppString.Message.ConfirmDelete, MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+            if (AppMessageBox.Show(AppString.Message.ConfirmDelete, MessageBoxButtons.YesNo) != DialogResult.Yes) return;
             Array.ForEach(GuidBlockedList.BlockedPaths, path => RegistryEx.DeleteValue(path, Value));
-            if(!Guid.Equals(Guid.Empty)) ExplorerRestarter.Show();
+            if (!Guid.Equals(Guid.Empty)) ExplorerRestarter.Show();
             int index = Parent.Controls.GetChildIndex(this);
             index -= (index < Parent.Controls.Count - 1) ? 0 : 1;
             Parent.Controls[index].Focus();

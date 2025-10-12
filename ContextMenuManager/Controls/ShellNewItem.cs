@@ -83,21 +83,21 @@ namespace ContextMenuManager.Controls
             get
             {
                 string filePath = FileExtension.GetExtentionInfo(FileExtension.AssocStr.Executable, Extension);
-                if(File.Exists(filePath)) return filePath;
-                using(RegistryKey oKey = RegistryEx.GetRegistryKey(OpenModePath))
+                if (File.Exists(filePath)) return filePath;
+                using (RegistryKey oKey = RegistryEx.GetRegistryKey(OpenModePath))
                 {
-                    using(RegistryKey aKey = oKey.OpenSubKey("Application"))
+                    using (RegistryKey aKey = oKey.OpenSubKey("Application"))
                     {
                         string uwp = aKey?.GetValue("AppUserModelID")?.ToString();
-                        if(uwp != null) return "shell:AppsFolder\\" + uwp;
+                        if (uwp != null) return "shell:AppsFolder\\" + uwp;
                     }
-                    using(RegistryKey cKey = oKey.OpenSubKey("CLSID"))
+                    using (RegistryKey cKey = oKey.OpenSubKey("CLSID"))
                     {
                         string value = cKey?.GetValue("")?.ToString();
-                        if(GuidEx.TryParse(value, out Guid guid))
+                        if (GuidEx.TryParse(value, out Guid guid))
                         {
                             filePath = GuidInfo.GetFilePath(guid);
-                            if(filePath != null) return filePath;
+                            if (filePath != null) return filePath;
                         }
                     }
                 }
@@ -120,16 +120,16 @@ namespace ContextMenuManager.Controls
             get
             {
                 string name = Registry.GetValue(RegPath, "MenuText", null)?.ToString();
-                if(name!=null&&name.StartsWith("@"))
+                if (name != null && name.StartsWith("@"))
                 {
                     name = ResourceString.GetDirectString(name);
-                    if(!string.IsNullOrEmpty(name)) return name;
+                    if (!string.IsNullOrEmpty(name)) return name;
                 }
                 name = Registry.GetValue(DefaultOpenModePath, "FriendlyTypeName", null)?.ToString();
                 name = ResourceString.GetDirectString(name);
-                if(!string.IsNullOrEmpty(name)) return name;
+                if (!string.IsNullOrEmpty(name)) return name;
                 name = Registry.GetValue(DefaultOpenModePath, "", null)?.ToString();
-                if(!string.IsNullOrEmpty(name)) return name;
+                if (!string.IsNullOrEmpty(name)) return name;
                 return null;
             }
             set
@@ -145,9 +145,9 @@ namespace ContextMenuManager.Controls
             get
             {
                 string value = Registry.GetValue(RegPath, "IconPath", null)?.ToString();
-                if(!value.IsNullOrWhiteSpace()) return value;
+                if (!value.IsNullOrWhiteSpace()) return value;
                 value = Registry.GetValue($@"{OpenModePath}\DefaultIcon", "", null)?.ToString();
-                if(!value.IsNullOrWhiteSpace()) return value;
+                if (!value.IsNullOrWhiteSpace()) return value;
                 return ItemFilePath;
             }
             set => Registry.SetValue(RegPath, "IconPath", value);
@@ -158,12 +158,12 @@ namespace ContextMenuManager.Controls
             get
             {
                 string location = IconLocation;
-                if(location == null || location.StartsWith("@"))
+                if (location == null || location.StartsWith("@"))
                 {
                     return ResourceIcon.GetExtensionIcon(Extension);
-                } 
+                }
                 Icon icon = ResourceIcon.GetIcon(location, out string path, out int index);
-                if(icon == null) icon = ResourceIcon.GetIcon(path = "imageres.dll", index = -2);
+                if (icon == null) icon = ResourceIcon.GetIcon(path = "imageres.dll", index = -2);
                 IconPath = path; IconIndex = index;
                 return icon;
             }
@@ -183,9 +183,9 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "Command", null)?.ToString();
             set
             {
-                if(value.IsNullOrWhiteSpace())
+                if (value.IsNullOrWhiteSpace())
                 {
-                    if(Registry.GetValue(RegPath, "NullFile", null) != null)
+                    if (Registry.GetValue(RegPath, "NullFile", null) != null)
                     {
                         RegistryEx.DeleteValue(RegPath, "Command");
                     }
@@ -201,22 +201,22 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                if(DefaultBeforeSeparator) return true;
+                if (DefaultBeforeSeparator) return true;
                 else return Registry.GetValue($@"{RegPath}\Config", "BeforeSeparator", null) != null;
             }
             set
             {
-                if(value)
+                if (value)
                 {
                     Registry.SetValue($@"{RegPath}\Config", "BeforeSeparator", "");
                 }
                 else
                 {
-                    using(RegistryKey snkey = RegistryEx.GetRegistryKey(RegPath, true))
-                    using(RegistryKey ckey = snkey.OpenSubKey("Config", true))
+                    using (RegistryKey snkey = RegistryEx.GetRegistryKey(RegPath, true))
+                    using (RegistryKey ckey = snkey.OpenSubKey("Config", true))
                     {
                         ckey.DeleteValue("BeforeSeparator");
-                        if(ckey.GetValueNames().Length == 0 && ckey.GetSubKeyNames().Length == 0)
+                        if (ckey.GetValueNames().Length == 0 && ckey.GetSubKeyNames().Length == 0)
                         {
                             snkey.DeleteSubKey("Config");
                         }
@@ -287,15 +287,15 @@ namespace ContextMenuManager.Controls
 
         private void EditInitialData()
         {
-            if(AppMessageBox.Show(AppString.Message.EditInitialData,
+            if (AppMessageBox.Show(AppString.Message.EditInitialData,
                 MessageBoxButtons.YesNo) != DialogResult.Yes) return;
-            using(InputDialog dlg = new InputDialog
+            using (InputDialog dlg = new InputDialog
             {
                 Title = AppString.Menu.InitialData,
                 Text = InitialData?.ToString()
             })
             {
-                if(dlg.ShowDialog() == DialogResult.OK) InitialData = dlg.Text;
+                if (dlg.ShowDialog() == DialogResult.OK) InitialData = dlg.Text;
             }
         }
 
@@ -310,7 +310,7 @@ namespace ContextMenuManager.Controls
             ShellNewList list = (ShellNewList)Parent;
             int index = list.GetItemIndex(list.Separator);
             list.SetItemIndex(this, index);
-            if(ShellNewList.ShellNewLockItem.IsLocked) list.SaveSorting();
+            if (ShellNewList.ShellNewLockItem.IsLocked) list.SaveSorting();
         }
 
         public void DeleteMe()
@@ -318,7 +318,7 @@ namespace ContextMenuManager.Controls
             RegistryEx.DeleteKeyTree(RegPath);
             RegistryEx.DeleteKeyTree(BackupPath);
             Parent.Controls.Remove(this);
-            if(ShellNewList.ShellNewLockItem.IsLocked) Owner?.SaveSorting();
+            if (ShellNewList.ShellNewLockItem.IsLocked) Owner?.SaveSorting();
         }
     }
 }

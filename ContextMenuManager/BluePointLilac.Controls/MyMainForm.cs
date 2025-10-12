@@ -58,10 +58,10 @@ namespace BluePointLilac.Controls
             const int SC_SIZE = 0xF000;
             const int HT_CAPTION = 0x2;
             bool suspend = false;//临时挂起MainBody
-            switch(m.Msg)
+            switch (m.Msg)
             {
                 case WM_SYSCOMMAND:
-                    switch(m.WParam.ToInt32())
+                    switch (m.WParam.ToInt32())
                     {
                         //解决控件过多移动窗体时延迟问题
                         case SC_MOVE:
@@ -76,7 +76,7 @@ namespace BluePointLilac.Controls
                     }
                     break;
                 case WM_NCLBUTTONDBLCLK:
-                    switch(m.WParam.ToInt32())
+                    switch (m.WParam.ToInt32())
                     {
                         //双击标题栏最大化和还原窗口
                         case HT_CAPTION:
@@ -84,7 +84,7 @@ namespace BluePointLilac.Controls
                     }
                     break;
             }
-            if(suspend)
+            if (suspend)
             {
                 SuspendLayout();
                 MainBody.SuspendLayout();

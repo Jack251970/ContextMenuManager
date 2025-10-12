@@ -56,7 +56,7 @@ namespace ContextMenuManager.Controls
         private static Image GetSingleQR(int index)
         {
             Bitmap bitmap = new Bitmap(200, 200);
-            using(Graphics g = Graphics.FromImage(bitmap))
+            using (Graphics g = Graphics.FromImage(bitmap))
             {
                 Rectangle destRect = new Rectangle(0, 0, 200, 200);
                 Rectangle srcRect = new Rectangle(index * 200, 0, 200, 200);
@@ -79,10 +79,10 @@ namespace ContextMenuManager.Controls
 
         private void SwitchQR(object sender, MouseEventArgs e)
         {
-            if(picQR.Image == AllQR)
+            if (picQR.Image == AllQR)
             {
-                if(e.X < 200) picQR.Image = WechatQR;
-                else if(e.X < 400) picQR.Image = AlipayQR;
+                if (e.X < 200) picQR.Image = WechatQR;
+                else if (e.X < 400) picQR.Image = AlipayQR;
                 else picQR.Image = QQQR;
             }
             else
@@ -94,14 +94,14 @@ namespace ContextMenuManager.Controls
         private void ShowDonateDialog()
         {
             Cursor = Cursors.WaitCursor;
-            using(UAWebClient client = new UAWebClient())
+            using (UAWebClient client = new UAWebClient())
             {
                 string url = AppConfig.RequestUseGithub ? AppConfig.GithubDonateRaw : AppConfig.GiteeDonateRaw;
                 string contents = client.GetWebString(url);
                 //contents = System.IO.File.ReadAllText(@"..\..\..\Donate.md");//用于求和更新Donate.md文件
-                if(contents == null)
+                if (contents == null)
                 {
-                    if(AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
+                    if (AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
                         + AppString.Message.OpenWebUrl, MessageBoxButtons.OKCancel) == DialogResult.OK)
                     {
                         url = AppConfig.RequestUseGithub ? AppConfig.GithubDonate : AppConfig.GiteeDonate;
@@ -110,7 +110,7 @@ namespace ContextMenuManager.Controls
                 }
                 else
                 {
-                    using(DonateListDialog dlg = new DonateListDialog())
+                    using (DonateListDialog dlg = new DonateListDialog())
                     {
                         dlg.DanateData = contents;
                         dlg.ShowDialog();
@@ -128,7 +128,7 @@ namespace ContextMenuManager.Controls
 
             protected override bool RunDialog(IntPtr hwndOwner)
             {
-                using(DonateListForm frm = new DonateListForm())
+                using (DonateListForm frm = new DonateListForm())
                 {
                     frm.ShowDonateList(DanateData);
                     MainForm mainForm = (MainForm)FromHandle(hwndOwner);
@@ -202,21 +202,21 @@ namespace ContextMenuManager.Controls
                 {
                     string[] lines = contents.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
                     int index = Array.FindIndex(lines, line => line == "|:--:|:--:|:--:|:--:|:--:");
-                    if(index == -1) return;
+                    if (index == -1) return;
                     string[] heads = lines[index - 1].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                     dgvDonate.ColumnCount = heads.Length;
                     dgvDonate.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                    for(int m = 0; m < heads.Length; m++)
+                    for (int m = 0; m < heads.Length; m++)
                     {
                         dgvDonate.Columns[m].HeaderText = heads[m];
                     }
-                    for(int n = index + 1; n < lines.Length; n++)
+                    for (int n = index + 1; n < lines.Length; n++)
                     {
                         string[] strs = lines[n].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                         object[] values = new object[strs.Length];
-                        for(int k = 0; k < strs.Length; k++)
+                        for (int k = 0; k < strs.Length; k++)
                         {
-                            switch(k)
+                            switch (k)
                             {
                                 case 3:
                                     values[k] = Convert.ToSingle(strs[k]);

@@ -116,7 +116,7 @@ namespace ContextMenuManager.Controls
         }
 
         private readonly List<WinXItem> winXItems = new List<WinXItem> { };
-        
+
         public void AddWinXItem(WinXItem item)
         {
             winXItems.Add(item);
@@ -195,7 +195,7 @@ namespace ContextMenuManager.Controls
         public void DeleteMe()
         {
             bool flag = Directory.GetFiles(GroupPath, "*.lnk").Length > 0;
-            if(flag && AppMessageBox.Show(AppString.Message.DeleteGroup, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+            if (flag && AppMessageBox.Show(AppString.Message.DeleteGroup, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
             DeletePath(new string[] { GroupPath, BackupGroupPath, DefaultGroupPath });
             if (flag)
             {

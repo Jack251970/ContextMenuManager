@@ -17,16 +17,16 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(SelectForm frm = new SelectForm())
+            using (SelectForm frm = new SelectForm())
             {
                 frm.Text = Title;
                 frm.Items = Items;
-                if(Selected != null) frm.Selected = Selected;
+                if (Selected != null) frm.Selected = Selected;
                 else frm.SelectedIndex = SelectedIndex;
                 frm.CanEdit = CanEdit;
                 if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if(flag)
+                if (flag)
                 {
                     Selected = frm.Selected;
                     SelectedIndex = frm.SelectedIndex;

@@ -22,7 +22,7 @@ namespace BluePointLilac.Methods
         public void LoadStringBuilder(StringBuilder sb)
         {
             RootDic.Clear();
-            if(sb.ToString().IsNullOrWhiteSpace()) return;
+            if (sb.ToString().IsNullOrWhiteSpace()) return;
             List<string> lines = sb.ToString().Split(new[] { "\r\n", "\n" },
                 StringSplitOptions.RemoveEmptyEntries).ToList();//拆分为行
             lines.ForEach(line => line.Trim());
@@ -32,14 +32,14 @@ namespace BluePointLilac.Methods
         public void LoadFile(string filePath)
         {
             RootDic.Clear();
-            if(!File.Exists(filePath)) return;
+            if (!File.Exists(filePath)) return;
             List<string> lines = new List<string>();
-            using(StreamReader reader = new StreamReader(filePath, EncodingType.GetType(filePath)))
+            using (StreamReader reader = new StreamReader(filePath, EncodingType.GetType(filePath)))
             {
-                while(!reader.EndOfStream)
+                while (!reader.EndOfStream)
                 {
                     string line = reader.ReadLine().Trim();
-                    if(line != string.Empty) lines.Add(line);
+                    if (line != string.Empty) lines.Add(line);
                 }
             }
             ReadLines(lines);
@@ -51,31 +51,31 @@ namespace BluePointLilac.Methods
                 line => line.StartsWith(";") || line.StartsWith("#")//移除注释
                 || (!line.StartsWith("[") && !line.Contains("=")));//移除非section行且非key行
 
-            if(lines.Count == 0) return;
+            if (lines.Count == 0) return;
 
             List<int> indexs = new List<int> { 0 };
-            for(int i = 1; i < lines.Count; i++)
+            for (int i = 1; i < lines.Count; i++)
             {
-                if(lines[i].StartsWith("[")) indexs.Add(i);//获取section行号
+                if (lines[i].StartsWith("[")) indexs.Add(i);//获取section行号
             }
             indexs.Add(lines.Count);
 
-            for(int i = 0; i < indexs.Count - 1; i++)
+            for (int i = 0; i < indexs.Count - 1; i++)
             {
                 string section = lines[indexs[i]];
                 int m = section.IndexOf(']') - 1;
-                if(m < 0) continue;
+                if (m < 0) continue;
                 section = section.Substring(1, m);
-                if(RootDic.ContainsKey(section)) continue;
+                if (RootDic.ContainsKey(section)) continue;
                 var keyValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 RootDic.Add(section, keyValues);
 
-                for(int j = indexs[i] + 1; j < indexs[i + 1]; j++)
+                for (int j = indexs[i] + 1; j < indexs[i + 1]; j++)
                 {
                     int k = lines[j].IndexOf('=');
                     string key = lines[j].Substring(0, k).TrimEnd();
                     string value = lines[j].Substring(k + 1).TrimStart();
-                    if(keyValues.ContainsKey(key)) continue;
+                    if (keyValues.ContainsKey(key)) continue;
                     keyValues.Add(key, value);
                 }
             }
@@ -83,8 +83,8 @@ namespace BluePointLilac.Methods
 
         public string GetValue(string section, string key)
         {
-            if(RootDic.TryGetValue(section, out Dictionary<string, string> sectionDic))
-                if(sectionDic.TryGetValue(key, out string value))
+            if (RootDic.TryGetValue(section, out Dictionary<string, string> sectionDic))
+                if (sectionDic.TryGetValue(key, out string value))
                     return value;
             return string.Empty;
         }
@@ -97,7 +97,7 @@ namespace BluePointLilac.Methods
 
         public string[] GetSectionKeys(string section)
         {
-            if(!RootDic.ContainsKey(section)) return null;
+            if (!RootDic.ContainsKey(section)) return null;
             else return RootDic[section].Keys.ToArray();
         }
 
@@ -108,7 +108,7 @@ namespace BluePointLilac.Methods
 
         public bool RemoveKey(string section, string key)
         {
-            if(RootDic.ContainsKey(section))
+            if (RootDic.ContainsKey(section))
             {
                 return RootDic[section].Remove(key);
             }
@@ -117,9 +117,9 @@ namespace BluePointLilac.Methods
 
         public void AddValue(string section, string key, string value)
         {
-            if(RootDic.ContainsKey(section))
+            if (RootDic.ContainsKey(section))
             {
-                if(RootDic[section].ContainsKey(key))
+                if (RootDic[section].ContainsKey(key))
                 {
                     RootDic[section][key] = value;
                 }
@@ -139,10 +139,10 @@ namespace BluePointLilac.Methods
         public void SaveFile(string filePath)
         {
             List<string> lines = new List<string>();
-            foreach(var item in RootDic)
+            foreach (var item in RootDic)
             {
                 lines.Add("[" + item.Key + "]");
-                foreach(var key in item.Value)
+                foreach (var key in item.Value)
                 {
                     lines.Add(key.Key + " = " + key.Value);
                 }
@@ -151,7 +151,7 @@ namespace BluePointLilac.Methods
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             FileAttributes attributes = FileAttributes.Normal;
             Encoding encoding = Encoding.Unicode;
-            if(File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 encoding = EncodingType.GetType(filePath);
                 attributes = File.GetAttributes(filePath);

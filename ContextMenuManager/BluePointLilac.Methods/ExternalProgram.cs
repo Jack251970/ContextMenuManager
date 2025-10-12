@@ -23,10 +23,10 @@ namespace BluePointLilac.Methods
             //中的LastKey键值（记录上次关闭注册表编辑器时的注册表路径）为要跳转的注册表项路径regPath，
             //再使用Process.Start("regedit.exe", "-m")打开注册表编辑器
             //优点：代码少、不会有Bug。缺点：不能定位具体键，没有逐步展开效果
-            if(regPath == null) return;
+            if (regPath == null) return;
             Process process;
             IntPtr hMain = FindWindow("RegEdit_RegEdit", null);
-            if(hMain != IntPtr.Zero && !moreOpen)
+            if (hMain != IntPtr.Zero && !moreOpen)
             {
                 GetWindowThreadProcessId(hMain, out int id);
                 process = Process.GetProcessById(id);
@@ -51,10 +51,10 @@ namespace BluePointLilac.Methods
             Thread.Sleep(100);
             process.WaitForInputIdle();
             SendMessage(hTree, WM_KEYDOWN, VK_RIGHT, null);
-            foreach(char chr in Encoding.Default.GetBytes(regPath))
+            foreach (char chr in Encoding.Default.GetBytes(regPath))
             {
                 process.WaitForInputIdle();
-                if(chr == '\\')
+                if (chr == '\\')
                 {
                     Thread.Sleep(100);
                     SendMessage(hTree, WM_KEYDOWN, VK_RIGHT, null);
@@ -65,17 +65,17 @@ namespace BluePointLilac.Methods
                 }
             }
 
-            if(string.IsNullOrEmpty(valueName)) return;
-            using(RegistryKey key = RegistryEx.GetRegistryKey(regPath))
+            if (string.IsNullOrEmpty(valueName)) return;
+            using (RegistryKey key = RegistryEx.GetRegistryKey(regPath))
             {
-                if(key?.GetValue(valueName) == null) return;
+                if (key?.GetValue(valueName) == null) return;
             }
             Thread.Sleep(100);
             SetForegroundWindow(hList);
             SetFocus(hList);
             process.WaitForInputIdle();
             SendMessage(hList, WM_KEYDOWN, VK_HOME, null);
-            foreach(char chr in Encoding.Default.GetBytes(valueName))
+            foreach (char chr in Encoding.Default.GetBytes(valueName))
             {
                 process.WaitForInputIdle();
                 SendMessage(hList, WM_CHAR, Convert.ToInt16(chr), null);
@@ -88,17 +88,17 @@ namespace BluePointLilac.Methods
         /// <param name="moreOpen">窗口是否多开</param>
         public static void JumpExplorer(string filePath, bool moreOpen = false)
         {
-            if(filePath == null) return;
-            if(!moreOpen)
+            if (filePath == null) return;
+            if (!moreOpen)
             {
                 IntPtr pidlList = ILCreateFromPathW(filePath);
-                if(pidlList == IntPtr.Zero) return;
+                if (pidlList == IntPtr.Zero) return;
                 SHOpenFolderAndSelectItems(pidlList, 0, IntPtr.Zero, 0);
                 ILFree(pidlList);
             }
             else
             {
-                using(Process process = new Process())
+                using (Process process = new Process())
                 {
                     process.StartInfo.FileName = "explorer.exe";
                     process.StartInfo.Arguments = $"/select, {filePath}";
@@ -111,7 +111,7 @@ namespace BluePointLilac.Methods
         /// <param name="dirPath">目录路径</param>
         public static void OpenDirectory(string dirPath)
         {
-            if(!Directory.Exists(dirPath)) return;
+            if (!Directory.Exists(dirPath)) return;
             using var explorer = new Process();
             explorer.StartInfo = new ProcessStartInfo
             {
@@ -147,7 +147,7 @@ namespace BluePointLilac.Methods
             //以下方法只针对未关联打开方式的扩展名显示系统打开方式对话框，对于已关联打开方式的扩展名会报错
             string tempPath = $"{Path.GetTempPath()}{Guid.NewGuid()}{extension}";
             File.WriteAllText(tempPath, "");
-            using(Process process = new Process())
+            using (Process process = new Process())
             {
                 process.StartInfo = new ProcessStartInfo
                 {
@@ -163,7 +163,7 @@ namespace BluePointLilac.Methods
         /// <summary>重启Explorer</summary>
         public static void RestartExplorer()
         {
-            using(Process kill = Process.Start(new ProcessStartInfo
+            using (Process kill = Process.Start(new ProcessStartInfo
             {
                 FileName = "taskkill.exe",
                 Arguments = "-f -im explorer.exe",
@@ -217,7 +217,7 @@ namespace BluePointLilac.Methods
         /// <param name="filePath">.reg文件保存路径</param>
         public static void ExportRegistry(string regPath, string filePath)
         {
-            using(Process process = new Process())
+            using (Process process = new Process())
             {
                 process.StartInfo.FileName = "regedit.exe";
                 process.StartInfo.Arguments = $"/e \"{filePath}\" \"{regPath}\"";
@@ -230,7 +230,7 @@ namespace BluePointLilac.Methods
         /// <param name="text">要显示的文本</param>
         public static void OpenNotepadWithText(string text)
         {
-            using(Process process = Process.Start("notepad.exe"))
+            using (Process process = Process.Start("notepad.exe"))
             {
                 process.WaitForInputIdle();
                 IntPtr handle = FindWindowEx(process.MainWindowHandle, IntPtr.Zero, "Edit", null);

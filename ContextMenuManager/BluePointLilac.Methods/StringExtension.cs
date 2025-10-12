@@ -5,7 +5,7 @@
     {
         public static bool IsNullOrWhiteSpace(this string str)
         {
-            if(string.IsNullOrEmpty(str)) return true;
+            if (string.IsNullOrEmpty(str)) return true;
             return str.Trim().Length == 0;
         }
     }

@@ -29,7 +29,7 @@ namespace ContextMenuManager.Controls
                     // 新增备份项目
                     string deviceName = BackupList.metaData?.Device;
                     string createTime = BackupList.metaData?.CreateTime.ToString("G");
-                    AddItem(new RestoreItem(this, xmlFile, deviceName ?? AppString.Other.Unknown, 
+                    AddItem(new RestoreItem(this, xmlFile, deviceName ?? AppString.Other.Unknown,
                         createTime ?? AppString.Other.Unknown));
                 }
             }
@@ -56,7 +56,7 @@ namespace ContextMenuManager.Controls
                 dlg.TvTitle = AppString.Dialog.BackupContent;
                 dlg.TvItems = BackupHelper.BackupScenesText;
                 dlg.CmbTitle = AppString.Dialog.BackupMode;
-                dlg.CmbItems = new[] { AppString.Dialog.BackupMode1, AppString.Dialog.BackupMode2, 
+                dlg.CmbItems = new[] { AppString.Dialog.BackupMode1, AppString.Dialog.BackupMode2,
                     AppString.Dialog.BackupMode3 };
                 if (dlg.ShowDialog() != DialogResult.OK) return;
                 switch (dlg.CmbSelectedIndex)

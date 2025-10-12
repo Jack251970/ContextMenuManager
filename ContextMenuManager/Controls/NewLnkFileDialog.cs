@@ -16,12 +16,12 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(NewLnkForm frm = new NewLnkForm())
+            using (NewLnkForm frm = new NewLnkForm())
             {
                 frm.FileFilter = FileFilter;
                 frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if(flag)
+                if (flag)
                 {
                     ItemText = frm.ItemText;
                     ItemFilePath = frm.ItemFilePath;
@@ -57,25 +57,25 @@ namespace ContextMenuManager.Controls
 
                 btnBrowse.Click += (sender, e) =>
                 {
-                    if(rdoFile.Checked) BrowseFile();
+                    if (rdoFile.Checked) BrowseFile();
                     else BrowseFolder();
                 };
 
                 btnOK.Click += (sender, e) =>
                 {
-                    if(ItemText.IsNullOrWhiteSpace())
+                    if (ItemText.IsNullOrWhiteSpace())
                     {
                         AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                     }
-                    else if(ItemFilePath.IsNullOrWhiteSpace())
+                    else if (ItemFilePath.IsNullOrWhiteSpace())
                     {
                         AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
                     }
-                    else if(rdoFile.Checked && !ObjectPath.GetFullFilePath(ItemFilePath, out _))
+                    else if (rdoFile.Checked && !ObjectPath.GetFullFilePath(ItemFilePath, out _))
                     {
                         AppMessageBox.Show(AppString.Message.FileNotExists);
                     }
-                    else if(rdoFolder.Checked && !Directory.Exists(ItemFilePath))
+                    else if (rdoFolder.Checked && !Directory.Exists(ItemFilePath))
                     {
                         AppMessageBox.Show(AppString.Message.FolderNotExists);
                     }
@@ -84,11 +84,11 @@ namespace ContextMenuManager.Controls
 
                 txtFilePath.TextChanged += (sender, e) =>
                 {
-                    if(Path.GetExtension(ItemFilePath).ToLower() == ".lnk")
+                    if (Path.GetExtension(ItemFilePath).ToLower() == ".lnk")
                     {
-                        using(ShellLink shortcut = new ShellLink(ItemFilePath))
+                        using (ShellLink shortcut = new ShellLink(ItemFilePath))
                         {
-                            if(File.Exists(shortcut.TargetPath))
+                            if (File.Exists(shortcut.TargetPath))
                             {
                                 ItemFilePath = shortcut.TargetPath;
                             }
@@ -99,20 +99,20 @@ namespace ContextMenuManager.Controls
 
             private void BrowseFile()
             {
-                using(OpenFileDialog dlg = new OpenFileDialog())
+                using (OpenFileDialog dlg = new OpenFileDialog())
                 {
                     dlg.Filter = FileFilter;
                     //取消获取lnk目标路径，可选中UWP快捷方式
                     dlg.DereferenceLinks = false;
-                    if(dlg.ShowDialog() == DialogResult.OK)
+                    if (dlg.ShowDialog() == DialogResult.OK)
                     {
                         ItemFilePath = dlg.FileName;
                         string extension = Path.GetExtension(dlg.FileName).ToLower();
-                        if(extension == ".lnk")
+                        if (extension == ".lnk")
                         {
-                            using(ShellLink shortcut = new ShellLink(dlg.FileName))
+                            using (ShellLink shortcut = new ShellLink(dlg.FileName))
                             {
-                                if(File.Exists(shortcut.TargetPath))
+                                if (File.Exists(shortcut.TargetPath))
                                 {
                                     ItemFilePath = shortcut.TargetPath;
                                     Arguments = shortcut.Arguments;
@@ -126,11 +126,11 @@ namespace ContextMenuManager.Controls
 
             private void BrowseFolder()
             {
-                using(FolderBrowserDialog dlg = new FolderBrowserDialog())
+                using (FolderBrowserDialog dlg = new FolderBrowserDialog())
                 {
-                    if(Directory.Exists(ItemFilePath)) dlg.SelectedPath = ItemFilePath;
+                    if (Directory.Exists(ItemFilePath)) dlg.SelectedPath = ItemFilePath;
                     else dlg.SelectedPath = Application.StartupPath;
-                    if(dlg.ShowDialog() == DialogResult.OK)
+                    if (dlg.ShowDialog() == DialogResult.OK)
                     {
                         ItemFilePath = dlg.SelectedPath;
                         ItemText = Path.GetFileNameWithoutExtension(dlg.SelectedPath);

@@ -17,7 +17,7 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(InputBox frm = new InputBox())
+            using (InputBox frm = new InputBox())
             {
                 frm.Text = Title;
                 frm.InputedText = Text;

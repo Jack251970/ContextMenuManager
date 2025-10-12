@@ -18,12 +18,12 @@ namespace ContextMenuManager.Controls.Interfaces
             CheckChanged += () => item.ItemVisible = Checked;
             listItem.ParentChanged += (sender, e) =>
             {
-                if(listItem.IsDisposed) return;
-                if(listItem.Parent == null) return;
+                if (listItem.IsDisposed) return;
+                if (listItem.Parent == null) return;
                 Checked = item.ItemVisible;
-                if(listItem is FoldSubItem subItem && subItem.FoldGroupItem != null) return;
-                if(listItem.FindForm() is ShellStoreDialog.ShellStoreForm) return;
-                if(AppConfig.HideDisabledItems) listItem.Visible = Checked;
+                if (listItem is FoldSubItem subItem && subItem.FoldGroupItem != null) return;
+                if (listItem.FindForm() is ShellStoreDialog.ShellStoreForm) return;
+                if (AppConfig.HideDisabledItems) listItem.Visible = Checked;
             };
         }
     }

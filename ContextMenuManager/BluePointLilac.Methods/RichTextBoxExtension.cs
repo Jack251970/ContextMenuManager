@@ -12,16 +12,16 @@ namespace BluePointLilac.Methods
         public static void LoadIni(this RichTextBox box, string iniStr)
         {
             string[] lines = iniStr.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-            for(int i = 0; i < lines.Length; i++)
+            for (int i = 0; i < lines.Length; i++)
             {
                 string str = lines[i].Trim();
-                if(str.StartsWith(";") || str.StartsWith("#"))
+                if (str.StartsWith(";") || str.StartsWith("#"))
                 {
                     box.AppendText(str, Color.SkyBlue);//注释
                 }
-                else if(str.StartsWith("["))
+                else if (str.StartsWith("["))
                 {
-                    if(str.Contains("]"))
+                    if (str.Contains("]"))
                     {
                         int index = str.IndexOf(']');
                         box.AppendText(str.Substring(0, index + 1), Color.DarkCyan, null, true);//section
@@ -29,14 +29,14 @@ namespace BluePointLilac.Methods
                     }
                     else box.AppendText(str, Color.SkyBlue);//section标签未关闭视作注释
                 }
-                else if(str.Contains("="))
+                else if (str.Contains("="))
                 {
                     int index = str.IndexOf('=');
                     box.AppendText(str.Substring(0, index), Color.DodgerBlue);//key
                     box.AppendText(str.Substring(index), Color.DimGray);//value
                 }
                 else box.AppendText(str, Color.SkyBlue);//非section行和非key行视作注释
-                if(i != lines.Length - 1) box.AppendText("\r\n");
+                if (i != lines.Length - 1) box.AppendText("\r\n");
             }
         }
 
@@ -48,13 +48,13 @@ namespace BluePointLilac.Methods
         public static void LoadXml(this RichTextBox box, string xmlStr)
         {
             XmlStateMachine machine = new XmlStateMachine();
-            if(xmlStr.StartsWith("<?"))
+            if (xmlStr.StartsWith("<?"))
             {
                 string declaration = machine.GetXmlDeclaration(xmlStr);
                 try
                 {
                     xmlStr = XDocument.Parse(xmlStr, LoadOptions.PreserveWhitespace).ToString().Trim();
-                    if(string.IsNullOrEmpty(xmlStr) && declaration == string.Empty) return;
+                    if (string.IsNullOrEmpty(xmlStr) && declaration == string.Empty) return;
                 }
                 catch { throw; }
                 xmlStr = declaration + "\r\n" + xmlStr;
@@ -63,7 +63,7 @@ namespace BluePointLilac.Methods
             int location = 0;
             int failCount = 0;
             int tokenTryCount = 0;
-            while(location < xmlStr.Length)
+            while (location < xmlStr.Length)
             {
                 string token = machine.GetNextToken(xmlStr.Substring(location), out XmlTokenType ttype);
                 Color color = machine.GetTokenColor(ttype);
@@ -73,8 +73,8 @@ namespace BluePointLilac.Methods
                 tokenTryCount++;
 
                 // Check for ongoing failure
-                if(token.Length == 0) failCount++;
-                if(failCount > 10 || tokenTryCount > xmlStr.Length)
+                if (token.Length == 0) failCount++;
+                if (failCount > 10 || tokenTryCount > xmlStr.Length)
                 {
                     string theRestOfIt = xmlStr.Substring(location, xmlStr.Length - location);
                     //box.AppendText(Environment.NewLine + Environment.NewLine + theRestOfIt); // DEBUG
@@ -108,10 +108,10 @@ namespace BluePointLilac.Methods
                 string whitespace = GetWhitespace(s);
                 subString = s.TrimStart();
                 token = string.Empty;
-                if(CurrentState == XmlTokenType.CDataStart)
+                if (CurrentState == XmlTokenType.CDataStart)
                 {
                     // check for empty CDATA
-                    if(subString.StartsWith("]]>"))
+                    if (subString.StartsWith("]]>"))
                     {
                         CurrentState = XmlTokenType.CDataEnd;
                         token = "]]>";
@@ -123,25 +123,25 @@ namespace BluePointLilac.Methods
                         token = subString.Substring(0, n);
                     }
                 }
-                else if(CurrentState == XmlTokenType.DocTypeStart)
+                else if (CurrentState == XmlTokenType.DocTypeStart)
                 {
                     CurrentState = XmlTokenType.DocTypeName;
                     token = "DOCTYPE";
                 }
-                else if(CurrentState == XmlTokenType.DocTypeName)
+                else if (CurrentState == XmlTokenType.DocTypeName)
                 {
                     CurrentState = XmlTokenType.DocTypeDeclaration;
                     int n = subString.IndexOf("[");
                     token = subString.Substring(0, n);
                 }
-                else if(CurrentState == XmlTokenType.DocTypeDeclaration)
+                else if (CurrentState == XmlTokenType.DocTypeDeclaration)
                 {
                     CurrentState = XmlTokenType.DocTypeDefStart;
                     token = "[";
                 }
-                else if(CurrentState == XmlTokenType.DocTypeDefStart)
+                else if (CurrentState == XmlTokenType.DocTypeDefStart)
                 {
-                    if(subString.StartsWith("]>"))
+                    if (subString.StartsWith("]>"))
                     {
                         CurrentState = XmlTokenType.DocTypeDefEnd;
                         token = "]>";
@@ -153,15 +153,15 @@ namespace BluePointLilac.Methods
                         token = subString.Substring(0, n);
                     }
                 }
-                else if(CurrentState == XmlTokenType.DocTypeDefValue)
+                else if (CurrentState == XmlTokenType.DocTypeDefValue)
                 {
                     CurrentState = XmlTokenType.DocTypeDefEnd;
                     token = "]>";
                 }
-                else if(CurrentState == XmlTokenType.DoubleQuotationMarkStart)
+                else if (CurrentState == XmlTokenType.DoubleQuotationMarkStart)
                 {
                     // check for empty attribute value
-                    if(subString[0] == '\"')
+                    if (subString[0] == '\"')
                     {
                         CurrentState = XmlTokenType.DoubleQuotationMarkEnd;
                         token = "\"";
@@ -173,10 +173,10 @@ namespace BluePointLilac.Methods
                         token = subString.Substring(0, n);
                     }
                 }
-                else if(CurrentState == XmlTokenType.SingleQuotationMarkStart)
+                else if (CurrentState == XmlTokenType.SingleQuotationMarkStart)
                 {
                     // check for empty attribute value
-                    if(subString[0] == '\'')
+                    if (subString[0] == '\'')
                     {
                         CurrentState = XmlTokenType.SingleQuotationMarkEnd;
                         token = "\'";
@@ -188,10 +188,10 @@ namespace BluePointLilac.Methods
                         token = subString.Substring(0, n);
                     }
                 }
-                else if(CurrentState == XmlTokenType.CommentStart)
+                else if (CurrentState == XmlTokenType.CommentStart)
                 {
                     // check for empty comment
-                    if(subString.StartsWith("-->"))
+                    if (subString.StartsWith("-->"))
                     {
                         CurrentState = XmlTokenType.CommentEnd;
                         token = "-->";
@@ -202,19 +202,19 @@ namespace BluePointLilac.Methods
                         token = ReadCommentValue(subString);
                     }
                 }
-                else if(CurrentState == XmlTokenType.NodeStart)
+                else if (CurrentState == XmlTokenType.NodeStart)
                 {
                     CurrentState = XmlTokenType.NodeName;
                     token = ReadNodeName(subString);
                 }
-                else if(CurrentState == XmlTokenType.XmlDeclarationStart)
+                else if (CurrentState == XmlTokenType.XmlDeclarationStart)
                 {
                     CurrentState = XmlTokenType.NodeName;
                     token = ReadNodeName(subString);
                 }
-                else if(CurrentState == XmlTokenType.NodeName)
+                else if (CurrentState == XmlTokenType.NodeName)
                 {
-                    if(subString[0] != '/' &&
+                    if (subString[0] != '/' &&
                         subString[0] != '>')
                     {
                         CurrentState = XmlTokenType.AttributeName;
@@ -225,9 +225,9 @@ namespace BluePointLilac.Methods
                         HandleReservedXmlToken();
                     }
                 }
-                else if(CurrentState == XmlTokenType.NodeEndValueStart)
+                else if (CurrentState == XmlTokenType.NodeEndValueStart)
                 {
-                    if(subString[0] == '<')
+                    if (subString[0] == '<')
                     {
                         HandleReservedXmlToken();
                     }
@@ -237,11 +237,11 @@ namespace BluePointLilac.Methods
                         token = ReadNodeValue(subString);
                     }
                 }
-                else if(CurrentState == XmlTokenType.DoubleQuotationMarkEnd)
+                else if (CurrentState == XmlTokenType.DoubleQuotationMarkEnd)
                 {
                     HandleAttributeEnd();
                 }
-                else if(CurrentState == XmlTokenType.SingleQuotationMarkEnd)
+                else if (CurrentState == XmlTokenType.SingleQuotationMarkEnd)
                 {
                     HandleAttributeEnd();
                 }
@@ -249,7 +249,7 @@ namespace BluePointLilac.Methods
                 {
                     HandleReservedXmlToken();
                 }
-                if(token != string.Empty)
+                if (token != string.Empty)
                 {
                     ttype = CurrentState;
                     return whitespace + token;
@@ -259,7 +259,7 @@ namespace BluePointLilac.Methods
 
             public Color GetTokenColor(XmlTokenType ttype)
             {
-                switch(ttype)
+                switch (ttype)
                 {
                     case XmlTokenType.NodeValue:
                     case XmlTokenType.EqualSignStart:
@@ -304,7 +304,7 @@ namespace BluePointLilac.Methods
             {
                 int start = s.IndexOf("<?");
                 int end = s.IndexOf("?>");
-                if(start > -1 && end > start)
+                if (start > -1 && end > start)
                 {
                     return s.Substring(start, end - start + 2);
                 }
@@ -313,15 +313,15 @@ namespace BluePointLilac.Methods
 
             private void HandleAttributeEnd()
             {
-                if(subString.StartsWith(">"))
+                if (subString.StartsWith(">"))
                 {
                     HandleReservedXmlToken();
                 }
-                else if(subString.StartsWith("/>"))
+                else if (subString.StartsWith("/>"))
                 {
                     HandleReservedXmlToken();
                 }
-                else if(subString.StartsWith("?>"))
+                else if (subString.StartsWith("?>"))
                 {
                     HandleReservedXmlToken();
                 }
@@ -336,74 +336,74 @@ namespace BluePointLilac.Methods
             {
                 // check if state changer
                 // <, >, =, </, />, <![CDATA[, <!--, -->
-                if(subString.StartsWith("<![CDATA["))
+                if (subString.StartsWith("<![CDATA["))
                 {
                     CurrentState = XmlTokenType.CDataStart;
                     token = "<![CDATA[";
                 }
-                else if(subString.StartsWith("<!DOCTYPE"))
+                else if (subString.StartsWith("<!DOCTYPE"))
                 {
                     CurrentState = XmlTokenType.DocTypeStart;
                     token = "<!";
                 }
-                else if(subString.StartsWith("</"))
+                else if (subString.StartsWith("</"))
                 {
                     CurrentState = XmlTokenType.NodeStart;
                     token = "</";
                 }
-                else if(subString.StartsWith("<!--"))
+                else if (subString.StartsWith("<!--"))
                 {
                     CurrentState = XmlTokenType.CommentStart;
                     token = "<!--";
                 }
-                else if(subString.StartsWith("<?"))
+                else if (subString.StartsWith("<?"))
                 {
                     CurrentState = XmlTokenType.XmlDeclarationStart;
                     token = "<?";
                 }
-                else if(subString.StartsWith("<"))
+                else if (subString.StartsWith("<"))
                 {
                     CurrentState = XmlTokenType.NodeStart;
                     token = "<";
                 }
-                else if(subString.StartsWith("="))
+                else if (subString.StartsWith("="))
                 {
                     CurrentState = XmlTokenType.EqualSignStart;
                     token = "=";
                 }
-                else if(subString.StartsWith("?>"))
+                else if (subString.StartsWith("?>"))
                 {
                     CurrentState = XmlTokenType.XmlDeclarationEnd;
                     token = "?>";
                 }
-                else if(subString.StartsWith(">"))
+                else if (subString.StartsWith(">"))
                 {
                     CurrentState = XmlTokenType.NodeEndValueStart;
                     token = ">";
                 }
-                else if(subString.StartsWith("-->"))
+                else if (subString.StartsWith("-->"))
                 {
                     CurrentState = XmlTokenType.CommentEnd;
                     token = "-->";
                 }
-                else if(subString.StartsWith("]>"))
+                else if (subString.StartsWith("]>"))
                 {
                     CurrentState = XmlTokenType.DocTypeEnd;
                     token = "]>";
                 }
-                else if(subString.StartsWith("]]>"))
+                else if (subString.StartsWith("]]>"))
                 {
                     CurrentState = XmlTokenType.CDataEnd;
                     token = "]]>";
                 }
-                else if(subString.StartsWith("/>"))
+                else if (subString.StartsWith("/>"))
                 {
                     CurrentState = XmlTokenType.NodeEnd;
                     token = "/>";
                 }
-                else if(subString.StartsWith("\""))
+                else if (subString.StartsWith("\""))
                 {
-                    if(CurrentState == XmlTokenType.AttributeValue)
+                    if (CurrentState == XmlTokenType.AttributeValue)
                     {
                         CurrentState = XmlTokenType.DoubleQuotationMarkEnd;
                     }
@@ -413,9 +413,9 @@ namespace BluePointLilac.Methods
                     }
                     token = "\"";
                 }
-                else if(subString.StartsWith("'"))
+                else if (subString.StartsWith("'"))
                 {
-                    if(CurrentState == XmlTokenType.AttributeValue)
+                    if (CurrentState == XmlTokenType.AttributeValue)
                     {
                         CurrentState = XmlTokenType.SingleQuotationMarkEnd;
                     }
@@ -430,9 +430,9 @@ namespace BluePointLilac.Methods
             private string ReadNodeName(string s)
             {
                 string nodeName = "";
-                for(int i = 0; i < s.Length; i++)
+                for (int i = 0; i < s.Length; i++)
                 {
-                    if(s[i] == '/' || s[i] == ' ' || s[i] == '>') return nodeName;
+                    if (s[i] == '/' || s[i] == ' ' || s[i] == '>') return nodeName;
                     else nodeName += s[i].ToString();
                 }
                 return nodeName;
@@ -442,7 +442,7 @@ namespace BluePointLilac.Methods
             {
                 string attName = "";
                 int n = s.IndexOf('=');
-                if(n != -1) attName = s.Substring(0, n);
+                if (n != -1) attName = s.Substring(0, n);
                 return attName;
             }
 
@@ -450,7 +450,7 @@ namespace BluePointLilac.Methods
             {
                 string nodeValue = "";
                 int n = s.IndexOf('<');
-                if(n != -1) nodeValue = s.Substring(0, n);
+                if (n != -1) nodeValue = s.Substring(0, n);
                 return nodeValue;
             }
 
@@ -458,17 +458,17 @@ namespace BluePointLilac.Methods
             {
                 string commentValue = "";
                 int n = s.IndexOf("-->");
-                if(n != -1) commentValue = s.Substring(0, n);
+                if (n != -1) commentValue = s.Substring(0, n);
                 return commentValue;
             }
 
             private string GetWhitespace(string s)
             {
                 string whitespace = "";
-                for(int i = 0; i < s.Length; i++)
+                for (int i = 0; i < s.Length; i++)
                 {
                     char c = s[i];
-                    if(char.IsWhiteSpace(c)) whitespace += c;
+                    if (char.IsWhiteSpace(c)) whitespace += c;
                     else break;
                 }
                 return whitespace;

@@ -37,7 +37,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath));
                     ExternalProgram.ExportRegistry(regItem.RegPath, filePath);
                 }
-                else if (AppMessageBox.Show(item is RestoreItem ? AppString.Message.ConfirmDeleteBackupPermanently : AppString.Message.ConfirmDeletePermanently, 
+                else if (AppMessageBox.Show(item is RestoreItem ? AppString.Message.ConfirmDeleteBackupPermanently : AppString.Message.ConfirmDeletePermanently,
                     MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {
                     return;

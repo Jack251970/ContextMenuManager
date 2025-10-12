@@ -11,7 +11,7 @@ namespace BluePointLilac.Methods
             box.DropDown += (sender, e) =>
             {
                 int maxWidth = 0;
-                foreach(var item in box.Items)
+                foreach (var item in box.Items)
                 {
                     maxWidth = Math.Max(maxWidth, TextRenderer.MeasureText(item.ToString(), box.Font).Width);
                 }

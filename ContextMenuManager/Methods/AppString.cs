@@ -13,16 +13,16 @@ namespace ContextMenuManager.Methods
         private static string GetValue(string section, string key)
         {
             string value = UserLangReader.GetValue(section, key);
-            if(string.IsNullOrEmpty(value)) value = DefLangReader.GetValue(section, key);
+            if (string.IsNullOrEmpty(value)) value = DefLangReader.GetValue(section, key);
             return value.Replace("\\r", "\r").Replace("\\n", "\n");
         }
 
         /// <summary>加载语言</summary>
         public static void LoadStrings()
         {
-            foreach(Type type in typeof(AppString).GetNestedTypes())
+            foreach (Type type in typeof(AppString).GetNestedTypes())
             {
-                foreach(PropertyInfo pi in type.GetProperties())
+                foreach (PropertyInfo pi in type.GetProperties())
                 {
                     pi.SetValue(type, GetValue(type.Name, pi.Name), null);
                 }

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
+using Svg;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
-using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
-using Svg;
 
 namespace BluePointLilac.Controls
 {

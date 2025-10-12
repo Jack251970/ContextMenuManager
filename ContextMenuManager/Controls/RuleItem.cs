@@ -31,7 +31,7 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                if(FoldGroupItem == null) return Text;
+                if (FoldGroupItem == null) return Text;
                 else return $"{FoldGroupItem.Text} {Text}";
             }
         }
@@ -95,30 +95,30 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                for(int i = 0; i < Rules.Length; i++)
+                for (int i = 0; i < Rules.Length; i++)
                 {
                     RegRule rule = Rules[i];
-                    using(RegistryKey key = RegistryEx.GetRegistryKey(rule.RegPath))
+                    using (RegistryKey key = RegistryEx.GetRegistryKey(rule.RegPath))
                     {
                         string value = key?.GetValue(rule.ValueName)?.ToString().ToLower();
                         string turnOnValue = rule.TurnOnValue?.ToString().ToLower();
                         string turnOffValue = rule.TurnOffValue?.ToString().ToLower();
-                        if(value == null || key.GetValueKind(rule.ValueName) != rule.ValueKind)
+                        if (value == null || key.GetValueKind(rule.ValueName) != rule.ValueKind)
                         {
-                            if(i < Rules.Length - 1) continue;
+                            if (i < Rules.Length - 1) continue;
                         }
-                        if(value == turnOnValue) return true;
-                        if(value == turnOffValue) return false;
+                        if (value == turnOnValue) return true;
+                        if (value == turnOffValue) return false;
                     }
                 }
                 return true;
             }
             set
             {
-                foreach(RegRule rule in Rules)
+                foreach (RegRule rule in Rules)
                 {
                     object data = value ? rule.TurnOnValue : rule.TurnOffValue;
-                    if(data != null)
+                    if (data != null)
                     {
                         Registry.SetValue(rule.RegPath, rule.ValueName, data, rule.ValueKind);
                     }
@@ -127,7 +127,7 @@ namespace ContextMenuManager.Controls
                         RegistryEx.DeleteValue(rule.RegPath, rule.ValueName);
                     }
                 }
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
 
@@ -262,7 +262,7 @@ namespace ContextMenuManager.Controls
             NudValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             NudValue.ValueChanged += (sender, e) =>
             {
-                if(NudValue.Value == Rule.DefaultValue)
+                if (NudValue.Value == Rule.DefaultValue)
                 {
                     NudValue.ForeColor = MyMainForm.MainColor;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Bold);
@@ -286,16 +286,16 @@ namespace ContextMenuManager.Controls
             get
             {
                 object value = Registry.GetValue(Rule.RegPath, Rule.ValueName, null);
-                if(value == null) return Rule.DefaultValue;
+                if (value == null) return Rule.DefaultValue;
                 int num = Convert.ToInt32(value);
-                if(num > Rule.MaxValue) return Rule.MaxValue;
-                if(num < Rule.MinValue) return Rule.MinValue;
+                if (num > Rule.MaxValue) return Rule.MaxValue;
+                if (num < Rule.MinValue) return Rule.MinValue;
                 else return num;
             }
             set
             {
                 Registry.SetValue(Rule.RegPath, Rule.ValueName, value, Rule.ValueKind);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
@@ -329,11 +329,11 @@ namespace ContextMenuManager.Controls
             LblValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             LblValue.MouseDown += (sender, e) =>
             {
-                using(InputDialog dlg = new InputDialog())
+                using (InputDialog dlg = new InputDialog())
                 {
                     dlg.Title = AppString.Menu.ChangeText;
                     dlg.Text = ItemValue;
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
+                    if (dlg.ShowDialog() != DialogResult.OK) return;
                     ItemValue = LblValue.Text = dlg.Text;
                 }
             };
@@ -350,7 +350,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 Registry.SetValue(Rule.RegPath, Rule.ValueName, value);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
@@ -383,7 +383,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 IniWriter.SetValue(Rule.Section, Rule.KeyName, value ? Rule.TurnOnValue : Rule.TurnOffValue);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
@@ -411,7 +411,7 @@ namespace ContextMenuManager.Controls
             NudValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             NudValue.ValueChanged += (sender, e) =>
             {
-                if(NudValue.Value == Rule.DefaultValue)
+                if (NudValue.Value == Rule.DefaultValue)
                 {
                     NudValue.ForeColor = MyMainForm.MainColor;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Bold);
@@ -442,16 +442,16 @@ namespace ContextMenuManager.Controls
             get
             {
                 string value = IniWriter.GetValue(Rule.Section, Rule.KeyName);
-                if(value.IsNullOrWhiteSpace()) return Rule.DefaultValue;
+                if (value.IsNullOrWhiteSpace()) return Rule.DefaultValue;
                 int num = Convert.ToInt32(value);
-                if(num > Rule.MaxValue) return Rule.MaxValue;
-                if(num < Rule.MinValue) return Rule.MinValue;
+                if (num > Rule.MaxValue) return Rule.MaxValue;
+                if (num < Rule.MinValue) return Rule.MinValue;
                 else return num;
             }
             set
             {
                 IniWriter.SetValue(Rule.Section, Rule.KeyName, value);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
@@ -484,11 +484,11 @@ namespace ContextMenuManager.Controls
             LblValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             LblValue.MouseDown += (sender, e) =>
             {
-                using(InputDialog dlg = new InputDialog())
+                using (InputDialog dlg = new InputDialog())
                 {
                     dlg.Title = AppString.Menu.ChangeText;
                     dlg.Text = ItemValue;
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
+                    if (dlg.ShowDialog() != DialogResult.OK) return;
                     ItemValue = LblValue.Text = dlg.Text;
                 }
             };
@@ -504,7 +504,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 IniWriter.SetValue(Rule.Secation, Rule.KeyName, value);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }

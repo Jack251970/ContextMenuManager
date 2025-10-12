@@ -14,9 +14,9 @@ namespace ContextMenuManager.Controls
 
         public void LoadItems()
         {
-            foreach(string path in Directory.GetFileSystemEntries(SendToPath))
+            foreach (string path in Directory.GetFileSystemEntries(SendToPath))
             {
-                if(Path.GetFileName(path).ToLower() == "desktop.ini") continue;
+                if (Path.GetFileName(path).ToLower() == "desktop.ini") continue;
                 AddItem(new SendToItem(path));
             }
             SortItemByText();
@@ -32,13 +32,13 @@ namespace ContextMenuManager.Controls
             InsertItem(newItem, 0);
             newItem.AddNewItem += () =>
             {
-                using(NewLnkFileDialog dlg = new NewLnkFileDialog())
+                using (NewLnkFileDialog dlg = new NewLnkFileDialog())
                 {
                     dlg.FileFilter = $"{AppString.Dialog.Program}|*.exe;*.bat;*.cmd;*.vbs;*.vbe;*.js;*.jse;*.wsf";
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
+                    if (dlg.ShowDialog() != DialogResult.OK) return;
                     string lnkPath = $@"{SendToPath}\{ObjectPath.RemoveIllegalChars(dlg.ItemText)}.lnk";
                     lnkPath = ObjectPath.GetNewPathWithIndex(lnkPath, ObjectPath.PathType.File);
-                    using(ShellLink shellLink = new ShellLink(lnkPath))
+                    using (ShellLink shellLink = new ShellLink(lnkPath))
                     {
                         shellLink.TargetPath = dlg.ItemFilePath;
                         shellLink.WorkingDirectory = Path.GetDirectoryName(dlg.ItemFilePath);
@@ -69,13 +69,13 @@ namespace ContextMenuManager.Controls
             tsiRestoreDefault.Enabled = Directory.Exists(DefaultSendToPath);
             tsiRestoreDefault.Click += (sender, e) =>
             {
-                if(AppMessageBox.Show(AppString.Message.RestoreDefault, MessageBoxButtons.OKCancel) == DialogResult.OK)
+                if (AppMessageBox.Show(AppString.Message.RestoreDefault, MessageBoxButtons.OKCancel) == DialogResult.OK)
                 {
                     File.SetAttributes(SendToPath, FileAttributes.Normal);
                     Directory.Delete(SendToPath, true);
                     Directory.CreateDirectory(SendToPath);
                     File.SetAttributes(SendToPath, File.GetAttributes(DefaultSendToPath));
-                    foreach(string srcPath in Directory.GetFiles(DefaultSendToPath))
+                    foreach (string srcPath in Directory.GetFiles(DefaultSendToPath))
                     {
                         string dstPath = $@"{SendToPath}\{Path.GetFileName(srcPath)}";
                         File.Copy(srcPath, dstPath);

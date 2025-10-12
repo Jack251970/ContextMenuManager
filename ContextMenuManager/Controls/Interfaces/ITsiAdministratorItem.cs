@@ -18,14 +18,14 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             item.ContextMenuStrip.Opening += (sender, e) =>
             {
-                if(item.ShellLink == null)
+                if (item.ShellLink == null)
                 {
                     Enabled = false;
                     return;
                 }
                 string filePath = item.ShellLink.TargetPath;
                 string extension = Path.GetExtension(filePath)?.ToLower();
-                switch(extension)
+                switch (extension)
                 {
                     case ".exe":
                     case ".bat":
@@ -42,7 +42,7 @@ namespace ContextMenuManager.Controls.Interfaces
             {
                 item.ShellLink.RunAsAdministrator = !Checked;
                 item.ShellLink.Save();
-                if(item is WinXItem) ExplorerRestarter.Show();
+                if (item is WinXItem) ExplorerRestarter.Show();
             };
         }
     }

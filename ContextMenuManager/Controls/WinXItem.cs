@@ -54,15 +54,15 @@ namespace ContextMenuManager.Controls
             get
             {
                 string name = ShellLink.Description?.Trim();
-                if(name.IsNullOrWhiteSpace()) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
-                if(name == string.Empty) name = Path.GetFileNameWithoutExtension(FilePath);
+                if (name.IsNullOrWhiteSpace()) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
+                if (name == string.Empty) name = Path.GetFileNameWithoutExtension(FilePath);
                 return name;
             }
             set
             {
                 ShellLink.Description = value;
                 ShellLink.Save();
-                
+
                 if (WinOsVersion.Current >= WinOsVersion.Win11)
                 {
                     DesktopIni.SetLocalizedFileNames(FilePath, value);
@@ -86,8 +86,8 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                return (WinOsVersion.Current >= WinOsVersion.Win11) ? 
-                    FilePath.Substring(0, WinXList.WinXPath.Length).Equals(WinXList.WinXPath, StringComparison.OrdinalIgnoreCase) : 
+                return (WinOsVersion.Current >= WinOsVersion.Win11) ?
+                    FilePath.Substring(0, WinXList.WinXPath.Length).Equals(WinXList.WinXPath, StringComparison.OrdinalIgnoreCase) :
                     (File.GetAttributes(FilePath) & FileAttributes.Hidden) != FileAttributes.Hidden;
             }
             set
@@ -166,13 +166,13 @@ namespace ContextMenuManager.Controls
                 ShellLink.ICONLOCATION iconLocation = ShellLink.IconLocation;
                 string iconPath = iconLocation.IconPath;
                 int iconIndex = iconLocation.IconIndex;
-                if(string.IsNullOrEmpty(iconPath)) iconPath = FilePath;
+                if (string.IsNullOrEmpty(iconPath)) iconPath = FilePath;
                 Icon icon = ResourceIcon.GetIcon(iconPath, iconIndex);
-                if(icon == null)
+                if (icon == null)
                 {
                     string path = ItemFilePath;
-                    if(File.Exists(path)) icon = ResourceIcon.GetExtensionIcon(path);
-                    else if(Directory.Exists(path)) icon = ResourceIcon.GetFolderIcon(path);
+                    if (File.Exists(path)) icon = ResourceIcon.GetExtensionIcon(path);
+                    else if (Directory.Exists(path)) icon = ResourceIcon.GetFolderIcon(path);
                 }
                 return icon;
             }
@@ -183,7 +183,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 string path = ShellLink.TargetPath;
-                if(!File.Exists(path) && !Directory.Exists(path)) path = FilePath;
+                if (!File.Exists(path) && !Directory.Exists(path)) path = FilePath;
                 return path;
             }
         }
@@ -240,7 +240,7 @@ namespace ContextMenuManager.Controls
             BtnMoveUp.MouseDown += (sender, e) => MoveItem(true);
             TsiChangeCommand.Click += (sender, e) =>
             {
-                if(TsiChangeCommand.ChangeCommand(ShellLink))
+                if (TsiChangeCommand.ChangeCommand(ShellLink))
                 {
                     Image = ItemImage;
                     WinXHasher.HashLnk(FilePath);
@@ -274,8 +274,8 @@ namespace ContextMenuManager.Controls
                 dlg.Title = AppString.Dialog.SelectGroup;
                 dlg.Items = WinXList.GetGroupNames();
                 dlg.Selected = FoldGroupItem.Text;
-                if(dlg.ShowDialog() != DialogResult.OK) return;
-                if(dlg.Selected == FoldGroupItem.Text) return;
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.Selected == FoldGroupItem.Text) return;
 
                 ChangeFileGroup(dlg.Selected, true, out string lnkPath);
                 if (WinOsVersion.Current >= WinOsVersion.Win11)
@@ -287,9 +287,9 @@ namespace ContextMenuManager.Controls
 
                 WinXList list = (WinXList)Parent;
                 list.Controls.Remove(this);
-                for(int i = 0; i < list.Controls.Count; i++)
+                for (int i = 0; i < list.Controls.Count; i++)
                 {
-                    if(list.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
+                    if (list.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
                     {
                         list.Controls.Add(this);
                         list.SetItemIndex(this, i + 1);
@@ -308,10 +308,10 @@ namespace ContextMenuManager.Controls
         {
             WinXList list = (WinXList)Parent;
             int index = list.Controls.GetChildIndex(this);
-            if(index == list.Controls.Count - 1) return;
+            if (index == list.Controls.Count - 1) return;
             index += isUp ? -1 : 1;
             Control ctr = list.Controls[index];
-            if(ctr is WinXGroupItem) return;
+            if (ctr is WinXGroupItem) return;
             WinXItem item = (WinXItem)ctr;
 
             MoveFileItem(item, true, out string path1, out string path2);
