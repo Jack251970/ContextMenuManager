@@ -114,7 +114,9 @@ namespace BluePointLilac.Methods
             if(!Directory.Exists(dirPath)) return;
             using(Process process = new Process())
             {
-                process.StartInfo.FileName = dirPath;
+                process.StartInfo.FileName = "explorer.exe";
+                process.StartInfo.Arguments = $"\"{dirPath}\"";
+                process.StartInfo.UseShellExecute = false;
                 process.Start();
             }
         }
