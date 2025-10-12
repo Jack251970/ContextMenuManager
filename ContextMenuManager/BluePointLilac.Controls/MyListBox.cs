@@ -34,7 +34,7 @@ namespace BluePointLilac.Controls
                     {
                         foreach (Control item in list.Controls)
                         {
-                            if (item is MyListItem listItem)
+                            if (item is MyListItem listItem && !listItem.IsDisposed)
                             {
                                 listItem.Visible = true;
                                 listItem.HighlightText = null;
@@ -52,7 +52,7 @@ namespace BluePointLilac.Controls
                 {
                     foreach (Control item in list.Controls)
                     {
-                        if (item is MyListItem listItem)
+                        if (item is MyListItem listItem && !listItem.IsDisposed)
                         {
                             bool matches = listItem.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                             listItem.Visible = matches;
@@ -79,7 +79,7 @@ namespace BluePointLilac.Controls
                 {
                     foreach (Control item in list.Controls)
                     {
-                        if (item is MyListItem listItem)
+                        if (item is MyListItem listItem && !listItem.IsDisposed)
                         {
                             yield return listItem;
                         }
@@ -93,7 +93,10 @@ namespace BluePointLilac.Controls
         {
             foreach (var item in GetAllItems())
             {
-                item.HighlightText = null;
+                if (!item.IsDisposed)
+                {
+                    item.HighlightText = null;
+                }
             }
         }
     }
@@ -120,21 +123,71 @@ namespace BluePointLilac.Controls
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
         }
 
-        // 移除悬停项相关代码
-        // private MyListItem hoveredItem;
-        // public MyListItem HoveredItem { ... }
-        // public event EventHandler HoveredItemChanged;
+        // 恢复悬停项相关代码
+        private MyListItem hoveredItem;
+        public MyListItem HoveredItem
+        {
+            get => hoveredItem;
+            set
+            {
+                if (hoveredItem == value) return;
+
+                // 移除旧悬停效果 - 检查是否已释放
+                if (hoveredItem != null && !hoveredItem.IsDisposed)
+                {
+                    hoveredItem.ForeColor = MyMainForm.FormFore;
+                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
+                }
+
+                hoveredItem = value;
+
+                // 应用新悬停效果 - 检查是否已释放
+                if (hoveredItem != null && !hoveredItem.IsDisposed)
+                {
+                    hoveredItem.ForeColor = MyMainForm.MainColor;
+                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Bold);
+                    hoveredItem.Focus();
+                }
+
+                HoveredItemChanged?.Invoke(this, null);
+            }
+        }
+
+        public event EventHandler HoveredItemChanged;
 
         public void AddItem(MyListItem item)
         {
+            if (item == null || item.IsDisposed) return;
+
             SuspendLayout();
             item.Parent = this;
 
-            // 移除悬停事件
-            // item.MouseEnter += (sender, e) => HoveredItem = item;
+            // 恢复悬停事件 - 添加释放检查
+            item.MouseEnter += (sender, e) =>
+            {
+                if (!item.IsDisposed)
+                    HoveredItem = item;
+            };
 
-            MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
-            void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
+            // 添加鼠标离开事件，清除悬停
+            item.MouseLeave += (sender, e) =>
+            {
+                if (HoveredItem == item && !item.IsDisposed)
+                    HoveredItem = null;
+            };
+
+            MouseWheel += (sender, e) =>
+            {
+                if (!item.IsDisposed)
+                    item.ContextMenuStrip?.Close();
+            };
+
+            void ResizeItem()
+            {
+                if (!item.IsDisposed)
+                    item.Width = Owner.Width - item.Margin.Horizontal;
+            }
+
             Owner.Resize += (sender, e) => ResizeItem();
             ResizeItem();
             ResumeLayout();
@@ -142,27 +195,39 @@ namespace BluePointLilac.Controls
 
         public void AddItems(MyListItem[] items)
         {
-            Array.ForEach(items, item => AddItem(item));
+            if (items == null) return;
+            Array.ForEach(items, item =>
+            {
+                if (!item.IsDisposed)
+                    AddItem(item);
+            });
         }
 
         public void AddItems(List<MyListItem> items)
         {
-            items.ForEach(item => AddItem(item));
+            if (items == null) return;
+            items.ForEach(item =>
+            {
+                if (!item.IsDisposed)
+                    AddItem(item);
+            });
         }
 
         public void SetItemIndex(MyListItem item, int newIndex)
         {
+            if (item == null || item.IsDisposed) return;
             Controls.SetChildIndex(item, newIndex);
         }
 
         public int GetItemIndex(MyListItem item)
         {
+            if (item == null || item.IsDisposed) return -1;
             return Controls.GetChildIndex(item);
         }
 
         public void InsertItem(MyListItem item, int index)
         {
-            if (item == null) return;
+            if (item == null || item.IsDisposed) return;
             AddItem(item);
             SetItemIndex(item, index);
         }
@@ -170,12 +235,17 @@ namespace BluePointLilac.Controls
         public virtual void ClearItems()
         {
             if (Controls.Count == 0) return;
+
+            // 清除悬停项引用
+            HoveredItem = null;
+
             SuspendLayout();
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
                 Control ctr = Controls[i];
                 Controls.Remove(ctr);
-                ctr.Dispose();
+                if (!ctr.IsDisposed)
+                    ctr.Dispose();
             }
             ResumeLayout();
         }
@@ -183,16 +253,25 @@ namespace BluePointLilac.Controls
         public void SortItemByText()
         {
             List<MyListItem> items = new List<MyListItem>();
-            foreach (MyListItem item in Controls) items.Add(item);
+            foreach (MyListItem item in Controls)
+            {
+                if (!item.IsDisposed)
+                    items.Add(item);
+            }
             Controls.Clear();
             items.Sort(new TextComparer());
-            items.ForEach(item => AddItem(item));
+            items.ForEach(item =>
+            {
+                if (!item.IsDisposed)
+                    AddItem(item);
+            });
         }
 
         public class TextComparer : IComparer<MyListItem>
         {
             public int Compare(MyListItem x, MyListItem y)
             {
+                if (x == null || y == null) return 0;
                 if (x.Equals(y)) return 0;
                 string[] strs = { x.Text, y.Text };
                 Array.Sort(strs);
@@ -209,7 +288,7 @@ namespace BluePointLilac.Controls
                 // 清空搜索，显示所有项
                 foreach (Control control in Controls)
                 {
-                    if (control is MyListItem item)
+                    if (control is MyListItem item && !item.IsDisposed)
                     {
                         item.Visible = true;
                         item.HighlightText = null;
@@ -221,7 +300,7 @@ namespace BluePointLilac.Controls
             // 搜索所有列表项
             foreach (Control control in Controls)
             {
-                if (control is MyListItem item)
+                if (control is MyListItem item && !item.IsDisposed)
                 {
                     bool matches = item.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                     item.Visible = matches;
@@ -242,7 +321,7 @@ namespace BluePointLilac.Controls
         {
             foreach (Control control in Controls)
             {
-                if (control is MyListItem item)
+                if (control is MyListItem item && !item.IsDisposed)
                 {
                     yield return item;
                 }
@@ -275,7 +354,8 @@ namespace BluePointLilac.Controls
                 Multiline = false,
                 DetectUrls = false,
                 Name = "Text",
-                TabStop = false // 禁用Tab键焦点
+                TabStop = false, // 禁用Tab键焦点
+                HideSelection = true // 隐藏选择
             };
 
             // 添加控件到面板
@@ -285,46 +365,70 @@ namespace BluePointLilac.Controls
             picImage.Left = 20.DpiZoom();
             rtbText.Left = 60.DpiZoom(); // 默认有图片的位置
 
-            // 设置RichTextBox的尺寸和位置以实现垂直居中
+            // 设置RichTextBox的位置和大小
             UpdateRichTextBoxPosition();
 
             Resize += (Sender, e) =>
             {
-                pnlScrollbar.Height = ClientSize.Height;
-                UpdateRichTextBoxPosition();
+                if (!IsDisposed)
+                {
+                    pnlScrollbar.Height = ClientSize.Height;
+                    UpdateRichTextBoxPosition();
+                }
             };
 
-            // 禁用RichTextBox的鼠标和键盘事件，防止文本选中
+            // 禁用RichTextBox的鼠标和键盘事件
             rtbText.MouseDown += (sender, e) =>
             {
-                // 将事件传递给父控件
-                OnMouseDown(e);
+                if (!IsDisposed)
+                {
+                    OnMouseDown(e);
+                    // 防止RichTextBox获得焦点
+                    ((RichTextBox)sender).Parent.Focus();
+                }
             };
 
-            rtbText.MouseMove += (sender, e) =>
-            {
-                OnMouseMove(e);
-            };
-
-            rtbText.MouseUp += (sender, e) =>
-            {
-                OnMouseUp(e);
-            };
+            rtbText.MouseMove += (sender, e) => { if (!IsDisposed) OnMouseMove(e); };
+            rtbText.MouseUp += (sender, e) => { if (!IsDisposed) OnMouseUp(e); };
+            rtbText.MouseClick += (sender, e) => { if (!IsDisposed) OnMouseClick(e); };
+            rtbText.MouseDoubleClick += (sender, e) => { if (!IsDisposed) OnDoubleClick(e); };
 
             rtbText.KeyDown += (sender, e) =>
             {
-                // 阻止键盘事件
-                e.Handled = true;
+                if (!IsDisposed)
+                {
+                    OnKeyDown(e);
+                    e.Handled = true; // 阻止键盘事件
+                }
             };
 
             rtbText.KeyPress += (sender, e) =>
             {
-                // 阻止键盘事件
-                e.Handled = true;
+                if (!IsDisposed)
+                {
+                    OnKeyPress(e);
+                    e.Handled = true; // 阻止键盘事件
+                }
             };
 
-            flpControls.MouseClick += (sender, e) => OnMouseClick(e);
-            flpControls.MouseDown += (sender, e) => OnMouseDown(e);
+            rtbText.KeyUp += (sender, e) =>
+            {
+                if (!IsDisposed)
+                {
+                    OnKeyUp(e);
+                    e.Handled = true; // 阻止键盘事件
+                }
+            };
+
+            flpControls.MouseClick += (sender, e) => { if (!IsDisposed) OnMouseClick(e); };
+            flpControls.MouseDown += (sender, e) => { if (!IsDisposed) OnMouseDown(e); };
+
+            // 为子控件添加悬停事件
+            foreach (Control control in Controls)
+            {
+                control.MouseEnter += (sender, e) => { if (!IsDisposed) OnMouseEnter(e); };
+                control.MouseLeave += (sender, e) => { if (!IsDisposed) OnMouseLeave(e); };
+            }
 
             lblSeparator.SetEnabled(false);
 
@@ -341,7 +445,7 @@ namespace BluePointLilac.Controls
         // 更新RichTextBox的位置以实现垂直居中
         private void UpdateRichTextBoxPosition()
         {
-            if (rtbText == null) return;
+            if (rtbText == null || rtbText.IsDisposed || IsDisposed) return;
 
             // 计算文本高度
             int textHeight = TextRenderer.MeasureText("A", rtbText.Font).Height;
@@ -351,22 +455,27 @@ namespace BluePointLilac.Controls
 
             // 设置RichTextBox的位置和大小
             rtbText.Top = top;
-            rtbText.Height = textHeight;
+            rtbText.Height = textHeight + 2; // 添加一点额外高度确保文本完全显示
             rtbText.Width = Width - rtbText.Left - flpControls.Width - 10.DpiZoom();
         }
 
         public Image Image
         {
-            get => picImage.Image;
-            set => picImage.Image = value;
+            get => picImage?.Image;
+            set
+            {
+                if (picImage != null && !picImage.IsDisposed && !IsDisposed)
+                    picImage.Image = value;
+            }
         }
+
         public new string Text
         {
             get => displayText ?? string.Empty;
             set
             {
                 displayText = value;
-                if (rtbText != null)
+                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
                 {
                     rtbText.Text = value;
                     UpdateHighlight();
@@ -374,12 +483,13 @@ namespace BluePointLilac.Controls
                 }
             }
         }
+
         public new Font Font
         {
             get => rtbText?.Font ?? SystemFonts.IconTitleFont;
             set
             {
-                if (rtbText != null)
+                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
                 {
                     rtbText.Font = value;
                     UpdateHighlight();
@@ -387,12 +497,13 @@ namespace BluePointLilac.Controls
                 }
             }
         }
+
         public new Color ForeColor
         {
             get => rtbText?.ForeColor ?? MyMainForm.FormFore;
             set
             {
-                if (rtbText != null)
+                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
                 {
                     rtbText.ForeColor = value;
                     UpdateHighlight();
@@ -406,7 +517,7 @@ namespace BluePointLilac.Controls
             get => highlightText;
             set
             {
-                if (highlightText != value)
+                if (highlightText != value && !IsDisposed)
                 {
                     highlightText = value;
                     UpdateHighlight();
@@ -419,6 +530,8 @@ namespace BluePointLilac.Controls
         {
             get
             {
+                if (IsDisposed) return Color.Yellow;
+
                 // 根据背景色亮度自动选择合适的高亮颜色
                 bool isDarkMode = IsDarkColor(BackColor);
                 return isDarkMode ?
@@ -442,9 +555,9 @@ namespace BluePointLilac.Controls
             set
             {
                 hasImage = value;
-                if (picImage != null)
+                if (picImage != null && !picImage.IsDisposed && !IsDisposed)
                     picImage.Visible = value;
-                if (rtbText != null)
+                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
                 {
                     rtbText.Left = (value ? 60 : 20).DpiZoom();
                     UpdateRichTextBoxPosition(); // 位置改变时更新位置
@@ -455,38 +568,61 @@ namespace BluePointLilac.Controls
         // 更新高亮显示
         private void UpdateHighlight()
         {
-            if (rtbText == null || string.IsNullOrEmpty(Text)) return;
+            if (rtbText == null || rtbText.IsDisposed || IsDisposed || string.IsNullOrEmpty(Text)) return;
 
-            // 保存当前选择位置
-            int originalSelectionStart = rtbText.SelectionStart;
-            int originalSelectionLength = rtbText.SelectionLength;
-
-            // 清除所有格式
-            rtbText.SelectAll();
-            rtbText.SelectionBackColor = rtbText.BackColor;
-            rtbText.DeselectAll();
-
-            // 如果有高亮文本，应用高亮
-            if (!string.IsNullOrEmpty(highlightText))
+            try
             {
-                var text = Text;
-                var searchText = highlightText;
-                var index = text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase);
+                // 保存当前选择位置
+                int originalSelectionStart = rtbText.SelectionStart;
+                int originalSelectionLength = rtbText.SelectionLength;
 
-                if (index >= 0)
+                // 清除所有格式
+                rtbText.SelectAll();
+                rtbText.SelectionBackColor = rtbText.BackColor;
+                rtbText.DeselectAll();
+
+                // 如果有高亮文本，应用高亮
+                if (!string.IsNullOrEmpty(highlightText))
                 {
-                    rtbText.Select(index, searchText.Length);
-                    rtbText.SelectionBackColor = HighlightColor;
-                    rtbText.DeselectAll();
+                    var text = Text;
+                    var searchText = highlightText;
+                    var index = text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase);
+
+                    if (index >= 0)
+                    {
+                        rtbText.Select(index, searchText.Length);
+                        rtbText.SelectionBackColor = HighlightColor;
+                        rtbText.DeselectAll();
+                    }
                 }
+
+                // 恢复原始选择位置
+                rtbText.Select(originalSelectionStart, originalSelectionLength);
+
+                // 确保没有文本被选中
+                rtbText.SelectionStart = 0;
+                rtbText.SelectionLength = 0;
             }
+            catch (ObjectDisposedException)
+            {
+                // 忽略已释放对象的异常
+                return;
+            }
+        }
 
-            // 恢复原始选择位置
-            rtbText.Select(originalSelectionStart, originalSelectionLength);
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            if (IsDisposed) return;
 
-            // 取消文本选中状态
-            rtbText.SelectionStart = 0;
-            rtbText.SelectionLength = 0;
+            base.OnMouseDown(e);
+            OnMouseEnter(e); // 鼠标按下时也触发悬停效果
+
+            // 确保RichTextBox没有焦点
+            if (rtbText != null && !rtbText.IsDisposed && rtbText.Focused)
+            {
+                // 将焦点转移到父控件
+                this.Focus();
+            }
         }
 
         private readonly PictureBox picImage = new PictureBox
@@ -516,34 +652,13 @@ namespace BluePointLilac.Controls
             Enabled = false
         };//预留滚动条宽度
 
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            base.OnMouseDown(e);
-            // 移除悬停效果
-            // OnMouseEnter(null);
-
-            // 确保RichTextBox没有焦点
-            if (rtbText != null && rtbText.Focused)
-            {
-                // 将焦点转移到父控件
-                this.Focus();
-            }
-        }
-
-        // 移除悬停效果
-        // protected override void OnMouseEnter(EventArgs e)
-        // {
-        //     base.OnMouseEnter(e);
-        //     // 移除悬停时的颜色和字体变化
-        // }
-
         private void CenterControl(Control ctr)
         {
-            if (ctr == null) return;
+            if (ctr == null || IsDisposed) return;
 
             void reSize()
             {
-                if (ctr.Parent == null || ctr.IsDisposed) return;
+                if (ctr.Parent == null || ctr.IsDisposed || IsDisposed) return;
                 int top = (ClientSize.Height - ctr.Height) / 2;
                 ctr.Top = top;
                 if (ctr.Parent == flpControls)
@@ -563,13 +678,15 @@ namespace BluePointLilac.Controls
 
         public void AddCtr(Control ctr, int space)
         {
-            if (ctr == null || flpControls == null) return;
+            if (ctr == null || flpControls == null || IsDisposed) return;
 
             SuspendLayout();
             ctr.Parent = flpControls;
             ctr.Margin = new Padding(0, 0, space, 0);
 
-            ctr.MouseDown += (sender, e) => OnMouseDown(e);
+            ctr.MouseDown += (sender, e) => { if (!IsDisposed) OnMouseDown(e); };
+            ctr.MouseEnter += (sender, e) => { if (!IsDisposed) OnMouseEnter(e); };
+            ctr.MouseLeave += (sender, e) => { if (!IsDisposed) OnMouseLeave(e); };
             CenterControl(ctr);
             ResumeLayout();
         }
@@ -577,12 +694,16 @@ namespace BluePointLilac.Controls
         public void AddCtrs(Control[] ctrs)
         {
             if (ctrs == null) return;
-            Array.ForEach(ctrs, ctr => AddCtr(ctr));
+            Array.ForEach(ctrs, ctr =>
+            {
+                if (!ctr.IsDisposed)
+                    AddCtr(ctr);
+            });
         }
 
         public void RemoveCtrAt(int index)
         {
-            if (flpControls?.Controls != null && flpControls.Controls.Count > index)
+            if (flpControls?.Controls != null && flpControls.Controls.Count > index && !IsDisposed)
                 flpControls.Controls.RemoveAt(index + 1);
         }
 
