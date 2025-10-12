@@ -293,15 +293,13 @@ namespace BluePointLilac.Controls
             private List<string> GetSortedTvSelectedItems()
             {
                 // 直接从 tvSelectedItems 获取已选项，而不是重新遍历树节点
-                List<string> sortedTvSelectedItems = new List<string>();
-
-                // 按照原始顺序排序
-                foreach (var item in BackupHelper.HomeBackupScenesText.Where(tvSelectedItems.Contains))
-                    sortedTvSelectedItems.Add(item);
-                foreach (var item in BackupHelper.TypeBackupScenesText.Where(tvSelectedItems.Contains))
-                    sortedTvSelectedItems.Add(item);
-                foreach (var item in BackupHelper.RuleBackupScenesText.Where(tvSelectedItems.Contains))
-                    sortedTvSelectedItems.Add(item);
+                List<string> sortedTvSelectedItems =
+                [
+                    // 按照原始顺序排序
+                    .. BackupHelper.HomeBackupScenesText.Where(tvSelectedItems.Contains),
+                    .. BackupHelper.TypeBackupScenesText.Where(tvSelectedItems.Contains),
+                    .. BackupHelper.RuleBackupScenesText.Where(tvSelectedItems.Contains),
+                ];
 
                 return sortedTvSelectedItems;
             }
