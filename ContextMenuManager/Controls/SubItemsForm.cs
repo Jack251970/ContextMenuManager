@@ -29,12 +29,12 @@ namespace ContextMenuManager.Controls
             myList.Owner = listBox;
             myList.HoveredItemChanged += (sender, e) =>
             {
-                if(!AppConfig.ShowFilePath) return;
+                if (!AppConfig.ShowFilePath) return;
                 MyListItem item = myList.HoveredItem;
-                foreach(string prop in new[] { "ItemFilePath", "RegPath", "GroupPath" })
+                foreach (string prop in new[] { "ItemFilePath", "RegPath", "GroupPath" })
                 {
                     string path = item.GetType().GetProperty(prop)?.GetValue(item, null)?.ToString();
-                    if(!path.IsNullOrWhiteSpace()) { statusBar.Text = path; return; }
+                    if (!path.IsNullOrWhiteSpace()) { statusBar.Text = path; return; }
                 }
                 statusBar.Text = item.Text;
             };
