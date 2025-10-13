@@ -132,20 +132,22 @@ namespace BluePointLilac.Controls
             readonly Label cmbInfo = new Label { AutoSize = true };
             readonly RComboBox cmbItems = new RComboBox
             {
-                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
+                AutoCompleteMode = AutoCompleteMode.None,
                 AutoCompleteSource = AutoCompleteSource.ListItems,
                 DropDownHeight = 300.DpiZoom(),
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 ImeMode = ImeMode.Disable
             };
 
-            readonly Button btnOK = new Button
+            // 使用 MyButton 替换原有的 Button
+            readonly MyButton btnOK = new MyButton
             {
                 DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
-            readonly Button btnCancel = new Button
+
+            readonly MyButton btnCancel = new MyButton
             {
                 DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,
@@ -173,6 +175,14 @@ namespace BluePointLilac.Controls
                 checkAll.Left = treeView.Right - checkAll.Width;
                 checkAll.Click += CheckAll_CheckBoxMouseClick;
                 cmbItems.AutosizeDropDownWidth();
+            }
+
+            protected override void OnLoad(EventArgs e)
+            {
+                base.OnLoad(e);
+                // 确保按钮尺寸适应文本
+                btnOK.PerformLayout();
+                btnCancel.PerformLayout();
             }
 
             private void ShowTreeView()

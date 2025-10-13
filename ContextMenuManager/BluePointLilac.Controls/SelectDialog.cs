@@ -76,7 +76,24 @@ namespace BluePointLilac.Controls
             public bool CanEdit
             {
                 get => cmbItems.DropDownStyle == ComboBoxStyle.DropDown;
-                set => cmbItems.DropDownStyle = value ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
+                set
+                {
+                    cmbItems.DropDownStyle = value ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
+
+                    // 根据编辑模式设置自动完成
+                    if (value)
+                    {
+                        // 可编辑模式下启用自动完成
+                        cmbItems.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                        cmbItems.AutoCompleteSource = AutoCompleteSource.ListItems;
+                    }
+                    else
+                    {
+                        // 只读模式下禁用自动完成
+                        cmbItems.AutoCompleteMode = AutoCompleteMode.None;
+                        cmbItems.AutoCompleteSource = AutoCompleteSource.None;
+                    }
+                }
             }
 
             public int SelectedIndex
@@ -85,22 +102,24 @@ namespace BluePointLilac.Controls
                 set => cmbItems.SelectedIndex = value;
             }
 
-            readonly Button btnOK = new Button
+            // 使用 MyButton 替换原有的 Button
+            readonly MyButton btnOK = new MyButton
             {
                 DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
-            readonly Button btnCancel = new Button
+
+            readonly MyButton btnCancel = new MyButton
             {
                 DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,
                 AutoSize = true
             };
+
             readonly RComboBox cmbItems = new RComboBox
             {
-                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-                AutoCompleteSource = AutoCompleteSource.ListItems,
+                // 移除初始化时的自动完成设置，改为在 CanEdit 属性中动态设置
                 DropDownHeight = 294.DpiZoom(),
                 ImeMode = ImeMode.Disable
             };
@@ -116,6 +135,17 @@ namespace BluePointLilac.Controls
                 btnCancel.Left = btnOK.Right + a;
                 ClientSize = new Size(btnCancel.Right + a, btnCancel.Bottom + a);
                 cmbItems.AutosizeDropDownWidth();
+
+                // 默认设置为不可编辑模式
+                CanEdit = false;
+            }
+
+            protected override void OnLoad(EventArgs e)
+            {
+                base.OnLoad(e);
+                // 确保按钮尺寸适应文本
+                btnOK.PerformLayout();
+                btnCancel.PerformLayout();
             }
         }
     }
