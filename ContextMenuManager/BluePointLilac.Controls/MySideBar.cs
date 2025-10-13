@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace BluePointLilac.Controls
 {
@@ -11,6 +12,14 @@ namespace BluePointLilac.Controls
         private readonly Panel PnlSelected = new Panel { Enabled = false, BackColor = Color.Transparent };
         private readonly Panel PnlHovered = new Panel { Enabled = false, BackColor = Color.Transparent };
         private readonly Label LblSeparator = new Label { Dock = DockStyle.Right, Width = 1 };
+
+        // 动画相关变量
+        private readonly Timer animationTimer = new Timer { Interval = 16 }; // ~60 FPS
+        private int animationTargetIndex = -1;
+        private int animationCurrentIndex = -1;
+        private float animationProgress = 0f;
+        private const float ANIMATION_SPEED = 0.25f;
+        private bool isAnimating = false;
 
         private string[] itemNames;
         private int itemHeight = 36;
@@ -23,6 +32,16 @@ namespace BluePointLilac.Controls
         public Color BackgroundGradientColor1 { get; set; } = Color.FromArgb(240, 240, 240);
         public Color BackgroundGradientColor2 { get; set; } = Color.FromArgb(220, 220, 220);
         public Color BackgroundGradientColor3 { get; set; } = Color.FromArgb(200, 200, 200);
+
+        [Browsable(false)]
+        public bool EnableAnimation { get; set; } = true;
+
+        [Browsable(false)]
+        public int AnimationDuration
+        {
+            get => (int)(1000f / ANIMATION_SPEED / 16f);
+            set => animationTimer.Interval = Math.Max(1, 1000 / Math.Max(1, value));
+        }
 
         public string[] ItemNames
         {
@@ -66,10 +85,17 @@ namespace BluePointLilac.Controls
             set
             {
                 if (selectIndex == value) return;
-                selectIndex = value;
-                RefreshItem(PnlSelected, value);
-                HoveredIndex = value;
-                SelectIndexChanged?.Invoke(this, EventArgs.Empty);
+
+                if (EnableAnimation && value >= 0 && value < ItemNames?.Length && selectIndex >= 0 && !isAnimating)
+                {
+                    // 启动动画
+                    StartAnimation(selectIndex, value);
+                }
+                else
+                {
+                    // 无动画直接设置
+                    SetSelectedIndexDirectly(value);
+                }
             }
         }
 
@@ -99,12 +125,190 @@ namespace BluePointLilac.Controls
             SizeChanged += (sender, e) => UpdateBackground();
             PnlHovered.Paint += PaintHoveredItem;
             PnlSelected.Paint += PaintSelectedItem;
+
+            // 设置动画计时器
+            animationTimer.Tick += AnimationTimer_Tick;
+
             SelectedIndex = -1;
+        }
+
+        private void StartAnimation(int fromIndex, int toIndex)
+        {
+            animationCurrentIndex = fromIndex;
+            animationTargetIndex = toIndex;
+            animationProgress = 0f;
+            isAnimating = true;
+
+            // 预计算动画参数
+            PrecalculateAnimationParameters();
+
+            if (!animationTimer.Enabled)
+                animationTimer.Start();
+        }
+
+        private void PrecalculateAnimationParameters()
+        {
+            // 预先计算动画路径，优化性能
+            // 这里可以添加任何预计算逻辑
+        }
+
+        private void AnimationTimer_Tick(object sender, EventArgs e)
+        {
+            animationProgress += ANIMATION_SPEED;
+
+            if (animationProgress >= 1f)
+            {
+                // 动画完成
+                CompleteAnimation();
+            }
+            else
+            {
+                // 更新动画状态
+                UpdateAnimationFrame();
+            }
+        }
+
+        private void UpdateAnimationFrame()
+        {
+            if (animationCurrentIndex < 0 || animationTargetIndex < 0) return;
+
+            // 使用多种缓动函数选项
+            float easedProgress = GetEasedProgress(animationProgress);
+
+            // 计算当前动画位置
+            int startTop = GetItemTop(animationCurrentIndex);
+            int targetTop = GetItemTop(animationTargetIndex);
+            int currentTop = (int)(startTop + (targetTop - startTop) * easedProgress);
+
+            // 确保位置在有效范围内
+            currentTop = Math.Max(0, Math.Min(currentTop, Height - ItemHeight));
+
+            UpdatePanelPositions(currentTop);
+
+            // 强制重绘以获得更流畅的动画
+            Invalidate();
+            Update();
+        }
+
+        private void UpdatePanelPositions(int top)
+        {
+            PnlSelected.Top = top;
+            PnlSelected.Height = ItemHeight;
+
+            // 添加弹性效果
+            if (animationProgress > 0.8f)
+            {
+                // 在动画结束时添加轻微的弹性效果
+                float overshoot = (animationProgress - 0.8f) * 5f;
+                int overshootAmount = (int)(Math.Sin(overshoot * Math.PI) * 2);
+                PnlSelected.Top = top + overshootAmount;
+            }
+
+            // 更新悬停面板位置与选中面板同步（如果用户没有悬停在其他项目上）
+            if (hoverIndex == selectIndex)
+            {
+                PnlHovered.Top = PnlSelected.Top;
+                PnlHovered.Height = ItemHeight;
+            }
+        }
+
+        private void CompleteAnimation()
+        {
+            animationProgress = 1f;
+            isAnimating = false;
+            animationTimer.Stop();
+
+            SetSelectedIndexDirectly(animationTargetIndex);
+
+            // 最终位置调整，确保准确对齐
+            PnlSelected.Top = GetItemTop(selectIndex);
+            if (hoverIndex == selectIndex)
+            {
+                PnlHovered.Top = PnlSelected.Top;
+            }
+
+            // 最终重绘确保界面正确
+            Refresh();
+        }
+
+        private void SetSelectedIndexDirectly(int value)
+        {
+            selectIndex = value;
+            RefreshItem(PnlSelected, value);
+            HoveredIndex = value;
+            SelectIndexChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private int GetItemTop(int index)
+        {
+            return TopSpace + index * ItemHeight;
+        }
+
+        private float GetEasedProgress(float progress)
+        {
+            // 提供多种缓动函数选择
+            return EaseOutCubic(progress); // 你可以尝试不同的缓动函数
+        }
+
+        // 多种缓动函数选项
+        private float EaseInOutCubic(float t)
+        {
+            return t < 0.5f ? 4 * t * t * t : 1 - (float)Math.Pow(-2 * t + 2, 3) / 2;
+        }
+
+        private float EaseOutCubic(float t)
+        {
+            return 1 - (float)Math.Pow(1 - t, 3);
+        }
+
+        private float EaseOutElastic(float t)
+        {
+            float c4 = (2 * (float)Math.PI) / 3;
+            return t == 0 ? 0 :
+                   t == 1 ? 1 :
+                   (float)Math.Pow(2, -10 * t) * (float)Math.Sin((t * 10 - 0.75) * c4) + 1;
+        }
+
+        private float EaseOutBack(float t)
+        {
+            float c1 = 1.70158f;
+            float c3 = c1 + 1;
+            return 1 + c3 * (float)Math.Pow(t - 1, 3) + c1 * (float)Math.Pow(t - 1, 2);
         }
 
         public void BeginUpdate() => SuspendLayout();
         public void EndUpdate() { ResumeLayout(true); UpdateBackground(); }
         public int GetItemWidth(string str) => TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
+
+        // 新增方法：立即停止动画
+        public void StopAnimation()
+        {
+            if (isAnimating)
+            {
+                animationTimer.Stop();
+                isAnimating = false;
+                SetSelectedIndexDirectly(animationTargetIndex);
+            }
+        }
+
+        // 新增方法：平滑滚动到指定索引
+        public void SmoothScrollTo(int index)
+        {
+            if (index >= 0 && index < ItemNames?.Length)
+            {
+                SelectedIndex = index;
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                animationTimer?.Stop();
+                animationTimer?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
 
         private void InitializeColors()
         {
@@ -277,7 +481,15 @@ namespace BluePointLilac.Controls
             Cursor = isValid ? Cursors.Hand : Cursors.Default;
             if (isValid)
             {
-                if (panel == PnlSelected) SelectedIndex = index;
+                if (panel == PnlSelected)
+                {
+                    // 如果点击时正在动画，先停止动画
+                    if (isAnimating)
+                    {
+                        StopAnimation();
+                    }
+                    SelectedIndex = index;
+                }
                 else HoveredIndex = index;
             }
             else HoveredIndex = SelectedIndex;
