@@ -35,7 +35,7 @@ namespace BluePointLilac.Controls
         private float targetArrowScale = 1.0f;
 
         private bool isPainting = false;
-        private int minWidth = 120; // 最小宽度
+        private int minWidth = 80; // 最小宽度
         private int maxWidth = 400; // 最大宽度
         private int padding = 50;   // 文本两侧的额外空间（箭头+边距）
 
@@ -485,4 +485,5 @@ namespace BluePointLilac.Controls
             base.Dispose(disposing);
         }
     }
+
 }
