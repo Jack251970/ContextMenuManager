@@ -35,6 +35,9 @@ namespace BluePointLilac.Controls
         private float targetArrowScale = 1.0f;
 
         private bool isPainting = false;
+        private int minWidth = 120; // 最小宽度
+        private int maxWidth = 400; // 最大宽度
+        private int padding = 50;   // 文本两侧的额外空间（箭头+边距）
 
         public RComboBox()
         {
@@ -43,7 +46,7 @@ namespace BluePointLilac.Controls
 
             DrawMode = DrawMode.OwnerDrawFixed;
             DropDownStyle = ComboBoxStyle.DropDownList;
-            IntegralHeight = false; // 防止下拉菜单高度问题
+            IntegralHeight = false;
 
             BackColor = MyMainForm.ButtonMain;
             ForeColor = MyMainForm.FormFore;
@@ -58,8 +61,14 @@ namespace BluePointLilac.Controls
             GotFocus += (s, e) => { isFocused = true; UpdateAnimationTargets(); Invalidate(); };
             LostFocus += (s, e) => { isFocused = false; UpdateAnimationTargets(); Invalidate(); };
 
-            // 修复下拉菜单显示问题
+            // 文本变化时调整宽度
+            SelectedIndexChanged += (s, e) => AdjustWidth();
+            TextChanged += (s, e) => AdjustWidth();
+
             DropDown += OnDropDown;
+
+            // 在句柄创建后调整宽度
+            HandleCreated += (s, e) => AdjustWidth();
         }
 
         [DefaultValue(typeof(Color), "210, 210, 215")]
@@ -88,6 +97,40 @@ namespace BluePointLilac.Controls
         {
             get => borderRadius;
             set { borderRadius = value; Invalidate(); }
+        }
+
+        [DefaultValue(120)]
+        public int MinWidth
+        {
+            get => minWidth;
+            set { minWidth = value; AdjustWidth(); }
+        }
+
+        [DefaultValue(400)]
+        public int MaxWidth
+        {
+            get => maxWidth;
+            set { maxWidth = value; AdjustWidth(); }
+        }
+
+        [DefaultValue(50)]
+        public int TextPadding
+        {
+            get => padding;
+            set { padding = value; AdjustWidth(); }
+        }
+
+        // 修复：移除对 Items 属性的重写，改用事件监听
+        public new void AddItem(object item)
+        {
+            base.Items.Add(item);
+            AdjustWidth();
+        }
+
+        public new void AddRange(object[] items)
+        {
+            base.Items.AddRange(items);
+            AdjustWidth();
         }
 
         private void InitializeAnimation()
@@ -165,6 +208,54 @@ namespace BluePointLilac.Controls
             arrowRect = new Rectangle(Width - size - margin, (Height - size) / 2, size, size);
         }
 
+        // 自适应宽度方法
+        private void AdjustWidth()
+        {
+            // 检查控件是否已经创建了窗口句柄
+            if (Parent == null || isPainting || !IsHandleCreated) return;
+
+            using (var g = CreateGraphics())
+            {
+                // 计算当前选中文本的宽度
+                string currentText = SelectedItem?.ToString() ?? Text;
+                float textWidth = 0;
+
+                if (!string.IsNullOrEmpty(currentText))
+                {
+                    var size = g.MeasureString(currentText, Font);
+                    textWidth = size.Width;
+                }
+
+                // 计算所有项目中最大文本宽度
+                float maxTextWidth = textWidth;
+                // 修复：使用 base.Items 而不是 Items
+                foreach (var item in base.Items)
+                {
+                    string itemText = item.ToString();
+                    var itemSize = g.MeasureString(itemText, Font);
+                    if (itemSize.Width > maxTextWidth)
+                        maxTextWidth = itemSize.Width;
+                }
+
+                // 计算新宽度（文本宽度 + 箭头空间 + 边距）
+                int newWidth = (int)Math.Ceiling(maxTextWidth) + padding;
+
+                // 限制在最小和最大宽度之间
+                newWidth = Math.Max(minWidth, Math.Min(maxWidth, newWidth));
+
+                // 如果宽度有变化，更新控件宽度
+                if (Width != newWidth)
+                {
+                    Width = newWidth;
+                    UpdateArrowRect();
+                    Invalidate();
+
+                    // 通知父容器可能需要重新布局
+                    Parent?.PerformLayout();
+                }
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             if (isPainting) return;
@@ -190,13 +281,20 @@ namespace BluePointLilac.Controls
                     g.DrawPath(pen, path);
 
                 // 绘制文本
-                var text = SelectedItem?.ToString() ?? (Items.Count > 0 ? Items[0].ToString() : "");
+                // 修复：使用 base.Items 而不是 Items
+                var text = SelectedItem?.ToString() ?? (base.Items.Count > 0 ? base.Items[0].ToString() : "");
                 if (!string.IsNullOrEmpty(text))
                 {
                     using (var brush = new SolidBrush(ForeColor))
                     {
                         var textRect = new Rectangle(12, 0, Width - arrowRect.Width - 20, Height);
-                        var format = new StringFormat { LineAlignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter };
+                        var format = new StringFormat
+                        {
+                            LineAlignment = StringAlignment.Center,
+                            Trimming = StringTrimming.EllipsisCharacter,
+                            FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.NoClip
+                        };
+
                         g.DrawString(text, Font, brush, textRect, format);
                     }
                 }
@@ -222,8 +320,14 @@ namespace BluePointLilac.Controls
             using (var brush = new SolidBrush(textColor))
             {
                 var textRect = new Rectangle(e.Bounds.X + 8, e.Bounds.Y, e.Bounds.Width - 16, e.Bounds.Height);
-                var format = new StringFormat { LineAlignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter };
-                e.Graphics.DrawString(GetItemText(Items[e.Index]), Font, brush, textRect, format);
+                var format = new StringFormat
+                {
+                    LineAlignment = StringAlignment.Center,
+                    Trimming = StringTrimming.EllipsisCharacter,
+                    FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.NoClip
+                };
+                // 修复：使用 base.Items 而不是 Items
+                e.Graphics.DrawString(GetItemText(base.Items[e.Index]), Font, brush, textRect, format);
             }
 
             // 绘制焦点框
@@ -305,20 +409,20 @@ namespace BluePointLilac.Controls
             return path;
         }
 
-        // 修复下拉菜单显示问题的关键方法
         private void OnDropDown(object sender, EventArgs e)
         {
-            // 确保下拉列表正常显示
-            BeginInvoke(new Action(() => {
-                if (DroppedDown)
-                {
-                    // 强制重绘以确保下拉列表正确显示
-                    Invalidate();
-                }
-            }));
+            // 只有在句柄已创建时才调用 BeginInvoke
+            if (IsHandleCreated)
+            {
+                BeginInvoke(new Action(() => {
+                    if (DroppedDown)
+                    {
+                        Invalidate();
+                    }
+                }));
+            }
         }
 
-        // 重写 WndProc 以确保鼠标事件正确处理
         protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x201;
@@ -326,7 +430,6 @@ namespace BluePointLilac.Controls
 
             if (m.Msg == WM_LBUTTONDOWN)
             {
-                // 确保点击时下拉列表正常显示
                 if (!DroppedDown)
                 {
                     DroppedDown = true;
@@ -335,7 +438,6 @@ namespace BluePointLilac.Controls
             }
             else if (m.Msg == WM_LBUTTONUP)
             {
-                // 允许正常的鼠标释放处理
                 base.WndProc(ref m);
                 return;
             }
@@ -350,6 +452,26 @@ namespace BluePointLilac.Controls
             cachedArrowBitmap?.Dispose();
             cachedArrowBitmap = null;
             Invalidate();
+        }
+
+        protected override void OnParentChanged(EventArgs e)
+        {
+            base.OnParentChanged(e);
+            // 父容器变化时调整宽度 - 只在句柄已创建时调用
+            if (Parent != null && IsHandleCreated)
+            {
+                AdjustWidth();
+            }
+        }
+
+        protected override void OnFontChanged(EventArgs e)
+        {
+            base.OnFontChanged(e);
+            // 字体变化时重新计算宽度 - 只在句柄已创建时调用
+            if (IsHandleCreated)
+            {
+                AdjustWidth();
+            }
         }
 
         protected override void Dispose(bool disposing)
