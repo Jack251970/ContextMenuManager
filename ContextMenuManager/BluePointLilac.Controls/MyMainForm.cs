@@ -243,9 +243,12 @@ namespace BluePointLilac.Controls
                 {
                     combo.BackColor = ButtonMain;
                     combo.ForeColor = FormFore;
-                    combo.BorderColor = ButtonMain;
-                    combo.ButtonColor = ButtonMain;
+                    // 更新为新的属性名称，移除不存在的 ButtonColor 属性
+                    combo.BorderColor = darkTheme ? Color.FromArgb(70, 70, 75) : Color.FromArgb(210, 210, 215);
                     combo.ArrowColor = FormFore;
+                    // 设置新的属性
+                    combo.HoverColor = Color.FromArgb(255, 145, 60);
+                    combo.FocusColor = Color.FromArgb(255, 107, 0);
                 }
             }
         }
