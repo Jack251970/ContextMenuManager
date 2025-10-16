@@ -13,116 +13,59 @@ namespace BluePointLilac.Controls
             AutoScroll = true;
             BackColor = MyMainForm.FormBack;
             ForeColor = MyMainForm.FormFore;
+            DoubleBuffered = true;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            //使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
-            base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
+            base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y,
+                Math.Sign(e.Delta) * 50.DpiZoom()));
         }
 
-        // 搜索功能
         public virtual void SearchItems(string searchText)
         {
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                // 清空搜索，显示所有项
-                foreach (Control control in Controls)
-                {
-                    if (control is MyList list)
-                    {
-                        foreach (Control item in list.Controls)
-                        {
-                            if (item is MyListItem listItem && !listItem.IsDisposed)
-                            {
-                                listItem.Visible = true;
-                                listItem.HighlightText = null;
-                            }
-                        }
-                    }
-                }
-                return;
-            }
-
-            // 搜索所有列表项
+            SuspendLayout();
             foreach (Control control in Controls)
             {
-                if (control is MyList list)
+                if (control is MyList list && !list.IsDisposed)
                 {
-                    foreach (Control item in list.Controls)
-                    {
-                        if (item is MyListItem listItem && !listItem.IsDisposed)
-                        {
-                            bool matches = listItem.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-                            listItem.Visible = matches;
-                            if (matches)
-                            {
-                                listItem.HighlightText = searchText;
-                            }
-                            else
-                            {
-                                listItem.HighlightText = null;
-                            }
-                        }
-                    }
+                    list.SearchItems(searchText);
                 }
             }
+            ResumeLayout();
         }
 
-        // 获取所有可见的列表项
         public virtual IEnumerable<MyListItem> GetAllItems()
         {
             foreach (Control control in Controls)
             {
-                if (control is MyList list)
+                if (control is MyList list && !list.IsDisposed)
                 {
-                    foreach (Control item in list.Controls)
-                    {
-                        if (item is MyListItem listItem && !listItem.IsDisposed)
-                        {
-                            yield return listItem;
-                        }
-                    }
+                    foreach (var item in list.GetAllItems()) yield return item;
                 }
             }
         }
 
-        // 清除搜索高亮
         public virtual void ClearSearchHighlight()
         {
             foreach (var item in GetAllItems())
             {
-                if (!item.IsDisposed)
-                {
-                    item.HighlightText = null;
-                }
+                if (!item.IsDisposed) item.HighlightText = null;
             }
         }
     }
 
     public class MyList : FlowLayoutPanel
     {
-        public MyListBox Owner
-        {
-            get => (MyListBox)Parent;
-            set => Parent = value;
-        }
+        public MyListBox Owner { get => (MyListBox)Parent; set => Parent = value; }
 
-        public MyList(MyListBox owner) : this()
-        {
-            Owner = owner;
-        }
-
+        public MyList(MyListBox owner) : this() => Owner = owner;
         public MyList()
         {
-            AutoSize = true;
-            WrapContents = true;
-            Dock = DockStyle.Top;
-            DoubleBuffered = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            AutoSize = true; WrapContents = true; Dock = DockStyle.Top;
+            DoubleBuffered = true; AutoSizeMode = AutoSizeMode.GrowAndShrink;
         }
 
-        // 恢复悬停项相关代码
         private MyListItem hoveredItem;
         public MyListItem HoveredItem
         {
@@ -130,24 +73,18 @@ namespace BluePointLilac.Controls
             set
             {
                 if (hoveredItem == value) return;
-
-                // 移除旧悬停效果 - 检查是否已释放
                 if (hoveredItem != null && !hoveredItem.IsDisposed)
                 {
                     hoveredItem.ForeColor = MyMainForm.FormFore;
                     hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
                 }
-
                 hoveredItem = value;
-
-                // 应用新悬停效果 - 检查是否已释放
                 if (hoveredItem != null && !hoveredItem.IsDisposed)
                 {
                     hoveredItem.ForeColor = MyMainForm.MainColor;
                     hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Bold);
                     hoveredItem.Focus();
                 }
-
                 HoveredItemChanged?.Invoke(this, null);
             }
         }
@@ -157,182 +94,82 @@ namespace BluePointLilac.Controls
         public void AddItem(MyListItem item)
         {
             if (item == null || item.IsDisposed) return;
-
             SuspendLayout();
             item.Parent = this;
 
-            // 恢复悬停事件 - 添加释放检查
-            item.MouseEnter += (sender, e) =>
-            {
-                if (!item.IsDisposed)
-                    HoveredItem = item;
-            };
+            item.MouseEnter += (s, e) => { if (!item.IsDisposed) HoveredItem = item; };
+            item.MouseLeave += (s, e) => { if (HoveredItem == item) HoveredItem = null; };
+            MouseWheel += (s, e) => item.ContextMenuStrip?.Close();
 
-            // 添加鼠标离开事件，清除悬停
-            item.MouseLeave += (sender, e) =>
-            {
-                if (HoveredItem == item && !item.IsDisposed)
-                    HoveredItem = null;
-            };
-
-            MouseWheel += (sender, e) =>
-            {
-                if (!item.IsDisposed)
-                    item.ContextMenuStrip?.Close();
-            };
-
-            void ResizeItem()
-            {
-                if (!item.IsDisposed)
-                    item.Width = Owner.Width - item.Margin.Horizontal;
-            }
-
-            Owner.Resize += (sender, e) => ResizeItem();
+            void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
+            Owner.Resize += (s, e) => ResizeItem();
             ResizeItem();
             ResumeLayout();
         }
 
-        public void AddItems(MyListItem[] items)
+        public void AddItems(IEnumerable<MyListItem> items)
         {
             if (items == null) return;
-            Array.ForEach(items, item =>
-            {
-                if (!item.IsDisposed)
-                    AddItem(item);
-            });
+            foreach (var item in items) AddItem(item);
         }
 
-        public void AddItems(List<MyListItem> items)
-        {
-            if (items == null) return;
-            items.ForEach(item =>
-            {
-                if (!item.IsDisposed)
-                    AddItem(item);
-            });
-        }
-
-        public void SetItemIndex(MyListItem item, int newIndex)
-        {
-            if (item == null || item.IsDisposed) return;
-            Controls.SetChildIndex(item, newIndex);
-        }
-
-        public int GetItemIndex(MyListItem item)
-        {
-            if (item == null || item.IsDisposed) return -1;
-            return Controls.GetChildIndex(item);
-        }
-
-        public void InsertItem(MyListItem item, int index)
-        {
-            if (item == null || item.IsDisposed) return;
-            AddItem(item);
-            SetItemIndex(item, index);
-        }
+        public void SetItemIndex(MyListItem item, int newIndex) => Controls.SetChildIndex(item, newIndex);
+        public int GetItemIndex(MyListItem item) => Controls.GetChildIndex(item);
+        public void InsertItem(MyListItem item, int index) { AddItem(item); SetItemIndex(item, index); }
 
         public virtual void ClearItems()
         {
             if (Controls.Count == 0) return;
-
-            // 清除悬停项引用
             HoveredItem = null;
-
             SuspendLayout();
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
                 Control ctr = Controls[i];
                 Controls.Remove(ctr);
-                if (!ctr.IsDisposed)
-                    ctr.Dispose();
+                if (!ctr.IsDisposed) ctr.Dispose();
             }
             ResumeLayout();
         }
 
         public void SortItemByText()
         {
-            List<MyListItem> items = new List<MyListItem>();
-            foreach (MyListItem item in Controls)
-            {
-                if (!item.IsDisposed)
-                    items.Add(item);
-            }
+            var items = new List<MyListItem>();
+            foreach (MyListItem item in Controls) if (!item.IsDisposed) items.Add(item);
             Controls.Clear();
-            items.Sort(new TextComparer());
-            items.ForEach(item =>
-            {
-                if (!item.IsDisposed)
-                    AddItem(item);
-            });
+            items.Sort((x, y) => string.Compare(x?.Text, y?.Text, StringComparison.Ordinal));
+            foreach (var item in items) AddItem(item);
         }
 
-        public class TextComparer : IComparer<MyListItem>
-        {
-            public int Compare(MyListItem x, MyListItem y)
-            {
-                if (x == null || y == null) return 0;
-                if (x.Equals(y)) return 0;
-                string[] strs = { x.Text, y.Text };
-                Array.Sort(strs);
-                if (strs[0] == x.Text) return -1;
-                else return 1;
-            }
-        }
-
-        // 搜索功能
         public virtual void SearchItems(string searchText)
         {
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                // 清空搜索，显示所有项
-                foreach (Control control in Controls)
-                {
-                    if (control is MyListItem item && !item.IsDisposed)
-                    {
-                        item.Visible = true;
-                        item.HighlightText = null;
-                    }
-                }
-                return;
-            }
-
-            // 搜索所有列表项
+            SuspendLayout();
             foreach (Control control in Controls)
             {
                 if (control is MyListItem item && !item.IsDisposed)
                 {
-                    bool matches = item.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                    bool matches = string.IsNullOrEmpty(searchText) ||
+                        item.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                     item.Visible = matches;
-                    if (matches)
-                    {
-                        item.HighlightText = searchText;
-                    }
-                    else
-                    {
-                        item.HighlightText = null;
-                    }
+                    item.HighlightText = matches ? searchText : null;
                 }
             }
+            ResumeLayout();
         }
 
-        // 获取所有列表项
         public virtual IEnumerable<MyListItem> GetAllItems()
         {
             foreach (Control control in Controls)
             {
-                if (control is MyListItem item && !item.IsDisposed)
-                {
-                    yield return item;
-                }
+                if (control is MyListItem item && !item.IsDisposed) yield return item;
             }
         }
     }
 
     public class MyListItem : Panel
     {
-        private string highlightText;
-        private string displayText;
+        private string highlightText, displayText;
         private readonly RichTextBox rtbText;
+        private bool hasImage;
 
         public MyListItem()
         {
@@ -342,7 +179,6 @@ namespace BluePointLilac.Controls
             Margin = new Padding(0);
             BackColor = MyMainForm.FormBack;
 
-            // 使用RichTextBox
             rtbText = new RichTextBox
             {
                 BorderStyle = BorderStyle.None,
@@ -353,367 +189,152 @@ namespace BluePointLilac.Controls
                 Multiline = false,
                 DetectUrls = false,
                 Name = "Text",
-                TabStop = false, // 禁用Tab键焦点
-                HideSelection = true // 隐藏选择
+                TabStop = false,
+                HideSelection = true
             };
 
-            // 添加控件到面板
             Controls.AddRange(new Control[] { lblSeparator, flpControls, rtbText, picImage });
-
-            // 设置初始位置
-            picImage.Left = 20.DpiZoom();
-            rtbText.Left = 60.DpiZoom(); // 默认有图片的位置
-
-            // 设置RichTextBox的位置和大小
+            picImage.Left = 20.DpiZoom(); rtbText.Left = 60.DpiZoom();
             UpdateRichTextBoxPosition();
 
-            Resize += (Sender, e) =>
-            {
-                if (!IsDisposed)
-                {
-                    pnlScrollbar.Height = ClientSize.Height;
-                    UpdateRichTextBoxPosition();
-                }
-            };
+            Resize += (s, e) => { pnlScrollbar.Height = ClientSize.Height; UpdateRichTextBoxPosition(); };
 
-            // 禁用RichTextBox的鼠标和键盘事件
-            rtbText.MouseDown += (sender, e) =>
-            {
-                if (!IsDisposed)
-                {
-                    OnMouseDown(e);
-                    // 防止RichTextBox获得焦点
-                    ((RichTextBox)sender).Parent.Focus();
-                }
-            };
-
-            rtbText.MouseMove += (sender, e) => { if (!IsDisposed) OnMouseMove(e); };
-            rtbText.MouseUp += (sender, e) => { if (!IsDisposed) OnMouseUp(e); };
-            rtbText.MouseClick += (sender, e) => { if (!IsDisposed) OnMouseClick(e); };
-            rtbText.MouseDoubleClick += (sender, e) => { if (!IsDisposed) OnDoubleClick(e); };
-
-            rtbText.KeyDown += (sender, e) =>
-            {
-                if (!IsDisposed)
-                {
-                    OnKeyDown(e);
-                    e.Handled = true; // 阻止键盘事件
-                }
-            };
-
-            rtbText.KeyPress += (sender, e) =>
-            {
-                if (!IsDisposed)
-                {
-                    OnKeyPress(e);
-                    e.Handled = true; // 阻止键盘事件
-                }
-            };
-
-            rtbText.KeyUp += (sender, e) =>
-            {
-                if (!IsDisposed)
-                {
-                    OnKeyUp(e);
-                    e.Handled = true; // 阻止键盘事件
-                }
-            };
-
-            flpControls.MouseClick += (sender, e) => { if (!IsDisposed) OnMouseClick(e); };
-            flpControls.MouseDown += (sender, e) => { if (!IsDisposed) OnMouseDown(e); };
-
-            // 为子控件添加悬停事件
-            foreach (Control control in Controls)
-            {
-                control.MouseEnter += (sender, e) => { if (!IsDisposed) OnMouseEnter(e); };
-                control.MouseLeave += (sender, e) => { if (!IsDisposed) OnMouseLeave(e); };
-            }
+            // 修复事件绑定
+            AttachEvents(rtbText);
+            AttachEvents(flpControls);
+            foreach (Control ctrl in Controls) { AttachEvents(ctrl); }
 
             lblSeparator.SetEnabled(false);
-
             CenterControl(picImage);
             AddCtr(pnlScrollbar, 0);
-
-            // 最后设置HasImage，确保所有控件已初始化
-            hasImage = true;
-            picImage.Visible = true;
-
+            hasImage = true; picImage.Visible = true;
             ResumeLayout();
         }
 
-        // 更新RichTextBox的位置以实现垂直居中
+        private void AttachEvents(Control ctrl)
+        {
+            if (ctrl == rtbText)
+            {
+                ctrl.MouseDown += (s, e) => { OnMouseDown(e); if (rtbText.Focused) Focus(); };
+                ctrl.MouseMove += (s, e) => OnMouseMove(e);
+                ctrl.MouseUp += (s, e) => OnMouseUp(e);
+                ctrl.MouseClick += (s, e) => OnMouseClick(e);
+                ctrl.MouseDoubleClick += (s, e) => OnDoubleClick(e);
+
+                // 分别处理键盘事件
+                ctrl.KeyDown += (s, e) => { e.Handled = true; };
+                ctrl.KeyPress += (s, e) => { e.Handled = true; };
+                ctrl.KeyUp += (s, e) => { e.Handled = true; };
+            }
+            else
+            {
+                ctrl.MouseEnter += (s, e) => OnMouseEnter(e);
+                ctrl.MouseLeave += (s, e) => OnMouseLeave(e);
+                if (ctrl != flpControls) ctrl.MouseDown += (s, e) => OnMouseDown(e);
+            }
+        }
+
         private void UpdateRichTextBoxPosition()
         {
-            if (rtbText == null || rtbText.IsDisposed || IsDisposed) return;
-
-            // 计算文本高度
+            if (rtbText?.IsDisposed != false || IsDisposed) return;
             int textHeight = TextRenderer.MeasureText("A", rtbText.Font).Height;
-
-            // 计算垂直居中位置
-            int top = (Height - textHeight) / 2;
-
-            // 设置RichTextBox的位置和大小
-            rtbText.Top = top;
-            rtbText.Height = textHeight + 2; // 添加一点额外高度确保文本完全显示
+            rtbText.Top = (Height - textHeight) / 2;
+            rtbText.Height = textHeight + 2;
             rtbText.Width = Width - rtbText.Left - flpControls.Width - 10.DpiZoom();
         }
 
-        public Image Image
-        {
-            get => picImage?.Image;
-            set
-            {
-                if (picImage != null && !picImage.IsDisposed && !IsDisposed)
-                    picImage.Image = value;
-            }
-        }
+        public Image Image { get => picImage?.Image; set => picImage.Image = value; }
+        public new string Text { get => displayText ?? ""; set { displayText = value; rtbText.Text = value; UpdateHighlight(); UpdateRichTextBoxPosition(); } }
+        public new Font Font { get => rtbText?.Font; set { rtbText.Font = value; UpdateHighlight(); UpdateRichTextBoxPosition(); } }
+        public new Color ForeColor { get => rtbText?.ForeColor ?? Color.Empty; set { rtbText.ForeColor = value; UpdateHighlight(); } }
 
-        public new string Text
-        {
-            get => displayText ?? string.Empty;
-            set
-            {
-                displayText = value;
-                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
-                {
-                    rtbText.Text = value;
-                    UpdateHighlight();
-                    UpdateRichTextBoxPosition(); // 文本改变时更新位置
-                }
-            }
-        }
+        public string HighlightText { get => highlightText; set { highlightText = value; UpdateHighlight(); } }
+        public Color HighlightColor => IsDarkColor(BackColor) ? Color.FromArgb(255, 100, 70, 0) : Color.FromArgb(255, 255, 220, 100);
+        private bool IsDarkColor(Color c) => (0.2126 * c.R + 0.7152 * c.G + 0.0722 * c.B) / 255 < 0.5;
 
-        public new Font Font
-        {
-            get => rtbText?.Font ?? SystemFonts.IconTitleFont;
-            set
-            {
-                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
-                {
-                    rtbText.Font = value;
-                    UpdateHighlight();
-                    UpdateRichTextBoxPosition(); // 字体改变时更新位置
-                }
-            }
-        }
-
-        public new Color ForeColor
-        {
-            get => rtbText?.ForeColor ?? MyMainForm.FormFore;
-            set
-            {
-                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
-                {
-                    rtbText.ForeColor = value;
-                    UpdateHighlight();
-                }
-            }
-        }
-
-        // 高亮文本属性
-        public string HighlightText
-        {
-            get => highlightText;
-            set
-            {
-                if (highlightText != value && !IsDisposed)
-                {
-                    highlightText = value;
-                    UpdateHighlight();
-                }
-            }
-        }
-
-        // 自动适配的高亮颜色
-        public Color HighlightColor
-        {
-            get
-            {
-                if (IsDisposed) return Color.Yellow;
-
-                // 根据背景色亮度自动选择合适的高亮颜色
-                bool isDarkMode = IsDarkColor(BackColor);
-                return isDarkMode ?
-                    Color.FromArgb(255, 100, 70, 0) : // 暗色模式：暗橙色
-                    Color.FromArgb(255, 255, 220, 100); // 浅色模式：浅黄色
-            }
-        }
-
-        // 判断颜色是否为暗色
-        private bool IsDarkColor(Color color)
-        {
-            // 计算颜色的相对亮度 (ITU-R BT.709 标准)
-            double luminance = (0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B) / 255;
-            return luminance < 0.5;
-        }
-
-        private bool hasImage;
         public bool HasImage
         {
             get => hasImage;
-            set
-            {
-                hasImage = value;
-                if (picImage != null && !picImage.IsDisposed && !IsDisposed)
-                    picImage.Visible = value;
-                if (rtbText != null && !rtbText.IsDisposed && !IsDisposed)
-                {
-                    rtbText.Left = (value ? 60 : 20).DpiZoom();
-                    UpdateRichTextBoxPosition(); // 位置改变时更新位置
-                }
-            }
+            set { hasImage = value; picImage.Visible = value; rtbText.Left = (value ? 60 : 20).DpiZoom(); UpdateRichTextBoxPosition(); }
         }
 
-        // 更新高亮显示
         private void UpdateHighlight()
         {
-            if (rtbText == null || rtbText.IsDisposed || IsDisposed || string.IsNullOrEmpty(Text)) return;
-
+            if (rtbText?.IsDisposed != false || IsDisposed || string.IsNullOrEmpty(Text)) return;
             try
             {
-                // 保存当前选择位置
-                int originalSelectionStart = rtbText.SelectionStart;
-                int originalSelectionLength = rtbText.SelectionLength;
-
-                // 清除所有格式
                 rtbText.SelectAll();
                 rtbText.SelectionBackColor = rtbText.BackColor;
                 rtbText.DeselectAll();
-
-                // 如果有高亮文本，应用高亮
                 if (!string.IsNullOrEmpty(highlightText))
                 {
-                    var text = Text;
-                    var searchText = highlightText;
-                    var index = text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase);
-
-                    if (index >= 0)
-                    {
-                        rtbText.Select(index, searchText.Length);
-                        rtbText.SelectionBackColor = HighlightColor;
-                        rtbText.DeselectAll();
-                    }
+                    int index = Text.IndexOf(highlightText, StringComparison.OrdinalIgnoreCase);
+                    if (index >= 0) { rtbText.Select(index, highlightText.Length); rtbText.SelectionBackColor = HighlightColor; }
                 }
-
-                // 恢复原始选择位置
-                rtbText.Select(originalSelectionStart, originalSelectionLength);
-
-                // 确保没有文本被选中
-                rtbText.SelectionStart = 0;
-                rtbText.SelectionLength = 0;
+                rtbText.DeselectAll();
             }
-            catch (ObjectDisposedException)
-            {
-                // 忽略已释放对象的异常
-                return;
-            }
+            catch (ObjectDisposedException) { }
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if (IsDisposed) return;
-
-            base.OnMouseDown(e);
-            OnMouseEnter(e); // 鼠标按下时也触发悬停效果
-
-            // 确保RichTextBox没有焦点
-            if (rtbText != null && !rtbText.IsDisposed && rtbText.Focused)
-            {
-                // 将焦点转移到父控件
-                this.Focus();
-            }
+            base.OnMouseDown(e); OnMouseEnter(e);
+            if (rtbText?.Focused == true) Focus();
         }
 
-        private readonly PictureBox picImage = new PictureBox
-        {
-            SizeMode = PictureBoxSizeMode.AutoSize,
-            Enabled = false,
-            Name = "Image"
-        };
-        private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel
-        {
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlowDirection = FlowDirection.RightToLeft,
-            Anchor = AnchorStyles.Right,
-            AutoSize = true,
-            Name = "Controls"
-        };
-        private readonly Label lblSeparator = new Label
-        {
-            BackColor = MyMainForm.FormFore,
-            Dock = DockStyle.Bottom,
-            Name = "Separator",
-            Height = 1
-        };//分割线
-        private readonly Panel pnlScrollbar = new Panel
-        {
-            Width = SystemInformation.VerticalScrollBarWidth,
-            Enabled = false
-        };//预留滚动条宽度
+        private readonly PictureBox picImage = new PictureBox { SizeMode = PictureBoxSizeMode.AutoSize, Enabled = false };
+        private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Anchor = AnchorStyles.Right, AutoSize = true };
+        private readonly Label lblSeparator = new Label { BackColor = MyMainForm.FormFore, Dock = DockStyle.Bottom, Height = 1 };
+        private readonly Panel pnlScrollbar = new Panel { Width = SystemInformation.VerticalScrollBarWidth, Enabled = false };
 
         private void CenterControl(Control ctr)
         {
             if (ctr == null || IsDisposed) return;
-
             void reSize()
             {
-                if (ctr.Parent == null || ctr.IsDisposed || IsDisposed) return;
+                if (ctr.IsDisposed || IsDisposed) return;
                 int top = (ClientSize.Height - ctr.Height) / 2;
                 ctr.Top = top;
-                if (ctr.Parent == flpControls)
-                {
-                    ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
-                }
+                if (ctr.Parent == flpControls) ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
             }
-            ctr.Parent.Resize += (sender, e) => reSize();
-            ctr.Resize += (sender, e) => reSize();
+            ctr.Parent.Resize += (s, e) => reSize();
+            ctr.Resize += (s, e) => reSize();
             reSize();
         }
 
-        public void AddCtr(Control ctr)
-        {
-            AddCtr(ctr, 20.DpiZoom());
-        }
+        // 修复方法重载冲突
+        public void AddCtr(Control ctr) => AddCtrInternal(ctr, 20.DpiZoom());
 
-        public void AddCtr(Control ctr, int space)
+        public void AddCtr(Control ctr, int space) => AddCtrInternal(ctr, space.DpiZoom());
+
+        private void AddCtrInternal(Control ctr, int space)
         {
             if (ctr == null || flpControls == null || IsDisposed) return;
-
             SuspendLayout();
             ctr.Parent = flpControls;
             ctr.Margin = new Padding(0, 0, space, 0);
-
-            ctr.MouseDown += (sender, e) => { if (!IsDisposed) OnMouseDown(e); };
-            ctr.MouseEnter += (sender, e) => { if (!IsDisposed) OnMouseEnter(e); };
-            ctr.MouseLeave += (sender, e) => { if (!IsDisposed) OnMouseLeave(e); };
+            ctr.MouseDown += (s, e) => OnMouseDown(e);
+            ctr.MouseEnter += (s, e) => OnMouseEnter(e);
+            ctr.MouseLeave += (s, e) => OnMouseLeave(e);
             CenterControl(ctr);
             ResumeLayout();
         }
 
+        // 修复Array.ForEach调用
         public void AddCtrs(Control[] ctrs)
         {
-            if (ctrs == null) return;
-            Array.ForEach(ctrs, ctr =>
+            if (ctrs != null)
             {
-                if (!ctr.IsDisposed)
-                    AddCtr(ctr);
-            });
+                foreach (var ctr in ctrs)
+                {
+                    if (ctr != null && !ctr.IsDisposed)
+                        AddCtr(ctr);
+                }
+            }
         }
 
-        public void RemoveCtrAt(int index)
-        {
-            if (flpControls?.Controls != null && flpControls.Controls.Count > index && !IsDisposed)
-                flpControls.Controls.RemoveAt(index + 1);
-        }
-
-        public int GetCtrIndex(Control ctr)
-        {
-            return flpControls?.Controls?.GetChildIndex(ctr, true) - 1 ?? -1;
-        }
-
-        public void SetCtrIndex(Control ctr, int newIndex)
-        {
-            flpControls?.Controls?.SetChildIndex(ctr, newIndex + 1);
-        }
+        public void RemoveCtrAt(int index) { if (flpControls?.Controls?.Count > index) flpControls.Controls.RemoveAt(index + 1); }
+        public int GetCtrIndex(Control ctr) => flpControls?.Controls?.GetChildIndex(ctr, true) - 1 ?? -1;
+        public void SetCtrIndex(Control ctr, int newIndex) => flpControls?.Controls?.SetChildIndex(ctr, newIndex + 1);
     }
 }
