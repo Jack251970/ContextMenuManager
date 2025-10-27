@@ -51,7 +51,7 @@ jobs:
 
       # Upload the Build package
       - name: Upload Build package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: |
             ContextMenuManager/bin/Release/net9.0-windows
