@@ -53,6 +53,7 @@ jobs:
       - name: Upload Build package
         uses: actions/upload-artifact@v4
         with:
+          retention-days: 7
           path: |
             ContextMenuManager/bin/Release/net9.0-windows
           compression-level: 0
