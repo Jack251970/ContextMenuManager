@@ -11,414 +11,187 @@ namespace BluePointLilac.Controls
 {
     public class ModernSearchBox : Panel
     {
-        private TextBox searchTextBox;
-        private bool isFocused = false;
-        private bool isMouseOverIcon = false;
-        private int borderRadius = 14;
-        private Color borderColor, hoverBorderColor, focusBorderColor, backgroundColor, textColor;
+        private TextBox txtSearch;
+        private bool focused, mouseOverIcon;
+        private Bitmap cachedIcon;
+        private Timer animTimer;
         private Rectangle iconRect;
-        private Bitmap cachedIconBitmap;
         private Color lastIconColor = Color.Empty;
-
-        // 动画相关变量
-        private Timer animationTimer;
-        private float currentBorderWidth = 1.2f;
-        private float targetBorderWidth = 1.2f;
-        private Color currentBorderColor;
-        private Color targetBorderColor;
-        private float iconScale = 1.0f;
-        private float targetIconScale = 1.0f;
-        private float focusGlowAlpha = 0f;
-        private float targetFocusGlowAlpha = 0f;
-
-        private readonly Color orangePrimary = Color.FromArgb(255, 107, 0);
-        private readonly Color orangeLight = Color.FromArgb(255, 145, 60);
-        private readonly Color orangeDark = Color.FromArgb(220, 85, 0);
-        private readonly Color subtleShadow = Color.FromArgb(15, 0, 0, 0);
-        private readonly Color focusGlowColor = Color.FromArgb(80, 255, 145, 60);
+        private float borderWidth = 1.2f, targetWidth = 1.2f, iconScale = 1f, targetScale = 1f, glowAlpha, targetGlow;
+        private Color borderColor, hoverColor, focusColor, bgColor, textColor, currentBorder, targetBorder;
+        private readonly int borderRadius = 14;
+        private readonly Color orange = Color.FromArgb(255, 107, 0), orangeL = Color.FromArgb(255, 145, 60), orangeD = Color.FromArgb(220, 85, 0);
 
         public event EventHandler SearchPerformed;
+        public string SearchText { get => txtSearch.Text; set => txtSearch.Text = value; }
 
         public ModernSearchBox()
         {
             DoubleBuffered = true;
-            SetStyle(ControlStyles.SupportsTransparentBackColor | ControlStyles.ResizeRedraw |
-                     ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
-                     ControlStyles.OptimizedDoubleBuffer, true);
-
-            InitializeComponent();
-            InitializeAnimation();
+            SetStyle(ControlStyles.SupportsTransparentBackColor | ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            InitComponent();
+            InitAnimation();
             UpdateIconRect();
-            Application.AddMessageFilter(new GlobalMouseMessageFilter(this));
+            Application.AddMessageFilter(new MouseFilter(this));
         }
 
-        public string SearchText
-        {
-            get => searchTextBox.Text;
-            set => searchTextBox.Text = value;
-        }
-
-        private void InitializeAnimation()
-        {
-            animationTimer = new Timer
-            {
-                Interval = 16 // ~60 FPS
-            };
-            animationTimer.Tick += (s, e) => UpdateAnimation();
-            animationTimer.Start();
-
-            // 初始化动画状态
-            currentBorderColor = borderColor;
-            targetBorderColor = borderColor;
-        }
-
-        private void UpdateAnimation()
-        {
-            bool needsInvalidate = false;
-
-            // 边框宽度动画
-            if (Math.Abs(currentBorderWidth - targetBorderWidth) > 0.01f)
-            {
-                currentBorderWidth = Lerp(currentBorderWidth, targetBorderWidth, 0.3f);
-                needsInvalidate = true;
-            }
-
-            // 边框颜色动画
-            if (currentBorderColor != targetBorderColor)
-            {
-                currentBorderColor = ColorLerp(currentBorderColor, targetBorderColor, 0.25f);
-                needsInvalidate = true;
-            }
-
-            // 图标缩放动画
-            if (Math.Abs(iconScale - targetIconScale) > 0.01f)
-            {
-                iconScale = Lerp(iconScale, targetIconScale, 0.4f);
-                needsInvalidate = true;
-            }
-
-            // 焦点光晕动画
-            if (Math.Abs(focusGlowAlpha - targetFocusGlowAlpha) > 0.01f)
-            {
-                focusGlowAlpha = Lerp(focusGlowAlpha, targetFocusGlowAlpha, 0.2f);
-                needsInvalidate = true;
-            }
-
-            if (needsInvalidate)
-            {
-                Invalidate();
-            }
-        }
-
-        private float Lerp(float a, float b, float t)
-        {
-            return a + (b - a) * t;
-        }
-
-        private Color ColorLerp(Color color1, Color color2, float t)
-        {
-            var r = (int)(color1.R + (color2.R - color1.R) * t);
-            var g = (int)(color1.G + (color2.G - color1.G) * t);
-            var b = (int)(color1.B + (color2.B - color1.B) * t);
-            var a = (int)(color1.A + (color2.A - color1.A) * t);
-            return Color.FromArgb(a, r, g, b);
-        }
-
-        private void InitializeComponent()
+        private void InitComponent()
         {
             Size = new Size(260.DpiZoom(), 40.DpiZoom());
-
-            searchTextBox = new TextBox
+            txtSearch = new TextBox
             {
                 Location = new Point(16.DpiZoom(), 10.DpiZoom()),
                 Size = new Size(200.DpiZoom(), 22.DpiZoom()),
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
+                Font = new Font("Segoe UI", 9.5F),
                 PlaceholderText = AppString.Other.SearchContent,
                 BorderStyle = BorderStyle.None
             };
+            txtSearch.SetStyle(ControlStyles.SupportsTransparentBackColor | ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
 
-            searchTextBox.SetStyle(ControlStyles.SupportsTransparentBackColor |
-                                 ControlStyles.OptimizedDoubleBuffer |
-                                 ControlStyles.AllPaintingInWmPaint, true);
+            txtSearch.GotFocus += (s, e) => { focused = true; UpdateState(); };
+            txtSearch.LostFocus += (s, e) => { focused = false; UpdateState(); };
+            txtSearch.TextChanged += (s, e) => Invalidate();
+            txtSearch.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { SearchWithAnim(); e.Handled = e.SuppressKeyPress = true; } };
 
-            searchTextBox.GotFocus += (s, e) =>
-            {
-                isFocused = true;
-                UpdateAnimationTargets();
-                Invalidate();
-            };
-            searchTextBox.LostFocus += (s, e) =>
-            {
-                isFocused = false;
-                UpdateAnimationTargets();
-                Invalidate();
-            };
-            searchTextBox.TextChanged += (s, e) => Invalidate();
-            searchTextBox.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    PerformSearchWithAnimation();
-                    e.Handled = e.SuppressKeyPress = true;
-                }
-            };
+            Controls.Add(txtSearch);
 
-            Controls.Add(searchTextBox);
+            MouseEnter += (s, e) => UpdateState();
+            MouseLeave += (s, e) => { mouseOverIcon = false; UpdateState(); };
+            MouseMove += (s, e) => {
+                bool was = mouseOverIcon;
+                mouseOverIcon = iconRect.Contains(e.Location);
+                if (was != mouseOverIcon) { Cursor = mouseOverIcon ? Cursors.Hand : Cursors.Default; UpdateState(); }
+            };
+            MouseClick += (s, e) => { if (iconRect.Contains(e.Location)) SearchWithAnim(); };
 
-            MouseEnter += (s, e) =>
-            {
-                UpdateAnimationTargets();
-                Invalidate();
-            };
-            MouseLeave += (s, e) =>
-            {
-                isMouseOverIcon = false;
-                UpdateAnimationTargets();
-                Invalidate();
-            };
-            MouseMove += (s, e) =>
-            {
-                bool wasOverIcon = isMouseOverIcon;
-                isMouseOverIcon = iconRect.Contains(e.Location);
-                if (wasOverIcon != isMouseOverIcon)
-                {
-                    Cursor = isMouseOverIcon ? Cursors.Hand : Cursors.Default;
-                    UpdateAnimationTargets();
-                    Invalidate();
-                }
-            };
-            MouseClick += (s, e) =>
-            {
-                if (iconRect.Contains(e.Location) && e.Button == MouseButtons.Left)
-                    PerformSearchWithAnimation();
-            };
+            txtSearch.MouseEnter += (s, e) => UpdateState();
+            txtSearch.MouseLeave += (s, e) => UpdateState();
 
-            searchTextBox.MouseEnter += (s, e) =>
-            {
-                UpdateAnimationTargets();
-                Invalidate();
-            };
-            searchTextBox.MouseLeave += (s, e) =>
-            {
-                UpdateAnimationTargets();
-                Invalidate();
-            };
-
-            InitializeColors();
+            InitColors();
         }
 
-        private void UpdateAnimationTargets()
+        private void InitAnimation()
         {
-            // 更新边框宽度目标值
-            if (isFocused)
-            {
-                targetBorderWidth = 2.2f;
-                targetFocusGlowAlpha = 1.0f;
-            }
-            else if (ClientRectangle.Contains(PointToClient(MousePosition)) || isMouseOverIcon)
-            {
-                targetBorderWidth = 1.8f;
-                targetFocusGlowAlpha = 0f;
-            }
-            else
-            {
-                targetBorderWidth = 1.2f;
-                targetFocusGlowAlpha = 0f;
-            }
-
-            // 更新边框颜色目标值
-            if (isFocused)
-            {
-                targetBorderColor = focusBorderColor;
-            }
-            else if (ClientRectangle.Contains(PointToClient(MousePosition)) || isMouseOverIcon)
-            {
-                targetBorderColor = hoverBorderColor;
-            }
-            else
-            {
-                targetBorderColor = borderColor;
-            }
-
-            // 更新图标缩放目标值
-            if (isMouseOverIcon)
-            {
-                targetIconScale = 1.1f;
-            }
-            else
-            {
-                targetIconScale = 1.0f;
-            }
+            animTimer = new Timer { Interval = 16 };
+            animTimer.Tick += (s, e) => {
+                bool update = false;
+                if (Math.Abs(borderWidth - targetWidth) > 0.01f) { borderWidth = Lerp(borderWidth, targetWidth, 0.3f); update = true; }
+                if (currentBorder != targetBorder) { currentBorder = ColorLerp(currentBorder, targetBorder, 0.25f); update = true; }
+                if (Math.Abs(iconScale - targetScale) > 0.01f) { iconScale = Lerp(iconScale, targetScale, 0.4f); update = true; }
+                if (Math.Abs(glowAlpha - targetGlow) > 0.01f) { glowAlpha = Lerp(glowAlpha, targetGlow, 0.2f); update = true; }
+                if (update) Invalidate();
+            };
+            animTimer.Start();
+            currentBorder = targetBorder = borderColor;
         }
 
-        private void InitializeColors()
+        private float Lerp(float a, float b, float t) => a + (b - a) * t;
+        private Color ColorLerp(Color c1, Color c2, float t) => Color.FromArgb((int)(c1.A + (c2.A - c1.A) * t), (int)(c1.R + (c2.R - c1.R) * t), (int)(c1.G + (c2.G - c1.G) * t), (int)(c1.B + (c2.B - c1.B) * t));
+
+        private void InitColors()
         {
-            if (MyMainForm.IsDarkTheme())
+            bool dark = MyMainForm.IsDarkTheme();
+            if (dark)
             {
-                backgroundColor = Color.FromArgb(45, 45, 48);
-                textColor = Color.FromArgb(245, 245, 245);
-                borderColor = Color.FromArgb(70, 70, 75);
-                hoverBorderColor = orangeLight;
-                focusBorderColor = orangePrimary;
+                bgColor = Color.FromArgb(45, 45, 48); textColor = Color.FromArgb(245, 245, 245);
+                borderColor = Color.FromArgb(70, 70, 75); hoverColor = orangeL; focusColor = orange;
             }
             else
             {
-                backgroundColor = Color.FromArgb(250, 250, 252);
-                textColor = Color.FromArgb(25, 25, 25);
-                borderColor = Color.FromArgb(210, 210, 215);
-                hoverBorderColor = orangeLight;
-                focusBorderColor = orangePrimary;
+                bgColor = Color.FromArgb(250, 250, 252); textColor = Color.FromArgb(25, 25, 25);
+                borderColor = Color.FromArgb(210, 210, 215); hoverColor = orangeL; focusColor = orange;
             }
+            if (txtSearch != null) { txtSearch.ForeColor = textColor; txtSearch.BackColor = bgColor; }
+            currentBorder = targetBorder = borderColor;
+        }
 
-            if (searchTextBox != null)
-            {
-                searchTextBox.ForeColor = textColor;
-                searchTextBox.BackColor = backgroundColor;
-            }
-
-            // 初始化动画颜色
-            currentBorderColor = borderColor;
-            targetBorderColor = borderColor;
+        private void UpdateState()
+        {
+            if (focused) { targetWidth = 2.2f; targetGlow = 1f; targetBorder = focusColor; }
+            else if (ClientRectangle.Contains(PointToClient(MousePosition)) || mouseOverIcon) { targetWidth = 1.8f; targetGlow = 0f; targetBorder = hoverColor; }
+            else { targetWidth = 1.2f; targetGlow = 0f; targetBorder = borderColor; }
+            targetScale = mouseOverIcon ? 1.1f : 1f;
+            Invalidate();
         }
 
         private void UpdateIconRect()
         {
-            int iconSize = (int)(18.DpiZoom() * iconScale);
-            int margin = 12.DpiZoom();
-            int y = (Height - iconSize) / 2;
-            int x = Math.Max(margin, Width - iconSize - margin);
-            iconRect = new Rectangle(x, y, iconSize, iconSize);
+            int size = (int)(18.DpiZoom() * iconScale);
+            int m = 12.DpiZoom();
+            int y = (Height - size) / 2;
+            int x = Math.Max(m, Width - size - m);
+            iconRect = new Rectangle(x, y, size, size);
         }
 
-        private void PerformSearch() => SearchPerformed?.Invoke(this, EventArgs.Empty);
-
-        private async void PerformSearchWithAnimation()
-        {
-            // 图标点击动画
-            targetIconScale = 0.8f;
-            await System.Threading.Tasks.Task.Delay(100);
-            targetIconScale = 1.0f;
-
-            PerformSearch();
-        }
+        private void SearchWithAnim() { targetScale = 0.8f; System.Threading.Tasks.Task.Delay(100).ContinueWith(_ => { targetScale = 1f; SearchPerformed?.Invoke(this, EventArgs.Empty); }); }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             if (!MyMainForm.IsDarkTheme())
-            {
-                using (var shadowPath = CreateRoundedRectanglePath(new Rectangle(1, 2, Width - 2, Height - 2), borderRadius.DpiZoom()))
-                using (var shadowBrush = new SolidBrush(subtleShadow))
-                    g.FillPath(shadowBrush, shadowPath);
-            }
+                using (var p = CreateRoundPath(new Rectangle(1, 2, Width - 2, Height - 2), borderRadius.DpiZoom()))
+                using (var b = new SolidBrush(Color.FromArgb(15, 0, 0, 0)))
+                    g.FillPath(b, p);
 
-            // 绘制焦点光晕效果
-            if (focusGlowAlpha > 0.01f)
-            {
-                using (var glowPath = CreateRoundedRectanglePath(new Rectangle(-2, -2, Width + 3, Height + 3), (borderRadius + 2).DpiZoom()))
-                using (var glowBrush = new SolidBrush(Color.FromArgb((int)(focusGlowAlpha * 80), focusGlowColor)))
-                {
-                    g.FillPath(glowBrush, glowPath);
-                }
-            }
+            if (glowAlpha > 0.01f)
+                using (var p = CreateRoundPath(new Rectangle(-2, -2, Width + 3, Height + 3), (borderRadius + 2).DpiZoom()))
+                using (var b = new SolidBrush(Color.FromArgb((int)(glowAlpha * 80), 255, 145, 60)))
+                    g.FillPath(b, p);
 
-            var drawRect = new Rectangle(0, 0, Width - 1, Height - 1);
-            using (var path = CreateRoundedRectanglePath(drawRect, borderRadius.DpiZoom()))
-            {
-                FillGradientBackground(g, path);
-                DrawRefinedBorder(g, path, currentBorderColor, currentBorderWidth);
-            }
-
-            DrawSearchIcon(g, iconRect);
+            var rect = new Rectangle(0, 0, Width - 1, Height - 1);
+            using var path = CreateRoundPath(rect, borderRadius.DpiZoom());
+            FillGradient(g, path);
+            DrawBorder(g, path, currentBorder, borderWidth);
+            DrawIcon(g, iconRect);
         }
 
-        private void FillGradientBackground(Graphics g, GraphicsPath path)
+        private void FillGradient(Graphics g, GraphicsPath path)
         {
-            var rect = path.GetBounds();
-            Color color1, color2;
+            var r = path.GetBounds();
+            Color c1, c2;
+            if (MyMainForm.IsDarkTheme()) { c1 = Color.FromArgb(50, 50, 53); c2 = Color.FromArgb(40, 40, 43); }
+            else { c1 = Color.FromArgb(253, 253, 255); c2 = Color.FromArgb(247, 247, 249); }
 
-            if (MyMainForm.IsDarkTheme())
-            {
-                color1 = Color.FromArgb(50, 50, 53);
-                color2 = Color.FromArgb(40, 40, 43);
-            }
-            else
-            {
-                color1 = Color.FromArgb(253, 253, 255);
-                color2 = Color.FromArgb(247, 247, 249);
-            }
-
-            using (var brush = new LinearGradientBrush(new PointF(rect.X, rect.Y), new PointF(rect.X, rect.Bottom), color1, color2))
-            {
-                var blend = new ColorBlend
-                {
-                    Positions = new[] { 0f, 0.5f, 1f },
-                    Colors = new[] { color1, Color.FromArgb((color1.R + color2.R) / 2, (color1.G + color2.G) / 2, (color1.B + color2.B) / 2), color2 }
-                };
-                brush.InterpolationColors = blend;
-                g.FillPath(brush, path);
-            }
+            using var brush = new LinearGradientBrush(new PointF(r.X, r.Y), new PointF(r.X, r.Bottom), c1, c2);
+            var blend = new ColorBlend { Positions = new[] { 0f, 0.5f, 1f }, Colors = new[] { c1, Color.FromArgb((c1.R + c2.R) / 2, (c1.G + c2.G) / 2, (c1.B + c2.B) / 2), c2 } };
+            brush.InterpolationColors = blend;
+            g.FillPath(brush, path);
         }
 
-        private void DrawRefinedBorder(Graphics g, GraphicsPath path, Color borderColor, float borderWidth)
+        private void DrawBorder(Graphics g, GraphicsPath path, Color color, float width)
         {
-            using (var pen = new Pen(borderColor, borderWidth))
-            {
-                pen.Alignment = PenAlignment.Center;
-                pen.LineJoin = LineJoin.Round;
-                g.DrawPath(pen, path);
-            }
+            using var pen = new Pen(color, width) { Alignment = PenAlignment.Center, LineJoin = LineJoin.Round };
+            g.DrawPath(pen, path);
         }
 
-        private void DrawSearchIcon(Graphics g, Rectangle iconRect)
+        private void DrawIcon(Graphics g, Rectangle rect)
         {
-            if (iconRect.Right > Width || iconRect.Bottom > Height || iconRect.Width <= 0 || iconRect.Height <= 0)
-                UpdateIconRect();
+            if (rect.Right > Width || rect.Bottom > Height) UpdateIconRect();
+            var iconColor = mouseOverIcon ? orangeD : focused ? focusColor : ClientRectangle.Contains(PointToClient(MousePosition)) ? hoverColor : borderColor;
 
-            var iconColor = isMouseOverIcon ? orangeDark :
-                           isFocused ? focusBorderColor :
-                           ClientRectangle.Contains(PointToClient(MousePosition)) ? hoverBorderColor :
-                           borderColor;
-
-            if (cachedIconBitmap == null || lastIconColor != iconColor ||
-                cachedIconBitmap?.Width != iconRect.Width || cachedIconBitmap?.Height != iconRect.Height)
+            if (cachedIcon == null || lastIconColor != iconColor || cachedIcon?.Width != rect.Width || cachedIcon?.Height != rect.Height)
             {
-                cachedIconBitmap?.Dispose();
-                cachedIconBitmap = GenerateModernSearchIcon(iconRect.Size, iconColor);
+                cachedIcon?.Dispose();
+                cachedIcon = CreateIcon(rect.Size, iconColor);
                 lastIconColor = iconColor;
             }
 
-            if (cachedIconBitmap != null)
+            if (cachedIcon != null)
             {
-                // 应用图标缩放变换
-                var scaledRect = new Rectangle(
-                    iconRect.X + (int)(iconRect.Width * (1 - iconScale) / 2),
-                    iconRect.Y + (int)(iconRect.Height * (1 - iconScale) / 2),
-                    (int)(iconRect.Width * iconScale),
-                    (int)(iconRect.Height * iconScale)
-                );
-                g.DrawImage(cachedIconBitmap, scaledRect);
+                var scaled = new Rectangle(rect.X + (int)(rect.Width * (1 - iconScale) / 2), rect.Y + (int)(rect.Height * (1 - iconScale) / 2), (int)(rect.Width * iconScale), (int)(rect.Height * iconScale));
+                g.DrawImage(cachedIcon, scaled);
             }
         }
 
-        private Bitmap GenerateModernSearchIcon(Size size, Color color)
+        private Bitmap CreateIcon(Size size, Color color)
         {
             try
             {
-                if (size.Width <= 0 || size.Height <= 0)
-                    size = new Size(18.DpiZoom(), 18.DpiZoom());
-
-                var svgDocument = new SvgDocument
-                {
-                    Width = size.Width,
-                    Height = size.Height,
-                    ViewBox = new SvgViewBox(0, 0, 24, 24)
-                };
-
-                var searchPath = new SvgPath
+                if (size.Width <= 0) size = new Size(18.DpiZoom(), 18.DpiZoom());
+                var svg = new SvgDocument { Width = size.Width, Height = size.Height, ViewBox = new SvgViewBox(0, 0, 24, 24) };
+                var path = new SvgPath
                 {
                     PathData = SvgPathBuilder.Parse("M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"),
                     Fill = new SvgColourServer(Color.Transparent),
@@ -427,136 +200,88 @@ namespace BluePointLilac.Controls
                     StrokeLineCap = SvgStrokeLineCap.Round,
                     StrokeLineJoin = SvgStrokeLineJoin.Round
                 };
-
-                svgDocument.Children.Add(searchPath);
-                return svgDocument.Draw(size.Width, size.Height);
+                svg.Children.Add(path);
+                return svg.Draw(size.Width, size.Height);
             }
-            catch
-            {
-                return GenerateModernFallbackIcon(size, color);
-            }
+            catch { return CreateFallbackIcon(size, color); }
         }
 
-        private Bitmap GenerateModernFallbackIcon(Size size, Color color)
+        private Bitmap CreateFallbackIcon(Size size, Color color)
         {
             if (size.Width < 16) size = new Size(16, size.Height);
-            if (size.Height < 16) size = new Size(size.Width, 16);
-
-            var bitmap = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
-            using (var g = Graphics.FromImage(bitmap))
+            var bmp = new Bitmap(size.Width, size.Height);
+            using (var g = Graphics.FromImage(bmp))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                int margin = Math.Max(2, size.Width / 8);
-                int drawSize = Math.Min(size.Width, size.Height) - margin * 2;
-                if (drawSize < 8) drawSize = 8;
-
-                int x = (size.Width - drawSize) / 2;
-                int y = (size.Height - drawSize) / 2;
-
-                using (var pen = new Pen(color, Math.Max(1.6f, drawSize / 10f)))
-                {
-                    pen.StartCap = LineCap.Round;
-                    int circleDiameter = (int)(drawSize * 0.65f);
-                    if (circleDiameter < 6) circleDiameter = 6;
-
-                    int circleX = x + (drawSize - circleDiameter) / 2;
-                    int circleY = y + (drawSize - circleDiameter) / 2;
-
-                    RectangleF circleRect = new RectangleF(circleX + pen.Width / 2, circleY + pen.Width / 2,
-                                                         circleDiameter - pen.Width, circleDiameter - pen.Width);
-                    g.DrawEllipse(pen, circleRect);
-
-                    float angle = 45f;
-                    float handleLength = drawSize * 0.35f;
-                    if (handleLength < 4) handleLength = 4;
-
-                    double radian = angle * Math.PI / 180;
-                    float centerX = circleX + circleDiameter / 2f;
-                    float centerY = circleY + circleDiameter / 2f;
-                    float radius = circleDiameter / 2f;
-
-                    float startX = centerX + (float)(radius * Math.Cos(radian));
-                    float startY = centerY + (float)(radius * Math.Sin(radian));
-                    float endX = startX + (float)(handleLength * Math.Cos(radian));
-                    float endY = startY + (float)(handleLength * Math.Sin(radian));
-
-                    g.DrawLine(pen, startX, startY, endX, endY);
-                }
+                int m = Math.Max(2, size.Width / 8);
+                int s = Math.Max(8, Math.Min(size.Width, size.Height) - m * 2);
+                int x = (size.Width - s) / 2, y = (size.Height - s) / 2;
+                using var pen = new Pen(color, Math.Max(1.6f, s / 10f)) { StartCap = LineCap.Round };
+                int d = Math.Max(6, (int)(s * 0.65f));
+                int cx = x + (s - d) / 2, cy = y + (s - d) / 2;
+                g.DrawEllipse(pen, cx + pen.Width / 2, cy + pen.Width / 2, d - pen.Width, d - pen.Width);
+                double rad = 45 * Math.PI / 180;
+                float centerX = cx + d / 2f, centerY = cy + d / 2f, r = d / 2f;
+                float sx = centerX + (float)(r * Math.Cos(rad)), sy = centerY + (float)(r * Math.Sin(rad));
+                float ex = sx + (float)(Math.Max(4, s * 0.35f) * Math.Cos(rad)), ey = sy + (float)(Math.Max(4, s * 0.35f) * Math.Sin(rad));
+                g.DrawLine(pen, sx, sy, ex, ey);
             }
-            return bitmap;
+            return bmp;
         }
 
-        private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
+        private GraphicsPath CreateRoundPath(Rectangle rect, int radius)
         {
             var path = new GraphicsPath();
-            float diameter = radius * 2f;
-
-            path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
-            path.AddArc(rect.Right - diameter, rect.Y, diameter, diameter, 270, 90);
-            path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - diameter, diameter, diameter, 90, 90);
-
+            float d = radius * 2f;
+            path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+            path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
             path.CloseFigure();
             return path;
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                animationTimer?.Stop();
-                animationTimer?.Dispose();
-                cachedIconBitmap?.Dispose();
-            }
+            if (disposing) { animTimer?.Stop(); animTimer?.Dispose(); cachedIcon?.Dispose(); }
             base.Dispose(disposing);
         }
 
-        public void FocusSearch() { searchTextBox?.Focus(); searchTextBox?.SelectAll(); }
-        public void ClearSearch() { searchTextBox.Text = string.Empty; }
+        public void FocusSearch() { txtSearch?.Focus(); txtSearch?.SelectAll(); }
+        public void ClearSearch() { txtSearch.Text = string.Empty; }
         public void LoseFocus() { Parent?.Focus(); }
-        public TextBox GetTextBox() { return searchTextBox; }
 
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            if (searchTextBox != null && !searchTextBox.IsDisposed)
+            if (txtSearch != null && !txtSearch.IsDisposed)
             {
-                int iconAreaWidth = 50.DpiZoom();
-                searchTextBox.Width = Width - iconAreaWidth;
-                searchTextBox.Height = 22.DpiZoom();
-                int textBoxY = (Height - searchTextBox.Height) / 2;
-                searchTextBox.Location = new Point(12.DpiZoom(), textBoxY);
+                int iconArea = 50.DpiZoom();
+                txtSearch.Width = Width - iconArea;
+                txtSearch.Height = 22.DpiZoom();
+                txtSearch.Location = new Point(12.DpiZoom(), (Height - txtSearch.Height) / 2);
             }
-
-            cachedIconBitmap?.Dispose();
-            cachedIconBitmap = null;
-            UpdateIconRect();
-            Invalidate();
+            cachedIcon?.Dispose(); cachedIcon = null;
+            UpdateIconRect(); Invalidate();
         }
 
-        private class GlobalMouseMessageFilter : IMessageFilter
+        private class MouseFilter : IMessageFilter
         {
-            private readonly ModernSearchBox searchBox;
-            public GlobalMouseMessageFilter(ModernSearchBox searchBox) => this.searchBox = searchBox;
-
+            private readonly ModernSearchBox box;
+            public MouseFilter(ModernSearchBox box) => this.box = box;
             public bool PreFilterMessage(ref Message m)
             {
-                if ((m.Msg == 0x201 || m.Msg == 0x202) && !searchBox.IsMouseInside(searchBox, Control.MousePosition))
-                    searchBox.LoseFocus();
+                if ((m.Msg == 0x201 || m.Msg == 0x202) && !IsMouseIn(box, Control.MousePosition)) box.LoseFocus();
                 return false;
             }
-        }
-
-        private bool IsMouseInside(Control control, Point screenPoint)
-        {
-            if (control == null || control.IsDisposed) return false;
-            Point clientPoint = control.PointToClient(screenPoint);
-
-            if (control.ClientRectangle.Contains(clientPoint)) return true;
-            foreach (Control child in control.Controls)
-                if (!child.IsDisposed && IsMouseInside(child, screenPoint)) return true;
-
-            return false;
+            private bool IsMouseIn(Control c, Point p)
+            {
+                if (c == null || c.IsDisposed) return false;
+                Point client = c.PointToClient(p);
+                if (c.ClientRectangle.Contains(client)) return true;
+                foreach (Control child in c.Controls) if (!child.IsDisposed && IsMouseIn(child, p)) return true;
+                return false;
+            }
         }
     }
 }
