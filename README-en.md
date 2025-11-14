@@ -27,7 +27,7 @@
   [Gitee Releases][Gitee Releases]<br>
 * Note: Download the zip file (recommended) or the exe file in the Assets list
 * About .NET versions: This application is based on the the .Net 9, and it is compatible with Windows 7, 8, 8.1, 10, 11.<br>
- If your device does not include .Net 9, you may need to install the appropriate [.NET Runtime & .NET SDK].
+ If your device does not include .Net 9, you may need to install the appropriate [.NET SDK].
 
 ## ⭐ Features
 * Enable and disable context menu options for files, folders, submenus (e.g. open, send to), Internet Explorer, and Win+X, etc., and backup and restore right-click menus
@@ -79,7 +79,7 @@ Made with [contrib.rocks](https://contrib.rocks).
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
   [Gitee Releases]: https://gitee.com/Jack251970/ContextMenuManager/releases
-  [.NET Runtime & .NET SDK]: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+  [.NET SDK]: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 
 ## ❤️ Thank You
 
