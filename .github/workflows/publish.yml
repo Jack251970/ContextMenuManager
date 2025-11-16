@@ -56,3 +56,4 @@ jobs:
           files: |
             Output/ContextMenuManager*
           tag_name: "${{ env.release_version }}"
+          generate_release_notes: true
