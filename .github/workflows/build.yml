@@ -28,7 +28,7 @@ jobs:
 
       # Checkout codes
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Install the .NET Core workload
       - name: Setup .NET
@@ -51,8 +51,9 @@ jobs:
 
       # Upload the Build package
       - name: Upload Build package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
+          retention-days: 7
           path: |
             ContextMenuManager/bin/Release/net9.0-windows
           compression-level: 0
