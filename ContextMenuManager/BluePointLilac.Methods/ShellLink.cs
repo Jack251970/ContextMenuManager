@@ -212,7 +212,7 @@ namespace BluePointLilac.Methods
             }
             set
             {
-                if ((value & Keys.Modifiers) == 0) throw new ArgumentException("Hotkey must include a modifier key.");
+                if((value & Keys.Modifiers) == 0) throw new ArgumentException("Hotkey must include a modifier key.");
                 ushort key = unchecked((ushort)(((int)(value & Keys.Modifiers) >> 8) | (int)(value & Keys.KeyCode)));
                 shellLinkW.SetHotKey(key);
             }
@@ -223,7 +223,7 @@ namespace BluePointLilac.Methods
             get
             {
                 shellLinkW.GetShowCmd(out int style);
-                switch (style)
+                switch(style)
                 {
                     case SW_SHOWMINIMIZED:
                     case SW_SHOWMINNOACTIVE:
@@ -238,7 +238,7 @@ namespace BluePointLilac.Methods
             set
             {
                 int style;
-                switch (value)
+                switch(value)
                 {
                     case FormWindowState.Minimized:
                         style = SW_SHOWMINIMIZED; break;
@@ -262,7 +262,7 @@ namespace BluePointLilac.Methods
             set
             {
                 LinkDataList.GetFlags(out ShellLinkDataFlags flags);
-                if (value) flags |= ShellLinkDataFlags.RunasUser;
+                if(value) flags |= ShellLinkDataFlags.RunasUser;
                 else flags &= ~ShellLinkDataFlags.RunasUser;
                 LinkDataList.SetFlags(flags);
             }
@@ -285,7 +285,7 @@ namespace BluePointLilac.Methods
 
         protected virtual void Dispose(bool disposing)
         {
-            if (shellLinkW == null) return;
+            if(shellLinkW == null) return;
             Marshal.FinalReleaseComObject(shellLinkW);
             shellLinkW = null;
         }
@@ -302,7 +302,7 @@ namespace BluePointLilac.Methods
         public void Load(string lnkPath)
         {
             ShortcutPath = lnkPath;
-            if (File.Exists(lnkPath)) PersistFile.Load(lnkPath, STGM_READWRITE);
+            if(File.Exists(lnkPath)) PersistFile.Load(lnkPath, STGM_READWRITE);
         }
     }
 }

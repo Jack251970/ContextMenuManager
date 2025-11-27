@@ -156,7 +156,7 @@ namespace ContextMenuManager.Controls
         {
             AddItems(new[] { mliConfigDir, mliUpdate, mliRepo, mliEngine, mliBackup, mliTopMost, mliProtect, mliShowFilePath,
                 mliHideDisabledItems, mliHideSysStoreItems, mliOpenMoreRegedit, mliOpenMoreExplorer });
-            foreach (MyListItem item in Controls) item.HasImage = false;
+            foreach(MyListItem item in Controls) item.HasImage = false;
             cmbConfigDir.SelectedIndex = AppConfig.SaveToAppDir ? 1 : 0;
             cmbRepo.SelectedIndex = AppConfig.RequestUseGithub ? 0 : 1;
             cmbUpdate.SelectedIndex = GetUpdateSelectIndex();
@@ -174,8 +174,8 @@ namespace ContextMenuManager.Controls
         private void ChangeConfigDir()
         {
             string newPath = (cmbConfigDir.SelectedIndex == 0) ? AppConfig.AppDataConfigDir : AppConfig.AppConfigDir;
-            if (newPath == AppConfig.ConfigDir) return;
-            if (AppMessageBox.Show(AppString.Message.RestartApp, MessageBoxButtons.OKCancel) != DialogResult.OK)
+            if(newPath == AppConfig.ConfigDir) return;
+            if(AppMessageBox.Show(AppString.Message.RestartApp, MessageBoxButtons.OKCancel) != DialogResult.OK)
             {
                 cmbConfigDir.SelectedIndex = AppConfig.SaveToAppDir ? 1 : 0;
             }
@@ -189,17 +189,17 @@ namespace ContextMenuManager.Controls
 
         private void ChangeEngineUrl()
         {
-            if (cmbEngine.SelectedIndex < cmbEngine.Items.Count - 1)
+            if(cmbEngine.SelectedIndex < cmbEngine.Items.Count - 1)
             {
                 AppConfig.EngineUrl = AppConfig.EngineUrlsDic[cmbEngine.Text];
             }
             else
             {
-                using (InputDialog dlg = new InputDialog())
+                using(InputDialog dlg = new InputDialog())
                 {
                     dlg.Text = AppConfig.EngineUrl;
                     dlg.Title = AppString.Other.SetCustomEngine;
-                    if (dlg.ShowDialog() == DialogResult.OK) AppConfig.EngineUrl = dlg.Text;
+                    if(dlg.ShowDialog() == DialogResult.OK) AppConfig.EngineUrl = dlg.Text;
                     cmbEngine.SelectedIndex = GetEngineSelectIndex();
                 }
             }
@@ -208,7 +208,7 @@ namespace ContextMenuManager.Controls
         private void ChangeUpdateFrequency()
         {
             int day = 30;
-            switch (cmbUpdate.SelectedIndex)
+            switch(cmbUpdate.SelectedIndex)
             {
                 case 0:
                     day = 7; break;
@@ -223,7 +223,7 @@ namespace ContextMenuManager.Controls
         private int GetUpdateSelectIndex()
         {
             int index = 1;
-            switch (AppConfig.UpdateFrequency)
+            switch(AppConfig.UpdateFrequency)
             {
                 case 7:
                     index = 0; break;
@@ -238,9 +238,9 @@ namespace ContextMenuManager.Controls
         private int GetEngineSelectIndex()
         {
             string[] urls = AppConfig.EngineUrlsDic.Values.ToArray();
-            for (int i = 0; i < urls.Length; i++)
+            for(int i = 0; i < urls.Length; i++)
             {
-                if (AppConfig.EngineUrl.Equals(urls[i])) return i;
+                if(AppConfig.EngineUrl.Equals(urls[i])) return i;
             }
             return cmbEngine.Items.Count - 1;
         }

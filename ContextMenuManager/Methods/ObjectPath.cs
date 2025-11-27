@@ -24,20 +24,20 @@ namespace ContextMenuManager.Methods
         public static bool GetFullFilePath(string fileName, out string fullPath)
         {
             fullPath = null;
-            if (fileName.IsNullOrWhiteSpace()) return false;
+            if(fileName.IsNullOrWhiteSpace()) return false;
 
-            foreach (string name in new[] { fileName, $"{fileName}.exe" })
+            foreach(string name in new[] { fileName, $"{fileName}.exe" })
             {
                 //右键菜单仅支持%SystemRoot%\System32和%SystemRoot%两个环境变量，不考虑其他系统环境变量和用户环境变量，和Win+R命令有区别
-                foreach (string dir in new[] { "", @"%SystemRoot%\System32\", @"%SystemRoot%\" })
+                foreach(string dir in new[] { "", @"%SystemRoot%\System32\", @"%SystemRoot%\" })
                 {
-                    if (dir != "" && (name.Contains('\\') || name.Contains(':'))) return false;
+                    if(dir != "" && (name.Contains('\\') || name.Contains(':'))) return false;
                     fullPath = Environment.ExpandEnvironmentVariables($@"{dir}{name}");
-                    if (File.Exists(fullPath)) return true;
+                    if(File.Exists(fullPath)) return true;
                 }
 
                 fullPath = Registry.GetValue($@"{RegAppPath}\{name}", "", null)?.ToString();
-                if (File.Exists(fullPath)) return true;
+                if(File.Exists(fullPath)) return true;
             }
             fullPath = null;
             return false;
@@ -50,29 +50,29 @@ namespace ContextMenuManager.Methods
         /// <returns>成功提取返回现有文件路径，否则返回值为null</returns>
         public static string ExtractFilePath(string command)
         {
-            if (command.IsNullOrWhiteSpace()) return null;
-            if (FilePathDic.ContainsKey(command)) return FilePathDic[command];
+            if(command.IsNullOrWhiteSpace()) return null;
+            if(FilePathDic.ContainsKey(command)) return FilePathDic[command];
             else
             {
                 string filePath = null;
                 string partCmd = Environment.ExpandEnvironmentVariables(command).Replace(@"\\", @"\");
-                if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
+                if(partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
                 {
                     partCmd = partCmd.Substring(ShellExecuteCommand.Length);
                     string[] arr = partCmd.Split(new[] { "\",\"" }, StringSplitOptions.None);
-                    if (arr.Length > 0)
+                    if(arr.Length > 0)
                     {
                         string fileName = arr[0];
-                        if (GetFullFilePath(fileName, out filePath))
+                        if(GetFullFilePath(fileName, out filePath))
                         {
                             FilePathDic.Add(command, filePath);
                             return filePath;
                         }
-                        if (arr.Length > 1)
+                        if(arr.Length > 1)
                         {
                             string arguments = arr[1];
                             filePath = ExtractFilePath(arguments);
-                            if (filePath != null) return filePath;
+                            if(filePath != null) return filePath;
                         }
                     }
                 }
@@ -80,7 +80,7 @@ namespace ContextMenuManager.Methods
                 string[] strs = Array.FindAll(partCmd.Split(IllegalChars), str
                     => IgnoreCommandParts.Any(part => !part.Equals(str.Trim()))).Reverse().ToArray();
 
-                foreach (string str1 in strs)
+                foreach(string str1 in strs)
                 {
                     string str2 = str1;
                     int index = -1;
@@ -89,22 +89,22 @@ namespace ContextMenuManager.Methods
                         List<string> paths = new List<string>();
                         string path1 = str2.Substring(index + 1);
                         paths.Add(path1);
-                        if (index > 0)
+                        if(index > 0)
                         {
                             string path2 = str2.Substring(0, index);
                             paths.Add(path2);
                         }
                         int count = paths.Count;
-                        for (int i = 0; i < count; i++)
+                        for(int i = 0; i < count; i++)
                         {
-                            foreach (char c in new[] { ',', '-' })
+                            foreach(char c in new[] { ',', '-' })
                             {
-                                if (paths[i].Contains(c)) paths.AddRange(paths[i].Split(c));
+                                if(paths[i].Contains(c)) paths.AddRange(paths[i].Split(c));
                             }
                         }
-                        foreach (string path in paths)
+                        foreach(string path in paths)
                         {
-                            if (GetFullFilePath(path, out filePath))
+                            if(GetFullFilePath(path, out filePath))
                             {
                                 FilePathDic.Add(command, filePath);
                                 return filePath;
@@ -113,7 +113,7 @@ namespace ContextMenuManager.Methods
                         str2 = path1;
                         index = str2.IndexOf(' ');
                     }
-                    while (index != -1);
+                    while(index != -1);
                 }
                 FilePathDic.Add(command, null);
                 return null;
@@ -135,7 +135,7 @@ namespace ContextMenuManager.Methods
         /// <returns>目标路径存在返回true，否则返回false</returns>
         public static bool ObjectPathExist(string path, PathType type)
         {
-            switch (type)
+            switch(type)
             {
                 case PathType.File:
                     return File.Exists(path);
@@ -162,10 +162,10 @@ namespace ContextMenuManager.Methods
             do
             {
                 newPath = $@"{dirPath}\{name}";
-                if (startIndex > -1) newPath += startIndex;
+                if(startIndex > -1) newPath += startIndex;
                 newPath += extension;
                 startIndex++;
-            } while (ObjectPathExist(newPath, type));
+            } while(ObjectPathExist(newPath, type));
             return newPath;
         }
     }

@@ -13,57 +13,35 @@ namespace BluePointLilac.Controls
             AutoScroll = true;
             BackColor = MyMainForm.FormBack;
             ForeColor = MyMainForm.FormFore;
-            DoubleBuffered = true;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y,
-                Math.Sign(e.Delta) * 50.DpiZoom()));
-        }
-
-        public virtual void SearchItems(string searchText)
-        {
-            SuspendLayout();
-            foreach (Control control in Controls)
-            {
-                if (control is MyList list && !list.IsDisposed)
-                {
-                    list.SearchItems(searchText);
-                }
-            }
-            ResumeLayout();
-        }
-
-        public virtual IEnumerable<MyListItem> GetAllItems()
-        {
-            foreach (Control control in Controls)
-            {
-                if (control is MyList list && !list.IsDisposed)
-                {
-                    foreach (var item in list.GetAllItems()) yield return item;
-                }
-            }
-        }
-
-        public virtual void ClearSearchHighlight()
-        {
-            foreach (var item in GetAllItems())
-            {
-                if (!item.IsDisposed) item.HighlightText = null;
-            }
+            //使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
+            base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
         }
     }
 
     public class MyList : FlowLayoutPanel
     {
-        public MyListBox Owner { get => (MyListBox)Parent; set => Parent = value; }
+        public MyListBox Owner
+        {
+            get => (MyListBox)Parent;
+            set => Parent = value;
+        }
 
-        public MyList(MyListBox owner) : this() => Owner = owner;
+        public MyList(MyListBox owner) : this()
+        {
+            Owner = owner;
+        }
+
         public MyList()
         {
-            AutoSize = true; WrapContents = true; Dock = DockStyle.Top;
-            DoubleBuffered = true; AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            AutoSize = true;
+            WrapContents = true;
+            Dock = DockStyle.Top;
+            DoubleBuffered = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
         }
 
         private MyListItem hoveredItem;
@@ -72,18 +50,18 @@ namespace BluePointLilac.Controls
             get => hoveredItem;
             set
             {
-                if (hoveredItem == value) return;
-                if (hoveredItem != null && !hoveredItem.IsDisposed)
+                if(hoveredItem == value) return;
+                if(hoveredItem != null)
                 {
                     hoveredItem.ForeColor = MyMainForm.FormFore;
                     hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
                 }
                 hoveredItem = value;
-                if (hoveredItem != null && !hoveredItem.IsDisposed)
+                if (hoveredItem != null)
                 {
-                    hoveredItem.ForeColor = MyMainForm.MainColor;
-                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Bold);
-                    hoveredItem.Focus();
+                    value.ForeColor = MyMainForm.MainColor;
+                    value.Font = new Font(hoveredItem.Font, FontStyle.Bold);
+                    value.Focus();
                 }
                 HoveredItemChanged?.Invoke(this, null);
             }
@@ -93,248 +71,225 @@ namespace BluePointLilac.Controls
 
         public void AddItem(MyListItem item)
         {
-            if (item == null || item.IsDisposed) return;
             SuspendLayout();
             item.Parent = this;
-
-            item.MouseEnter += (s, e) => { if (!item.IsDisposed) HoveredItem = item; };
-            item.MouseLeave += (s, e) => { if (HoveredItem == item) HoveredItem = null; };
-            MouseWheel += (s, e) => item.ContextMenuStrip?.Close();
-
+            item.MouseEnter += (sender, e) => HoveredItem = item;
+            MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
             void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
-            Owner.Resize += (s, e) => ResizeItem();
+            Owner.Resize += (sender, e) => ResizeItem();
             ResizeItem();
             ResumeLayout();
         }
 
-        public void AddItems(IEnumerable<MyListItem> items)
+        public void AddItems(MyListItem[] items)
         {
-            if (items == null) return;
-            foreach (var item in items) AddItem(item);
+            Array.ForEach(items, item => AddItem(item));
         }
 
-        public void SetItemIndex(MyListItem item, int newIndex) => Controls.SetChildIndex(item, newIndex);
-        public int GetItemIndex(MyListItem item) => Controls.GetChildIndex(item);
-        public void InsertItem(MyListItem item, int index) { AddItem(item); SetItemIndex(item, index); }
+        public void AddItems(List<MyListItem> items)
+        {
+            items.ForEach(item => AddItem(item));
+        }
+
+        public void SetItemIndex(MyListItem item, int newIndex)
+        {
+            Controls.SetChildIndex(item, newIndex);
+        }
+
+        public int GetItemIndex(MyListItem item)
+        {
+            return Controls.GetChildIndex(item);
+        }
+
+        public void InsertItem(MyListItem item, int index)
+        {
+            if(item == null) return;
+            AddItem(item);
+            SetItemIndex(item, index);
+        }
 
         public virtual void ClearItems()
         {
-            if (Controls.Count == 0) return;
-            HoveredItem = null;
+            if(Controls.Count == 0) return;
             SuspendLayout();
-            for (int i = Controls.Count - 1; i >= 0; i--)
+            for(int i = Controls.Count - 1; i >= 0; i--)
             {
                 Control ctr = Controls[i];
                 Controls.Remove(ctr);
-                if (!ctr.IsDisposed) ctr.Dispose();
+                ctr.Dispose();
             }
             ResumeLayout();
         }
 
         public void SortItemByText()
         {
-            var items = new List<MyListItem>();
-            foreach (MyListItem item in Controls) if (!item.IsDisposed) items.Add(item);
+            List<MyListItem> items = new List<MyListItem>();
+            foreach(MyListItem item in Controls) items.Add(item);
             Controls.Clear();
-            items.Sort((x, y) => string.Compare(x?.Text, y?.Text, StringComparison.Ordinal));
-            foreach (var item in items) AddItem(item);
+            items.Sort(new TextComparer());
+            items.ForEach(item => AddItem(item));
         }
 
-        public virtual void SearchItems(string searchText)
+        public class TextComparer : IComparer<MyListItem>
         {
-            SuspendLayout();
-            foreach (Control control in Controls)
+            public int Compare(MyListItem x, MyListItem y)
             {
-                if (control is MyListItem item && !item.IsDisposed)
-                {
-                    bool matches = string.IsNullOrEmpty(searchText) ||
-                        item.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-                    item.Visible = matches;
-                    item.HighlightText = matches ? searchText : null;
-                }
-            }
-            ResumeLayout();
-        }
-
-        public virtual IEnumerable<MyListItem> GetAllItems()
-        {
-            foreach (Control control in Controls)
-            {
-                if (control is MyListItem item && !item.IsDisposed) yield return item;
+                if(x.Equals(y)) return 0;
+                string[] strs = { x.Text, y.Text };
+                Array.Sort(strs);
+                if(strs[0] == x.Text) return -1;
+                else return 1;
             }
         }
     }
 
     public class MyListItem : Panel
     {
-        private string highlightText, displayText;
-        private readonly RichTextBox rtbText;
-        private bool hasImage;
-
         public MyListItem()
         {
             SuspendLayout();
+            HasImage = true;
             DoubleBuffered = true;
             Height = 50.DpiZoom();
             Margin = new Padding(0);
+            Font = SystemFonts.IconTitleFont;
+            ForeColor = MyMainForm.FormFore;
             BackColor = MyMainForm.FormBack;
-
-            rtbText = new RichTextBox
-            {
-                BorderStyle = BorderStyle.None,
-                BackColor = MyMainForm.FormBack,
-                ForeColor = MyMainForm.FormFore,
-                ReadOnly = true,
-                ScrollBars = RichTextBoxScrollBars.None,
-                Multiline = false,
-                DetectUrls = false,
-                Name = "Text",
-                TabStop = false,
-                HideSelection = true
-            };
-
-            Controls.AddRange(new Control[] { lblSeparator, flpControls, rtbText, picImage });
-            picImage.Left = 20.DpiZoom(); rtbText.Left = 60.DpiZoom();
-            UpdateRichTextBoxPosition();
-
-            Resize += (s, e) => { pnlScrollbar.Height = ClientSize.Height; UpdateRichTextBoxPosition(); };
-
-            // 修复事件绑定
-            AttachEvents(rtbText);
-            AttachEvents(flpControls);
-            foreach (Control ctrl in Controls) { AttachEvents(ctrl); }
-
+            Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
+            Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
+            flpControls.MouseClick += (sender, e) => OnMouseClick(e);
+            flpControls.MouseEnter += (sender, e) => OnMouseEnter(e);
+            flpControls.MouseDown += (sender, e) => OnMouseDown(e);
             lblSeparator.SetEnabled(false);
+            lblText.SetEnabled(false);
+            CenterControl(lblText);
             CenterControl(picImage);
             AddCtr(pnlScrollbar, 0);
-            hasImage = true; picImage.Visible = true;
             ResumeLayout();
         }
 
-        private void AttachEvents(Control ctrl)
+        public Image Image
         {
-            if (ctrl == rtbText)
-            {
-                ctrl.MouseDown += (s, e) => { OnMouseDown(e); if (rtbText.Focused) Focus(); };
-                ctrl.MouseMove += (s, e) => OnMouseMove(e);
-                ctrl.MouseUp += (s, e) => OnMouseUp(e);
-                ctrl.MouseClick += (s, e) => OnMouseClick(e);
-                ctrl.MouseDoubleClick += (s, e) => OnDoubleClick(e);
-
-                // 分别处理键盘事件
-                ctrl.KeyDown += (s, e) => { e.Handled = true; };
-                ctrl.KeyPress += (s, e) => { e.Handled = true; };
-                ctrl.KeyUp += (s, e) => { e.Handled = true; };
-            }
-            else
-            {
-                ctrl.MouseEnter += (s, e) => OnMouseEnter(e);
-                ctrl.MouseLeave += (s, e) => OnMouseLeave(e);
-                if (ctrl != flpControls) ctrl.MouseDown += (s, e) => OnMouseDown(e);
-            }
+            get => picImage.Image;
+            set => picImage.Image = value;
+        }
+        public new string Text
+        {
+            get => lblText.Text;
+            set => lblText.Text = value;
+        }
+        public new Font Font
+        {
+            get => lblText.Font;
+            set => lblText.Font = value;
+        }
+        public new Color ForeColor
+        {
+            get => lblText.ForeColor;
+            set => lblText.ForeColor = value;
         }
 
-        private void UpdateRichTextBoxPosition()
-        {
-            if (rtbText?.IsDisposed != false || IsDisposed) return;
-            int textHeight = TextRenderer.MeasureText("A", rtbText.Font).Height;
-            rtbText.Top = (Height - textHeight) / 2;
-            rtbText.Height = textHeight + 2;
-            rtbText.Width = Width - rtbText.Left - flpControls.Width - 10.DpiZoom();
-        }
-
-        public Image Image { get => picImage?.Image; set => picImage.Image = value; }
-        public new string Text { get => displayText ?? ""; set { displayText = value; rtbText.Text = value; UpdateHighlight(); UpdateRichTextBoxPosition(); } }
-        public new Font Font { get => rtbText?.Font; set { rtbText.Font = value; UpdateHighlight(); UpdateRichTextBoxPosition(); } }
-        public new Color ForeColor { get => rtbText?.ForeColor ?? Color.Empty; set { rtbText.ForeColor = value; UpdateHighlight(); } }
-
-        public string HighlightText { get => highlightText; set { highlightText = value; UpdateHighlight(); } }
-        public Color HighlightColor => IsDarkColor(BackColor) ? Color.FromArgb(255, 100, 70, 0) : Color.FromArgb(255, 255, 220, 100);
-        private bool IsDarkColor(Color c) => (0.2126 * c.R + 0.7152 * c.G + 0.0722 * c.B) / 255 < 0.5;
-
+        private bool hasImage;
         public bool HasImage
         {
             get => hasImage;
-            set { hasImage = value; picImage.Visible = value; rtbText.Left = (value ? 60 : 20).DpiZoom(); UpdateRichTextBoxPosition(); }
+            set
+            {
+                hasImage = value;
+                picImage.Visible = value;
+                lblText.Left = (value ? 60 : 20).DpiZoom();
+            }
         }
 
-        private void UpdateHighlight()
+        private readonly Label lblText = new Label
         {
-            if (rtbText?.IsDisposed != false || IsDisposed || string.IsNullOrEmpty(Text)) return;
-            try
-            {
-                rtbText.SelectAll();
-                rtbText.SelectionBackColor = rtbText.BackColor;
-                rtbText.DeselectAll();
-                if (!string.IsNullOrEmpty(highlightText))
-                {
-                    int index = Text.IndexOf(highlightText, StringComparison.OrdinalIgnoreCase);
-                    if (index >= 0) { rtbText.Select(index, highlightText.Length); rtbText.SelectionBackColor = HighlightColor; }
-                }
-                rtbText.DeselectAll();
-            }
-            catch (ObjectDisposedException) { }
-        }
+            AutoSize = true,
+            Name = "Text"
+        };
+        private readonly PictureBox picImage = new PictureBox
+        {
+            SizeMode = PictureBoxSizeMode.AutoSize,
+            Left = 20.DpiZoom(),
+            Enabled = false,
+            Name = "Image"
+        };
+        private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel
+        {
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.RightToLeft,
+            Anchor = AnchorStyles.Right,
+            AutoSize = true,
+            Name = "Controls"
+        };
+        private readonly Label lblSeparator = new Label
+        {
+            BackColor = MyMainForm.FormFore,
+            Dock = DockStyle.Bottom,
+            Name = "Separator",
+            Height = 1
+        };//分割线
+        private readonly Panel pnlScrollbar = new Panel
+        {
+            Width = SystemInformation.VerticalScrollBarWidth,
+            Enabled = false
+        };//预留滚动条宽度
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            base.OnMouseDown(e); OnMouseEnter(e);
-            if (rtbText?.Focused == true) Focus();
+            base.OnMouseDown(e); OnMouseEnter(null);
         }
-
-        private readonly PictureBox picImage = new PictureBox { SizeMode = PictureBoxSizeMode.AutoSize, Enabled = false };
-        private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Anchor = AnchorStyles.Right, AutoSize = true };
-        private readonly Label lblSeparator = new Label { BackColor = MyMainForm.FormFore, Dock = DockStyle.Bottom, Height = 1 };
-        private readonly Panel pnlScrollbar = new Panel { Width = SystemInformation.VerticalScrollBarWidth, Enabled = false };
 
         private void CenterControl(Control ctr)
         {
-            if (ctr == null || IsDisposed) return;
             void reSize()
             {
-                if (ctr.IsDisposed || IsDisposed) return;
+                if(ctr.Parent == null) return;
                 int top = (ClientSize.Height - ctr.Height) / 2;
                 ctr.Top = top;
-                if (ctr.Parent == flpControls) ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
+                if(ctr.Parent == flpControls)
+                {
+                    ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
+                }
             }
-            ctr.Parent.Resize += (s, e) => reSize();
-            ctr.Resize += (s, e) => reSize();
+            ctr.Parent.Resize += (sender, e) => reSize();
+            ctr.Resize += (sender, e) => reSize();
             reSize();
         }
 
-        // 修复方法重载冲突
-        public void AddCtr(Control ctr) => AddCtrInternal(ctr, 20.DpiZoom());
-
-        public void AddCtr(Control ctr, int space) => AddCtrInternal(ctr, space.DpiZoom());
-
-        private void AddCtrInternal(Control ctr, int space)
+        public void AddCtr(Control ctr)
         {
-            if (ctr == null || flpControls == null || IsDisposed) return;
+            AddCtr(ctr, 20.DpiZoom());
+        }
+
+        public void AddCtr(Control ctr, int space)
+        {
             SuspendLayout();
             ctr.Parent = flpControls;
             ctr.Margin = new Padding(0, 0, space, 0);
-            ctr.MouseDown += (s, e) => OnMouseDown(e);
-            ctr.MouseEnter += (s, e) => OnMouseEnter(e);
-            ctr.MouseLeave += (s, e) => OnMouseLeave(e);
+            ctr.MouseEnter += (sender, e) => OnMouseEnter(e);
+            ctr.MouseDown += (sender, e) => OnMouseEnter(e);
             CenterControl(ctr);
             ResumeLayout();
         }
 
-        // 修复Array.ForEach调用
         public void AddCtrs(Control[] ctrs)
         {
-            if (ctrs != null)
-            {
-                foreach (var ctr in ctrs)
-                {
-                    if (ctr != null && !ctr.IsDisposed)
-                        AddCtr(ctr);
-                }
-            }
+            Array.ForEach(ctrs, ctr => AddCtr(ctr));
         }
 
-        public void RemoveCtrAt(int index) { if (flpControls?.Controls?.Count > index) flpControls.Controls.RemoveAt(index + 1); }
-        public int GetCtrIndex(Control ctr) => flpControls?.Controls?.GetChildIndex(ctr, true) - 1 ?? -1;
-        public void SetCtrIndex(Control ctr, int newIndex) => flpControls?.Controls?.SetChildIndex(ctr, newIndex + 1);
+        public void RemoveCtrAt(int index)
+        {
+            if(flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
+        }
+
+        public int GetCtrIndex(Control ctr)
+        {
+            return flpControls.Controls.GetChildIndex(ctr, true) - 1;
+        }
+
+        public void SetCtrIndex(Control ctr, int newIndex)
+        {
+            flpControls.Controls.SetChildIndex(ctr, newIndex + 1);
+        }
     }
 }

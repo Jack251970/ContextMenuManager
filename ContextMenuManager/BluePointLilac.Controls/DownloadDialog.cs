@@ -16,8 +16,8 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (Process process = Process.GetCurrentProcess())
-            using (DownloadForm frm = new DownloadForm())
+            using(Process process = Process.GetCurrentProcess())
+            using(DownloadForm frm = new DownloadForm())
             {
                 frm.Url = Url;
                 frm.Text = Text;
@@ -70,14 +70,14 @@ namespace BluePointLilac.Controls
             {
                 try
                 {
-                    using (UAWebClient client = new UAWebClient())
+                    using(UAWebClient client = new UAWebClient())
                     {
                         client.DownloadProgressChanged += (sender, e) =>
                         {
                             int value = e.ProgressPercentage;
                             Text = $"Downloading: {value}%";
                             pgbDownload.Value = value;
-                            if (DialogResult == DialogResult.Cancel)
+                            if(DialogResult == DialogResult.Cancel)
                             {
                                 client.CancelAsync();
                                 File.Delete(FilePath);
@@ -90,7 +90,7 @@ namespace BluePointLilac.Controls
                         client.DownloadFileAsync(new Uri(url), filePath);
                     }
                 }
-                catch (Exception e)
+                catch(Exception e)
                 {
                     MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     DialogResult = DialogResult.Cancel;
@@ -99,8 +99,8 @@ namespace BluePointLilac.Controls
 
             protected override void OnLoad(EventArgs e)
             {
-                if (Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
-                if (Owner == null) StartPosition = FormStartPosition.CenterScreen;
+                if(Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
+                if(Owner == null) StartPosition = FormStartPosition.CenterScreen;
                 else
                 {
                     TopMost = true;

@@ -142,12 +142,12 @@ namespace ContextMenuManager.Methods
 
         private static void CreateDirectory()
         {
-            foreach (string dirPath in new[] { AppDataDir, ConfigDir, ProgramsDir, RegBackupDir, MenuBackupDir, LangsDir, DicsDir, WebDicsDir, UserDicsDir })
+            foreach(string dirPath in new[] { AppDataDir, ConfigDir, ProgramsDir, RegBackupDir, MenuBackupDir, LangsDir, DicsDir, WebDicsDir, UserDicsDir })
             {
                 Directory.CreateDirectory(dirPath);
                 Application.ApplicationExit += (sender, e) =>
                 {
-                    if (Directory.Exists(dirPath) && Directory.GetFileSystemEntries(dirPath).Length == 0)
+                    if(Directory.Exists(dirPath) && Directory.GetFileSystemEntries(dirPath).Length == 0)
                     {
                         try
                         {
@@ -165,14 +165,14 @@ namespace ContextMenuManager.Methods
         private static void LoadLanguage()
         {
             language = GetGeneralValue("Language");
-            if (language.ToLower() == "default")
+            if(language.ToLower() == "default")
             {
                 LanguageIniPath = "";
                 return;
             }
-            if (language == "") language = CultureInfo.CurrentUICulture.Name;
+            if(language == "") language = CultureInfo.CurrentUICulture.Name;
             LanguageIniPath = $@"{LangsDir}\{language}.ini";
-            if (!File.Exists(LanguageIniPath))
+            if(!File.Exists(LanguageIniPath))
             {
                 LanguageIniPath = "";
                 Language = "";
@@ -225,7 +225,7 @@ namespace ContextMenuManager.Methods
             get
             {
                 string url = GetGeneralValue("EngineUrl");
-                if (string.IsNullOrEmpty(url)) url = EngineUrlsDic.Values.ToArray()[0];
+                if(string.IsNullOrEmpty(url)) url = EngineUrlsDic.Values.ToArray()[0];
                 return url;
             }
             set => SetGeneralValue("EngineUrl", value);
@@ -272,8 +272,8 @@ namespace ContextMenuManager.Methods
             get
             {
                 string value = GetGeneralValue("RequestUseGithub");
-                if (!string.IsNullOrEmpty(value)) return value == "1";
-                if (CultureInfo.CurrentCulture.Name == "zh-CN") return false;
+                if(!string.IsNullOrEmpty(value)) return value == "1";
+                if(CultureInfo.CurrentCulture.Name == "zh-CN") return false;
                 return true;
             }
             set => SetGeneralValue("RequestUseGithub", value ? 1 : 0);
@@ -284,9 +284,9 @@ namespace ContextMenuManager.Methods
             get
             {
                 string value = GetGeneralValue("UpdateFrequency");
-                if (int.TryParse(value, out int day))
+                if(int.TryParse(value, out int day))
                 {
-                    if (day == -1 || day == 7 || day == 90) return day;
+                    if(day == -1 || day == 7 || day == 90) return day;
                 }
                 return 30;
             }
@@ -305,9 +305,9 @@ namespace ContextMenuManager.Methods
             {
                 string str = GetWindowValue("MainFormSize");
                 int index = str.IndexOf(',');
-                if (index == -1) return Size.Empty;
-                if (int.TryParse(str.Substring(0, index), out int x))
-                    if (int.TryParse(str.Substring(index + 1), out int y))
+                if(index == -1) return Size.Empty;
+                if(int.TryParse(str.Substring(0, index), out int x))
+                    if(int.TryParse(str.Substring(index + 1), out int y))
                         return new Size(x, y);
                 return Size.Empty;
             }

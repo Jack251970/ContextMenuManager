@@ -53,7 +53,7 @@ namespace ContextMenuManager.Controls
 #endif
             Separator = new ShellNewSeparator();
             AddItem(Separator);
-            if (ShellNewLockItem.IsLocked) LoadLockItems();
+            if(ShellNewLockItem.IsLocked) LoadLockItems();
             else LoadUnlockItems();
         }
 
@@ -70,10 +70,10 @@ namespace ContextMenuManager.Controls
             }
 #endif
             List<string> extensions = new List<string> { "Folder" };//文件夹
-            using (RegistryKey root = Registry.ClassesRoot)
+            using(RegistryKey root = Registry.ClassesRoot)
             {
                 extensions.AddRange(Array.FindAll(root.GetSubKeyNames(), keyName => keyName.StartsWith(".")));
-                if (WinOsVersion.Current < WinOsVersion.Win10) extensions.Add("Briefcase");//公文包(Win10没有)
+                if(WinOsVersion.Current < WinOsVersion.Win10) extensions.Add("Briefcase");//公文包(Win10没有)
                 LoadItems(extensions);
             }
         }
@@ -101,37 +101,37 @@ namespace ContextMenuManager.Controls
 #endif
             foreach (string extension in ShellNewItem.UnableSortExtensions)
             {
-                if (extensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if(extensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
                     extensions.Remove(extension);
                     extensions.Insert(0, extension);
                 }
             }
-            using (RegistryKey root = Registry.ClassesRoot)
+            using(RegistryKey root = Registry.ClassesRoot)
             {
                 foreach (string extension in extensions)
                 {
-                    using (RegistryKey extKey = root.OpenSubKey(extension))
+                    using(RegistryKey extKey = root.OpenSubKey(extension))
                     {
                         string defalutOpenMode = extKey?.GetValue("")?.ToString();
-                        if (string.IsNullOrEmpty(defalutOpenMode) || defalutOpenMode.Length > 255) continue;
-                        using (RegistryKey openModeKey = root.OpenSubKey(defalutOpenMode))
+                        if(string.IsNullOrEmpty(defalutOpenMode) || defalutOpenMode.Length > 255) continue;
+                        using(RegistryKey openModeKey = root.OpenSubKey(defalutOpenMode))
                         {
-                            if (openModeKey == null) continue;
+                            if(openModeKey == null) continue;
                             string value1 = openModeKey.GetValue("FriendlyTypeName")?.ToString();
                             string value2 = openModeKey.GetValue("")?.ToString();
                             value1 = ResourceString.GetDirectString(value1);
-                            if (value1.IsNullOrWhiteSpace() && value2.IsNullOrWhiteSpace()) continue;
+                            if(value1.IsNullOrWhiteSpace() && value2.IsNullOrWhiteSpace()) continue;
                         }
-                        using (RegistryKey tKey = extKey.OpenSubKey(defalutOpenMode))
+                        using(RegistryKey tKey = extKey.OpenSubKey(defalutOpenMode))
                         {
-                            foreach (string part in ShellNewItem.SnParts)
+                            foreach(string part in ShellNewItem.SnParts)
                             {
                                 string snPart = part;
-                                if (tKey != null) snPart = $@"{defalutOpenMode}\{snPart}";
-                                using (RegistryKey snKey = extKey.OpenSubKey(snPart))
+                                if(tKey != null) snPart = $@"{defalutOpenMode}\{snPart}";
+                                using(RegistryKey snKey = extKey.OpenSubKey(snPart))
                                 {
-                                    if (ShellNewItem.EffectValueNames.Any(valueName => snKey?.GetValue(valueName) != null))
+                                    if(ShellNewItem.EffectValueNames.Any(valueName => snKey?.GetValue(valueName) != null))
                                     {
                                         ShellNewItem item = new ShellNewItem(snKey.Name, this);
 #if DEBUG
@@ -171,9 +171,9 @@ namespace ContextMenuManager.Controls
         {
             int index = GetItemIndex(shellNewItem);
             index += isUp ? -1 : 1;
-            if (index == Controls.Count) return;
+            if(index == Controls.Count) return;
             Control ctr = Controls[index];
-            if (ctr is ShellNewItem item && item.CanSort)
+            if(ctr is ShellNewItem item && item.CanSort)
             {
                 SetItemIndex(shellNewItem, index);
                 SaveSorting();
@@ -183,9 +183,9 @@ namespace ContextMenuManager.Controls
         public void SaveSorting()
         {
             List<string> extensions = new List<string>();
-            for (int i = 2; i < Controls.Count; i++)
+            for(int i = 2; i < Controls.Count; i++)
             {
-                if (Controls[i] is ShellNewItem item)
+                if(Controls[i] is ShellNewItem item)
                 {
                     extensions.Add(item.Extension);
                 }
@@ -201,26 +201,26 @@ namespace ContextMenuManager.Controls
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using (FileExtensionDialog dlg = new FileExtensionDialog())
+                using(FileExtensionDialog dlg = new FileExtensionDialog())
                 {
-                    if (dlg.ShowDialog() != DialogResult.OK) return;
+                    if(dlg.ShowDialog() != DialogResult.OK) return;
                     string extension = dlg.Extension;
-                    if (extension == ".") return;
+                    if(extension == ".") return;
                     string openMode = FileExtension.GetOpenMode(extension);
-                    if (string.IsNullOrEmpty(openMode))
+                    if(string.IsNullOrEmpty(openMode))
                     {
-                        if (AppMessageBox.Show(AppString.Message.NoOpenModeExtension,
+                        if(AppMessageBox.Show(AppString.Message.NoOpenModeExtension,
                             MessageBoxButtons.OKCancel) == DialogResult.OK)
                         {
                             ExternalProgram.ShowOpenWithDialog(extension);
                         }
                         return;
                     }
-                    foreach (Control ctr in Controls)
+                    foreach(Control ctr in Controls)
                     {
-                        if (ctr is ShellNewItem item)
+                        if(ctr is ShellNewItem item)
                         {
-                            if (item.Extension.Equals(extension, StringComparison.OrdinalIgnoreCase))
+                            if(item.Extension.Equals(extension, StringComparison.OrdinalIgnoreCase))
                             {
                                 AppMessageBox.Show(AppString.Message.HasBeenAdded);
                                 return;
@@ -228,25 +228,25 @@ namespace ContextMenuManager.Controls
                         }
                     }
 
-                    using (RegistryKey root = Registry.ClassesRoot)
-                    using (RegistryKey exKey = root.OpenSubKey(extension, true))
-                    using (RegistryKey snKey = exKey.CreateSubKey("ShellNew", true))
+                    using(RegistryKey root = Registry.ClassesRoot)
+                    using(RegistryKey exKey = root.OpenSubKey(extension, true))
+                    using(RegistryKey snKey = exKey.CreateSubKey("ShellNew", true))
                     {
                         string defaultOpenMode = exKey.GetValue("")?.ToString();
-                        if (string.IsNullOrEmpty(defaultOpenMode)) exKey.SetValue("", openMode);
+                        if(string.IsNullOrEmpty(defaultOpenMode)) exKey.SetValue("", openMode);
 
                         byte[] bytes = GetWebShellNewData(extension);
-                        if (bytes != null) snKey.SetValue("Data", bytes, RegistryValueKind.Binary);
+                        if(bytes != null) snKey.SetValue("Data", bytes, RegistryValueKind.Binary);
                         else snKey.SetValue("NullFile", "", RegistryValueKind.String);
 
                         ShellNewItem item = new ShellNewItem(snKey.Name, this);
                         AddItem(item);
                         item.Focus();
-                        if (item.ItemText.IsNullOrWhiteSpace())
+                        if(item.ItemText.IsNullOrWhiteSpace())
                         {
                             item.ItemText = FileExtension.GetExtentionInfo(FileExtension.AssocStr.FriendlyDocName, extension);
                         }
-                        if (ShellNewLockItem.IsLocked) SaveSorting();
+                        if(ShellNewLockItem.IsLocked) SaveSorting();
                     }
                 }
             };
@@ -255,15 +255,15 @@ namespace ContextMenuManager.Controls
         private static byte[] GetWebShellNewData(string extension)
         {
             string apiUrl = AppConfig.RequestUseGithub ? AppConfig.GithubShellNewApi : AppConfig.GiteeShellNewApi;
-            using (UAWebClient client = new UAWebClient())
+            using(UAWebClient client = new UAWebClient())
             {
                 XmlDocument doc = client.GetWebJsonToXml(apiUrl);
-                if (doc == null) return null;
-                foreach (XmlNode node in doc.FirstChild.ChildNodes)
+                if(doc == null) return null;
+                foreach(XmlNode node in doc.FirstChild.ChildNodes)
                 {
                     XmlNode nameXN = node.SelectSingleNode("name");
                     string str = Path.GetExtension(nameXN.InnerText);
-                    if (string.Equals(str, extension, StringComparison.OrdinalIgnoreCase))
+                    if(string.Equals(str, extension, StringComparison.OrdinalIgnoreCase))
                     {
                         try
                         {
@@ -305,11 +305,11 @@ namespace ContextMenuManager.Controls
                 get => IsLocked;
                 set
                 {
-                    if (value) Owner.SaveSorting();
+                    if(value) Owner.SaveSorting();
                     else UnLock();
-                    foreach (Control ctr in Owner.Controls)
+                    foreach(Control ctr in Owner.Controls)
                     {
-                        if (ctr is ShellNewItem item)
+                        if(ctr is ShellNewItem item)
                         {
                             item.SetSortabled(value);
                         }
@@ -325,14 +325,14 @@ namespace ContextMenuManager.Controls
             {
                 get
                 {
-                    using (RegistryKey key = RegistryEx.GetRegistryKey(ShellNewPath))
+                    using(RegistryKey key = RegistryEx.GetRegistryKey(ShellNewPath))
                     {
                         RegistrySecurity rs = key.GetAccessControl();
-                        foreach (RegistryAccessRule rar in rs.GetAccessRules(true, true, typeof(NTAccount)))
+                        foreach(RegistryAccessRule rar in rs.GetAccessRules(true, true, typeof(NTAccount)))
                         {
-                            if (rar.AccessControlType.ToString().Equals("Deny", StringComparison.OrdinalIgnoreCase))
+                            if(rar.AccessControlType.ToString().Equals("Deny", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (rar.IdentityReference.ToString().Equals("Everyone", StringComparison.OrdinalIgnoreCase)) return true;
+                                if(rar.IdentityReference.ToString().Equals("Everyone", StringComparison.OrdinalIgnoreCase)) return true;
                             }
                         }
                     }
@@ -342,7 +342,7 @@ namespace ContextMenuManager.Controls
 
             public static void Lock()
             {
-                using (RegistryKey key = RegistryEx.GetRegistryKey(ShellNewPath, RegistryKeyPermissionCheck.ReadWriteSubTree, RegistryRights.ChangePermissions))
+                using(RegistryKey key = RegistryEx.GetRegistryKey(ShellNewPath, RegistryKeyPermissionCheck.ReadWriteSubTree, RegistryRights.ChangePermissions))
                 {
                     RegistrySecurity rs = new RegistrySecurity();
                     RegistryAccessRule rar = new RegistryAccessRule("Everyone", RegistryRights.Delete | RegistryRights.WriteKey, AccessControlType.Deny);
@@ -353,14 +353,14 @@ namespace ContextMenuManager.Controls
 
             public static void UnLock()
             {
-                using (RegistryKey key = RegistryEx.GetRegistryKey(ShellNewPath, RegistryKeyPermissionCheck.ReadWriteSubTree, RegistryRights.ChangePermissions))
+                using(RegistryKey key = RegistryEx.GetRegistryKey(ShellNewPath, RegistryKeyPermissionCheck.ReadWriteSubTree, RegistryRights.ChangePermissions))
                 {
                     RegistrySecurity rs = key.GetAccessControl();
-                    foreach (RegistryAccessRule rar in rs.GetAccessRules(true, true, typeof(NTAccount)))
+                    foreach(RegistryAccessRule rar in rs.GetAccessRules(true, true, typeof(NTAccount)))
                     {
-                        if (rar.AccessControlType.ToString().Equals("Deny", StringComparison.OrdinalIgnoreCase))
+                        if(rar.AccessControlType.ToString().Equals("Deny", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (rar.IdentityReference.ToString().Equals("Everyone", StringComparison.OrdinalIgnoreCase))
+                            if(rar.IdentityReference.ToString().Equals("Everyone", StringComparison.OrdinalIgnoreCase))
                             {
                                 rs.RemoveAccessRule(rar);
                             }

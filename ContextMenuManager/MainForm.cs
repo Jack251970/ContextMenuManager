@@ -28,14 +28,12 @@ namespace ContextMenuManager
             SideBar.SelectIndexChanged += (sender, e) => SwitchItem();
             Shown += (sender, e) => FirstRunDownloadLanguage();
             FormClosing += (sender, e) => CloseMainForm();
+            HoveredToShowItemPath();
             DragDropToAnalysis();
             AddContextMenus();
             ResizeSideBar();
             JumpItem(0, 0);
             InitTheme(true);
-
-            // 初始化搜索功能
-            InitializeSearch();
         }
 
         readonly MyToolBarButton[] ToolBarButtons =
@@ -51,7 +49,7 @@ namespace ContextMenuManager
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            appSettingBox, languagesBox, dictionariesBox, aboutMeBox,
+            appSettingBox, languagesBox, dictionariesBox, aboutMeBox, 
             donateBox, backupListBox
         };
 
@@ -220,17 +218,13 @@ namespace ContextMenuManager
 
         readonly int[] lastItemIndex = new int[5];
 
-        // 搜索相关变量
-        private string lastSearchText = string.Empty;
-        private bool isSearching = false;
-
         public void JumpItem(int toolBarIndex, int sideBarIndex)
         {
             bool flag1 = ToolBar.SelectedIndex == toolBarIndex;
             bool flag2 = SideBar.SelectedIndex == sideBarIndex;
             lastItemIndex[toolBarIndex] = sideBarIndex;
             ToolBar.SelectedIndex = toolBarIndex;
-            if (flag1 || flag2)
+            if(flag1 || flag2)
             {
                 SideBar.SelectedIndex = sideBarIndex;
                 SwitchItem();
@@ -250,7 +244,7 @@ namespace ContextMenuManager
 
         private void SwitchTab()
         {
-            switch (ToolBar.SelectedIndex)
+            switch(ToolBar.SelectedIndex)
             {
                 case 0:
                     SideBar.ItemNames = GeneralItems; break;
@@ -266,19 +260,13 @@ namespace ContextMenuManager
 
         private void SwitchItem()
         {
-            // 切换项目时清除搜索状态
-            if (isSearching)
-            {
-                ClearSearch();
-            }
-
-            foreach (Control ctr in MainControls)
+            foreach(Control ctr in MainControls)
             {
                 ctr.Visible = false;
-                if (ctr is MyList list) list.ClearItems();
+                if(ctr is MyList list) list.ClearItems();
             }
-            if (SideBar.SelectedIndex == -1) return;
-            switch (ToolBar.SelectedIndex)
+            if(SideBar.SelectedIndex == -1) return;
+            switch(ToolBar.SelectedIndex)
             {
                 case 0:
                     SwitchGeneralItem(); break;
@@ -295,10 +283,10 @@ namespace ContextMenuManager
 
         private void ShowItemInfo()
         {
-            if (SideBar.HoveredIndex >= 0)
+            if(SideBar.HoveredIndex >= 0)
             {
                 int i = SideBar.HoveredIndex;
-                switch (ToolBar.SelectedIndex)
+                switch(ToolBar.SelectedIndex)
                 {
                     case 0:
                         StatusBar.Text = GeneralItemInfos[i]; return;
@@ -309,6 +297,27 @@ namespace ContextMenuManager
                 }
             }
             StatusBar.Text = MyStatusBar.DefaultText;
+        }
+
+        private void HoveredToShowItemPath()
+        {
+            foreach(Control ctr in MainBody.Controls)
+            {
+                if(ctr is MyList list && list != appSettingBox)
+                {
+                    list.HoveredItemChanged += (sender, e) =>
+                    {
+                        if(!AppConfig.ShowFilePath) return;
+                        MyListItem item = list.HoveredItem;
+                        foreach(string prop in new[] { "ItemFilePath", "RegPath", "GroupPath", "SelectedPath" })
+                        {
+                            string path = item.GetType().GetProperty(prop)?.GetValue(item, null)?.ToString();
+                            if(!path.IsNullOrWhiteSpace()) { StatusBar.Text = path; return; }
+                        }
+                        StatusBar.Text = item.Text;
+                    };
+                }
+            }
         }
 
         private void DragDropToAnalysis()
@@ -323,7 +332,7 @@ namespace ContextMenuManager
 
         private void SwitchGeneralItem()
         {
-            switch (SideBar.SelectedIndex)
+            switch(SideBar.SelectedIndex)
             {
                 case 11:
                     shellNewList.LoadItems(); shellNewList.Visible = true; break;
@@ -348,7 +357,7 @@ namespace ContextMenuManager
 
         private void SwitchOtherRuleItem()
         {
-            switch (SideBar.SelectedIndex)
+            switch(SideBar.SelectedIndex)
             {
                 case 0:
                     enhanceMenusList.ScenePath = null; enhanceMenusList.LoadItems(); enhanceMenusList.Visible = true; break;
@@ -369,7 +378,7 @@ namespace ContextMenuManager
 
         private void SwitchAboutItem()
         {
-            switch (SideBar.SelectedIndex)
+            switch(SideBar.SelectedIndex)
             {
                 case 0:
                     appSettingBox.LoadItems(); appSettingBox.Visible = true;
@@ -384,7 +393,7 @@ namespace ContextMenuManager
                     dictionariesBox.LoadText(); dictionariesBox.Visible = true;
                     break;
                 case 4:
-                    if (aboutMeBox.TextLength == 0) aboutMeBox.LoadIni(AppString.Other.AboutApp);
+                    if(aboutMeBox.TextLength == 0) aboutMeBox.LoadIni(AppString.Other.AboutApp);
                     aboutMeBox.Visible = true;
                     break;
                 case 5:
@@ -410,46 +419,33 @@ namespace ContextMenuManager
                 { ToolBarButtons[4], SettingItems }
             };
 
-            // 创建工具栏按钮到索引的映射
-            var buttonToIndex = new Dictionary<MyToolBarButton, int>
-            {
-                { ToolBarButtons[0], 0 },
-                { ToolBarButtons[1], 1 },
-                { ToolBarButtons[2], 2 },
-                { ToolBarButtons[3], 3 },
-                { ToolBarButtons[4], 4 }
-            };
-
-            foreach (var item in dic)
+            foreach(var item in dic)
             {
                 ContextMenuStrip cms = new ContextMenuStrip();
                 cms.MouseEnter += (sender, e) =>
                 {
-                    if (item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.HoveredOpacity;
+                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.HoveredOpacity;
                 };
                 cms.Closed += (sender, e) =>
                 {
-                    if (item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.UnSelctedOpacity;
+                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.UnSelctedOpacity;
                 };
                 item.Key.MouseDown += (sender, e) =>
                 {
-                    if (e.Button != MouseButtons.Right) return;
-                    if (sender == ToolBar.SelectedButton) return;
+                    if(e.Button != MouseButtons.Right) return;
+                    if(sender == ToolBar.SelectedButton) return;
                     cms.Show(item.Key, e.Location);
                 };
-                for (int i = 0; i < item.Value.Length; i++)
+                for(int i = 0; i < item.Value.Length; i++)
                 {
-                    if (item.Value[i] == null) cms.Items.Add(new RToolStripSeparator());
+                    if(item.Value[i] == null) cms.Items.Add(new RToolStripSeparator());
                     else
                     {
                         var tsi = new RToolStripMenuItem(item.Value[i]);
                         cms.Items.Add(tsi);
-
-                        // 使用预定义的索引映射而不是动态获取
-                        int toolBarIndex = buttonToIndex[item.Key];
+                        int toolBarIndex = ToolBar.Controls.GetChildIndex(item.Key);
                         int index = i;
-
-                        if (toolBarIndex != 4)
+                        if(toolBarIndex != 4)
                         {
                             tsi.Click += (sender, e) => JumpItem(toolBarIndex, index);
                             cms.Opening += (sender, e) => tsi.Checked = lastItemIndex[toolBarIndex] == index;
@@ -458,7 +454,7 @@ namespace ContextMenuManager
                         {
                             tsi.Click += (sender, e) =>
                             {
-                                switch (index)
+                                switch(index)
                                 {
                                     case 0:
                                         AppConfig.TopMost = TopMost = !tsi.Checked; break;
@@ -474,7 +470,7 @@ namespace ContextMenuManager
                             };
                             cms.Opening += (sender, e) =>
                             {
-                                switch (index)
+                                switch(index)
                                 {
                                     case 0:
                                         tsi.Checked = TopMost; break;
@@ -496,9 +492,9 @@ namespace ContextMenuManager
 
         private void FirstRunDownloadLanguage()
         {
-            if (AppConfig.IsFirstRun && CultureInfo.CurrentUICulture.Name != "zh-CN")
+            if(AppConfig.IsFirstRun && CultureInfo.CurrentUICulture.Name != "zh-CN")
             {
-                if (AppMessageBox.Show("It is detected that you may be running this program for the first time,\n" +
+                if(AppMessageBox.Show("It is detected that you may be running this program for the first time,\n" +
                     "and your system display language is not simplified Chinese (zh-CN),\n" +
                     "do you need to download another language?",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -511,279 +507,12 @@ namespace ContextMenuManager
 
         private void CloseMainForm()
         {
-            if (explorerRestarter.Visible && AppMessageBox.Show(explorerRestarter.Text,
+            if(explorerRestarter.Visible && AppMessageBox.Show(explorerRestarter.Text,
                 MessageBoxButtons.OKCancel) == DialogResult.OK) ExternalProgram.RestartExplorer();
             Opacity = 0;
             WindowState = FormWindowState.Normal;
             explorerRestarter.Visible = false;
             AppConfig.MainFormSize = Size;
-        }
-
-        // ==================== 搜索功能实现 ====================
-
-        private void InitializeSearch()
-        {
-            // 订阅搜索事件
-            ToolBar.SearchPerformed += (s, e) => PerformSearch();
-            ToolBar.SearchTextChanged += (s, e) =>
-            {
-                // 实时搜索（可选）
-                if (string.IsNullOrEmpty(ToolBar.SearchText))
-                {
-                    ClearSearch();
-                }
-                else
-                {
-                    PerformSearch();
-                }
-            };
-        }
-
-        private void PerformSearch()
-        {
-            string searchText = ToolBar.SearchText;
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                ClearSearch();
-                return;
-            }
-
-            // 防止重复搜索相同内容
-            if (searchText == lastSearchText && isSearching) return;
-
-            lastSearchText = searchText;
-            isSearching = true;
-
-            Cursor = Cursors.WaitCursor;
-
-            try
-            {
-                // 在当前显示的 MainBody 中搜索
-                SearchCurrentList(searchText);
-
-                // 更新状态栏显示搜索结果
-                UpdateSearchStatus(searchText);
-            }
-            finally
-            {
-                Cursor = Cursors.Default;
-            }
-        }
-
-        private void SearchCurrentList(string searchText)
-        {
-            // 根据当前选中的工具栏和侧边栏项目确定要搜索的列表
-            switch (ToolBar.SelectedIndex)
-            {
-                case 0: // 主页
-                    SearchGeneralList(searchText);
-                    break;
-                case 1: // 文件类型
-                    SearchTypeList(searchText);
-                    break;
-                case 2: // 其他规则
-                    SearchOtherRuleList(searchText);
-                    break;
-                case 4: // 关于
-                    SearchAboutList(searchText);
-                    break;
-            }
-        }
-
-        private void SearchGeneralList(string searchText)
-        {
-            switch (SideBar.SelectedIndex)
-            {
-                case 11:
-                    SafeSearchItems(shellNewList, searchText);
-                    break;
-                case 12:
-                    SafeSearchItems(sendToList, searchText);
-                    break;
-                case 13:
-                    SafeSearchItems(openWithList, searchText);
-                    break;
-                case 15:
-                    SafeSearchItems(winXList, searchText);
-                    break;
-                default:
-                    SafeSearchItems(shellList, searchText);
-                    break;
-            }
-        }
-
-        private void SearchTypeList(string searchText)
-        {
-            SafeSearchItems(shellList, searchText);
-        }
-
-        private void SearchOtherRuleList(string searchText)
-        {
-            switch (SideBar.SelectedIndex)
-            {
-                case 0:
-                    SafeSearchItems(enhanceMenusList, searchText);
-                    break;
-                case 1:
-                    SafeSearchItems(detailedEditList, searchText);
-                    break;
-                case 3:
-                case 4:
-                case 8:
-                    SafeSearchItems(shellList, searchText);
-                    break;
-                case 5:
-                    SafeSearchItems(iEList, searchText);
-                    break;
-                case 7:
-                    SafeSearchItems(guidBlockedList, searchText);
-                    break;
-            }
-        }
-
-        private void SearchAboutList(string searchText)
-        {
-            switch (SideBar.SelectedIndex)
-            {
-                case 2:
-                    SafeSearchItems(backupListBox, searchText);
-                    break;
-                case 3:
-                    SafeSearchItems(dictionariesBox, searchText);
-                    break;
-                    // 其他关于页面不支持搜索
-            }
-        }
-
-        // 安全的搜索方法，避免编译错误
-        private void SafeSearchItems(Control control, string searchText)
-        {
-            try
-            {
-                // 方法1：使用反射调用 SearchItems 方法
-                var method = control.GetType().GetMethod("SearchItems");
-                if (method != null)
-                {
-                    method.Invoke(control, new object[] { searchText });
-                    return;
-                }
-
-                // 方法2：如果是 MyListBox 或 MyList，直接调用
-                if (control is BluePointLilac.Controls.MyListBox listBox)
-                {
-                    listBox.SearchItems(searchText);
-                }
-                else if (control is BluePointLilac.Controls.MyList list)
-                {
-                    list.SearchItems(searchText);
-                }
-            }
-            catch (Exception ex)
-            {
-                // 忽略搜索错误，这个控件可能不支持搜索
-                System.Diagnostics.Debug.WriteLine($"搜索错误 {control.GetType().Name}: {ex.Message}");
-            }
-        }
-
-        private void UpdateSearchStatus(string searchText)
-        {
-            int visibleCount = 0;
-            int totalCount = 0;
-
-            // 计算可见项和总项数
-            foreach (Control ctr in MainControls)
-            {
-                if (ctr.Visible)
-                {
-                    var items = SafeGetAllItems(ctr);
-                    totalCount += items.Count();
-                    visibleCount += items.Count(item => item.Visible);
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                StatusBar.Text = MyStatusBar.DefaultText;
-            }
-            else
-            {
-                StatusBar.Text = AppString.Other.StatusSearch.Replace("%searchText", searchText).Replace("%visibleCount", visibleCount.ToString()).Replace("%totalCount", totalCount.ToString());
-            }
-        }
-
-        // 安全获取所有项目的方法
-        private IEnumerable<Control> SafeGetAllItems(Control control)
-        {
-            try
-            {
-                // 方法1：使用反射调用 GetAllItems 方法
-                var method = control.GetType().GetMethod("GetAllItems");
-                if (method != null)
-                {
-                    var result = method.Invoke(control, null);
-                    if (result is IEnumerable<Control> items)
-                    {
-                        return items;
-                    }
-                }
-
-                // 方法2：如果是 MyListBox 或 MyList，直接调用
-                if (control is BluePointLilac.Controls.MyListBox listBox)
-                {
-                    return listBox.GetAllItems().Cast<Control>();
-                }
-                else if (control is BluePointLilac.Controls.MyList list)
-                {
-                    return list.GetAllItems().Cast<Control>();
-                }
-
-                // 方法3：默认返回所有子控件
-                return control.Controls.Cast<Control>();
-            }
-            catch (Exception ex)
-            {
-                // 忽略错误，返回空集合
-                System.Diagnostics.Debug.WriteLine($"获取项目错误 {control.GetType().Name}: {ex.Message}");
-                return Enumerable.Empty<Control>();
-            }
-        }
-
-        private void ClearSearch()
-        {
-            if (!isSearching) return;
-
-            // 清除所有列表的搜索状态
-            foreach (Control ctr in MainControls)
-            {
-                SafeSearchItems(ctr, string.Empty);
-            }
-
-            // 重置搜索状态
-            isSearching = false;
-            lastSearchText = string.Empty;
-            ToolBar.ClearSearch();
-
-            // 恢复状态栏显示
-            ShowItemInfo();
-        }
-
-        // 添加键盘快捷键（Ctrl+F 聚焦搜索框）
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (keyData == (Keys.Control | Keys.F))
-            {
-                ToolBar.FocusSearchBox();
-                return true;
-            }
-
-            // ESC 键清除搜索
-            if (keyData == Keys.Escape && isSearching)
-            {
-                ClearSearch();
-                return true;
-            }
-
-            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 }
