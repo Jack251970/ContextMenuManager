@@ -28,7 +28,7 @@ namespace ContextMenuManager.Methods
             IniWriter writer = new IniWriter(GetDesktopIniPath(filePath));
             string fileName = Path.GetFileName(filePath);
             string name = writer.GetValue(LocalizedFileNames, fileName);
-            if (translate) name = ResourceString.GetDirectString(name);
+            if(translate) name = ResourceString.GetDirectString(name);
             return name;
         }
     }

@@ -21,10 +21,10 @@ namespace ContextMenuManager.Controls
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
             cms.Items.AddRange(items);
-            for (int i = 0; i < 6; i++)
+            for(int i = 0; i < 6; i++)
             {
                 boxs[i] = new ReadOnlyRichTextBox { Parent = pages[i] };
-                if (i > 0) boxs[i].ContextMenuStrip = cms;
+                if(i > 0) boxs[i].ContextMenuStrip = cms;
             }
             items[0].Click += (sender, e) => ExternalProgram.OpenNotepadWithText(GetInitialText());
             items[2].Click += (sender, e) => SaveFile();
@@ -62,10 +62,10 @@ namespace ContextMenuManager.Controls
 
         private void SaveFile()
         {
-            using (SaveFileDialog dlg = new SaveFileDialog())
+            using(SaveFileDialog dlg = new SaveFileDialog())
             {
                 string dirPath = AppConfig.UserDicsDir;
-                switch (SelectedIndex)
+                switch(SelectedIndex)
                 {
                     case 1:
                         dirPath = AppConfig.LangsDir;
@@ -87,7 +87,7 @@ namespace ContextMenuManager.Controls
                 dlg.Filter = $"{dlg.FileName}|*{Path.GetExtension(dlg.FileName)}";
                 Directory.CreateDirectory(dirPath);
                 dlg.InitialDirectory = dirPath;
-                if (dlg.ShowDialog() == DialogResult.OK)
+                if(dlg.ShowDialog() == DialogResult.OK)
                 {
                     File.WriteAllText(dlg.FileName, GetInitialText(), Encoding.Unicode);
                 }
@@ -96,7 +96,7 @@ namespace ContextMenuManager.Controls
 
         private string GetInitialText()
         {
-            switch (SelectedIndex)
+            switch(SelectedIndex)
             {
                 case 0:
                     return AppString.Other.Dictionaries;
@@ -118,9 +118,9 @@ namespace ContextMenuManager.Controls
         public void LoadText()
         {
             int index = SelectedIndex;
-            if (boxs[index].Text.Length > 0) return;
+            if(boxs[index].Text.Length > 0) return;
             Action<string> action = null;
-            switch (index)
+            switch(index)
             {
                 case 0:
                 case 1:

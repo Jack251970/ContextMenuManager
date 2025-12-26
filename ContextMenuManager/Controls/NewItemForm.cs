@@ -32,10 +32,10 @@ namespace ContextMenuManager.Controls
             {
                 string filePath = ItemFilePath;
                 string arguments = Arguments;
-                if (arguments.IsNullOrWhiteSpace()) return filePath;
-                if (filePath.IsNullOrWhiteSpace()) return arguments;
-                if (filePath.Contains(" ")) filePath = $"\"{filePath}\"";
-                if (!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
+                if(arguments.IsNullOrWhiteSpace()) return filePath;
+                if(filePath.IsNullOrWhiteSpace()) return arguments;
+                if(filePath.Contains(" ")) filePath = $"\"{filePath}\"";
+                if(!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
                 return $"{filePath} {arguments}";
             }
         }

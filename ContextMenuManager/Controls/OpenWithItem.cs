@@ -44,13 +44,13 @@ namespace ContextMenuManager.Controls
             get
             {
                 string name = null;
-                if (NameEquals)
+                if(NameEquals)
                 {
                     name = Registry.GetValue(AppPath, "FriendlyAppName", null)?.ToString();
                     name = ResourceString.GetDirectString(name);
                 }
-                if (string.IsNullOrEmpty(name)) name = FileVersionInfo.GetVersionInfo(ItemFilePath).FileDescription;
-                if (string.IsNullOrEmpty(name)) name = Path.GetFileName(ItemFilePath);
+                if(string.IsNullOrEmpty(name)) name = FileVersionInfo.GetVersionInfo(ItemFilePath).FileDescription;
+                if(string.IsNullOrEmpty(name)) name = Path.GetFileName(ItemFilePath);
                 return name;
             }
             set
@@ -65,7 +65,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "", null)?.ToString();
             set
             {
-                if (ObjectPath.ExtractFilePath(value) != ItemFilePath)
+                if(ObjectPath.ExtractFilePath(value) != ItemFilePath)
                 {
                     AppMessageBox.Show(AppString.Message.CannotChangePath);
                 }
@@ -78,7 +78,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(AppPath, "NoOpenWith", null) == null;
             set
             {
-                if (value) RegistryEx.DeleteValue(AppPath, "NoOpenWith");
+                if(value) RegistryEx.DeleteValue(AppPath, "NoOpenWith");
                 else Registry.SetValue(AppPath, "NoOpenWith", "");
             }
         }
@@ -125,9 +125,9 @@ namespace ContextMenuManager.Controls
         public void DeleteMe()
         {
             RegistryEx.DeleteKeyTree(RegPath);
-            using (RegistryKey key = RegistryEx.GetRegistryKey(ShellPath))
+            using(RegistryKey key = RegistryEx.GetRegistryKey(ShellPath))
             {
-                if (key.GetSubKeyNames().Length == 0) RegistryEx.DeleteKeyTree(AppPath);
+                if(key.GetSubKeyNames().Length == 0) RegistryEx.DeleteKeyTree(AppPath);
             }
         }
     }

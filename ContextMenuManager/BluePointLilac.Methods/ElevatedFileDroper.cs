@@ -80,12 +80,12 @@ namespace BluePointLilac.Methods
             Application.AddMessageFilter(this);
             ctr.Disposed += (sender, e) => Application.RemoveMessageFilter(this);
 
-            if (ctr is Form frm)
+            if(ctr is Form frm)
             {
                 double opacity = frm.Opacity;
                 frm.Paint += (sender, e) =>
                 {
-                    if (frm.Opacity != opacity)
+                    if(frm.Opacity != opacity)
                     {
                         //窗体透明度变化时需要重新注册接受文件拖拽标识符
                         DragAcceptFiles(ctr.Handle, true);
@@ -98,12 +98,12 @@ namespace BluePointLilac.Methods
             bool isVistaOrHigher = ver >= new Version(6, 0);
             bool isWin7OrHigher = ver >= new Version(6, 1);
             var status = new ChangeFilterStruct { CbSize = 8 };
-            if (isVistaOrHigher)
+            if(isVistaOrHigher)
             {
-                foreach (uint msg in new[] { WM_DROPFILES, WM_COPYGLOBALDATA, WM_COPYDATA })
+                foreach(uint msg in new[] { WM_DROPFILES, WM_COPYGLOBALDATA, WM_COPYDATA })
                 {
                     bool error = false;
-                    if (isWin7OrHigher)
+                    if(isWin7OrHigher)
                     {
                         error = !ChangeWindowMessageFilterEx(ctr.Handle, msg, ChangeFilterAction.MSGFLT_ALLOW, in status);
                     }
@@ -111,22 +111,22 @@ namespace BluePointLilac.Methods
                     {
                         error = !ChangeWindowMessageFilter(msg, ChangeWindowMessageFilterFlags.MSGFLT_ADD);
                     }
-                    if (error) throw new Win32Exception(Marshal.GetLastWin32Error());
+                    if(error) throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
             }
         }
 
         public bool PreFilterMessage(ref Message m)
         {
-            if (m.Msg != WM_DROPFILES) return false;
+            if(m.Msg != WM_DROPFILES) return false;
             IntPtr handle = m.WParam;
             uint fileCount = DragQueryFile(handle, uint.MaxValue, null, 0);
             string[] filePaths = new string[fileCount];
-            for (uint i = 0; i < fileCount; i++)
+            for(uint i = 0; i < fileCount; i++)
             {
                 StringBuilder sb = new StringBuilder(260);
                 uint result = DragQueryFile(handle, i, sb, sb.Capacity);
-                if (result > 0) filePaths[i] = sb.ToString();
+                if(result > 0) filePaths[i] = sb.ToString();
             }
             DragQueryPoint(handle, out Point point);
             DragFinish(handle);

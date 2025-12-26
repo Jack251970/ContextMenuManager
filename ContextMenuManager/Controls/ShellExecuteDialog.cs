@@ -16,11 +16,11 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (ShellExecuteForm frm = new ShellExecuteForm())
+            using(ShellExecuteForm frm = new ShellExecuteForm())
             {
                 frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag)
+                if(flag)
                 {
                     Verb = frm.Verb;
                     WindowStyle = frm.WindowStyle;
@@ -32,7 +32,7 @@ namespace ContextMenuManager.Controls
         public static string GetCommand(string fileName, string arguments, string verb, int windowStyle, string directory = null)
         {
             arguments = arguments.Replace("\"", "\"\"");
-            if (directory == null)
+            if(directory == null)
             {
                 ObjectPath.GetFullFilePath(fileName, out string filePath);
                 directory = Path.GetDirectoryName(filePath);
@@ -99,7 +99,7 @@ namespace ContextMenuManager.Controls
                 Controls.AddRange(new Control[] { grpVerb, lblStyle, nudStyle, btnOK, btnCancel });
                 int a = 10.DpiZoom();
                 int b = 2 * a;
-                for (int i = 0; i < 6; i++)
+                for(int i = 0; i < 6; i++)
                 {
                     rdoVerbs[i] = new RadioButton
                     {
@@ -108,7 +108,7 @@ namespace ContextMenuManager.Controls
                         Parent = grpVerb,
                         Location = new Point(a, b + a)
                     };
-                    if (i > 0) rdoVerbs[i].Left += rdoVerbs[i - 1].Right;
+                    if(i > 0) rdoVerbs[i].Left += rdoVerbs[i - 1].Right;
                 }
                 rdoVerbs[0].Checked = true;
                 grpVerb.Width = rdoVerbs[5].Right + a;
@@ -121,9 +121,9 @@ namespace ContextMenuManager.Controls
                 ClientSize = new Size(btnCancel.Right + b, btnCancel.Bottom + b);
                 btnOK.Click += (sender, e) =>
                 {
-                    for (int i = 0; i < 6; i++)
+                    for(int i = 0; i < 6; i++)
                     {
-                        if (rdoVerbs[i].Checked)
+                        if(rdoVerbs[i].Checked)
                         {
                             Verb = rdoVerbs[i].Text;
                             break;
@@ -152,16 +152,16 @@ namespace ContextMenuManager.Controls
 
         protected override void OnClick(EventArgs e)
         {
-            if (Checked)
+            if(Checked)
             {
                 Checked = false;
                 ttpInfo.RemoveAll();
             }
             else
             {
-                using (ShellExecuteDialog dlg = new ShellExecuteDialog())
+                using(ShellExecuteDialog dlg = new ShellExecuteDialog())
                 {
-                    if (dlg.ShowDialog() != DialogResult.OK) return;
+                    if(dlg.ShowDialog() != DialogResult.OK) return;
                     Verb = dlg.Verb;
                     WindowStyle = dlg.WindowStyle;
                     Checked = true;

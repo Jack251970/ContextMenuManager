@@ -14,11 +14,11 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (NewOpenWithForm frm = new NewOpenWithForm())
+            using(NewOpenWithForm frm = new NewOpenWithForm())
             {
                 frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag) RegPath = frm.RegPath;
+                if(flag) RegPath = frm.RegPath;
                 return flag;
             }
         }
@@ -38,27 +38,27 @@ namespace ContextMenuManager.Controls
                 btnBrowse.Click += (sender, e) => BrowseFile();
                 btnOK.Click += (sender, e) =>
                 {
-                    if (string.IsNullOrEmpty(ItemText))
+                    if(string.IsNullOrEmpty(ItemText))
                     {
                         AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                         return;
                     }
-                    if (ItemCommand.IsNullOrWhiteSpace())
+                    if(ItemCommand.IsNullOrWhiteSpace())
                     {
                         AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
                         return;
                     }
                     FilePath = ObjectPath.ExtractFilePath(base.ItemFilePath);
-                    using (var key = RegistryEx.GetRegistryKey(CommandPath))
+                    using(var key = RegistryEx.GetRegistryKey(CommandPath))
                     {
                         string path = ObjectPath.ExtractFilePath(key?.GetValue("")?.ToString());
                         string name = Path.GetFileName(path);
-                        if (FilePath != null && FilePath.Equals(path, StringComparison.OrdinalIgnoreCase))
+                        if(FilePath != null && FilePath.Equals(path, StringComparison.OrdinalIgnoreCase))
                         {
                             AppMessageBox.Show(AppString.Message.HasBeenAdded);
                             return;
                         }
-                        if (FileName == null || FileName.Equals(name, StringComparison.OrdinalIgnoreCase))
+                        if(FileName == null || FileName.Equals(name, StringComparison.OrdinalIgnoreCase))
                         {
                             AppMessageBox.Show(AppString.Message.UnsupportedFilename);
                             return;
@@ -71,10 +71,10 @@ namespace ContextMenuManager.Controls
 
             private void BrowseFile()
             {
-                using (OpenFileDialog dlg = new OpenFileDialog())
+                using(OpenFileDialog dlg = new OpenFileDialog())
                 {
                     dlg.Filter = $"{AppString.Dialog.Program}|*.exe";
-                    if (dlg.ShowDialog() == DialogResult.OK)
+                    if(dlg.ShowDialog() == DialogResult.OK)
                     {
                         base.ItemFilePath = dlg.FileName;
                         Arguments = "\"%1\"";
@@ -85,11 +85,11 @@ namespace ContextMenuManager.Controls
 
             private void AddNewItem()
             {
-                using (var key = RegistryEx.GetRegistryKey(AppRegPath, true, true))
+                using(var key = RegistryEx.GetRegistryKey(AppRegPath, true, true))
                 {
                     key.SetValue("FriendlyAppName", ItemText);
                 }
-                using (var cmdKey = RegistryEx.GetRegistryKey(CommandPath, true, true))
+                using(var cmdKey = RegistryEx.GetRegistryKey(CommandPath, true, true))
                 {
                     cmdKey.SetValue("", ItemCommand);
                     RegPath = cmdKey.Name;

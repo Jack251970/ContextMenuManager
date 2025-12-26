@@ -1,17 +1,17 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
+﻿using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Serialization;
 using static ContextMenuManager.Controls.ShellList;
-using static ContextMenuManager.Controls.ShellNewList;
+using System.Xml;
+using System.Drawing;
 using static ContextMenuManager.Methods.BackupList;
+using System.Xml.Serialization;
+using static ContextMenuManager.Controls.ShellNewList;
+using BluePointLilac.Controls;
 
 namespace ContextMenuManager.Methods
 {
@@ -131,7 +131,7 @@ namespace ContextMenuManager.Methods
         public string[] GetBackupRestoreScenesText(List<Scenes> scenes)
         {
             List<string> scenesTextList = new List<string>();
-            foreach (Scenes scene in scenes)
+            foreach(Scenes scene in scenes)
             {
                 scenesTextList.Add(BackupScenesText[(int)scene]);
             }
@@ -248,7 +248,7 @@ namespace ContextMenuManager.Methods
         // 按照目前处理场景逐个备份或恢复
         private void BackupRestoreItems(LoadingDialogInterface dialogInterface)
         {
-            foreach (Scenes scene in currentScenes)
+            foreach(Scenes scene in currentScenes)
             {
                 currentScene = scene;
                 // 加载某个Scene的恢复列表
@@ -374,7 +374,7 @@ namespace ContextMenuManager.Methods
                     }
                 }
             }
-            if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) ||
+            if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) || 
                 (restoreMode == RestoreMode.EnableNotOnList && !currentItemData))
             {
                 restoreList.Add(new RestoreChangedItem(currentScene, itemName, (!currentItemData).ToString()));
@@ -848,7 +848,7 @@ namespace ContextMenuManager.Methods
                         {
                             BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
                         }
-
+                        
                         names.Add(keyName);
 #if DEBUG
                         i++;
@@ -1393,8 +1393,7 @@ namespace ContextMenuManager.Methods
                             if (string.IsNullOrEmpty(regPath)) regPath = groupItem.GroupPath;
                             else if (regPath.StartsWith("\\")) regPath = groupItem.GroupPath + regPath;
                             return regPath;
-                        }
-                        ;
+                        };
 
                         // 遍历groupItem内所有Item节点
                         foreach (XmlElement itemXE in groupXN.SelectNodes("Item"))
@@ -1739,7 +1738,7 @@ namespace ContextMenuManager.Methods
     public sealed class BackupList
     {
         // 元数据缓存区
-        public static MetaData metaData = new MetaData();
+        public static MetaData metaData = new MetaData();  
 
         // 备份列表/恢复列表缓存区
         private static List<BackupItem> backupRestoreList = new List<BackupItem>();
@@ -1748,7 +1747,7 @@ namespace ContextMenuManager.Methods
         public static List<BackupItem> sceneRestoreList = new List<BackupItem>();
 
         // 创建一个XmlSerializer实例并设置根节点
-        private static readonly XmlSerializer backupDataSerializer = new XmlSerializer(typeof(BackupData),
+        private static readonly XmlSerializer backupDataSerializer = new XmlSerializer(typeof(BackupData), 
             new XmlRootAttribute("ContextMenuManager"));
         // 自定义命名空间
         private static readonly XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();

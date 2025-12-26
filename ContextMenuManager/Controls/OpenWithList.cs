@@ -26,34 +26,34 @@ namespace ContextMenuManager.Controls
 
         private void LoadOpenWithItems()
         {
-            using (RegistryKey root = Registry.ClassesRoot)
-            using (RegistryKey appKey = root.OpenSubKey("Applications"))
+            using(RegistryKey root = Registry.ClassesRoot)
+            using(RegistryKey appKey = root.OpenSubKey("Applications"))
             {
-                foreach (string appName in appKey.GetSubKeyNames())
+                foreach(string appName in appKey.GetSubKeyNames())
                 {
-                    if (!appName.Contains('.')) continue;//需要为有扩展名的文件名
-                    using (RegistryKey shellKey = appKey.OpenSubKey($@"{appName}\shell"))
+                    if(!appName.Contains('.')) continue;//需要为有扩展名的文件名
+                    using(RegistryKey shellKey = appKey.OpenSubKey($@"{appName}\shell"))
                     {
-                        if (shellKey == null) continue;
+                        if(shellKey == null) continue;
 
                         List<string> names = shellKey.GetSubKeyNames().ToList();
-                        if (names.Contains("open", StringComparer.OrdinalIgnoreCase)) names.Insert(0, "open");
+                        if(names.Contains("open", StringComparer.OrdinalIgnoreCase)) names.Insert(0, "open");
 
                         string keyName = names.Find(name =>
                         {
-                            using (RegistryKey cmdKey = shellKey.OpenSubKey(name))
+                            using(RegistryKey cmdKey = shellKey.OpenSubKey(name))
                                 return cmdKey.GetValue("NeverDefault") == null;
                         });
-                        if (keyName == null) continue;
+                        if(keyName == null) continue;
 
-                        using (RegistryKey commandKey = shellKey.OpenSubKey($@"{keyName}\command"))
+                        using(RegistryKey commandKey = shellKey.OpenSubKey($@"{keyName}\command"))
                         {
                             string command = commandKey?.GetValue("")?.ToString();
-                            if (ObjectPath.ExtractFilePath(command) != null)
+                            if(ObjectPath.ExtractFilePath(command) != null)
                             {
                                 OpenWithItem item = new OpenWithItem(commandKey.Name);
                                 AddItem(item);
-                            }
+                            } 
                         }
                     }
                 }
@@ -66,9 +66,9 @@ namespace ContextMenuManager.Controls
             InsertItem(newItem, 0);
             newItem.AddNewItem += () =>
             {
-                using (NewOpenWithDialog dlg = new NewOpenWithDialog())
+                using(NewOpenWithDialog dlg = new NewOpenWithDialog())
                 {
-                    if (dlg.ShowDialog() == DialogResult.OK)
+                    if(dlg.ShowDialog() == DialogResult.OK)
                         InsertItem(new OpenWithItem(dlg.RegPath), 2);
                 }
             };

@@ -51,7 +51,7 @@ namespace ContextMenuManager.Controls
             TsiRestoreMe = new RestoreMeMenuItem(this);
 
             // 设置菜单：详细信息；删除备份；恢复备份
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiDetails, new RToolStripSeparator(),
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiDetails, new RToolStripSeparator(), 
                 TsiRestoreMe, new RToolStripSeparator(), TsiDeleteMe });
 
             // 详细信息

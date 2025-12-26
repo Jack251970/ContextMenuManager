@@ -28,21 +28,21 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                foreach (string path in GuidBlockedList.BlockedPaths)
+                foreach(string path in GuidBlockedList.BlockedPaths)
                 {
-                    using (RegistryKey key = RegistryEx.GetRegistryKey(path))
+                    using(RegistryKey key = RegistryEx.GetRegistryKey(path))
                     {
-                        if (key == null) continue;
-                        if (key.GetValue(Guid.ToString("B")) != null) return false;
+                        if(key == null) continue;
+                        if(key.GetValue(Guid.ToString("B")) != null) return false;
                     }
                 }
                 return true;
             }
             set
             {
-                foreach (string path in GuidBlockedList.BlockedPaths)
+                foreach(string path in GuidBlockedList.BlockedPaths)
                 {
-                    if (value)
+                    if(value)
                     {
                         RegistryEx.DeleteValue(path, Guid.ToString("B"));
                     }

@@ -43,7 +43,7 @@ namespace ContextMenuManager.Controls
             {
                 string newPath = $@"{RegistryEx.GetParentPath(RegPath)}\{value.Replace("\\", "")}";
                 string defaultValue = Registry.GetValue(newPath, "", null)?.ToString();
-                if (!defaultValue.IsNullOrWhiteSpace())
+                if(!defaultValue.IsNullOrWhiteSpace())
                 {
                     AppMessageBox.Show(AppString.Message.HasBeenAdded);
                 }

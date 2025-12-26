@@ -10,10 +10,10 @@ namespace BluePointLilac.Methods
         {
             box.MouseWheel += (sender, e) =>
             {
-                if (Control.ModifierKeys != Keys.Control) return;
+                if(Control.ModifierKeys != Keys.Control) return;
                 float size = box.Font.Size;
-                if (size < 8F && e.Delta < 0) return;
-                if (size > 40F && e.Delta > 0) return;
+                if(size < 8F && e.Delta < 0) return;
+                if(size > 40F && e.Delta > 0) return;
                 box.Font = new Font(box.Font.FontFamily, size + (e.Delta > 0 ? 1F : -1F));
             };
         }
@@ -26,9 +26,9 @@ namespace BluePointLilac.Methods
             {
                 Size szBox = box.ClientSize;
                 Size szText = TextRenderer.MeasureText(box.Text, box.Font);
-                if ((scrollBars | ScrollBars.Vertical) == ScrollBars.Vertical)
+                if((scrollBars | ScrollBars.Vertical) == ScrollBars.Vertical)
                 {
-                    if (szText.Height > szBox.Height)
+                    if(szText.Height > szBox.Height)
                     {
                         box.ScrollBars = scrollBars | ScrollBars.Vertical;
                     }
@@ -37,9 +37,9 @@ namespace BluePointLilac.Methods
                         box.ScrollBars = scrollBars & ~ScrollBars.Vertical;
                     }
                 }
-                if ((scrollBars | ScrollBars.Horizontal) == ScrollBars.Horizontal)
+                if((scrollBars | ScrollBars.Horizontal) == ScrollBars.Horizontal)
                 {
-                    if (szText.Width > szBox.Width)
+                    if(szText.Width > szBox.Width)
                     {
                         box.ScrollBars = scrollBars | ScrollBars.Horizontal;
                     }
@@ -48,8 +48,7 @@ namespace BluePointLilac.Methods
                         box.ScrollBars = scrollBars & ~ScrollBars.Horizontal;
                     }
                 }
-            }
-            ;
+            };
             box.TextChanged += (sender, e) => SetScrollVisible();
             box.FontChanged += (sender, e) => SetScrollVisible();
             box.ClientSizeChanged += (sender, e) => SetScrollVisible();
@@ -60,7 +59,7 @@ namespace BluePointLilac.Methods
         {
             box.KeyDown += (sender, e) =>
             {
-                if (box.ReadOnly && e.Control && e.KeyCode == Keys.A) box.SelectAll();
+                if(box.ReadOnly && e.Control && e.KeyCode == Keys.A) box.SelectAll();
             };
         }
     }

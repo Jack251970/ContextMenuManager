@@ -46,7 +46,7 @@ namespace ContextMenuManager.Controls
                 regPath = value;
                 Text = ItemText;
                 Image = ItemIcon.ToBitmap();
-                if (!HasIcon) Image = Image.ToTransparent();
+                if(!HasIcon) Image = Image.ToTransparent();
                 BtnSubItems.Visible = IsMultiItem;
             }
         }
@@ -65,9 +65,9 @@ namespace ContextMenuManager.Controls
             get
             {
                 object value = Registry.GetValue(RegPath, "SubCommands", null);
-                if (value != null) return true;
+                if(value != null) return true;
                 value = Registry.GetValue(RegPath, "ExtendedSubCommandsKey", null);
-                if (!string.IsNullOrEmpty(value?.ToString())) return true;
+                if(!string.IsNullOrEmpty(value?.ToString())) return true;
                 return false;
             }
         }
@@ -77,9 +77,9 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "OnlyInBrowserWindow", null) != null;
             set
             {
-                if (value)
+                if(value)
                 {
-                    if (!TryProtectOpenItem()) return;
+                    if(!TryProtectOpenItem()) return;
                     Registry.SetValue(RegPath, "OnlyInBrowserWindow", "");
                 }
                 else RegistryEx.DeleteValue(RegPath, "OnlyInBrowserWindow");
@@ -91,9 +91,9 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "Extended", null) != null;
             set
             {
-                if (value)
+                if(value)
                 {
-                    if (!TryProtectOpenItem()) return;
+                    if(!TryProtectOpenItem()) return;
                     Registry.SetValue(RegPath, "Extended", "");
                 }
                 else RegistryEx.DeleteValue(RegPath, "Extended");
@@ -105,8 +105,8 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "NoWorkingDirectory", null) != null;
             set
             {
-                if (!TryProtectOpenItem()) return;
-                if (value) Registry.SetValue(RegPath, "NoWorkingDirectory", "");
+                if(!TryProtectOpenItem()) return;
+                if(value) Registry.SetValue(RegPath, "NoWorkingDirectory", "");
                 else RegistryEx.DeleteValue(RegPath, "NoWorkingDirectory");
             }
         }
@@ -116,8 +116,8 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "NeverDefault", null) != null;
             set
             {
-                if (!TryProtectOpenItem()) return;
-                if (value) Registry.SetValue(RegPath, "NeverDefault", "");
+                if(!TryProtectOpenItem()) return;
+                if(value) Registry.SetValue(RegPath, "NeverDefault", "");
                 else RegistryEx.DeleteValue(RegPath, "NeverDefault");
             }
         }
@@ -127,10 +127,10 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "ShowAsDisabledIfHidden", null) != null;
             set
             {
-                if (!TryProtectOpenItem()) return;
-                if (value) Registry.SetValue(RegPath, "ShowAsDisabledIfHidden", "");
+                if(!TryProtectOpenItem()) return;
+                if(value) Registry.SetValue(RegPath, "ShowAsDisabledIfHidden", "");
                 else RegistryEx.DeleteValue(RegPath, "ShowAsDisabledIfHidden");
-                if (value && !ItemVisible) ItemVisible = false;
+                if(value && !ItemVisible) ItemVisible = false;
             }
         }
 
@@ -139,7 +139,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 string value = Registry.GetValue(RegPath, "Position", null)?.ToString()?.ToLower();
-                switch (value)
+                switch(value)
                 {
                     case "top":
                         return Positions.Top;
@@ -151,7 +151,7 @@ namespace ContextMenuManager.Controls
             }
             set
             {
-                switch (value)
+                switch(value)
                 {
                     case Positions.Top:
                         Registry.SetValue(RegPath, "Position", "top");
@@ -170,18 +170,18 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                if (WinOsVersion.Current >= WinOsVersion.Win10_1703)
+                if(WinOsVersion.Current >= WinOsVersion.Win10_1703)
                 {
                     //HideBasedOnVelocityId键值仅适用于Win10系统1703以上版本
-                    if (Convert.ToInt32(Registry.GetValue(RegPath, "HideBasedOnVelocityId", 0)) == 0x639bc8) return false;
+                    if(Convert.ToInt32(Registry.GetValue(RegPath, "HideBasedOnVelocityId", 0)) == 0x639bc8) return false;
                 }
-                if (!IsSubItem)
+                if(!IsSubItem)
                 {
                     //LegacyDisable和ProgrammaticAccessOnly键值不适用于子菜单
-                    if (Registry.GetValue(RegPath, "LegacyDisable", null) != null) return false;
-                    if (Registry.GetValue(RegPath, "ProgrammaticAccessOnly", null) != null) return false;
+                    if(Registry.GetValue(RegPath, "LegacyDisable", null) != null) return false;
+                    if(Registry.GetValue(RegPath, "ProgrammaticAccessOnly", null) != null) return false;
                     //CommandFlags键值不适用于Vista系统，子菜单中该键值我用来做分割线键值
-                    if (WinOsVersion.Current > WinOsVersion.Vista && Convert.ToInt32(Registry.GetValue(RegPath, "CommandFlags", 0)) % 16 >= 8) return false;
+                    if(WinOsVersion.Current > WinOsVersion.Vista && Convert.ToInt32(Registry.GetValue(RegPath, "CommandFlags", 0)) % 16 >= 8) return false;
                 }
                 return true;
             }
@@ -193,43 +193,42 @@ namespace ContextMenuManager.Controls
                     {
                         RegistryEx.DeleteValue(RegPath, "LegacyDisable");
                         RegistryEx.DeleteValue(RegPath, "ProgrammaticAccessOnly");
-                        if (WinOsVersion.Current > WinOsVersion.Vista && Convert.ToInt32(Registry.GetValue(RegPath, "CommandFlags", 0)) % 16 >= 8)
+                        if(WinOsVersion.Current > WinOsVersion.Vista && Convert.ToInt32(Registry.GetValue(RegPath, "CommandFlags", 0)) % 16 >= 8)
                         {
                             RegistryEx.DeleteValue(RegPath, "CommandFlags");
                         }
-                    }
-                    ;
+                    };
 
-                    if (value)
+                    if(value)
                     {
                         RegistryEx.DeleteValue(RegPath, "HideBasedOnVelocityId");
                         DeleteSomeValues();
                     }
                     else
                     {
-                        if (WinOsVersion.Current >= WinOsVersion.Win10_1703)
+                        if(WinOsVersion.Current >= WinOsVersion.Win10_1703)
                         {
                             Registry.SetValue(RegPath, "HideBasedOnVelocityId", 0x639bc8);
                         }
                         else
                         {
-                            if (IsSubItem)
+                            if(IsSubItem)
                             {
                                 AppMessageBox.Show(AppString.Message.CannotHideSubItem);
                                 return;
                             }
                         }
-                        if (!IsSubItem)
+                        if(!IsSubItem)
                         {
                             //当LegaryDisable键值作用于文件夹-"在新窗口中打开"时
                             //会导致点击任务栏explorer图标和 Win+E 快捷键错误访问
-                            if (!RegPath.StartsWith(OpenInNewWindowPath, StringComparison.OrdinalIgnoreCase))
+                            if(!RegPath.StartsWith(OpenInNewWindowPath, StringComparison.OrdinalIgnoreCase))
                             {
                                 Registry.SetValue(RegPath, "LegacyDisable", "");
                             }
                             Registry.SetValue(RegPath, "ProgrammaticAccessOnly", "");
                         }
-                        if (ShowAsDisabledIfHidden) DeleteSomeValues();
+                        if(ShowAsDisabledIfHidden) DeleteSomeValues();
                     }
                 }
                 catch
@@ -246,25 +245,25 @@ namespace ContextMenuManager.Controls
                 string name;
                 //菜单名称优先级别：MUIVerb > 默认值 > 特殊键值名 > 项名
                 List<string> valueNames = new List<string> { "MUIVerb" };
-                if (!IsMultiItem) valueNames.Add("");//多级母菜单不支持使用默认值作为名称
-                foreach (string valueName in valueNames)
+                if(!IsMultiItem) valueNames.Add("");//多级母菜单不支持使用默认值作为名称
+                foreach(string valueName in valueNames)
                 {
                     name = Registry.GetValue(RegPath, valueName, null)?.ToString();
                     name = ResourceString.GetDirectString(name);
-                    if (!string.IsNullOrEmpty(name)) return name;
+                    if(!string.IsNullOrEmpty(name)) return name;
                 }
-                if (DefaultNameIndexs.TryGetValue(KeyName, out int index))
+                if(DefaultNameIndexs.TryGetValue(KeyName, out int index))
                 {
                     name = $"@windows.storage.dll,-{index}";
                     name = ResourceString.GetDirectString(name);
-                    if (!string.IsNullOrEmpty(name)) return name;
+                    if(!string.IsNullOrEmpty(name)) return name;
                 }
                 return KeyName;
             }
             set
             {
                 //MUIVerb长度不可超过80,超过80系统会隐藏该菜单项目
-                if (ResourceString.GetDirectString(value).Length >= 80)
+                if(ResourceString.GetDirectString(value).Length >= 80)
                 {
                     AppMessageBox.Show(AppString.Message.TextLengthCannotExceed80);
                 }
@@ -280,14 +279,14 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                if (IsMultiItem) return null;
+                if(IsMultiItem) return null;
                 else return Registry.GetValue(CommandPath, "", null)?.ToString();
             }
             set
             {
-                if (!TryProtectOpenItem()) return;
+                if(!TryProtectOpenItem()) return;
                 Registry.SetValue(CommandPath, "", value);
-                if (!HasIcon) Image = ItemIcon.ToBitmap().ToTransparent();
+                if(!HasIcon) Image = ItemIcon.ToBitmap().ToTransparent();
             }
         }
 
@@ -296,7 +295,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "HasLUAShield", null) != null;
             set
             {
-                if (value) Registry.SetValue(RegPath, "HasLUAShield", "");
+                if(value) Registry.SetValue(RegPath, "HasLUAShield", "");
                 else RegistryEx.DeleteValue(RegPath, "HasLUAShield");
             }
         }
@@ -306,7 +305,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "Icon", null)?.ToString();
             set
             {
-                if (value != null) Registry.SetValue(RegPath, "Icon", value);
+                if(value != null) Registry.SetValue(RegPath, "Icon", value);
                 else RegistryEx.DeleteValue(RegPath, "Icon");
             }
         }
@@ -322,16 +321,16 @@ namespace ContextMenuManager.Controls
                 Icon icon;
                 string iconPath;
                 int iconIndex;
-                if (IconLocation != null)
+                if(IconLocation != null)
                 {
                     icon = ResourceIcon.GetIcon(IconLocation, out iconPath, out iconIndex);
-                    if (icon == null && Path.GetExtension(iconPath)?.ToLower() == ".exe")//文件不存在，或为没有图标的exe文件
+                    if(icon == null && Path.GetExtension(iconPath)?.ToLower() == ".exe")//文件不存在，或为没有图标的exe文件
                         icon = ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -15);//不含图标的默认exe图标
                 }
-                else if (HasLUAShield)
+                else if(HasLUAShield)
                     icon = ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -78);//管理员小盾牌图标
                 else icon = ResourceIcon.GetIcon(iconPath = ItemFilePath, iconIndex = 0);//文件第一个图标
-                if (icon == null) icon = ResourceIcon.GetExtensionIcon(iconPath = ItemFilePath)//文件类型图标
+                if(icon == null) icon = ResourceIcon.GetExtensionIcon(iconPath = ItemFilePath)//文件类型图标
                         ?? ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -2);//图标资源不存在，白纸图标
                 IconPath = iconPath;
                 IconIndex = iconIndex;
@@ -349,10 +348,10 @@ namespace ContextMenuManager.Controls
                     { $@"{RegPath}\DropTarget" , "CLSID" },
                     { RegPath , "ExplorerCommandHandler" },
                 };
-                foreach (var item in keyValues)
+                foreach(var item in keyValues)
                 {
                     string value = Registry.GetValue(item.Key, item.Value, null)?.ToString();
-                    if (GuidEx.TryParse(value, out Guid guid)) return guid;
+                    if(GuidEx.TryParse(value, out Guid guid)) return guid;
                 }
                 return Guid.Empty;
             }
@@ -442,9 +441,9 @@ namespace ContextMenuManager.Controls
         private void UseShieldIcon()
         {
             bool flag = HasLUAShield = TsiShieldIcon.Checked = !TsiShieldIcon.Checked;
-            if (IconLocation == null)
+            if(IconLocation == null)
             {
-                if (flag)
+                if(flag)
                 {
                     Image = AppImage.Shield;
                     IconPath = "imageres.dll";
@@ -466,15 +465,15 @@ namespace ContextMenuManager.Controls
             TsiShowAsDisabled.Checked = ShowAsDisabledIfHidden;
             TsiChangeCommand.Visible = !IsMultiItem && Guid.Equals(Guid.Empty);
             TsiClsidLocation.Visible = GuidInfo.GetClsidPath(Guid) != null;
-            if (!IsSubItem) TsiOnlyWithShift.Checked = OnlyWithShift;
+            if(!IsSubItem) TsiOnlyWithShift.Checked = OnlyWithShift;
 
-            if (WinOsVersion.Current >= WinOsVersion.Vista)
+            if(WinOsVersion.Current >= WinOsVersion.Vista)
             {
                 TsiItemIcon.Visible = true;
                 TsiPosition.Visible = !IsSubItem;
                 TsiOnlyInExplorer.Visible = !IsSubItem;
                 TsiNeverDefault.Visible = !IsSubItem;
-                if (HasIcon)
+                if(HasIcon)
                 {
                     TsiChangeIcon.Text = AppString.Menu.ChangeIcon;
                     TsiDeleteIcon.Visible = true;
@@ -486,12 +485,12 @@ namespace ContextMenuManager.Controls
                 }
                 TsiShieldIcon.Checked = HasLUAShield;
 
-                if (!IsSubItem)
+                if(!IsSubItem)
                 {
                     TsiOnlyInExplorer.Checked = OnlyInExplorer;
                     TsiNeverDefault.Checked = NeverDefault;
                     TsiDefault.Checked = TsiSetTop.Checked = TsiSetBottom.Checked = false;
-                    switch (ItemPosition)
+                    switch(ItemPosition)
                     {
                         case Positions.Default:
                             TsiDefault.Checked = true;
@@ -516,12 +515,12 @@ namespace ContextMenuManager.Controls
 
         private void ShowSubItems()
         {
-            if (WinOsVersion.Current == WinOsVersion.Vista)
+            if(WinOsVersion.Current == WinOsVersion.Vista)
             {
                 AppMessageBox.Show(AppString.Message.VistaUnsupportedMulti);
                 return;
             }
-            using (ShellSubMenuDialog dlg = new ShellSubMenuDialog())
+            using(ShellSubMenuDialog dlg = new ShellSubMenuDialog())
             {
                 dlg.Text = AppString.Dialog.EditSubItems.Replace("%s", Text);
                 dlg.Icon = ResourceIcon.GetIcon(IconPath, IconIndex);
@@ -532,8 +531,8 @@ namespace ContextMenuManager.Controls
 
         public bool TryProtectOpenItem()
         {
-            if (!IsOpenItem) return true;
-            if (!AppConfig.ProtectOpenItem) return true;
+            if(!IsOpenItem) return true;
+            if(!AppConfig.ProtectOpenItem) return true;
             return AppMessageBox.Show(AppString.Message.PromptIsOpenItem, MessageBoxButtons.YesNo) == DialogResult.Yes;
         }
 

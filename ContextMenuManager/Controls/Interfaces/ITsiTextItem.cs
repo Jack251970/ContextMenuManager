@@ -19,21 +19,21 @@ namespace ContextMenuManager.Controls.Interfaces
             Click += (sender, e) =>
             {
                 string name = ChangeText(item.Text);
-                if (name != null) item.ItemText = name;
+                if(name != null) item.ItemText = name;
             };
         }
 
         private string ChangeText(string text)
         {
-            using (InputDialog dlg = new InputDialog { Text = text, Title = AppString.Menu.ChangeText })
+            using(InputDialog dlg = new InputDialog { Text = text, Title = AppString.Menu.ChangeText })
             {
-                if (dlg.ShowDialog() != DialogResult.OK) return null;
-                if (dlg.Text.Length == 0)
+                if(dlg.ShowDialog() != DialogResult.OK) return null;
+                if(dlg.Text.Length == 0)
                 {
                     AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                     return ChangeText(text);
                 }
-                else if (ResourceString.GetDirectString(dlg.Text).Length == 0)
+                else if(ResourceString.GetDirectString(dlg.Text).Length == 0)
                 {
                     AppMessageBox.Show(AppString.Message.StringParsingFailed);
                     return ChangeText(text);

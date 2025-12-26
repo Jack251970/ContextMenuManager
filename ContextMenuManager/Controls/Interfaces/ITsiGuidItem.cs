@@ -46,17 +46,17 @@ namespace ContextMenuManager.Controls.Interfaces
 
         private void BlockGuid()
         {
-            foreach (string path in GuidBlockedList.BlockedPaths)
+            foreach(string path in GuidBlockedList.BlockedPaths)
             {
-                if (TsiBlockGuid.Checked)
+                if(TsiBlockGuid.Checked)
                 {
                     RegistryEx.DeleteValue(path, Item.Guid.ToString("B"));
                 }
                 else
                 {
-                    if (Item.Guid.Equals(ShellExItem.LnkOpenGuid) && AppConfig.ProtectOpenItem)
+                    if(Item.Guid.Equals(ShellExItem.LnkOpenGuid) && AppConfig.ProtectOpenItem)
                     {
-                        if (AppMessageBox.Show(AppString.Message.PromptIsOpenItem,
+                        if(AppMessageBox.Show(AppString.Message.PromptIsOpenItem,
                             MessageBoxButtons.YesNo) != DialogResult.Yes) return;
                     }
                     Microsoft.Win32.Registry.SetValue(path, Item.Guid.ToString("B"), string.Empty);
@@ -67,7 +67,7 @@ namespace ContextMenuManager.Controls.Interfaces
 
         private void AddGuidDic()
         {
-            using (AddGuidDicDialog dlg = new AddGuidDicDialog())
+            using(AddGuidDicDialog dlg = new AddGuidDicDialog())
             {
                 dlg.ItemText = GuidInfo.GetText(Item.Guid);
                 dlg.ItemIcon = GuidInfo.GetImage(Item.Guid);
@@ -81,9 +81,9 @@ namespace ContextMenuManager.Controls.Interfaces
                 };
                 string section = Item.Guid.ToString();
                 MyListItem listItem = (MyListItem)Item;
-                if (dlg.ShowDialog() != DialogResult.OK)
+                if(dlg.ShowDialog() != DialogResult.OK)
                 {
-                    if (dlg.IsDelete)
+                    if(dlg.IsDelete)
                     {
                         writer.DeleteSection(section);
                         GuidInfo.RemoveDic(Item.Guid);
@@ -92,13 +92,13 @@ namespace ContextMenuManager.Controls.Interfaces
                     }
                     return;
                 }
-                if (dlg.ItemText.IsNullOrWhiteSpace())
+                if(dlg.ItemText.IsNullOrWhiteSpace())
                 {
                     AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                     return;
                 }
                 dlg.ItemText = ResourceString.GetDirectString(dlg.ItemText);
-                if (dlg.ItemText.IsNullOrWhiteSpace())
+                if(dlg.ItemText.IsNullOrWhiteSpace())
                 {
                     AppMessageBox.Show(AppString.Message.StringParsingFailed);
                     return;
@@ -124,12 +124,12 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             TsiClsidLocation.Visible = GuidInfo.GetClsidPath(Item.Guid) != null;
             TsiBlockGuid.Visible = TsiBlockGuid.Checked = false;
-            if (Item is ShellExItem)
+            if(Item is ShellExItem)
             {
                 TsiBlockGuid.Visible = true;
-                foreach (string path in GuidBlockedList.BlockedPaths)
+                foreach(string path in GuidBlockedList.BlockedPaths)
                 {
-                    if (Microsoft.Win32.Registry.GetValue(path, Item.Guid.ToString("B"), null) != null)
+                    if(Microsoft.Win32.Registry.GetValue(path, Item.Guid.ToString("B"), null) != null)
                     {
                         TsiBlockGuid.Checked = true; break;
                     }
@@ -148,7 +148,7 @@ namespace ContextMenuManager.Controls.Interfaces
             {
                 get
                 {
-                    if (ItemIconPath == null) return null;
+                    if(ItemIconPath == null) return null;
                     return $"{ItemIconPath},{ItemIconIndex}";
                 }
             }
@@ -157,7 +157,7 @@ namespace ContextMenuManager.Controls.Interfaces
 
             protected override bool RunDialog(IntPtr hwndOwner)
             {
-                using (AddGuidDicForm frm = new AddGuidDicForm())
+                using(AddGuidDicForm frm = new AddGuidDicForm())
                 {
                     frm.ItemText = ItemText;
                     frm.ItemIcon = ItemIcon;
@@ -165,7 +165,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     frm.ItemIconIndex = ItemIconIndex;
                     frm.TopMost = true;
                     bool flag = frm.ShowDialog() == DialogResult.OK;
-                    if (flag)
+                    if(flag)
                     {
                         ItemText = frm.ItemText;
                         ItemIcon = frm.ItemIcon;
@@ -269,15 +269,15 @@ namespace ContextMenuManager.Controls.Interfaces
 
                 private void SelectIcon()
                 {
-                    using (IconDialog dlg = new IconDialog())
+                    using(IconDialog dlg = new IconDialog())
                     {
                         dlg.IconPath = ItemIconPath;
                         dlg.IconIndex = ItemIconIndex;
-                        if (dlg.ShowDialog() != DialogResult.OK) return;
-                        using (Icon icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex))
+                        if(dlg.ShowDialog() != DialogResult.OK) return;
+                        using(Icon icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex))
                         {
                             Image image = icon?.ToBitmap();
-                            if (image == null) return;
+                            if(image == null) return;
                             picIcon.Image = image;
                             ItemIconPath = dlg.IconPath;
                             ItemIconIndex = dlg.IconIndex;
@@ -297,13 +297,13 @@ namespace ContextMenuManager.Controls.Interfaces
             ToolTipBox.SetToolTip(this, AppString.SideBar.DetailedEdit);
             listItem.ParentChanged += (sender, e) =>
             {
-                if (listItem.IsDisposed) return;
-                if (listItem.Parent == null) return;
+                if(listItem.IsDisposed) return;
+                if(listItem.Parent == null) return;
                 Visible = XmlDicHelper.DetailedEditGuidDic.ContainsKey(item.Guid);
             };
             MouseDown += (sender, e) =>
             {
-                using (DetailedEditDialog dlg = new DetailedEditDialog())
+                using(DetailedEditDialog dlg = new DetailedEditDialog())
                 {
                     dlg.GroupGuid = item.Guid;
                     dlg.ShowDialog();

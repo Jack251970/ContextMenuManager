@@ -21,19 +21,19 @@ namespace ContextMenuManager.Controls.Interfaces
             Click += (sender, e) =>
             {
                 string command = ChangeCommand(item.ItemCommand);
-                if (command != null) item.ItemCommand = command;
+                if(command != null) item.ItemCommand = command;
             };
         }
 
         private string ChangeCommand(string command)
         {
-            using (InputDialog dlg = new InputDialog())
+            using(InputDialog dlg = new InputDialog())
             {
                 dlg.Text = command;
                 dlg.Title = AppString.Menu.ChangeCommand;
                 dlg.Size = new Size(530, 260).DpiZoom();
-                if (dlg.ShowDialog() != DialogResult.OK) return null;
-                if (!CommandCanBeEmpty && string.IsNullOrEmpty(dlg.Text))
+                if(dlg.ShowDialog() != DialogResult.OK) return null;
+                if(!CommandCanBeEmpty && string.IsNullOrEmpty(dlg.Text))
                 {
                     AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
                     return ChangeCommand(command);

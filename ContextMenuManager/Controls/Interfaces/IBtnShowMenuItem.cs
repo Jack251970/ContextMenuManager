@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls.Interfaces
             bool isShow = false;
             MouseDown += (sender, e) =>
             {
-                if (!isShow) item.ContextMenuStrip.Show(this, 0, Height);
+                if(!isShow) item.ContextMenuStrip.Show(this, 0, Height);
                 else item.ContextMenuStrip.Close();
                 isShow = !isShow;
             };

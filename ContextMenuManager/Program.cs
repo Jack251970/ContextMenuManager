@@ -25,7 +25,7 @@ namespace ContextMenuManager
             MyMainForm.InitColors();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if (SingleInstance.IsRunning()) return;
+            if(SingleInstance.IsRunning()) return;
             AppString.LoadStrings();
             Updater.PeriodicUpdate();
             XmlDicHelper.ReloadDics();

@@ -13,8 +13,8 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (SubItemsForm frm = new SubItemsForm())
-            using (DetailedEditList list = new DetailedEditList())
+            using(SubItemsForm frm = new SubItemsForm())
+            using(DetailedEditList list = new DetailedEditList())
             {
                 var location = GuidInfo.GetIconLocation(GroupGuid);
                 frm.Icon = ResourceIcon.GetIcon(location.IconPath, location.IconIndex);

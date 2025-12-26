@@ -14,11 +14,11 @@ namespace ContextMenuManager.Methods
         public static void PeriodicUpdate()
         {
             int day = AppConfig.UpdateFrequency;
-            if (day == -1) return;//自动检测更新频率为-1则从不自动检查更新
+            if(day == -1) return;//自动检测更新频率为-1则从不自动检查更新
             //如果上次检测更新时间加上时间间隔早于或等于今天以前就进行更新操作
             DateTime time = AppConfig.LastCheckUpdateTime.AddDays(day);
             //time = DateTime.Today;//测试用
-            if (time <= DateTime.Today) _ = Task.Run(() => Update(false));
+            if(time <= DateTime.Today) _ = Task.Run(() => Update(false));
         }
 
         /// <summary>更新程序以及程序字典</summary>
@@ -34,15 +34,15 @@ namespace ContextMenuManager.Methods
         /// <param name="isManual">是否为手动点击更新</param>
         private static void UpdateApp(bool isManual)
         {
-            using (UAWebClient client = new UAWebClient())
+            using(UAWebClient client = new UAWebClient())
             {
                 string url = AppConfig.RequestUseGithub ? AppConfig.GithubLatestApi : AppConfig.GiteeLatestApi;
                 XmlDocument doc = client.GetWebJsonToXml(url);
-                if (doc == null)
+                if(doc == null)
                 {
-                    if (isManual)
+                    if(isManual)
                     {
-                        if (AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
+                        if(AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
                             + AppString.Message.OpenWebUrl, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
                         url = AppConfig.RequestUseGithub ? AppConfig.GithubLatest : AppConfig.GiteeReleases;
                         ExternalProgram.OpenWebUrl(url);
@@ -54,11 +54,11 @@ namespace ContextMenuManager.Methods
                 Version webVer = new Version(tagNameXN.InnerText);
                 Version appVer = new Version(Application.ProductVersion);
 #if DEBUG
-                appVer = new Version(0, 0, 0, 0);//测试用
+            appVer = new Version(0, 0, 0, 0);//测试用
 #endif
-                if (appVer >= webVer)
+                if(appVer >= webVer)
                 {
-                    if (isManual) AppMessageBox.Show(AppString.Message.VersionIsLatest,
+                    if(isManual) AppMessageBox.Show(AppString.Message.VersionIsLatest,
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
@@ -66,22 +66,22 @@ namespace ContextMenuManager.Methods
                     XmlNode bodyXN = root.SelectSingleNode("body");
                     string info = AppString.Message.UpdateInfo.Replace("%v1", appVer.ToString()).Replace("%v2", webVer.ToString());
                     info += "\r\n\r\n" + MachinedInfo(bodyXN.InnerText);
-                    if (MessageBox.Show(info, AppString.General.AppName,
+                    if(MessageBox.Show(info, AppString.General.AppName, 
                         MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         XmlNode assetsXN = root.SelectSingleNode("assets");
-                        foreach (XmlNode itemXN in assetsXN.SelectNodes("item"))
+                        foreach(XmlNode itemXN in assetsXN.SelectNodes("item"))
                         {
                             XmlNode nameXN = itemXN.SelectSingleNode("name");
-                            if (nameXN != null && nameXN.InnerText.Contains(".exe"))
+                            if(nameXN != null && nameXN.InnerText.Contains(".exe"))
                             {
                                 XmlNode urlXN = itemXN.SelectSingleNode("browser_download_url");
-                                using (DownloadDialog dlg = new DownloadDialog())
+                                using(DownloadDialog dlg = new DownloadDialog())
                                 {
                                     dlg.Url = urlXN?.InnerText;
                                     dlg.FilePath = $@"{AppConfig.AppDataDir}\{webVer}.exe";
                                     dlg.Text = AppString.General.AppName;
-                                    if (dlg.ShowDialog() == DialogResult.OK)
+                                    if(dlg.ShowDialog() == DialogResult.OK)
                                     {
                                         AppMessageBox.Show(AppString.Message.UpdateSucceeded,
                                             MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -104,20 +104,20 @@ namespace ContextMenuManager.Methods
             void WriteFiles(string dirName, out string succeeded, out string failed)
             {
                 succeeded = failed = "";
-                foreach (string filePath in filePaths)
+                foreach(string filePath in filePaths)
                 {
-                    using (UAWebClient client = new UAWebClient())
+                    using(UAWebClient client = new UAWebClient())
                     {
                         string fileUrl = $"{dirUrl}/{Path.GetFileName(filePath)}";
                         bool flag = client.WebStringToFile(filePath, fileUrl);
                         string item = "\r\n ● " + Path.GetFileName(filePath);
-                        if (flag) succeeded += item;
+                        if(flag) succeeded += item;
                         else failed += item;
                     }
                 }
                 dirName = "\r\n\r\n" + dirName + ":";
-                if (succeeded != "") succeeded = dirName + succeeded;
-                if (failed != "") failed = dirName + failed;
+                if(succeeded != "") succeeded = dirName + succeeded;
+                if(failed != "") failed = dirName + failed;
             }
 
             dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubTexts : AppConfig.GiteeTexts;
@@ -132,12 +132,12 @@ namespace ContextMenuManager.Methods
             filePaths = Directory.GetFiles(AppConfig.LangsDir, "*.ini");
             WriteFiles("Languages", out string succeeded2, out string failed2);
 
-            if (isManual)
+            if(isManual)
             {
                 string failed = failed1 + failed2;
                 string succeeded = succeeded1 + succeeded2;
-                if (failed != "") AppMessageBox.Show(AppString.Message.WebDataReadFailed + failed);
-                if (succeeded != "") AppMessageBox.Show(AppString.Message.DicUpdateSucceeded + succeeded,
+                if(failed != "") AppMessageBox.Show(AppString.Message.WebDataReadFailed + failed);
+                if(succeeded != "") AppMessageBox.Show(AppString.Message.DicUpdateSucceeded + succeeded,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -147,12 +147,12 @@ namespace ContextMenuManager.Methods
         {
             string str = string.Empty;
             string[] lines = info.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-            for (int m = 0; m < lines.Length; m++)
+            for(int m = 0; m < lines.Length; m++)
             {
                 string line = lines[m];
-                for (int n = 1; n <= 6; n++)
+                for(int n = 1; n <= 6; n++)
                 {
-                    if (line.StartsWith(new string('#', n) + ' '))
+                    if(line.StartsWith(new string('#', n) + ' '))
                     {
                         line = line.Substring(n + 1);
                         break;
