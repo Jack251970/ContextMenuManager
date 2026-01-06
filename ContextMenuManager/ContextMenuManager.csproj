@@ -56,9 +56,9 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
   <ItemGroup>
     <PackageReference Include="Svg" Version="3.4.7" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Management" Version="10.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.1.0" />
+    <PackageReference Include="System.Management" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.2.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="BluePointLilac.Controls\BackupDialog.cs">
