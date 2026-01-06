@@ -1,18 +1,61 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
+using ContextMenuManager.Methods;  // 添加AppString类的命名空间
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
 {
     public class MyListBox : Panel
     {
+        private MyList mainList;
+
         public MyListBox()
         {
             AutoScroll = true;
             BackColor = MyMainForm.FormBack;
             ForeColor = MyMainForm.FormFore;
+            
+            // 初始化主列表
+            mainList = new MyList(this);
+            mainList.Dock = DockStyle.Fill;
+            Controls.Add(mainList);
+        }
+
+        // 添加项目到列表
+        public void AddItem(MyListItem item)
+        {
+            mainList.AddItem(item);
+        }
+
+        public void AddItems(MyListItem[] items)
+        {
+            mainList.AddItems(items);
+        }
+
+        public void AddItems(List<MyListItem> items)
+        {
+            mainList.AddItems(items);
+        }
+
+        public void ClearItems()
+        {
+            mainList.ClearItems();
+        }
+
+        // 其他方法保持不变，但需要代理到 mainList
+        public MyListItem SelectedItem
+        {
+            get => mainList.HoveredItem;
+            set => mainList.HoveredItem = value;
+        }
+
+        public event EventHandler SelectedItemChanged
+        {
+            add => mainList.HoveredItemChanged += value;
+            remove => mainList.HoveredItemChanged -= value;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
@@ -42,6 +85,58 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Top;
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        }
+
+        // 添加一个私有字段来保存搜索框实例
+        private SearchBox searchBox;
+        
+        // 获取或设置搜索框的方法，不再创建搜索框，只用于过滤
+        public SearchBox SearchBox 
+        {
+            get => searchBox;
+            set
+            {
+                if (searchBox != null)
+                {
+                    // 移除旧事件处理程序
+                    searchBox.TextChanged -= SearchBox_TextChanged;
+                }
+                
+                searchBox = value;
+                
+                if (searchBox != null)
+                {
+                    // 添加新事件处理程序
+                    searchBox.TextChanged += SearchBox_TextChanged;
+                }
+            }
+        }
+        
+        // 搜索框文本改变事件处理
+        private void SearchBox_TextChanged(object sender, EventArgs e)
+        {
+            string searchText = searchBox?.Text.ToLower().Trim() ?? "";
+            FilterListItems(searchText);
+        }
+        
+        // 实现列表过滤功能
+        private void FilterListItems(string searchText)
+        {
+            // 遍历所有控件，根据搜索文本显示或隐藏它们
+            foreach (Control control in Controls)
+            {
+                if (control is MyListItem item)
+                {
+                    if (string.IsNullOrEmpty(searchText) || item.Text.ToLower().Contains(searchText))
+                    {
+                        item.Visible = true;
+                    }
+                    else
+                    {
+                        item.Visible = false;
+                    }
+                }
+            }
         }
 
         private MyListItem hoveredItem;
@@ -119,6 +214,12 @@ namespace BluePointLilac.Controls
                 ctr.Dispose();
             }
             ResumeLayout();
+            
+            // 同时清空保存的原始列表
+            if (Tag is List<MyListItem> savedItems)
+            {
+                savedItems.Clear();
+            }
         }
 
         public void SortItemByText()

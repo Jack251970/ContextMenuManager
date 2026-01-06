@@ -213,6 +213,7 @@ namespace ContextMenuManager.Methods
             public static string CopyDropEffect { get; set; }
             public static string MoveDropEffect { get; set; }
             public static string CreateLinkDropEffect { get; set; }
+            public static string Search { get; set; }
             public static string DownloadLanguages { get; set; }
             public static string TranslateTool { get; set; }
             public static string DefaultText { get; set; }

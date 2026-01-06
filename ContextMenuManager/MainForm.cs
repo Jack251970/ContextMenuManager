@@ -1,11 +1,11 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using System.Linq;  // 添加LINQ支持
 using System.Windows.Forms;
 
 namespace ContextMenuManager
@@ -34,6 +34,9 @@ namespace ContextMenuManager
             ResizeSideBar();
             JumpItem(0, 0);
             InitTheme(true);
+            
+            // 在窗体显示后确保搜索框被添加
+            Shown += (sender, e) => AddSearchBoxToCurrentList();
         }
 
         readonly MyToolBarButton[] ToolBarButtons =
@@ -44,6 +47,8 @@ namespace ContextMenuManager
             new MyToolBarButton(AppImage.Refresh, AppString.ToolBar.Refresh),
             new MyToolBarButton(AppImage.About, AppString.ToolBar.About)
         };
+
+        private TextBox currentSearchBox;  // 当前的搜索框
 
         private Control[] MainControls => new Control[]
         {
@@ -224,7 +229,7 @@ namespace ContextMenuManager
             bool flag2 = SideBar.SelectedIndex == sideBarIndex;
             lastItemIndex[toolBarIndex] = sideBarIndex;
             ToolBar.SelectedIndex = toolBarIndex;
-            if(flag1 || flag2)
+            if(flag1 || flag2 || ToolBar.SelectedIndex == -1)  // 如果工具栏索引是-1（初始化状态），也要执行SwitchItem
             {
                 SideBar.SelectedIndex = sideBarIndex;
                 SwitchItem();
@@ -277,6 +282,9 @@ namespace ContextMenuManager
                 case 4:
                     SwitchAboutItem(); break;
             }
+            
+            // 添加搜索框到当前显示的列表
+            AddSearchBoxToCurrentList();
             lastItemIndex[ToolBar.SelectedIndex] = SideBar.SelectedIndex;
             SuspendMainBodyWhenMove = MainControls.ToList().Any(ctr => ctr.Controls.Count > 50);
         }
@@ -513,6 +521,33 @@ namespace ContextMenuManager
             WindowState = FormWindowState.Normal;
             explorerRestarter.Visible = false;
             AppConfig.MainFormSize = Size;
+        }
+
+        // 添加一个方法来将搜索框添加到工具栏
+        private void AddSearchBoxToCurrentList()
+        {
+            // 获取当前可见的列表控件
+            var currentList = MainControls.FirstOrDefault(ctr => ctr.Visible && ctr is MyList);
+            if (currentList != null && currentList is MyList list)
+            {
+                // 创建一个新的搜索框实例
+                var searchBox = new SearchBox();
+                searchBox.PlaceholderText = AppString.Dialog.Search;
+                
+                // 将搜索框分配给当前列表用于过滤
+                list.SearchBox = searchBox;
+                
+                // 从工具栏中移除旧的搜索框（如果存在）
+                var existingSearchPanels = ToolBar.Controls.OfType<Panel>().Where(p => p.Tag?.ToString() == "SearchBoxPanel").ToList();
+                foreach (var panel in existingSearchPanels)
+                {
+                    ToolBar.Controls.Remove(panel);
+                    panel.Dispose();
+                }
+                
+                // 添加搜索框到工具栏
+                ToolBar.AddSearchBox(searchBox);
+            }
         }
     }
 }

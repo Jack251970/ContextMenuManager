@@ -1,7 +1,8 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;  // 添加LINQ支持
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -94,6 +95,37 @@ namespace BluePointLilac.Controls
             Array.ForEach(buttons, button => { button.Width = maxWidth; AddButton(button); });
         }
 
+        // 添加搜索框到工具栏右侧
+        public void AddSearchBox(SearchBox searchBox)
+        {
+            // 先移除现有的搜索框面板（如果存在）
+            var existingSearchPanels = this.Controls.OfType<Panel>().Where(p => p.Tag?.ToString() == "SearchBoxPanel").ToList();
+            foreach (var panel in existingSearchPanels)
+            {
+                // 从控件集合中移除面板
+                this.Controls.Remove(panel);
+                panel.Dispose();
+            }
+            
+            // 创建一个Panel容器来放置搜索框
+            var searchPanel = new Panel();
+            searchPanel.Width = 200.DpiZoom(); // 设置一个合适的宽度
+            searchPanel.Height = searchBox.Height; // 高度与搜索框一致
+            searchPanel.Dock = DockStyle.Right; // 停靠到右侧
+            searchPanel.Margin = new Padding(0, (Height - searchBox.Height) / 2, 20.DpiZoom(), 0); // 设置边距，垂直居中对齐
+            searchPanel.Tag = "SearchBoxPanel"; // 标记这个面板是搜索框容器
+            
+            // 设置搜索框的停靠和大小
+            searchBox.Parent = searchPanel;
+            searchBox.Dock = DockStyle.Fill; // 填充整个panel
+            searchBox.Anchor = AnchorStyles.Top | AnchorStyles.Right; // 锚定到右上角
+            
+            // 将搜索框面板添加到工具栏
+            SuspendLayout();
+            this.Controls.Add(searchPanel);
+            ResumeLayout();
+        }
+
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             base.OnPaintBackground(e);
@@ -178,6 +210,7 @@ namespace BluePointLilac.Controls
             BackColor = Color.Transparent,
             Font = SystemFonts.MenuFont,
             AutoSize = true,
+            Anchor = AnchorStyles.Left | AnchorStyles.Right
         };
 
         public Image Image
@@ -192,6 +225,8 @@ namespace BluePointLilac.Controls
             set => lblText.Text = value;
         }
 
+        public bool CanBeSelected = true;
+        private float opacity;
         public float Opacity
         {
             get => currentOpacity;
@@ -201,7 +236,7 @@ namespace BluePointLilac.Controls
                 if (Math.Abs(targetOpacity - value) < 0.001f) return;
                 targetOpacity = value;
                 if (!animationTimer.Enabled) animationTimer.Start();
-            }
+        }
         }
 
         // 重写OnPaint方法以实现圆角效果
@@ -235,8 +270,8 @@ namespace BluePointLilac.Controls
                 {
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     e.Graphics.FillPath(brush, path);
-                }
             }
+        }
         }
 
         // 更新文字颜色的方法
@@ -289,8 +324,6 @@ namespace BluePointLilac.Controls
             this.Invalidate();
             this.Update();
         }
-
-        public bool CanBeSelected { get; set; } = true;
 
         protected override void OnResize(EventArgs e)
         {
