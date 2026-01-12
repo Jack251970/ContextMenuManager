@@ -199,8 +199,8 @@ namespace BluePointLilac.Methods
             };
             readonly Panel pnlInfo = new Panel
             {
-                ForeColor = MyMainForm.FormFore,
-                BackColor = MyMainForm.FormBack,
+                ForeColor = DarkModeHelper.FormFore,
+                BackColor = DarkModeHelper.FormBack,
                 Dock = DockStyle.Top,
             };
             readonly PictureBox picIcon = new PictureBox
@@ -210,8 +210,8 @@ namespace BluePointLilac.Methods
             };
             readonly Label lblText = new Label
             {
-                ForeColor = MyMainForm.FormFore,
-                BackColor = MyMainForm.FormBack,
+                ForeColor = DarkModeHelper.FormFore,
+                BackColor = DarkModeHelper.FormBack,
                 Location = new Point(68, 32).DpiZoom(),
                 AutoSize = true,
             };

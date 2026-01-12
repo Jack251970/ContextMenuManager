@@ -9,32 +9,32 @@ namespace ContextMenuManager.Controls
     {
         public RToolStripMenuItem() : base()
         {
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
         }
 
         public RToolStripMenuItem(string text) : base(text)
         {
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
         }
 
         public RToolStripMenuItem(string text, Image image) : base(text, image)
         {
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
         }
 
         public RToolStripMenuItem(string text, Image image, EventHandler onClick) : base(text, image, onClick)
         {
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
         }
 
         public RToolStripMenuItem(string text, Image image, EventHandler onClick, string name) : base(text, image, onClick, name)
         {
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
         }
     }
 
@@ -42,8 +42,8 @@ namespace ContextMenuManager.Controls
     {
         public RToolStripSeparator() : base()
         {
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
         }
     }
 }

@@ -22,8 +22,8 @@ namespace BluePointLilac.Controls
             Height = 80.DpiZoom();
             Dock = DockStyle.Top;
             DoubleBuffered = true;
-            BackColor = MyMainForm.titleArea;
-            ForeColor = MyMainForm.FormFore;
+            BackColor = DarkModeHelper.TitleArea;
+            ForeColor = DarkModeHelper.FormFore;
             
             // 创建按钮容器（左侧）
             buttonContainer = new FlowLayoutPanel
@@ -47,6 +47,9 @@ namespace BluePointLilac.Controls
             
             Controls.Add(buttonContainer);
             Controls.Add(searchBoxContainer);
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         private MyToolBarButton selectedButton;
@@ -165,28 +168,17 @@ namespace BluePointLilac.Controls
 
             var rect = ClientRectangle;
 
-            Color color1, color2, color3;
-            if (MyMainForm.IsDarkTheme())
-            {
-                // 深色模式三色渐变
-                color1 = Color.FromArgb(128, 128, 128);   // 顶部颜色
-                color2 = Color.FromArgb(56, 56, 56);   // 中间颜色
-                color3 = Color.FromArgb(128, 128, 128);   // 底部颜色
-            }
-            else
-            {
-                // 浅色模式三色渐变
-                color1 = Color.FromArgb(255, 255, 255); // 顶部颜色
-                color2 = Color.FromArgb(230, 230, 230); // 中间颜色
-                color3 = Color.FromArgb(255, 255, 255); // 底部颜色
-            }
+            // 使用DarkModeHelper中的颜色
+            Color color1 = DarkModeHelper.ToolBarGradientTop;
+            Color color2 = DarkModeHelper.ToolBarGradientMiddle;
+            Color color3 = DarkModeHelper.ToolBarGradientBottom;
 
             // 创建三色渐变
-            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                rect, Color.Empty, Color.Empty, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+            using (var brush = new LinearGradientBrush(
+                rect, Color.Empty, Color.Empty, LinearGradientMode.Vertical))
             {
                 // 使用ColorBlend创建三色渐变
-                var colorBlend = new System.Drawing.Drawing2D.ColorBlend(3);
+                var colorBlend = new ColorBlend(3);
                 colorBlend.Colors = new Color[] { color1, color2, color3 };
                 colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
                 brush.InterpolationColors = colorBlend;
@@ -204,6 +196,23 @@ namespace BluePointLilac.Controls
                 return base.Controls;
             }
         }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            BackColor = DarkModeHelper.TitleArea;
+            ForeColor = DarkModeHelper.FormFore;
+            Invalidate();
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
+        }
     }
 
     public sealed class MyToolBarButton : Panel
@@ -218,7 +227,7 @@ namespace BluePointLilac.Controls
         {
             SuspendLayout();
             DoubleBuffered = true;
-            ForeColor = MyMainForm.FormFore;
+            ForeColor = DarkModeHelper.FormFore;
             BackColor = Color.Transparent;
             Cursor = Cursors.Hand;
             Size = new Size(72, 72).DpiZoom();
@@ -249,7 +258,7 @@ namespace BluePointLilac.Controls
 
         readonly Label lblText = new Label
         {
-            ForeColor = MyMainForm.FormFore,
+            ForeColor = DarkModeHelper.FormFore,
             BackColor = Color.Transparent,
             Font = SystemFonts.MenuFont,
             AutoSize = true,
@@ -289,14 +298,10 @@ namespace BluePointLilac.Controls
             base.OnPaint(e);
 
             // 创建圆角矩形路径
-            using (var path = CreateRoundedRectanglePath(ClientRectangle, borderRadius))
+            using (var path = DarkModeHelper.CreateRoundedRectanglePath(ClientRectangle, borderRadius))
             {
                 // 根据当前模式选择颜色
-                bool isDarkMode = false;
-                if (Parent != null && Parent.Parent is MyToolBar toolbar)
-                {
-                    isDarkMode = MyMainForm.IsDarkTheme();
-                }
+                bool isDarkMode = DarkModeHelper.IsDarkTheme;
 
                 // 深色模式使用白色，浅色模式使用黑色
                 Color baseColor = isDarkMode ? Color.White : Color.Black;
@@ -320,11 +325,7 @@ namespace BluePointLilac.Controls
         // 更新文字颜色的方法
         public void UpdateTextColor()
         {
-            bool isDarkMode = false;
-            if (Parent != null && Parent.Parent is MyToolBar toolbar)
-            {
-                isDarkMode = MyMainForm.IsDarkTheme();
-            }
+            bool isDarkMode = DarkModeHelper.IsDarkTheme;
 
             // 浅色模式下，当按钮被选中或悬停时，文字颜色改为白色
             if (!isDarkMode && currentOpacity > 0.1f)
@@ -333,20 +334,8 @@ namespace BluePointLilac.Controls
             }
             else
             {
-                lblText.ForeColor = MyMainForm.FormFore;
+                lblText.ForeColor = DarkModeHelper.FormFore;
             }
-        }
-
-        // 创建圆角矩形路径的辅助方法
-        private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
-        {
-            var path = new GraphicsPath();
-            path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
-            path.AddArc(rect.Right - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
-            path.AddArc(rect.Right - radius * 2, rect.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
-            path.CloseFigure();
-            return path;
         }
 
         private void UpdateAnimation()
@@ -385,6 +374,16 @@ namespace BluePointLilac.Controls
                 cp.ExStyle |= 0x20; // 添加 WS_EX_TRANSPARENT 样式
                 return cp;
             }
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                animationTimer?.Stop();
+                animationTimer?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -15,12 +15,15 @@ namespace BluePointLilac.Controls
         public MyListBox()
         {
             AutoScroll = true;
-            BackColor = MyMainForm.FormBack;
-            ForeColor = MyMainForm.FormFore;
+            BackColor = DarkModeHelper.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
             
             mainList = new MyList(this);
             mainList.Dock = DockStyle.Fill;
             Controls.Add(mainList);
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         public void AddItem(MyListItem item)
@@ -58,6 +61,23 @@ namespace BluePointLilac.Controls
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
+        }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            BackColor = DarkModeHelper.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            Invalidate();
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 
@@ -159,13 +179,13 @@ namespace BluePointLilac.Controls
                 if(hoveredItem == value) return;
                 if(hoveredItem != null)
                 {
-                    hoveredItem.ForeColor = MyMainForm.FormFore;
+                    hoveredItem.ForeColor = DarkModeHelper.FormFore;
                     hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
                 }
                 hoveredItem = value;
                 if (hoveredItem != null)
                 {
-                    value.ForeColor = MyMainForm.MainColor;
+                    value.ForeColor = DarkModeHelper.MainColor;
                     value.Font = new Font(hoveredItem.Font, FontStyle.Bold);
                     value.Focus();
                 }
@@ -225,6 +245,7 @@ namespace BluePointLilac.Controls
                 ctr.Dispose();
             }
             ResumeLayout();
+            HoveredItem = null; // 清空悬停项引用
         }
 
         public void SortItemByText()
@@ -259,8 +280,8 @@ namespace BluePointLilac.Controls
             Height = 50.DpiZoom();
             Margin = new Padding(0);
             Font = SystemFonts.IconTitleFont;
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
@@ -272,6 +293,9 @@ namespace BluePointLilac.Controls
             CenterControl(picImage);
             AddCtr(pnlScrollbar, 0);
             ResumeLayout();
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         public Image Image
@@ -329,7 +353,7 @@ namespace BluePointLilac.Controls
         };
         private readonly Label lblSeparator = new Label
         {
-            BackColor = MyMainForm.FormFore,
+            BackColor = DarkModeHelper.FormFore,
             Dock = DockStyle.Bottom,
             Name = "Separator",
             Height = 1
@@ -339,6 +363,15 @@ namespace BluePointLilac.Controls
             Width = SystemInformation.VerticalScrollBarWidth,
             Enabled = false
         };
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            BackColor = DarkModeHelper.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            lblSeparator.BackColor = DarkModeHelper.FormFore;
+            Invalidate();
+        }
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -396,6 +429,15 @@ namespace BluePointLilac.Controls
         public void SetCtrIndex(Control ctr, int newIndex)
         {
             flpControls.Controls.SetChildIndex(ctr, newIndex + 1);
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -11,12 +11,12 @@ namespace BluePointLilac.Controls
     {
         public static readonly string DefaultText = $"Ver: {Application.ProductVersion}    {Application.CompanyName}";
 
-        // Ìí¼ÓÈýÉ«½¥±äÊôÐÔ
+        // æ°æ¨“ÊŠä¼Žè†æ›¹æ‰½ä¿¶
         private Color topColor = Color.Empty;
         private Color middleColor = Color.Empty;
         private Color bottomColor = Color.Empty;
 
-        // ÉîÉ«Ä£Ê½±êÖ¾
+        // æ—®ä¼Žè€€å®’æ¢“ç¥©
         private bool isDarkMode = false;
 
         public MyStatusBar()
@@ -26,101 +26,69 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Bottom;
             Font = SystemFonts.StatusFont;
 
-            // ¼ì²âÏµÍ³Ö÷Ìâ²¢ÉèÖÃÑÕÉ«
+            // æ½°è†ç‚µè‹€ç¿‹æž™ç”œæ‰¢ç¦»æ™‡ä¼Ž
             CheckSystemTheme();
 
-            // ¶©ÔÄÏµÍ³Ö÷Ìâ¸ü¸ÄÊÂ¼þ
-            Microsoft.Win32.SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
-            this.Disposed += (s, e) => Microsoft.Win32.SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+            // éš†å ç‚µè‹€ç¿‹æž™è¼‰èœŠå²ˆç’ƒ
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
-        // ÏµÍ³Ö÷Ìâ¸ü¸ÄÊÂ¼þ´¦Àí
-        private void SystemEvents_UserPreferenceChanged(object sender, Microsoft.Win32.UserPreferenceChangedEventArgs e)
+        // ç‚µè‹€ç¿‹æž™è¼‰èœŠå²ˆç’ƒæ­ç‡´
+        private void OnThemeChanged(object sender, EventArgs e)
         {
-            if (e.Category == Microsoft.Win32.UserPreferenceCategory.General)
-            {
-                CheckSystemTheme();
-                Refresh();
-            }
+            CheckSystemTheme();
+            Refresh();
         }
 
-        // ¼ì²âÏµÍ³Ö÷Ìâ
+        // æ½°è†ç‚µè‹€ç¿‹æž™
         private void CheckSystemTheme()
         {
-            // ¼ì²âÊÇ·ñÉîÉ«Ä£Ê½ (Windows 10/11)
-            isDarkMode = IsDarkThemeEnabled();
+            // ä½¿ç”¨DarkModeHelperç»Ÿä¸€ç®¡ç†ä¸»é¢˜
+            isDarkMode = DarkModeHelper.IsDarkTheme;
 
             if (isDarkMode)
             {
-                // ÉîÉ«Ä£Ê½ÑÕÉ«·½°¸ - Ê¹ÓÃÈýÉ«½¥±ä
-                BackColor = Color.FromArgb(40, 40, 40); // ÖÐ¼äÉ«µ÷×÷Îª±³¾°É«
+                // æ—®ä¼Žè€€å®’æ™‡ä¼Žæºå¶ - å¦èššÊŠä¼Žè†æ›¹
+                BackColor = Color.FromArgb(40, 40, 40); // ç¬¢æ½”ä¼Žè¦ƒé‡¬å³ˆæŽ–åŠ“ä¼Ž
                 ForeColor = Color.LightGray;
 
-                // ÉîÉ«Ä£Ê½½¥±äÑÕÉ« - ÈýÉ«½¥±ä
-                topColor = Color.FromArgb(128, 128, 128);
-                middleColor = Color.FromArgb(56, 56, 56);
-                bottomColor = Color.FromArgb(128, 128, 128);
+                // ä½¿ç”¨DarkModeHelperä¸­çš„é¢œè‰²
+                topColor = DarkModeHelper.StatusBarGradientTop;
+                middleColor = DarkModeHelper.StatusBarGradientMiddle;
+                bottomColor = DarkModeHelper.StatusBarGradientBottom;
             }
             else
             {
-                // Ç³É«Ä£Ê½ÑÕÉ«·½°¸
-                BackColor = MyMainForm.ButtonMain;
-                ForeColor = MyMainForm.FormFore;
+                // ã‚·ä¼Žè€€å®’æ™‡ä¼Žæºå¶
+                BackColor = DarkModeHelper.ButtonMain;
+                ForeColor = DarkModeHelper.FormFore;
 
-                // Ç³É«Ä£Ê½½¥±äÑÕÉ« - ÈýÉ«½¥±ä
-                topColor = Color.FromArgb(255, 255, 255);
-                middleColor = Color.FromArgb(230, 230, 230);
-                bottomColor = Color.FromArgb(255, 255, 255);
+                // ä½¿ç”¨DarkModeHelperä¸­çš„é¢œè‰²
+                topColor = DarkModeHelper.StatusBarGradientTop;
+                middleColor = DarkModeHelper.StatusBarGradientMiddle;
+                bottomColor = DarkModeHelper.StatusBarGradientBottom;
             }
-        }
-
-        // ¼ì²âÏµÍ³ÊÇ·ñÊ¹ÓÃÉîÉ«Ö÷Ìâ
-        private bool IsDarkThemeEnabled()
-        {
-            try
-            {
-                // Í¨¹ý×¢²á±í¼ì²âWindowsÖ÷ÌâÉèÖÃ
-                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-                {
-                    if (key != null)
-                    {
-                        var value = key.GetValue("AppsUseLightTheme");
-                        if (value != null && value is int)
-                        {
-                            return (int)value == 0;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // Èç¹ûÎÞ·¨¼ì²â£¬Ê¹ÓÃÄ¬ÈÏÖµ
-            }
-
-            // Ä¬ÈÏÊ¹ÓÃÇ³É«Ä£Ê½
-            return false;
         }
 
         [Browsable(true), EditorBrowsable(EditorBrowsableState.Always)]
         public override string Text { get => base.Text; set => base.Text = value; }
 
-        // Ìí¼ÓÈýÉ«½¥±äÊôÐÔ
-        [Browsable(true), Category("Appearance"), Description("½¥±ä¶¥²¿ÑÕÉ«")]
+        // æ°æ¨“ÊŠä¼Žè†æ›¹æ‰½ä¿¶
+        [Browsable(true), Category("Appearance"), Description("è†æ›¹éšŽçª’æ™‡ä¼Ž")]
         public Color TopColor
         {
             get => topColor;
             set { topColor = value; Refresh(); }
         }
 
-        [Browsable(true), Category("Appearance"), Description("½¥±äÖÐ¼äÑÕÉ«")]
+        [Browsable(true), Category("Appearance"), Description("è†æ›¹ç¬¢æ½”æ™‡ä¼Ž")]
         public Color MiddleColor
         {
             get => middleColor;
             set { middleColor = value; Refresh(); }
         }
 
-        [Browsable(true), Category("Appearance"), Description("½¥±äµ×²¿ÑÕÉ«")]
+        [Browsable(true), Category("Appearance"), Description("è†æ›¹èçª’æ™‡ä¼Ž")]
         public Color BottomColor
         {
             get => bottomColor;
@@ -129,14 +97,14 @@ namespace BluePointLilac.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            // ´´½¨ÈýÉ«½¥±ä±³¾°
+            // æ–è†˜ÊŠä¼Žè†æ›¹æŽ–åŠ“
             using (LinearGradientBrush brush = new LinearGradientBrush(
                 ClientRectangle,
                 Color.Empty,
                 Color.Empty,
                 LinearGradientMode.Vertical))
             {
-                // ÉèÖÃÈýÉ«½¥±ä
+                // æ‰¢ç¦»ÊŠä¼Žè†æ›¹
                 ColorBlend colorBlend = new ColorBlend(3);
                 colorBlend.Colors = new Color[] { TopColor, MiddleColor, BottomColor };
                 colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
@@ -145,7 +113,7 @@ namespace BluePointLilac.Controls
                 e.Graphics.FillRectangle(brush, ClientRectangle);
             }
 
-            // »æÖÆÎÄ±¾£¨±£³ÖÔ­ÓÐÂß¼­£©
+            // é¤…ç§¶æ…æŽ›ã„—æ‚µåŽ¥åŸ»è¡„è»€æ†®ã„˜
             string txt = Text;
             int left = Height / 3;
             for (int i = Text.Length - 1; i >= 0; i--)
@@ -183,6 +151,15 @@ namespace BluePointLilac.Controls
         protected override void OnBackColorChanged(EventArgs e)
         {
             base.OnBackColorChanged(e); Refresh();
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 }

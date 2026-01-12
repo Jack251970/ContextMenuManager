@@ -158,6 +158,9 @@ namespace BluePointLilac.Controls
             InitAnimation();
             UpdateColors();
 
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
+
             // Events for state tracking
             GotFocus += (s, e) => { focused = true; UpdateState(); };
             LostFocus += (s, e) => { focused = false; UpdateState(); };
@@ -201,30 +204,69 @@ namespace BluePointLilac.Controls
                 (int)(c1.B + (c2.B - c1.B) * t)
             );
 
-        private void UpdateColors()
+        /// <summary>
+        /// 安全设置控件属性，确保在UI线程上执行
+        /// </summary>
+        private void SafeSetProperty(Action action)
         {
-            bool dark = MyMainForm.IsDarkTheme();
-            if (dark)
+            if (IsDisposed || !IsHandleCreated) return;
+            
+            if (InvokeRequired)
             {
-                bgColor = Color.FromArgb(45, 45, 48);
-                textColor = Color.FromArgb(245, 245, 245);
-                borderColor = Color.FromArgb(70, 70, 75);
-                hoverColor = Color.FromArgb(255, 145, 60);
-                focusColor = Color.FromArgb(255, 107, 0);
-                arrowColor = Color.FromArgb(200, 200, 200);
+                try
+                {
+                    Invoke(action);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // 控件已释放，忽略
+                }
+                catch (InvalidOperationException)
+                {
+                    // 句柄未创建或已销毁，忽略
+                }
             }
             else
             {
-                bgColor = Color.FromArgb(250, 250, 252);
-                textColor = Color.FromArgb(25, 25, 25);
-                borderColor = Color.FromArgb(210, 210, 215);
-                hoverColor = Color.FromArgb(255, 145, 60);
-                focusColor = Color.FromArgb(255, 107, 0);
-                arrowColor = Color.FromArgb(100, 100, 100);
+                try
+                {
+                    action();
+                }
+                catch (ObjectDisposedException)
+                {
+                    // 控件已释放，忽略
+                }
+                catch (InvalidOperationException)
+                {
+                    // 句柄未创建或已销毁，忽略
+                }
             }
-            BackColor = bgColor;
-            ForeColor = textColor;
-            currentBorder = targetBorder = borderColor;
+        }
+
+        /// <summary>
+        /// 更新控件颜色，线程安全版本
+        /// </summary>
+        public void UpdateColors()
+        {
+            if (IsDisposed) return;
+            
+            // 使用DarkModeHelper统一管理颜色
+            bgColor = DarkModeHelper.ComboBoxBack;
+            textColor = DarkModeHelper.ComboBoxFore;
+            borderColor = DarkModeHelper.ComboBoxBorder;
+            arrowColor = DarkModeHelper.ComboBoxArrow;
+            
+            // 保持悬停和焦点颜色不变
+            hoverColor = Color.FromArgb(255, 145, 60);
+            focusColor = Color.FromArgb(255, 107, 0);
+            
+            // 安全设置属性
+            SafeSetProperty(() => 
+            {
+                BackColor = bgColor;
+                ForeColor = textColor;
+                currentBorder = targetBorder = borderColor;
+            });
         }
 
         private void UpdateState()
@@ -313,7 +355,7 @@ namespace BluePointLilac.Controls
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             // 使用与SearchBox相同的技术绘制圆角背景
-            if (!MyMainForm.IsDarkTheme())
+            if (!DarkModeHelper.IsDarkTheme)
             {
                 using (var p = CreateRoundPath(new Rectangle(1, 2, Width - 2, Height - 2), borderRadius.DpiZoom()))
                 using (var b = new SolidBrush(Color.FromArgb(15, 0, 0, 0)))
@@ -336,7 +378,7 @@ namespace BluePointLilac.Controls
         {
             var r = path.GetBounds();
             Color c1, c2;
-            if (MyMainForm.IsDarkTheme())
+            if (DarkModeHelper.IsDarkTheme)
             {
                 c1 = Color.FromArgb(50, 50, 53);
                 c2 = Color.FromArgb(40, 40, 43);
@@ -432,14 +474,7 @@ namespace BluePointLilac.Controls
 
         private GraphicsPath CreateRoundPath(Rectangle rect, int radius)
         {
-            var path = new GraphicsPath();
-            float d = radius * 2f;
-            path.AddArc(rect.X, rect.Y, d, d, 180, 90);
-            path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
-            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
-            path.CloseFigure();
-            return path;
+            return DarkModeHelper.CreateRoundedRectanglePath(rect, radius);
         }
 
         protected override void OnDrawItem(DrawItemEventArgs e)
@@ -477,6 +512,7 @@ namespace BluePointLilac.Controls
         {
             if (disposing)
             {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
                 animTimer?.Stop();
                 animTimer?.Dispose();
             }
@@ -503,6 +539,38 @@ namespace BluePointLilac.Controls
         {
             base.OnFontChanged(e);
             if (autoSize) AdjustWidth();
+        }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            if (IsDisposed) return;
+            
+            // 确保在UI线程上执行
+            if (InvokeRequired)
+            {
+                try
+                {
+                    Invoke(new Action<object, EventArgs>(OnThemeChanged), sender, e);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // 控件已释放，忽略
+                    return;
+                }
+                catch (InvalidOperationException)
+                {
+                    // 句柄未创建或已销毁，忽略
+                    return;
+                }
+                return;
+            }
+            
+            // 检查控件是否已释放
+            if (IsDisposed) return;
+            
+            UpdateColors();
+            Invalidate();
         }
 
         // 关键修复：移除设置Region的代码，因为它会导致内容被裁剪

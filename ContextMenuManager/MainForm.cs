@@ -33,7 +33,6 @@ namespace ContextMenuManager
             AddContextMenus();
             ResizeSideBar();
             JumpItem(0, 0);
-            InitTheme(true);
         }
 
         readonly MyToolBarButton[] ToolBarButtons =
@@ -258,9 +257,13 @@ namespace ContextMenuManager
 
         private void SwitchItem()
         {
-            // 先隐藏所有控件
+            // 先清空所有可见的列表控件
             foreach(Control ctr in MainControls)
             {
+                if (ctr.Visible)
+                {
+                    ClearListControl(ctr);
+                }
                 ctr.Visible = false;
             }
             
@@ -670,6 +673,20 @@ namespace ContextMenuManager
             {
                 return null;
             }
+        }
+        
+        // 清空列表控件的辅助方法
+        private void ClearListControl(Control control)
+        {
+            if (control is MyList list)
+            {
+                list.ClearItems();
+            }
+            else if (control is MyListBox listBox)
+            {
+                listBox.ClearItems();
+            }
+            // 其他类型的控件可能也需要清空，根据实际情况添加
         }
     }
 }

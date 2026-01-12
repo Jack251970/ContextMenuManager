@@ -243,8 +243,8 @@ namespace ContextMenuManager.Controls
 
         readonly NumericUpDown NudValue = new NumericUpDown
         {
-            ForeColor = MyMainForm.FormFore,
-            BackColor = MyMainForm.ButtonMain,
+            ForeColor = DarkModeHelper.FormFore,
+            BackColor = DarkModeHelper.ButtonMain,
             TextAlign = HorizontalAlignment.Center,
             Width = 80.DpiZoom()
         };
@@ -264,12 +264,12 @@ namespace ContextMenuManager.Controls
             {
                 if(NudValue.Value == Rule.DefaultValue)
                 {
-                    NudValue.ForeColor = MyMainForm.MainColor;
+                    NudValue.ForeColor = DarkModeHelper.MainColor;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Bold);
                 }
                 else
                 {
-                    NudValue.ForeColor = MyMainForm.FormFore;
+                    NudValue.ForeColor = DarkModeHelper.FormFore;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Regular);
                 }
                 ItemValue = (int)NudValue.Value;
@@ -311,7 +311,7 @@ namespace ContextMenuManager.Controls
         readonly Label LblValue = new Label
         {
             BorderStyle = BorderStyle.FixedSingle,
-            ForeColor = MyMainForm.FormFore,
+            ForeColor = DarkModeHelper.FormFore,
             Cursor = Cursors.Hand,
             AutoSize = true
         };
@@ -413,12 +413,12 @@ namespace ContextMenuManager.Controls
             {
                 if(NudValue.Value == Rule.DefaultValue)
                 {
-                    NudValue.ForeColor = MyMainForm.MainColor;
+                    NudValue.ForeColor = DarkModeHelper.MainColor;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Bold);
                 }
                 else
                 {
-                    NudValue.ForeColor = MyMainForm.FormFore;
+                    NudValue.ForeColor = DarkModeHelper.FormFore;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Regular);
                 }
                 ItemValue = (int)NudValue.Value;
@@ -431,8 +431,8 @@ namespace ContextMenuManager.Controls
 
         readonly NumericUpDown NudValue = new NumericUpDown
         {
-            ForeColor = MyMainForm.FormFore,
-            BackColor = MyMainForm.ButtonMain,
+            ForeColor = DarkModeHelper.FormFore,
+            BackColor = DarkModeHelper.ButtonMain,
             TextAlign = HorizontalAlignment.Center,
             Width = 80.DpiZoom()
         };
@@ -469,7 +469,7 @@ namespace ContextMenuManager.Controls
         readonly Label LblValue = new Label
         {
             BorderStyle = BorderStyle.FixedSingle,
-            ForeColor = MyMainForm.FormFore,
+            ForeColor = DarkModeHelper.FormFore,
             Cursor = Cursors.Hand,
             AutoSize = true
         };

@@ -73,8 +73,8 @@ namespace ContextMenuManager.Controls
             };
             readonly NumericUpDown nudStyle = new NumericUpDown
             {
-                ForeColor = MyMainForm.FormFore,
-                BackColor = MyMainForm.ButtonMain,
+                ForeColor = DarkModeHelper.FormFore, // 修改这里
+                BackColor = DarkModeHelper.ButtonMain, // 修改这里
                 TextAlign = HorizontalAlignment.Center,
                 Width = 80.DpiZoom(),
                 Maximum = 10,

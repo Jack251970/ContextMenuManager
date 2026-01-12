@@ -76,6 +76,9 @@ namespace BluePointLilac.Controls
             InitializeComponents();
             UpdateThemeColors();
             AdjustLayout();
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
         
         private void InitializeComponents()
@@ -84,7 +87,7 @@ namespace BluePointLilac.Controls
             textBox = new TextBox
             {
                 BorderStyle = BorderStyle.None,
-                BackColor = Color.White,
+                BackColor = DarkModeHelper.SearchBoxBack,
                 ForeColor = ForeColor,
                 Font = new Font("Segoe UI", 9f),
                 Multiline = false
@@ -126,16 +129,14 @@ namespace BluePointLilac.Controls
         
         private void UpdateThemeColors()
         {
-            bool isDark = MyMainForm.IsDarkTheme();
-            
             // 设置背景色
-            BackColor = isDark ? Color.FromArgb(45, 45, 45) : Color.White;
+            BackColor = DarkModeHelper.SearchBoxBack;
             
             // 设置文本框背景色
-            textBox.BackColor = isDark ? Color.FromArgb(55, 55, 55) : Color.White;
+            textBox.BackColor = DarkModeHelper.SearchBoxBack;
             
             // 设置前景色（文本颜色）
-            Color textColor = isDark ? Color.White : Color.FromArgb(30, 41, 59);
+            Color textColor = DarkModeHelper.FormFore;
             textBox.ForeColor = textColor;
             
             // 更新清除按钮图标
@@ -144,23 +145,12 @@ namespace BluePointLilac.Controls
         
         private Color GetBorderColor()
         {
-            if (textBox.ContainsFocus)
-            {
-                return MyMainForm.MainColor;
-            }
-            else
-            {
-                return MyMainForm.IsDarkTheme() ? 
-                    Color.FromArgb(80, 80, 80) : 
-                    Color.FromArgb(200, 200, 200);
-            }
+            return DarkModeHelper.GetBorderColor(textBox.ContainsFocus);
         }
         
         private Color GetPlaceholderColor()
         {
-            return MyMainForm.IsDarkTheme() ? 
-                Color.FromArgb(150, 150, 150) : 
-                Color.FromArgb(120, 120, 120);
+            return DarkModeHelper.GetPlaceholderColor();
         }
         
         private Image CreateClearIcon(Color color)
@@ -190,7 +180,7 @@ namespace BluePointLilac.Controls
             rect.Inflate(-1, -1);
             
             // 绘制圆角背景和边框
-            using (var path = CreateRoundedRectanglePath(rect, borderRadius))
+            using (var path = DarkModeHelper.CreateRoundedRectanglePath(rect, borderRadius))
             using (var brush = new SolidBrush(BackColor))
             using (var pen = new Pen(GetBorderColor(), 1f))
             {
@@ -223,7 +213,7 @@ namespace BluePointLilac.Controls
             }
             
             // 备用图标
-            var iconColor = MyMainForm.IsDarkTheme() ? Color.White : Color.FromArgb(100, 100, 100);
+            var iconColor = DarkModeHelper.FormFore;
             using (var pen = new Pen(iconColor, 1.5f))
             {
                 g.DrawEllipse(pen, x, y, size - 4, size - 4);
@@ -235,30 +225,6 @@ namespace BluePointLilac.Controls
                 float endY = centerY + (float)Math.Sin(angle) * handleLength;
                 g.DrawLine(pen, centerX, centerY, endX, endY);
             }
-        }
-        
-        private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
-        {
-            var path = new GraphicsPath();
-            if (radius <= 0) 
-            {
-                path.AddRectangle(rect);
-                return path;
-            }
-            
-            int diameter = radius * 2;
-            var arc = new Rectangle(rect.Location, new Size(diameter, diameter));
-            
-            path.AddArc(arc, 180, 90);
-            arc.X = rect.Right - diameter;
-            path.AddArc(arc, 270, 90);
-            arc.Y = rect.Bottom - diameter;
-            path.AddArc(arc, 0, 90);
-            arc.X = rect.Left;
-            path.AddArc(arc, 90, 90);
-            
-            path.CloseFigure();
-            return path;
         }
         
         private void UpdateClearButton()
@@ -292,7 +258,13 @@ namespace BluePointLilac.Controls
             Invalidate();
         }
         
-        // 当主题变化时更新颜色
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            UpdateThemeColors();
+            Invalidate();
+        }
+        
         protected override void OnParentChanged(EventArgs e)
         {
             base.OnParentChanged(e);
@@ -317,6 +289,7 @@ namespace BluePointLilac.Controls
         {
             if (disposing)
             {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
                 textBox?.Dispose();
                 clearButton?.Dispose();
             }

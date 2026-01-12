@@ -29,12 +29,15 @@ namespace BluePointLilac.Controls
         {
             InitializeComponent();
             Text = title;
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
             UseWaitCursor = true;
 
             _controller = new LoadingDialogInterface(this);
             _workThread = new Thread(() => ExecuteAction(action)) { Name = "LoadingDialogThread - " + title };
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         protected override CreateParams CreateParams
@@ -158,6 +161,22 @@ namespace BluePointLilac.Controls
             catch (Exception ex) { Error = ex; }
             _controller.CloseDialog();
         }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            if (this.IsDisposed || this.Disposing) return;
+            
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
+            
+            if (panel1 != null)
+            {
+                panel1.BackColor = DarkModeHelper.FormBack;
+            }
+            
+            Invalidate();
+        }
 
         #region Windows Form Designer Code
         private void InitializeComponent()
@@ -197,12 +216,15 @@ namespace BluePointLilac.Controls
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
             if (disposing)
             {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+                
                 if (progressBar != null)
                     progressBar.Dispose();
                 if (panel1 != null)

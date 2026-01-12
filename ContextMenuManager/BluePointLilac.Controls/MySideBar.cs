@@ -74,7 +74,6 @@ namespace BluePointLilac.Controls
 
         private float VerticalSpace => (itemHeight - TextHeight) * 0.5F;
         private int TextHeight => TextRenderer.MeasureText(" ", Font).Height;
-        private bool IsDarkTheme => ControlPaint.Light(BackColor).GetBrightness() < 0.5f;
 
         public event EventHandler SelectIndexChanged;
         public event EventHandler HoverIndexChanged;
@@ -128,6 +127,9 @@ namespace BluePointLilac.Controls
 
             // 设置动画计时器
             animationTimer.Tick += AnimationTimer_Tick;
+
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
 
             SelectedIndex = -1;
         }
@@ -304,6 +306,7 @@ namespace BluePointLilac.Controls
         {
             if (disposing)
             {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
                 animationTimer?.Stop();
                 animationTimer?.Dispose();
             }
@@ -312,25 +315,16 @@ namespace BluePointLilac.Controls
 
         private void InitializeColors()
         {
-            Color baseColor = IsDarkTheme ? Color.FromArgb(26, 26, 26) : SystemColors.Control;
-            BackColor = baseColor;
-            ForeColor = IsDarkTheme ? Color.WhiteSmoke : SystemColors.ControlText;
-            HoveredBackColor = IsDarkTheme ? Color.FromArgb(51, 51, 51) : Color.FromArgb(230, 230, 230);
-            SeparatorColor = IsDarkTheme ? Color.FromArgb(64, 64, 64) : Color.FromArgb(200, 200, 200);
+            BackColor = DarkModeHelper.SideBarBackground;
+            ForeColor = DarkModeHelper.FormFore;
+            HoveredBackColor = DarkModeHelper.SideBarHovered;
+            SeparatorColor = DarkModeHelper.SideBarSeparator;
             PnlSelected.BackColor = Color.Transparent;
 
-            if (IsDarkTheme)
-            {
-                BackgroundGradientColor1 = Color.FromArgb(128, 128, 128);
-                BackgroundGradientColor2 = Color.FromArgb(56, 56, 56);
-                BackgroundGradientColor3 = Color.FromArgb(128, 128, 128);
-            }
-            else
-            {
-                BackgroundGradientColor1 = Color.FromArgb(255, 255, 255);
-                BackgroundGradientColor2 = Color.FromArgb(230, 230, 230);
-                BackgroundGradientColor3 = Color.FromArgb(255, 255, 255);
-            }
+            // 从DarkModeHelper获取渐变颜色
+            BackgroundGradientColor1 = DarkModeHelper.ToolBarGradientTop;
+            BackgroundGradientColor2 = DarkModeHelper.ToolBarGradientMiddle;
+            BackgroundGradientColor3 = DarkModeHelper.ToolBarGradientBottom;
         }
 
         private void UpdateBackground()
@@ -501,5 +495,12 @@ namespace BluePointLilac.Controls
         protected override void OnBackColorChanged(EventArgs e) { base.OnBackColorChanged(e); InitializeColors(); UpdateBackground(); }
         protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified) =>
             base.SetBoundsCore(x, y, Math.Max(1, width), Math.Max(1, height), specified);
+            
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            InitializeColors();
+            UpdateBackground();
+        }
     }
 }

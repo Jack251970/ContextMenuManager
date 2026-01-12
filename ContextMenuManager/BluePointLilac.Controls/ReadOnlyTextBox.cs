@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+﻿﻿using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -12,8 +12,8 @@ namespace BluePointLilac.Controls
             ReadOnly = true;
             Multiline = true;
             ShortcutsEnabled = false;
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
         }
@@ -47,8 +47,8 @@ namespace BluePointLilac.Controls
             ReadOnly = true;
             Dock = DockStyle.Fill;
             BorderStyle = BorderStyle.None;
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
         }

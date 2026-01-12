@@ -25,7 +25,7 @@ namespace ContextMenuManager.Controls
             VisibleChanged += (sender, e) => this.SetEnabled(Visible);
             cmbLanguages.SelectionChangeCommitted += (sender, e) => ChangeLanguage();
             btnOpenDir.MouseDown += (sender, e) => ExternalProgram.OpenDirectory(AppConfig.LangsDir);
-            lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = MyMainForm.MainColor;
+            lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = DarkModeHelper.MainColor; // 修改这里
             lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;//Fixed
             btnDownLoad.MouseDown += (sender, e) =>
             {
@@ -66,7 +66,7 @@ namespace ContextMenuManager.Controls
         readonly Label lblHeader = new Label
         {
             Text = AppString.Other.Translators + "\r\n" + new string('-', 96),
-            ForeColor = MyMainForm.MainColor,
+            ForeColor = DarkModeHelper.MainColor, // 修改这里
             Dock = DockStyle.Top,
             AutoSize = true
         };
@@ -117,7 +117,7 @@ namespace ContextMenuManager.Controls
 
                     Label lblLanguage = new Label
                     {
-                        ForeColor = MyMainForm.FormFore,
+                        ForeColor = DarkModeHelper.FormFore, // 修改这里
                         Text = language,
                         AutoSize = true,
                         Font = Font
@@ -138,7 +138,7 @@ namespace ContextMenuManager.Controls
                             if(url != "null")
                             {
                                 toolTip.SetToolTip(ctrTranslators[i], url);
-                                ctrTranslators[i].ForeColor = MyMainForm.FormFore;
+                                ctrTranslators[i].ForeColor = DarkModeHelper.FormFore; // 修改这里
                                 ctrTranslators[i].Font = new Font(ctrTranslators[i].Font, FontStyle.Underline);
                                 ctrTranslators[i].Click += (sender, e) => ExternalProgram.OpenWebUrl(url);
                             }

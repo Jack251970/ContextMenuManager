@@ -16,8 +16,8 @@ namespace ContextMenuManager.Controls
             SuspendLayout();
             Dock = DockStyle.Fill;
             Controls.AddRange(pages);
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
+            ForeColor = DarkModeHelper.FormFore; // 修改这里
+            BackColor = DarkModeHelper.FormBack; // 修改这里
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
             cms.Items.AddRange(items);

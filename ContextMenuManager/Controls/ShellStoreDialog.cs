@@ -68,7 +68,7 @@ namespace ContextMenuManager.Controls
             readonly MyListBox listBox = new MyListBox();
             readonly Panel pnlBorder = new Panel
             {
-                BackColor = MyMainForm.FormFore
+                BackColor = DarkModeHelper.FormFore // 修改这里
             };
             readonly Button btnOK = new Button
             {

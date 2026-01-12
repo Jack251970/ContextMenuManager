@@ -63,6 +63,9 @@ namespace BluePointLilac.Controls
                 InitializeComponents();
                 ResumeLayout();
                 InitTheme();
+                
+                // 监听主题变化
+                DarkModeHelper.ThemeChanged += OnThemeChanged;
             }
 
             /*************************************外部属性***********************************/
@@ -133,8 +136,8 @@ namespace BluePointLilac.Controls
             readonly Label tvInfo = new Label { AutoSize = true };
             readonly TreeView treeView = new TreeView
             {
-                ForeColor = MyMainForm.FormFore,
-                BackColor = MyMainForm.FormBack,
+                ForeColor = DarkModeHelper.FormFore,
+                BackColor = DarkModeHelper.FormBack,
                 CheckBoxes = true,
                 Indent = 20.DpiZoom(),
                 ItemHeight = 25.DpiZoom(),
@@ -195,6 +198,31 @@ namespace BluePointLilac.Controls
                 checkAll.Left = treeView.Right - checkAll.Width;
                 checkAll.Click += (sender, e) => { CheckAll_CheckBoxMouseClick(sender, e); };
                 cmbItems.AutosizeDropDownWidth();
+            }
+            
+            private void InitTheme()
+            {
+                BackColor = DarkModeHelper.FormBack;
+                ForeColor = DarkModeHelper.FormFore;
+                
+                // 设置控件颜色
+                tvInfo.ForeColor = DarkModeHelper.FormFore;
+                checkAll.ForeColor = DarkModeHelper.FormFore;
+                cmbInfo.ForeColor = DarkModeHelper.FormFore;
+                btnOK.BackColor = DarkModeHelper.ButtonMain;
+                btnOK.ForeColor = DarkModeHelper.FormFore;
+                btnCancel.BackColor = DarkModeHelper.ButtonMain;
+                btnCancel.ForeColor = DarkModeHelper.FormFore;
+                
+                // 应用TreeView和ComboBox的颜色
+                DarkModeHelper.AdjustControlColors(this);
+            }
+            
+            // 主题变化事件处理
+            private void OnThemeChanged(object sender, EventArgs e)
+            {
+                InitTheme();
+                Invalidate();
             }
 
             private void ShowTreeView()
@@ -414,6 +442,15 @@ namespace BluePointLilac.Controls
                 }
 
                 return sortedTvSelectedItems;
+            }
+            
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                }
+                base.Dispose(disposing);
             }
         }
     }
