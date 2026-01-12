@@ -1,5 +1,5 @@
 using BluePointLilac.Methods;
-using ContextMenuManager.Methods;  // 添加AppString类的命名空间
+using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -18,13 +18,11 @@ namespace BluePointLilac.Controls
             BackColor = MyMainForm.FormBack;
             ForeColor = MyMainForm.FormFore;
             
-            // 初始化主列表
             mainList = new MyList(this);
             mainList.Dock = DockStyle.Fill;
             Controls.Add(mainList);
         }
 
-        // 添加项目到列表
         public void AddItem(MyListItem item)
         {
             mainList.AddItem(item);
@@ -45,7 +43,6 @@ namespace BluePointLilac.Controls
             mainList.ClearItems();
         }
 
-        // 其他方法保持不变，但需要代理到 mainList
         public MyListItem SelectedItem
         {
             get => mainList.HoveredItem;
@@ -60,7 +57,6 @@ namespace BluePointLilac.Controls
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            //使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
             base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
         }
     }
@@ -87,10 +83,8 @@ namespace BluePointLilac.Controls
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
         }
 
-        // 添加一个私有字段来保存搜索框实例
         private SearchBox searchBox;
         
-        // 获取或设置搜索框的方法，不再创建搜索框，只用于过滤
         public SearchBox SearchBox 
         {
             get => searchBox;
@@ -98,7 +92,6 @@ namespace BluePointLilac.Controls
             {
                 if (searchBox != null)
                 {
-                    // 移除旧事件处理程序
                     searchBox.TextChanged -= SearchBox_TextChanged;
                 }
                 
@@ -106,35 +99,53 @@ namespace BluePointLilac.Controls
                 
                 if (searchBox != null)
                 {
-                    // 添加新事件处理程序
                     searchBox.TextChanged += SearchBox_TextChanged;
                 }
             }
         }
         
-        // 搜索框文本改变事件处理
         private void SearchBox_TextChanged(object sender, EventArgs e)
         {
             string searchText = searchBox?.Text.ToLower().Trim() ?? "";
             FilterListItems(searchText);
         }
         
-        // 实现列表过滤功能
         private void FilterListItems(string searchText)
         {
-            // 遍历所有控件，根据搜索文本显示或隐藏它们
+            if (string.IsNullOrEmpty(searchText))
+            {
+                ShowAllItems();
+                return;
+            }
+            
             foreach (Control control in Controls)
             {
                 if (control is MyListItem item)
                 {
-                    if (string.IsNullOrEmpty(searchText) || item.Text.ToLower().Contains(searchText))
+                    bool matches = item.Text.ToLower().Contains(searchText);
+                    
+                    // 检查其他属性是否匹配
+                    if (!matches)
                     {
-                        item.Visible = true;
+                        var toolTipText = item.GetType().GetProperty("ToolTipText")?.GetValue(item)?.ToString();
+                        if (!string.IsNullOrEmpty(toolTipText))
+                        {
+                            matches = toolTipText.ToLower().Contains(searchText);
+                        }
                     }
-                    else
-                    {
-                        item.Visible = false;
-                    }
+                    
+                    item.Visible = matches;
+                }
+            }
+        }
+        
+        private void ShowAllItems()
+        {
+            foreach (Control control in Controls)
+            {
+                if (control is MyListItem item)
+                {
+                    item.Visible = true;
                 }
             }
         }
@@ -214,12 +225,6 @@ namespace BluePointLilac.Controls
                 ctr.Dispose();
             }
             ResumeLayout();
-            
-            // 同时清空保存的原始列表
-            if (Tag is List<MyListItem> savedItems)
-            {
-                savedItems.Clear();
-            }
         }
 
         public void SortItemByText()
@@ -328,12 +333,12 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Bottom,
             Name = "Separator",
             Height = 1
-        };//分割线
+        };
         private readonly Panel pnlScrollbar = new Panel
         {
             Width = SystemInformation.VerticalScrollBarWidth,
             Enabled = false
-        };//预留滚动条宽度
+        };
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
