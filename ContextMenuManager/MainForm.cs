@@ -5,7 +5,7 @@ using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;  // 添加LINQ支持
+using System.Linq;
 using System.Windows.Forms;
 
 namespace ContextMenuManager
@@ -451,7 +451,8 @@ namespace ContextMenuManager
                     {
                         var tsi = new RToolStripMenuItem(item.Value[i]);
                         cms.Items.Add(tsi);
-                        int toolBarIndex = ToolBar.Controls.GetChildIndex(item.Key);
+                        // 修复：使用ToolBar.SelectedIndex而不是Controls.GetChildIndex
+                        int toolBarIndex = Array.IndexOf(ToolBarButtons, item.Key);
                         int index = i;
                         if(toolBarIndex != 4)
                         {
