@@ -1,4 +1,4 @@
-using BluePointLilac.Controls;
+﻿using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
@@ -6,12 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace ContextMenuManager
 {
     sealed class MainForm : MyMainForm
     {
+        private SearchBox searchBox; // 添加搜索框成员变量
+        private Control currentListControl; // 当前显示的列表控件
+        private List<Control> originalListItems = new List<Control>(); // 保存原始列表项
+        
         public MainForm()
         {
             TopMost = AppConfig.TopMost;
@@ -20,14 +25,34 @@ namespace ContextMenuManager
             Text = AppString.General.AppName;
             Controls.Add(explorerRestarter);
             ToolBar.AddButtons(ToolBarButtons);
+            
+            // 创建并添加搜索框到工具栏
+            searchBox = new SearchBox();
+            searchBox.PlaceholderText = AppString.General.Search ?? "搜索...";
+            ToolBar.AddSearchBox(searchBox);
+            
             MainBody.Controls.AddRange(MainControls);
             ToolBarButtons[3].CanBeSelected = false;
             ToolBarButtons[3].MouseDown += (sender, e) => RefreshApp();
-            ToolBar.SelectedButtonChanged += (sender, e) => SwitchTab();
+            ToolBar.SelectedButtonChanged += (sender, e) => 
+            {
+                searchBox.Clear(); // 切换标签页时清空搜索框
+                originalListItems.Clear(); // 清除保存的原始列表项
+                SwitchTab();
+            };
             SideBar.HoverIndexChanged += (sender, e) => ShowItemInfo();
-            SideBar.SelectIndexChanged += (sender, e) => SwitchItem();
+            SideBar.SelectIndexChanged += (sender, e) => 
+            {
+                searchBox.Clear(); // 切换侧边栏项时清空搜索框
+                originalListItems.Clear(); // 清除保存的原始列表项
+                SwitchItem();
+            };
             Shown += (sender, e) => FirstRunDownloadLanguage();
             FormClosing += (sender, e) => CloseMainForm();
+            
+            // 监听搜索框文本变化事件
+            searchBox.TextChanged += (sender, e) => FilterItems(searchBox.Text);
+            
             HoveredToShowItemPath();
             DragDropToAnalysis();
             AddContextMenus();
@@ -43,8 +68,6 @@ namespace ContextMenuManager
             new MyToolBarButton(AppImage.Refresh, AppString.ToolBar.Refresh),
             new MyToolBarButton(AppImage.About, AppString.ToolBar.About)
         };
-
-        private TextBox currentSearchBox;
 
         private Control[] MainControls => new Control[]
         {
@@ -73,6 +96,7 @@ namespace ContextMenuManager
         readonly BackupListBox backupListBox = new BackupListBox();
         readonly ExplorerRestarter explorerRestarter = new ExplorerRestarter();
 
+        // 主页
         static readonly string[] GeneralItems =
         {
             AppString.SideBar.File,
@@ -112,6 +136,7 @@ namespace ContextMenuManager
             AppString.StatusBar.WinX
         };
 
+        // 文件类型
         static readonly string[] TypeItems =
         {
             AppString.SideBar.LnkFile,
@@ -139,6 +164,7 @@ namespace ContextMenuManager
             AppString.StatusBar.MenuAnalysis
         };
 
+        // 其他规则
         static readonly string[] OtherRuleItems =
         {
             AppString.SideBar.EnhanceMenu,
@@ -164,6 +190,7 @@ namespace ContextMenuManager
             AppString.StatusBar.CustomRegPath,
         };
 
+        // 关于
         static readonly string[] AboutItems =
         {
             AppString.SideBar.AppSetting,
@@ -221,7 +248,7 @@ namespace ContextMenuManager
             bool flag2 = SideBar.SelectedIndex == sideBarIndex;
             lastItemIndex[toolBarIndex] = sideBarIndex;
             ToolBar.SelectedIndex = toolBarIndex;
-            if(flag1 || flag2 || ToolBar.SelectedIndex == -1)
+            if(flag1 || flag2)
             {
                 SideBar.SelectedIndex = sideBarIndex;
                 SwitchItem();
@@ -257,19 +284,15 @@ namespace ContextMenuManager
 
         private void SwitchItem()
         {
-            // 先清空所有可见的列表控件
+            // 清空原始列表项缓存
+            originalListItems.Clear();
+            
             foreach(Control ctr in MainControls)
             {
-                if (ctr.Visible)
-                {
-                    ClearListControl(ctr);
-                }
                 ctr.Visible = false;
+                if(ctr is MyList list) list.ClearItems();
             }
-            
             if(SideBar.SelectedIndex == -1) return;
-            
-            // 根据工具栏和侧边栏索引显示对应的控件
             switch(ToolBar.SelectedIndex)
             {
                 case 0:
@@ -281,27 +304,8 @@ namespace ContextMenuManager
                 case 4:
                     SwitchAboutItem(); break;
             }
-            
-            // 只在需要搜索的页面添加搜索框
-            AddSearchBoxToCurrentList();
             lastItemIndex[ToolBar.SelectedIndex] = SideBar.SelectedIndex;
-            
-            // 确保控件正确显示在界面上
-            EnsureControlVisible();
-        }
-        
-        private void EnsureControlVisible()
-        {
-            // 查找当前可见的控件
-            var visibleControl = MainControls.FirstOrDefault(ctr => ctr.Visible);
-            if (visibleControl != null)
-            {
-                visibleControl.BringToFront();
-                visibleControl.Refresh();
-                
-                // 确保控件位置正确
-                visibleControl.Dock = DockStyle.Fill;
-            }
+            SuspendMainBodyWhenMove = MainControls.ToList().Any(ctr => ctr.Controls.Count > 50);
         }
 
         private void ShowItemInfo()
@@ -358,44 +362,41 @@ namespace ContextMenuManager
             switch(SideBar.SelectedIndex)
             {
                 case 11:
-                    shellNewList.LoadItems(); 
-                    shellNewList.Visible = true; 
+                    shellNewList.LoadItems(); shellNewList.Visible = true;
+                    currentListControl = shellNewList;
+                    SaveOriginalListItems();
                     break;
                 case 12:
-                    sendToList.LoadItems(); 
-                    sendToList.Visible = true; 
+                    sendToList.LoadItems(); sendToList.Visible = true;
+                    currentListControl = sendToList;
+                    SaveOriginalListItems();
                     break;
                 case 13:
-                    openWithList.LoadItems(); 
-                    openWithList.Visible = true; 
+                    openWithList.LoadItems(); openWithList.Visible = true;
+                    currentListControl = openWithList;
+                    SaveOriginalListItems();
                     break;
                 case 15:
-                    winXList.LoadItems(); 
-                    winXList.Visible = true; 
+                    winXList.LoadItems(); winXList.Visible = true;
+                    currentListControl = winXList;
+                    SaveOriginalListItems();
                     break;
                 default:
-                    if (SideBar.SelectedIndex >= 0 && SideBar.SelectedIndex < GeneralShellScenes.Length)
-                    {
-                        shellList.Scene = GeneralShellScenes[SideBar.SelectedIndex];
-                        shellList.LoadItems(); 
-                        shellList.Visible = true; 
-                    }
+                    shellList.Scene = GeneralShellScenes[SideBar.SelectedIndex];
+                    shellList.LoadItems(); shellList.Visible = true;
+                    currentListControl = shellList;
+                    SaveOriginalListItems();
                     break;
             }
         }
 
         private void SwitchTypeItem()
         {
-            if (SideBar.SelectedIndex >= 0 && SideBar.SelectedIndex < TypeShellScenes.Length)
-            {
-                var scene = TypeShellScenes[SideBar.SelectedIndex];
-                if (scene != null)
-                {
-                    shellList.Scene = (Scenes)scene;
-                    shellList.LoadItems();
-                    shellList.Visible = true;
-                }
-            }
+            shellList.Scene = (Scenes)TypeShellScenes[SideBar.SelectedIndex];
+            shellList.LoadItems();
+            shellList.Visible = true;
+            currentListControl = shellList;
+            SaveOriginalListItems();
         }
 
         private void SwitchOtherRuleItem()
@@ -403,37 +404,39 @@ namespace ContextMenuManager
             switch(SideBar.SelectedIndex)
             {
                 case 0:
-                    enhanceMenusList.ScenePath = null; 
-                    enhanceMenusList.LoadItems(); 
-                    enhanceMenusList.Visible = true; 
+                    enhanceMenusList.ScenePath = null; enhanceMenusList.LoadItems(); enhanceMenusList.Visible = true;
+                    currentListControl = enhanceMenusList;
+                    SaveOriginalListItems();
                     break;
                 case 1:
-                    detailedEditList.GroupGuid = Guid.Empty; 
-                    detailedEditList.LoadItems(); 
-                    detailedEditList.Visible = true; 
+                    detailedEditList.GroupGuid = Guid.Empty; detailedEditList.LoadItems(); detailedEditList.Visible = true;
+                    currentListControl = detailedEditList;
+                    SaveOriginalListItems();
                     break;
                 case 3:
-                    shellList.Scene = Scenes.DragDrop; 
-                    shellList.LoadItems(); 
-                    shellList.Visible = true; 
+                    shellList.Scene = Scenes.DragDrop; shellList.LoadItems(); shellList.Visible = true;
+                    currentListControl = shellList;
+                    SaveOriginalListItems();
                     break;
                 case 4:
-                    shellList.Scene = Scenes.PublicReferences; 
-                    shellList.LoadItems(); 
-                    shellList.Visible = true; 
+                    shellList.Scene = Scenes.PublicReferences; shellList.LoadItems(); shellList.Visible = true;
+                    currentListControl = shellList;
+                    SaveOriginalListItems();
                     break;
                 case 5:
-                    iEList.LoadItems(); 
-                    iEList.Visible = true; 
+                    iEList.LoadItems(); iEList.Visible = true;
+                    currentListControl = iEList;
+                    SaveOriginalListItems();
                     break;
                 case 7:
-                    guidBlockedList.LoadItems(); 
-                    guidBlockedList.Visible = true; 
+                    guidBlockedList.LoadItems(); guidBlockedList.Visible = true;
+                    currentListControl = guidBlockedList;
+                    SaveOriginalListItems();
                     break;
                 case 8:
-                    shellList.Scene = Scenes.CustomRegPath; 
-                    shellList.LoadItems(); 
-                    shellList.Visible = true; 
+                    shellList.Scene = Scenes.CustomRegPath; shellList.LoadItems(); shellList.Visible = true;
+                    currentListControl = shellList;
+                    SaveOriginalListItems();
                     break;
             }
         }
@@ -443,20 +446,16 @@ namespace ContextMenuManager
             switch(SideBar.SelectedIndex)
             {
                 case 0:
-                    appSettingBox.LoadItems(); 
-                    appSettingBox.Visible = true;
+                    appSettingBox.LoadItems(); appSettingBox.Visible = true;
                     break;
                 case 1:
-                    languagesBox.LoadLanguages(); 
-                    languagesBox.Visible = true;
+                    languagesBox.LoadLanguages(); languagesBox.Visible = true;
                     break;
                 case 2:
-                    backupListBox.LoadItems(); 
-                    backupListBox.Visible = true;
+                    backupListBox.LoadItems(); backupListBox.Visible = true;
                     break;
                 case 3:
-                    dictionariesBox.LoadText(); 
-                    dictionariesBox.Visible = true;
+                    dictionariesBox.LoadText(); dictionariesBox.Visible = true;
                     break;
                 case 4:
                     if(aboutMeBox.TextLength == 0) aboutMeBox.LoadIni(AppString.Other.AboutApp);
@@ -466,6 +465,150 @@ namespace ContextMenuManager
                     donateBox.Visible = true;
                     break;
             }
+            currentListControl = null;
+        }
+
+        // 保存原始列表项
+        private void SaveOriginalListItems()
+        {
+            originalListItems.Clear();
+            
+            if (currentListControl != null && currentListControl is MyList myList)
+            {
+                foreach (Control control in myList.Controls)
+                {
+                    originalListItems.Add(control);
+                }
+            }
+        }
+
+        // 过滤项目
+        private void FilterItems(string filterText)
+        {
+            if (string.IsNullOrWhiteSpace(filterText))
+            {
+                // 如果搜索框为空，恢复显示所有原始项
+                RestoreOriginalListItems();
+                return;
+            }
+            
+            string searchText = filterText.ToLower();
+            
+            // 根据当前列表控件进行过滤
+            if (currentListControl != null && currentListControl is MyList myList)
+            {
+                FilterListItems(myList, searchText);
+            }
+        }
+        
+        // 恢复原始列表项
+        private void RestoreOriginalListItems()
+        {
+            if (currentListControl != null && currentListControl is MyList myList)
+            {
+                // 先清空当前列表
+                myList.Controls.Clear();
+                
+                // 恢复所有原始项
+                foreach (var item in originalListItems)
+                {
+                    myList.Controls.Add(item);
+                }
+                
+                // 恢复状态栏文本
+                StatusBar.Text = MyStatusBar.DefaultText;
+            }
+        }
+        
+        private void FilterListItems(MyList listControl, string searchText)
+        {
+            // 遍历列表项并过滤
+            var itemsToShow = new List<Control>();
+            
+            foreach (Control control in listControl.Controls)
+            {
+                if (control is MyListItem item)
+                {
+                    bool matches = false;
+                    
+                    // 检查主文本
+                    if (item.Text != null && item.Text.ToLower().Contains(searchText))
+                    {
+                        matches = true;
+                    }
+                    
+                    // 检查SubText
+                    if (!matches && !string.IsNullOrEmpty(item.SubText) && item.SubText.ToLower().Contains(searchText))
+                    {
+                        matches = true;
+                    }
+                    
+                    // 检查其他可能包含文本的属性
+                    if (!matches)
+                    {
+                        // 可以通过反射检查其他文本属性
+                        var properties = item.GetType().GetProperties();
+                        foreach (var prop in properties)
+                        {
+                            if (prop.PropertyType == typeof(string))
+                            {
+                                // 排除 Text 属性，因为已经检查过了
+                                if (prop.Name != "Text" && prop.Name != "SubText")
+                                {
+                                    var value = prop.GetValue(item) as string;
+                                    if (value != null && value.ToLower().Contains(searchText))
+                                    {
+                                        matches = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (matches)
+                    {
+                        itemsToShow.Add(item);
+                    }
+                }
+            }
+            
+            // 清除当前列表并添加匹配的项
+            listControl.Controls.Clear();
+            foreach (var item in itemsToShow)
+            {
+                listControl.Controls.Add(item);
+            }
+            
+            // 如果没有匹配项，显示提示
+            if (itemsToShow.Count == 0 && !string.IsNullOrWhiteSpace(searchText))
+            {
+                StatusBar.Text = $"{AppString.General.NoResultsFor ?? "没有找到匹配"} \"{searchText}\"";
+            }
+            else if (itemsToShow.Count > 0)
+            {
+                StatusBar.Text = $"找到 {itemsToShow.Count} 个匹配项";
+            }
+        }
+        
+        // 添加快捷键支持
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // 全局搜索快捷键 Ctrl+F
+            if (keyData == (Keys.Control | Keys.F))
+            {
+                searchBox?.FocusTextBox();
+                return true;
+            }
+            
+            // ESC 清除搜索框
+            if (keyData == Keys.Escape && searchBox != null && !string.IsNullOrEmpty(searchBox.Text))
+            {
+                searchBox.Clear();
+                return true;
+            }
+            
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void ResizeSideBar()
@@ -509,8 +652,11 @@ namespace ContextMenuManager
                     {
                         var tsi = new RToolStripMenuItem(item.Value[i]);
                         cms.Items.Add(tsi);
-                        int toolBarIndex = Array.IndexOf(ToolBarButtons, item.Key);
+                        
+                        // 修复：使用 ButtonControls 而不是 Controls
+                        int toolBarIndex = ToolBar.ButtonControls.GetChildIndex(item.Key);
                         int index = i;
+                        
                         if(toolBarIndex != 4)
                         {
                             tsi.Click += (sender, e) => JumpItem(toolBarIndex, index);
@@ -579,114 +725,6 @@ namespace ContextMenuManager
             WindowState = FormWindowState.Normal;
             explorerRestarter.Visible = false;
             AppConfig.MainFormSize = Size;
-        }
-
-        private void AddSearchBoxToCurrentList()
-        {
-            // 检查当前页面是否需要搜索框
-            if (IsSearchablePage())
-            {
-                var currentList = GetCurrentList();
-                if (currentList != null)
-                {
-                    var searchBox = new SearchBox();
-                    searchBox.PlaceholderText = AppString.Dialog.Search;
-                    
-                    currentList.SearchBox = searchBox;
-                    
-                    // 从工具栏中移除旧的搜索框（如果存在）
-                    var existingSearchPanels = ToolBar.Controls.OfType<Panel>().Where(p => p.Tag?.ToString() == "SearchBoxPanel").ToList();
-                    foreach (var panel in existingSearchPanels)
-                    {
-                        ToolBar.Controls.Remove(panel);
-                        panel.Dispose();
-                    }
-                    
-                    // 添加搜索框到工具栏
-                    ToolBar.AddSearchBox(searchBox);
-                }
-            }
-            else
-            {
-                // 移除工具栏中的搜索框
-                var existingSearchPanels = ToolBar.Controls.OfType<Panel>().Where(p => p.Tag?.ToString() == "SearchBoxPanel").ToList();
-                foreach (var panel in existingSearchPanels)
-                {
-                    ToolBar.Controls.Remove(panel);
-                    panel.Dispose();
-                }
-            }
-        }
-
-        // 检查当前页面是否需要搜索功能
-        private bool IsSearchablePage()
-        {
-            switch (ToolBar.SelectedIndex)
-            {
-                case 0: // 主页
-                    return SideBar.SelectedIndex != 15; // WinX页面可能有特殊处理
-                case 1: // 文件类型
-                    return true;
-                case 2: // 其他规则
-                    return SideBar.SelectedIndex != 2 && SideBar.SelectedIndex != 6; // 排除分隔符
-                case 4: // 关于
-                    return false; // 关于页面不需要搜索
-                default:
-                    return false;
-            }
-        }
-
-        // 获取当前显示的可搜索列表
-        private MyList GetCurrentList()
-        {
-            if (ToolBar.SelectedIndex == 0) // 主页
-            {
-                switch (SideBar.SelectedIndex)
-                {
-                    case 11: return shellNewList;
-                    case 12: return sendToList;
-                    case 13: return openWithList;
-                    case 15: return winXList;
-                    default: return shellList;
-                }
-            }
-            else if (ToolBar.SelectedIndex == 1) // 文件类型
-            {
-                return shellList;
-            }
-            else if (ToolBar.SelectedIndex == 2) // 其他规则
-            {
-                switch (SideBar.SelectedIndex)
-                {
-                    case 0: return enhanceMenusList;
-                    case 1: return detailedEditList;
-                    case 3: // DragDrop
-                    case 4: // PublicReferences
-                    case 8: // CustomRegPath
-                        return shellList;
-                    case 5: return iEList;
-                    case 7: return guidBlockedList;
-                    default: return null;
-                }
-            }
-            else // 关于页面或其他
-            {
-                return null;
-            }
-        }
-        
-        // 清空列表控件的辅助方法
-        private void ClearListControl(Control control)
-        {
-            if (control is MyList list)
-            {
-                list.ClearItems();
-            }
-            else if (control is MyListBox listBox)
-            {
-                listBox.ClearItems();
-            }
-            // 其他类型的控件可能也需要清空，根据实际情况添加
         }
     }
 }
