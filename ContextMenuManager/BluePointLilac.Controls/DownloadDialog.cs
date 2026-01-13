@@ -40,6 +40,9 @@ namespace BluePointLilac.Controls
                 InitializeComponents();
                 ResumeLayout();
                 InitTheme();
+                
+                // 监听主题变化
+                DarkModeHelper.ThemeChanged += OnThemeChanged;
             }
 
             readonly ProgressBar pgbDownload = new ProgressBar
@@ -64,6 +67,22 @@ namespace BluePointLilac.Controls
                 pgbDownload.Height = btnCancel.Height;
                 btnCancel.Left = pgbDownload.Right + a;
                 ClientSize = new Size(btnCancel.Right + a, btnCancel.Bottom + a);
+            }
+            
+            private void InitTheme()
+            {
+                BackColor = DarkModeHelper.FormBack;
+                ForeColor = DarkModeHelper.FormFore;
+                
+                btnCancel.BackColor = DarkModeHelper.ButtonMain;
+                btnCancel.ForeColor = DarkModeHelper.FormFore;
+            }
+            
+            // 主题变化事件处理
+            private void OnThemeChanged(object sender, EventArgs e)
+            {
+                InitTheme();
+                Invalidate();
             }
 
             private void DownloadFile(string url, string filePath)
@@ -107,6 +126,15 @@ namespace BluePointLilac.Controls
                     StartPosition = FormStartPosition.CenterParent;
                 }
                 base.OnLoad(e);
+            }
+            
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                }
+                base.Dispose(disposing);
             }
         }
     }

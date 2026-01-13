@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BluePointLilac.Methods;
+using System;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -15,6 +16,9 @@ namespace BluePointLilac.Controls
         public ResizeLimitedForm()
         {
             InitTheme();
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         protected override void WndProc(ref Message m)
@@ -41,6 +45,31 @@ namespace BluePointLilac.Controls
                         break;
                 }
             }
+        }
+        
+        private void InitTheme()
+        {
+            BackColor = DarkModeHelper.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            
+            // 应用深色模式标题栏
+            DarkModeHelper.ApplyDarkModeToForm(this);
+        }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            InitTheme();
+            Invalidate();
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
         }
 
         const int WM_NCHITTEST = 0x84;//光标移动或鼠标按下、释放时的消息

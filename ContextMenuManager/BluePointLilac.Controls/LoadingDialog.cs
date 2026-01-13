@@ -23,7 +23,6 @@ namespace BluePointLilac.Controls
         private bool _startAutomatically;
         private NewProgressBar progressBar;
         private Panel panel1;
-        private IContainer components;
 
         internal LoadingDialog(string title, Action<LoadingDialogInterface> action)
         {
@@ -36,7 +35,6 @@ namespace BluePointLilac.Controls
             _controller = new LoadingDialogInterface(this);
             _workThread = new Thread(() => ExecuteAction(action)) { Name = "LoadingDialogThread - " + title };
             
-            // 监听主题变化
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
@@ -85,7 +83,6 @@ namespace BluePointLilac.Controls
         private void OwnerOnMove(object sender, EventArgs e)
         {
             if (Owner == null) return;
-
             var newPos = CalculatePosition();
             newPos.X += _offset.X;
             newPos.Y += _offset.Y;
@@ -95,24 +92,23 @@ namespace BluePointLilac.Controls
         private Point CalculatePosition()
         {
             var pos = Point.Empty;
+            var ownerAlignment = _ownerAlignment.ToString();
 
-            // Vertical alignment
-            if (_ownerAlignment.ToString().Contains("Middle"))
+            if (ownerAlignment.Contains("Middle"))
                 pos.Y = Owner.Location.Y + Owner.Size.Height / 2 - Size.Height / 2;
-            else if (_ownerAlignment.ToString().Contains("Bottom"))
+            else if (ownerAlignment.Contains("Bottom"))
                 pos.Y = Owner.Location.Y + Owner.Size.Height - Size.Height;
 
-            // Horizontal alignment  
-            if (_ownerAlignment.ToString().Contains("Center"))
+            if (ownerAlignment.Contains("Center"))
                 pos.X = Owner.Location.X + Owner.Size.Width / 2 - Size.Width / 2;
-            else if (_ownerAlignment.ToString().Contains("Right"))
+            else if (ownerAlignment.Contains("Right"))
                 pos.X = Owner.Location.X + Owner.Size.Width - Size.Width;
 
             return pos;
         }
 
         public static LoadingDialog Show(Form owner, string title, Action<LoadingDialogInterface> action,
-            Point offset = default(Point), ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
+            Point offset = default, ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
         {
             owner = GetTopmostOwner(owner);
             var loadBar = CreateLoadingDialog(owner, title, action, offset, ownerAlignment);
@@ -121,7 +117,7 @@ namespace BluePointLilac.Controls
         }
 
         public static Exception ShowDialog(Form owner, string title, Action<LoadingDialogInterface> action,
-            Point offset = default(Point), ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
+            Point offset = default, ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
         {
             using (var loadBar = CreateLoadingDialog(owner, title, action, offset, ownerAlignment))
             {
@@ -162,32 +158,22 @@ namespace BluePointLilac.Controls
             _controller.CloseDialog();
         }
         
-        // 主题变化事件处理
         private void OnThemeChanged(object sender, EventArgs e)
         {
-            if (this.IsDisposed || this.Disposing) return;
-            
+            if (IsDisposed || Disposing) return;
             ForeColor = DarkModeHelper.FormFore;
             BackColor = DarkModeHelper.FormBack;
-            
-            if (panel1 != null)
-            {
-                panel1.BackColor = DarkModeHelper.FormBack;
-            }
-            
+            panel1.BackColor = DarkModeHelper.FormBack;
             Invalidate();
         }
 
-        #region Windows Form Designer Code
         private void InitializeComponent()
         {
-            this.components = new Container();
             progressBar = new NewProgressBar();
             panel1 = new Panel();
             panel1.SuspendLayout();
             SuspendLayout();
 
-            // 修复进度条位置：移除 Dock 属性，设置固定位置和大小
             progressBar.Location = new Point(8, 10);
             progressBar.Size = new Size(391, 25);
             progressBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -219,36 +205,24 @@ namespace BluePointLilac.Controls
             if (disposing)
             {
                 DarkModeHelper.ThemeChanged -= OnThemeChanged;
-                
-                if (components != null)
-                {
-                    components.Dispose();
-                }
-                
-                if (progressBar != null)
-                    progressBar.Dispose();
-                if (panel1 != null)
-                    panel1.Dispose();
+                progressBar?.Dispose();
+                panel1?.Dispose();
             }
             base.Dispose(disposing);
         }
-        #endregion
     }
 
     public sealed class LoadingDialogInterface
     {
-        private readonly Timer _updateTimer;
+        private readonly Timer _updateTimer = new Timer { Interval = 35 };
         private Action _lastProgressUpdate;
 
         internal LoadingDialogInterface(LoadingDialog dialog)
         {
             Dialog = dialog;
-            _updateTimer = new Timer { Interval = 35, SynchronizingObject = Dialog };
-            _updateTimer.Elapsed += (s, e) =>
-            {
-                var action = Interlocked.Exchange(ref _lastProgressUpdate, null);
-                if (action != null) action();
-            };
+            _updateTimer.SynchronizingObject = Dialog;
+            _updateTimer.Elapsed += (s, e) => 
+                Interlocked.Exchange(ref _lastProgressUpdate, null)?.Invoke();
             _updateTimer.Start();
             dialog.Disposed += (s, e) => _updateTimer.Dispose();
         }
@@ -287,7 +261,6 @@ namespace BluePointLilac.Controls
             try
             {
                 if (pb.Value == value) return;
-
                 if (value < pb.Minimum || value > pb.Maximum)
                     pb.Style = ProgressBarStyle.Marquee;
                 else
@@ -310,7 +283,6 @@ namespace BluePointLilac.Controls
         private void SafeInvoke(Action action)
         {
             if (Dialog.IsDisposed || Dialog.Disposing) return;
-
             if (Dialog.InvokeRequired)
             {
                 try { Dialog.Invoke(action); }
@@ -326,15 +298,14 @@ namespace BluePointLilac.Controls
         {
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
                     ControlStyles.OptimizedDoubleBuffer, true);
+            
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         protected override void OnPaintBackground(PaintEventArgs pevent)
         {
-            // 修复黑色背景问题：绘制背景色
-            using (var brush = new SolidBrush(this.Parent.BackColor))
-            {
+            using (var brush = new SolidBrush(DarkModeHelper.FormBack))
                 pevent.Graphics.FillRectangle(brush, pevent.ClipRectangle);
-            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -344,105 +315,93 @@ namespace BluePointLilac.Controls
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-            // 先清除为父控件背景色，避免黑色背景
-            using (var bgClearBrush = new SolidBrush(this.Parent.BackColor))
-            {
-                e.Graphics.FillRectangle(bgClearBrush, this.ClientRectangle);
-            }
+            using (var bgClearBrush = new SolidBrush(DarkModeHelper.FormBack))
+                e.Graphics.FillRectangle(bgClearBrush, ClientRectangle);
 
-            Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
+            Rectangle rect = new Rectangle(0, 0, Width, Height);
 
-            // 绘制背景（圆角矩形，使用三色渐变）
             using (GraphicsPath bgPath = CreateRoundedRectanglePath(rect, cornerRadius))
             {
-                // 背景三色渐变
-                Color bgColor1 = Color.FromArgb(220, 220, 220);
-                Color bgColor2 = Color.FromArgb(180, 180, 180);
-                Color bgColor3 = Color.FromArgb(220, 220, 220);
+                Color bgColor1, bgColor2, bgColor3;
+                
+                if (DarkModeHelper.IsDarkTheme)
+                {
+                    bgColor1 = Color.FromArgb(80, 80, 80);
+                    bgColor2 = Color.FromArgb(60, 60, 60);
+                    bgColor3 = Color.FromArgb(80, 80, 80);
+                }
+                else
+                {
+                    bgColor1 = Color.FromArgb(220, 220, 220);
+                    bgColor2 = Color.FromArgb(180, 180, 180);
+                    bgColor3 = Color.FromArgb(220, 220, 220);
+                }
 
                 using (LinearGradientBrush bgBrush = new LinearGradientBrush(
-                    new Point(0, rect.Top),
-                    new Point(0, rect.Bottom),
-                    bgColor1, bgColor3))
+                    new Point(0, rect.Top), new Point(0, rect.Bottom), bgColor1, bgColor3))
                 {
-                    // 设置背景三色渐变
-                    ColorBlend bgColorBlend = new ColorBlend();
-                    bgColorBlend.Colors = new Color[] { bgColor1, bgColor2, bgColor3 };
-                    bgColorBlend.Positions = new float[] { 0f, 0.5f, 1f };
-                    bgBrush.InterpolationColors = bgColorBlend;
-
+                    bgBrush.InterpolationColors = new ColorBlend
+                    {
+                        Colors = new[] { bgColor1, bgColor2, bgColor3 },
+                        Positions = new[] { 0f, 0.5f, 1f }
+                    };
                     e.Graphics.FillPath(bgBrush, bgPath);
                 }
             }
 
-            // 计算进度宽度
-            int progressWidth = (int)((this.Width - 2 * inset) * ((double)this.Value / this.Maximum));
+            int progressWidth = (int)((Width - 2 * inset) * ((double)Value / Maximum));
 
             if (progressWidth > 0)
             {
-                Rectangle progressRect = new Rectangle(inset, inset, progressWidth, this.Height - 2 * inset);
-
-                // 确保进度条至少有最小宽度来显示圆角
+                Rectangle progressRect = new Rectangle(inset, inset, progressWidth, Height - 2 * inset);
                 if (progressWidth < cornerRadius * 2)
-                {
                     progressRect.Width = Math.Max(progressWidth, cornerRadius);
-                }
 
-                // 创建前景三色橘色垂直渐变
                 Color fgColor1 = Color.FromArgb(255, 195, 0);
                 Color fgColor2 = Color.FromArgb(255, 140, 26);
                 Color fgColor3 = Color.FromArgb(255, 195, 0);
 
                 using (LinearGradientBrush fgBrush = new LinearGradientBrush(
-                    new Point(0, progressRect.Top),
-                    new Point(0, progressRect.Bottom),
-                    fgColor1, fgColor3))
+                    new Point(0, progressRect.Top), new Point(0, progressRect.Bottom), fgColor1, fgColor3))
                 {
-                    // 设置前景三色渐变
-                    ColorBlend fgColorBlend = new ColorBlend();
-                    fgColorBlend.Colors = new Color[] { fgColor1, fgColor2, fgColor3 };
-                    fgColorBlend.Positions = new float[] { 0f, 0.5f, 1f };
-                    fgBrush.InterpolationColors = fgColorBlend;
-
-                    // 绘制进度条（圆角矩形）
-                    using (GraphicsPath progressPath = CreateRoundedRectanglePath(progressRect, cornerRadius - 1))
+                    fgBrush.InterpolationColors = new ColorBlend
                     {
+                        Colors = new[] { fgColor1, fgColor2, fgColor3 },
+                        Positions = new[] { 0f, 0.5f, 1f }
+                    };
+
+                    using (GraphicsPath progressPath = CreateRoundedRectanglePath(progressRect, cornerRadius - 1))
                         e.Graphics.FillPath(fgBrush, progressPath);
-                    }
                 }
             }
         }
 
-        // 创建圆角矩形路径的辅助方法
         private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
         {
-            GraphicsPath path = new GraphicsPath();
-
+            var path = new GraphicsPath();
             if (radius <= 0)
             {
                 path.AddRectangle(rect);
                 return path;
             }
 
-            // 确保半径不会超过矩形尺寸的一半
             radius = Math.Min(radius, Math.Min(rect.Width, rect.Height) / 2);
-
             int diameter = radius * 2;
 
-            // 左上角
             path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
-
-            // 右上角
             path.AddArc(rect.Right - diameter, rect.Y, diameter, diameter, 270, 90);
-
-            // 右下角
             path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-
-            // 左下角
             path.AddArc(rect.X, rect.Bottom - diameter, diameter, diameter, 90, 90);
-
             path.CloseFigure();
             return path;
+        }
+        
+        private void OnThemeChanged(object sender, EventArgs e) => Invalidate();
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            base.Dispose(disposing);
         }
     }
 }

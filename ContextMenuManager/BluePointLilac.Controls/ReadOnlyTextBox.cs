@@ -16,6 +16,9 @@ namespace BluePointLilac.Controls
             BackColor = DarkModeHelper.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         const int WM_SETFOCUS = 0x0007;
@@ -38,6 +41,22 @@ namespace BluePointLilac.Controls
             if(firstEnter) Focus();
             firstEnter = false;
         }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
+        }
     }
 
     public sealed class ReadOnlyRichTextBox : RichTextBox
@@ -51,6 +70,9 @@ namespace BluePointLilac.Controls
             BackColor = DarkModeHelper.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         const int WM_SETFOCUS = 0x0007;
@@ -79,6 +101,22 @@ namespace BluePointLilac.Controls
         {
             base.OnLinkClicked(e);
             ExternalProgram.OpenWebUrl(e.LinkText);
+        }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 }

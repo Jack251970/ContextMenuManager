@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+﻿﻿using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -76,7 +76,22 @@ namespace BluePointLilac.Controls
             public bool CanEdit
             {
                 get => cmbItems.DropDownStyle == ComboBoxStyle.DropDown;
-                set => cmbItems.DropDownStyle = value ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
+                set
+                {
+                    cmbItems.DropDownStyle = value ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
+                    // 根据 DropDownStyle 设置合适的 AutoCompleteMode
+                    if (value)
+                    {
+                        cmbItems.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                        cmbItems.AutoCompleteSource = AutoCompleteSource.ListItems;
+                    }
+                    else
+                    {
+                        // 当 DropDownStyle 是 DropDownList 时，AutoCompleteMode 必须为 None
+                        cmbItems.AutoCompleteMode = AutoCompleteMode.None;
+                        cmbItems.AutoCompleteSource = AutoCompleteSource.None;
+                    }
+                }
             }
 
             public int SelectedIndex
@@ -99,8 +114,8 @@ namespace BluePointLilac.Controls
             };
             readonly RComboBox cmbItems = new RComboBox
             {
-                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-                AutoCompleteSource = AutoCompleteSource.ListItems,
+                // 移除初始化时的 AutoCompleteMode 和 AutoCompleteSource 设置
+                // 这些设置将在 CanEdit 属性中根据模式动态设置
                 DropDownHeight = 294.DpiZoom(),
                 ImeMode = ImeMode.Disable
             };

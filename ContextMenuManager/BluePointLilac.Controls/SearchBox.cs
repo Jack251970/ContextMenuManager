@@ -9,26 +9,30 @@ namespace BluePointLilac.Controls
 {
     public class SearchBox : UserControl
     {
-        private TextBox textBox;
-        private PictureBox clearButton;
+        private TextBox textBox = new TextBox
+        {
+            BorderStyle = BorderStyle.None,
+            Font = new Font("Segoe UI", 9f),
+            Multiline = false
+        };
+        
+        private PictureBox clearButton = new PictureBox
+        {
+            Size = new Size(16, 16).DpiZoom(),
+            Cursor = Cursors.Hand,
+            SizeMode = PictureBoxSizeMode.StretchImage,
+            Visible = false,
+            BackColor = Color.Transparent
+        };
+        
         private const int IconPadding = 12;
-        private string placeholderText = "搜索...";
         private int borderRadius = 8;
-        private bool showClearButton = true;
         
         [Category("外观"), Description("占位符文本")]
-        public string PlaceholderText
-        {
-            get => placeholderText;
-            set { placeholderText = value; Invalidate(); }
-        }
+        public string PlaceholderText { get; set; } = "搜索...";
         
         [Category("外观"), Description("是否显示清除按钮"), DefaultValue(true)]
-        public bool ShowClearButton
-        {
-            get => showClearButton;
-            set { showClearButton = value; UpdateClearButton(); }
-        }
+        public bool ShowClearButton { get; set; } = true;
         
         [Category("外观"), Description("圆角半径"), DefaultValue(8)]
         public int BorderRadius
@@ -40,22 +44,22 @@ namespace BluePointLilac.Controls
         [Browsable(false)]
         public new string Text
         {
-            get => textBox?.Text ?? string.Empty;
+            get => textBox.Text;
             set { textBox.Text = value; UpdateClearButton(); Invalidate(); }
         }
         
         [Browsable(false)]
         public new Font Font
         {
-            get => textBox?.Font ?? base.Font;
-            set { if (textBox != null) { textBox.Font = value; AdjustLayout(); } }
+            get => textBox.Font;
+            set { textBox.Font = value; AdjustLayout(); }
         }
         
         [Browsable(false)]
         public new Color ForeColor
         {
-            get => textBox?.ForeColor ?? base.ForeColor;
-            set { if (textBox != null) { textBox.ForeColor = value; clearButton.Image = CreateClearIcon(value); } }
+            get => textBox.ForeColor;
+            set { textBox.ForeColor = value; clearButton.Image = CreateClearIcon(value); }
         }
         
         public new event EventHandler TextChanged
@@ -72,38 +76,18 @@ namespace BluePointLilac.Controls
                     ControlStyles.DoubleBuffer | ControlStyles.ResizeRedraw, true);
             
             Size = new Size(200, 32.DpiZoom());
-            
             InitializeComponents();
             UpdateThemeColors();
             AdjustLayout();
             
-            // 监听主题变化
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
         
         private void InitializeComponents()
         {
-            // 初始化文本框
-            textBox = new TextBox
-            {
-                BorderStyle = BorderStyle.None,
-                BackColor = DarkModeHelper.SearchBoxBack,
-                ForeColor = ForeColor,
-                Font = new Font("Segoe UI", 9f),
-                Multiline = false
-            };
+            textBox.BackColor = DarkModeHelper.SearchBoxBack;
+            textBox.ForeColor = DarkModeHelper.FormFore;
             
-            // 初始化清除按钮
-            clearButton = new PictureBox
-            {
-                Size = new Size(16, 16).DpiZoom(),
-                Cursor = Cursors.Hand,
-                SizeMode = PictureBoxSizeMode.StretchImage,
-                Visible = false,
-                BackColor = Color.Transparent
-            };
-            
-            // 事件处理
             textBox.TextChanged += (s, e) => { UpdateClearButton(); Invalidate(); };
             textBox.GotFocus += (s, e) => Invalidate();
             textBox.LostFocus += (s, e) => Invalidate();
@@ -123,35 +107,19 @@ namespace BluePointLilac.Controls
                 ClearButtonClicked?.Invoke(this, EventArgs.Empty);
             };
             
-            // 添加控件
             Controls.AddRange(new Control[] { textBox, clearButton });
         }
         
         private void UpdateThemeColors()
         {
-            // 设置背景色
             BackColor = DarkModeHelper.SearchBoxBack;
-            
-            // 设置文本框背景色
             textBox.BackColor = DarkModeHelper.SearchBoxBack;
-            
-            // 设置前景色（文本颜色）
-            Color textColor = DarkModeHelper.FormFore;
-            textBox.ForeColor = textColor;
-            
-            // 更新清除按钮图标
-            clearButton.Image = CreateClearIcon(textColor);
+            textBox.ForeColor = DarkModeHelper.FormFore;
+            clearButton.Image = CreateClearIcon(DarkModeHelper.FormFore);
         }
         
-        private Color GetBorderColor()
-        {
-            return DarkModeHelper.GetBorderColor(textBox.ContainsFocus);
-        }
-        
-        private Color GetPlaceholderColor()
-        {
-            return DarkModeHelper.GetPlaceholderColor();
-        }
+        private Color GetBorderColor() => DarkModeHelper.GetBorderColor(textBox.ContainsFocus);
+        private Color GetPlaceholderColor() => DarkModeHelper.GetPlaceholderColor();
         
         private Image CreateClearIcon(Color color)
         {
@@ -179,7 +147,6 @@ namespace BluePointLilac.Controls
             var rect = ClientRectangle;
             rect.Inflate(-1, -1);
             
-            // 绘制圆角背景和边框
             using (var path = DarkModeHelper.CreateRoundedRectanglePath(rect, borderRadius))
             using (var brush = new SolidBrush(BackColor))
             using (var pen = new Pen(GetBorderColor(), 1f))
@@ -188,13 +155,10 @@ namespace BluePointLilac.Controls
                 g.DrawPath(pen, path);
             }
             
-            // 绘制搜索图标
             int iconSize = 16.DpiZoom();
-            int iconX = IconPadding;
             int iconY = (Height - iconSize) / 2;
-            DrawSearchIcon(g, iconX, iconY, iconSize);
+            DrawSearchIcon(g, IconPadding, iconY, iconSize);
             
-            // 绘制占位符文本
             if (string.IsNullOrEmpty(textBox.Text) && !string.IsNullOrEmpty(PlaceholderText))
             {
                 var placeholderRect = new Rectangle(textBox.Left, textBox.Top, textBox.Width, textBox.Height);
@@ -212,7 +176,6 @@ namespace BluePointLilac.Controls
                 return;
             }
             
-            // 备用图标
             var iconColor = DarkModeHelper.FormFore;
             using (var pen = new Pen(iconColor, 1.5f))
             {
@@ -227,16 +190,13 @@ namespace BluePointLilac.Controls
             }
         }
         
-        private void UpdateClearButton()
-        {
-            clearButton.Visible = showClearButton && !string.IsNullOrEmpty(textBox.Text);
-        }
+        private void UpdateClearButton() => 
+            clearButton.Visible = ShowClearButton && !string.IsNullOrEmpty(textBox.Text);
         
         private void AdjustLayout()
         {
             if (textBox == null || clearButton == null) return;
             
-            // 文本框布局
             int textBoxHeight = Math.Min(textBox.PreferredHeight, (int)(Height * 0.7f));
             int textBoxY = (Height - textBoxHeight) / 2;
             int textBoxX = IconPadding + 24.DpiZoom();
@@ -245,7 +205,6 @@ namespace BluePointLilac.Controls
             textBox.Location = new Point(textBoxX, textBoxY);
             textBox.Size = new Size(textBoxWidth, textBoxHeight);
             
-            // 清除按钮布局
             int btnSize = 16.DpiZoom();
             clearButton.Location = new Point(Width - 30.DpiZoom(), (Height - btnSize) / 2);
             clearButton.Size = new Size(btnSize, btnSize);
@@ -258,7 +217,6 @@ namespace BluePointLilac.Controls
             Invalidate();
         }
         
-        // 主题变化事件处理
         private void OnThemeChanged(object sender, EventArgs e)
         {
             UpdateThemeColors();
@@ -273,7 +231,7 @@ namespace BluePointLilac.Controls
         }
         
         public void Clear() => Text = string.Empty;
-        public void FocusTextBox() => textBox?.Focus();
+        public void FocusTextBox() => textBox.Focus();
         
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {

@@ -1,76 +1,52 @@
-using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
+﻿using BluePointLilac.Methods;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
 {
     public class MyListBox : Panel
     {
-        private MyList mainList;
-
         public MyListBox()
         {
             AutoScroll = true;
-            BackColor = DarkModeHelper.FormBack;
-            ForeColor = DarkModeHelper.FormFore;
+            UpdateColors();
             
-            mainList = new MyList(this);
-            mainList.Dock = DockStyle.Fill;
-            Controls.Add(mainList);
-            
-            // 监听主题变化
+            // 订阅主题变化事件
             DarkModeHelper.ThemeChanged += OnThemeChanged;
-        }
-
-        public void AddItem(MyListItem item)
-        {
-            mainList.AddItem(item);
-        }
-
-        public void AddItems(MyListItem[] items)
-        {
-            mainList.AddItems(items);
-        }
-
-        public void AddItems(List<MyListItem> items)
-        {
-            mainList.AddItems(items);
-        }
-
-        public void ClearItems()
-        {
-            mainList.ClearItems();
-        }
-
-        public MyListItem SelectedItem
-        {
-            get => mainList.HoveredItem;
-            set => mainList.HoveredItem = value;
-        }
-
-        public event EventHandler SelectedItemChanged
-        {
-            add => mainList.HoveredItemChanged += value;
-            remove => mainList.HoveredItemChanged -= value;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
+            // 使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
             base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
         }
-        
-        // 主题变化事件处理
+
+        /// <summary>
+        /// 主题变化事件处理
+        /// </summary>
         private void OnThemeChanged(object sender, EventArgs e)
+        {
+            if (IsHandleCreated && !IsDisposed)
+            {
+                UpdateColors();
+                Invalidate(true);
+            }
+        }
+
+        /// <summary>
+        /// 更新控件颜色
+        /// </summary>
+        public void UpdateColors()
         {
             BackColor = DarkModeHelper.FormBack;
             ForeColor = DarkModeHelper.FormFore;
-            Invalidate();
         }
-        
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -101,73 +77,9 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Top;
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        }
-
-        private SearchBox searchBox;
-        
-        public SearchBox SearchBox 
-        {
-            get => searchBox;
-            set
-            {
-                if (searchBox != null)
-                {
-                    searchBox.TextChanged -= SearchBox_TextChanged;
-                }
-                
-                searchBox = value;
-                
-                if (searchBox != null)
-                {
-                    searchBox.TextChanged += SearchBox_TextChanged;
-                }
-            }
-        }
-        
-        private void SearchBox_TextChanged(object sender, EventArgs e)
-        {
-            string searchText = searchBox?.Text.ToLower().Trim() ?? "";
-            FilterListItems(searchText);
-        }
-        
-        private void FilterListItems(string searchText)
-        {
-            if (string.IsNullOrEmpty(searchText))
-            {
-                ShowAllItems();
-                return;
-            }
             
-            foreach (Control control in Controls)
-            {
-                if (control is MyListItem item)
-                {
-                    bool matches = item.Text.ToLower().Contains(searchText);
-                    
-                    // 检查其他属性是否匹配
-                    if (!matches)
-                    {
-                        var toolTipText = item.GetType().GetProperty("ToolTipText")?.GetValue(item)?.ToString();
-                        if (!string.IsNullOrEmpty(toolTipText))
-                        {
-                            matches = toolTipText.ToLower().Contains(searchText);
-                        }
-                    }
-                    
-                    item.Visible = matches;
-                }
-            }
-        }
-        
-        private void ShowAllItems()
-        {
-            foreach (Control control in Controls)
-            {
-                if (control is MyListItem item)
-                {
-                    item.Visible = true;
-                }
-            }
+            // 订阅主题变化事件
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         private MyListItem hoveredItem;
@@ -245,7 +157,6 @@ namespace BluePointLilac.Controls
                 ctr.Dispose();
             }
             ResumeLayout();
-            HoveredItem = null; // 清空悬停项引用
         }
 
         public void SortItemByText()
@@ -268,10 +179,39 @@ namespace BluePointLilac.Controls
                 else return 1;
             }
         }
+
+        /// <summary>
+        /// 主题变化事件处理
+        /// </summary>
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            if (IsHandleCreated && !IsDisposed)
+            {
+                // 更新悬停项的颜色
+                if (hoveredItem != null && hoveredItem.IsHandleCreated && !hoveredItem.IsDisposed)
+                {
+                    hoveredItem.ForeColor = DarkModeHelper.MainColor;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
+        }
     }
 
     public class MyListItem : Panel
     {
+        private string subText; // 添加SubText字段
+
         public MyListItem()
         {
             SuspendLayout();
@@ -280,8 +220,10 @@ namespace BluePointLilac.Controls
             Height = 50.DpiZoom();
             Margin = new Padding(0);
             Font = SystemFonts.IconTitleFont;
-            ForeColor = DarkModeHelper.FormFore;
-            BackColor = DarkModeHelper.FormBack;
+            
+            // 初始化颜色
+            UpdateColors();
+            
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
@@ -292,10 +234,11 @@ namespace BluePointLilac.Controls
             CenterControl(lblText);
             CenterControl(picImage);
             AddCtr(pnlScrollbar, 0);
-            ResumeLayout();
             
-            // 监听主题变化
+            // 订阅主题变化事件
             DarkModeHelper.ThemeChanged += OnThemeChanged;
+            
+            ResumeLayout();
         }
 
         public Image Image
@@ -317,6 +260,17 @@ namespace BluePointLilac.Controls
         {
             get => lblText.ForeColor;
             set => lblText.ForeColor = value;
+        }
+
+        // 添加SubText属性
+        public string SubText
+        {
+            get => subText;
+            set
+            {
+                subText = value;
+                // 如果需要显示副文本，可以在这里添加UI更新逻辑
+            }
         }
 
         private bool hasImage;
@@ -357,21 +311,12 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Bottom,
             Name = "Separator",
             Height = 1
-        };
+        };//分割线
         private readonly Panel pnlScrollbar = new Panel
         {
             Width = SystemInformation.VerticalScrollBarWidth,
             Enabled = false
-        };
-        
-        // 主题变化事件处理
-        private void OnThemeChanged(object sender, EventArgs e)
-        {
-            BackColor = DarkModeHelper.FormBack;
-            ForeColor = DarkModeHelper.FormFore;
-            lblSeparator.BackColor = DarkModeHelper.FormFore;
-            Invalidate();
-        }
+        };//预留滚动条宽度
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -430,7 +375,35 @@ namespace BluePointLilac.Controls
         {
             flpControls.Controls.SetChildIndex(ctr, newIndex + 1);
         }
-        
+
+        /// <summary>
+        /// 主题变化事件处理
+        /// </summary>
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            if (IsHandleCreated && !IsDisposed)
+            {
+                UpdateColors();
+                Invalidate(true);
+            }
+        }
+
+        /// <summary>
+        /// 更新控件颜色
+        /// </summary>
+        public void UpdateColors()
+        {
+            BackColor = DarkModeHelper.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            
+            // 更新子控件颜色
+            lblSeparator.BackColor = DarkModeHelper.FormFore;
+            lblText.ForeColor = DarkModeHelper.FormFore;
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -44,6 +44,9 @@ namespace BluePointLilac.Controls
                 txtInput.CanResizeFont();
                 InitializeComponents();
                 InitTheme();
+                
+                // 监听主题变化
+                DarkModeHelper.ThemeChanged += OnThemeChanged;
             }
 
             public string InputedText
@@ -90,6 +93,36 @@ namespace BluePointLilac.Controls
                     txtInput.Width = ClientSize.Width - 2 * a;
                     txtInput.Height = btnCancel.Top - 2 * a;
                 };
+            }
+            
+            private void InitTheme()
+            {
+                BackColor = DarkModeHelper.FormBack;
+                ForeColor = DarkModeHelper.FormFore;
+                
+                txtInput.BackColor = DarkModeHelper.FormBack;
+                txtInput.ForeColor = DarkModeHelper.FormFore;
+                
+                btnOK.BackColor = DarkModeHelper.ButtonMain;
+                btnOK.ForeColor = DarkModeHelper.FormFore;
+                btnCancel.BackColor = DarkModeHelper.ButtonMain;
+                btnCancel.ForeColor = DarkModeHelper.FormFore;
+            }
+            
+            // 主题变化事件处理
+            private void OnThemeChanged(object sender, EventArgs e)
+            {
+                InitTheme();
+                Invalidate();
+            }
+            
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                }
+                base.Dispose(disposing);
             }
         }
     }

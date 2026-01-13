@@ -33,6 +33,8 @@ namespace ContextMenuManager.Methods
         public static class General
         {
             public static string AppName { get; set; }
+            public static string Search { get; set; }  // 添加搜索文本
+            public static string NoResultsFor { get; set; }  // 添加无结果文本
         }
 
         /// <summary>工具栏</summary>

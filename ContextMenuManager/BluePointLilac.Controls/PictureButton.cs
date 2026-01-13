@@ -19,6 +19,9 @@ namespace BluePointLilac.Controls
             SizeMode = PictureBoxSizeMode.AutoSize;
             Cursor = Cursors.Hand;
 
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
+
             // 初始化动画计时器
             animationTimer = new Timer();
             animationTimer.Interval = 16; // ~60 FPS
@@ -116,12 +119,24 @@ namespace BluePointLilac.Controls
         {
             return ToolStripRenderer.CreateDisabledImage(image);
         }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            // 重新创建禁用效果的图像以适应主题变化
+            if (baseImage != null)
+            {
+                Image = CreateDisabledImage(baseImage);
+            }
+        }
 
         // 添加资源清理
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                
                 animationTimer?.Stop();
                 animationTimer?.Dispose();
             }
