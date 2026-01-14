@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BluePointLilac.Methods;
 
@@ -9,14 +8,14 @@ namespace BluePointLilac.Controls
 {
     public class SearchBox : UserControl
     {
-        private TextBox textBox = new TextBox
+        private readonly TextBox textBox = new TextBox
         {
             BorderStyle = BorderStyle.None,
             Font = new Font("Segoe UI", 9f),
             Multiline = false
         };
         
-        private PictureBox clearButton = new PictureBox
+        private readonly PictureBox clearButton = new PictureBox
         {
             Size = new Size(16, 16).DpiZoom(),
             Cursor = Cursors.Hand,
@@ -25,21 +24,11 @@ namespace BluePointLilac.Controls
             BackColor = Color.Transparent
         };
         
-        private const int IconPadding = 12;
-        private int borderRadius = 8;
-        
         [Category("外观"), Description("占位符文本")]
         public string PlaceholderText { get; set; } = "搜索...";
         
         [Category("外观"), Description("是否显示清除按钮"), DefaultValue(true)]
         public bool ShowClearButton { get; set; } = true;
-        
-        [Category("外观"), Description("圆角半径"), DefaultValue(8)]
-        public int BorderRadius
-        {
-            get => borderRadius;
-            set { borderRadius = Math.Max(0, value); Invalidate(); }
-        }
         
         [Browsable(false)]
         public new string Text
@@ -55,20 +44,11 @@ namespace BluePointLilac.Controls
             set { textBox.Font = value; AdjustLayout(); }
         }
         
-        [Browsable(false)]
-        public new Color ForeColor
-        {
-            get => textBox.ForeColor;
-            set { textBox.ForeColor = value; clearButton.Image = CreateClearIcon(value); }
-        }
-        
         public new event EventHandler TextChanged
         {
             add => textBox.TextChanged += value;
             remove => textBox.TextChanged -= value;
         }
-        
-        public event EventHandler ClearButtonClicked;
         
         public SearchBox()
         {
@@ -85,6 +65,7 @@ namespace BluePointLilac.Controls
         
         private void InitializeComponents()
         {
+            BackColor = DarkModeHelper.SearchBoxBack;
             textBox.BackColor = DarkModeHelper.SearchBoxBack;
             textBox.ForeColor = DarkModeHelper.FormFore;
             
@@ -104,7 +85,6 @@ namespace BluePointLilac.Controls
             {
                 textBox.Text = string.Empty;
                 textBox.Focus();
-                ClearButtonClicked?.Invoke(this, EventArgs.Empty);
             };
             
             Controls.AddRange(new Control[] { textBox, clearButton });
@@ -115,78 +95,43 @@ namespace BluePointLilac.Controls
             BackColor = DarkModeHelper.SearchBoxBack;
             textBox.BackColor = DarkModeHelper.SearchBoxBack;
             textBox.ForeColor = DarkModeHelper.FormFore;
-            clearButton.Image = CreateClearIcon(DarkModeHelper.FormFore);
-        }
-        
-        private Color GetBorderColor() => DarkModeHelper.GetBorderColor(textBox.ContainsFocus);
-        private Color GetPlaceholderColor() => DarkModeHelper.GetPlaceholderColor();
-        
-        private Image CreateClearIcon(Color color)
-        {
-            int size = 16.DpiZoom();
-            var bitmap = new Bitmap(size, size);
-            using (var g = Graphics.FromImage(bitmap))
-            {
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                using (var pen = new Pen(color, 1.5f))
-                {
-                    int padding = 4.DpiZoom();
-                    g.DrawLine(pen, padding, padding, size - padding, size - padding);
-                    g.DrawLine(pen, size - padding, padding, padding, size - padding);
-                }
-            }
-            return bitmap;
         }
         
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
             var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            
             var rect = ClientRectangle;
-            rect.Inflate(-1, -1);
             
-            using (var path = DarkModeHelper.CreateRoundedRectanglePath(rect, borderRadius))
-            using (var brush = new SolidBrush(BackColor))
-            using (var pen = new Pen(GetBorderColor(), 1f))
-            {
-                g.FillPath(brush, path);
-                g.DrawPath(pen, path);
-            }
+            // 绘制背景
+            g.FillRectangle(new SolidBrush(DarkModeHelper.SearchBoxBack), rect);
             
-            int iconSize = 16.DpiZoom();
-            int iconY = (Height - iconSize) / 2;
-            DrawSearchIcon(g, IconPadding, iconY, iconSize);
+            // 绘制边框
+            var borderRect = rect;
+            borderRect.Inflate(-1, -1);
+            g.DrawRectangle(new Pen(DarkModeHelper.GetBorderColor(textBox.ContainsFocus)), borderRect);
             
+            // 绘制搜索图标
+            DrawSearchIcon(g);
+            
+            // 绘制占位符文本
             if (string.IsNullOrEmpty(textBox.Text) && !string.IsNullOrEmpty(PlaceholderText))
             {
                 var placeholderRect = new Rectangle(textBox.Left, textBox.Top, textBox.Width, textBox.Height);
                 TextRenderer.DrawText(g, PlaceholderText, textBox.Font, placeholderRect, 
-                    GetPlaceholderColor(), TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+                    DarkModeHelper.GetPlaceholderColor(), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
             }
         }
         
-        private void DrawSearchIcon(Graphics g, int x, int y, int size)
+        private void DrawSearchIcon(Graphics g)
         {
             var searchIcon = ContextMenuManager.Methods.AppImage.Search;
             if (searchIcon != null)
             {
-                g.DrawImage(searchIcon, new Rectangle(x, y, size, size));
-                return;
-            }
-            
-            var iconColor = DarkModeHelper.FormFore;
-            using (var pen = new Pen(iconColor, 1.5f))
-            {
-                g.DrawEllipse(pen, x, y, size - 4, size - 4);
-                float centerX = x + (size - 4) / 2f;
-                float centerY = y + (size - 4) / 2f;
-                float angle = (float)Math.PI / 4;
-                float handleLength = size / 2f;
-                float endX = centerX + (float)Math.Cos(angle) * handleLength;
-                float endY = centerY + (float)Math.Sin(angle) * handleLength;
-                g.DrawLine(pen, centerX, centerY, endX, endY);
+                int iconSize = 20.DpiZoom();
+                int iconY = (Height - iconSize) / 2;
+                int iconX = 12.DpiZoom();
+                
+                g.DrawImage(searchIcon, iconX, iconY, iconSize, iconSize);
             }
         }
         
@@ -199,7 +144,8 @@ namespace BluePointLilac.Controls
             
             int textBoxHeight = Math.Min(textBox.PreferredHeight, (int)(Height * 0.7f));
             int textBoxY = (Height - textBoxHeight) / 2;
-            int textBoxX = IconPadding + 24.DpiZoom();
+            
+            int textBoxX = 44.DpiZoom(); // 12 + 20 + 12
             int textBoxWidth = Width - textBoxX - 32.DpiZoom();
             
             textBox.Location = new Point(textBoxX, textBoxY);
@@ -248,8 +194,6 @@ namespace BluePointLilac.Controls
             if (disposing)
             {
                 DarkModeHelper.ThemeChanged -= OnThemeChanged;
-                textBox?.Dispose();
-                clearButton?.Dispose();
             }
             base.Dispose(disposing);
         }
