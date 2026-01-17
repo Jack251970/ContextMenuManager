@@ -191,18 +191,16 @@ namespace BluePointLilac.Methods
                 Thread.Sleep(500);
                 
                 // 启动新的 explorer.exe 进程
-                var newExplorer = Process.Start(new ProcessStartInfo
+                Process.Start(new ProcessStartInfo
                 {
                     FileName = "explorer.exe",
                     UseShellExecute = true
-                });
-                newExplorer?.Dispose();
+                })?.Dispose();
             }
             catch (Exception ex) when (
                 ex is Win32Exception || 
                 ex is InvalidOperationException || 
-                ex is UnauthorizedAccessException ||
-                ex is SystemException)
+                ex is UnauthorizedAccessException)
             {
                 // 如果上述方法失败，回退到使用 taskkill
                 // 可能的原因：权限不足、进程保护等
@@ -220,18 +218,16 @@ namespace BluePointLilac.Methods
                         kill?.WaitForExit();
                     }
                     Thread.Sleep(500);
-                    var newExplorer = Process.Start(new ProcessStartInfo
+                    Process.Start(new ProcessStartInfo
                     {
                         FileName = "explorer.exe",
                         UseShellExecute = true
-                    });
-                    newExplorer?.Dispose();
+                    })?.Dispose();
                 }
                 catch (Exception ex) when (
                     ex is Win32Exception || 
                     ex is InvalidOperationException || 
-                    ex is UnauthorizedAccessException ||
-                    ex is SystemException)
+                    ex is UnauthorizedAccessException)
                 {
                     // 两种方法都失败，静默失败避免程序崩溃
                     // 用户会看到 explorer 没有重启，可以手动处理
