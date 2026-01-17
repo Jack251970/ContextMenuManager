@@ -174,9 +174,13 @@ namespace BluePointLilac.Methods
                         // 等待进程完全退出，最多等待5秒
                         process.WaitForExit(5000);
                     }
-                    catch
+                    catch (Win32Exception)
                     {
-                        // 忽略无法终止的进程
+                        // 进程已退出或无法访问，继续处理下一个
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // 进程已退出，继续处理下一个
                     }
                     finally
                     {
@@ -194,9 +198,10 @@ namespace BluePointLilac.Methods
                     UseShellExecute = true
                 });
             }
-            catch
+            catch (Exception)
             {
                 // 如果上述方法失败，回退到使用 taskkill
+                // 可能的原因：权限不足、进程保护等
                 try
                 {
                     using (var kill = Process.Start(new ProcessStartInfo
@@ -217,9 +222,10 @@ namespace BluePointLilac.Methods
                         UseShellExecute = true
                     });
                 }
-                catch
+                catch (Exception)
                 {
-                    // 忽略所有错误，避免程序崩溃
+                    // 两种方法都失败，静默失败避免程序崩溃
+                    // 用户会看到 explorer 没有重启，可以手动处理
                 }
             }
         }
