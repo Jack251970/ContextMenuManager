@@ -192,11 +192,14 @@ namespace BluePointLilac.Methods
                 Thread.Sleep(500);
                 
                 // 启动新的 explorer.exe 进程
-                Process.Start(new ProcessStartInfo
+                using (Process.Start(new ProcessStartInfo
                 {
                     FileName = "explorer.exe",
                     UseShellExecute = true
-                });
+                }))
+                {
+                    // 进程已启动，立即释放资源
+                }
             }
             catch (Exception)
             {
@@ -216,11 +219,14 @@ namespace BluePointLilac.Methods
                         kill?.WaitForExit();
                     }
                     Thread.Sleep(500);
-                    Process.Start(new ProcessStartInfo
+                    using (Process.Start(new ProcessStartInfo
                     {
                         FileName = "explorer.exe",
                         UseShellExecute = true
-                    });
+                    }))
+                    {
+                        // 进程已启动，立即释放资源
+                    }
                 }
                 catch (Exception)
                 {
