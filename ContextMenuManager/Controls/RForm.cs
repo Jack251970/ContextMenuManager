@@ -1,7 +1,6 @@
-﻿using Microsoft.Win32;
+﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -46,8 +45,8 @@ namespace BluePointLilac.Controls
 
         public bool InitTheme()
         {
-            bool newDarkTheme = DarkModeHelper.IsDarkTheme;
-            bool changed = darkTheme != newDarkTheme;
+            var newDarkTheme = DarkModeHelper.IsDarkTheme;
+            var changed = darkTheme != newDarkTheme;
             darkTheme = newDarkTheme;
 
             if (changed && IsHandleCreated)
@@ -60,7 +59,7 @@ namespace BluePointLilac.Controls
                 {
                     // API调用失败，忽略错误
                 }
-                
+
                 // 在UI线程上调整颜色
                 if (InvokeRequired)
                 {
@@ -84,7 +83,7 @@ namespace BluePointLilac.Controls
                 dgv.Invoke(new Action(() => ApplyDarkModeToDataGridView(dgv)));
                 return;
             }
-            
+
             // Background color
             dgv.BackgroundColor = DarkModeHelper.FormBack;
             dgv.DefaultCellStyle.BackColor = DarkModeHelper.FormBack;
@@ -115,14 +114,14 @@ namespace BluePointLilac.Controls
             BackColor = FormBack;
             ForeColor = FormFore;
         }
-        
+
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
             // 应用深色模式到窗体
             DarkModeHelper.ApplyDarkModeToForm(this);
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

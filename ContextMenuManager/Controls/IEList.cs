@@ -1,6 +1,5 @@
 ﻿using BluePointLilac.Controls;
 using BluePointLilac.Methods;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class IEList : MyList // 其他规则 IE浏览器
+    internal sealed class IEList : MyList // 其他规则 IE浏览器
     {
         public const string IEPath = @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Internet Explorer";
 
@@ -20,27 +19,21 @@ namespace ContextMenuManager.Controls
 
         private void LoadIEItems()
         {
-            List<string> names = new List<string>();
-            using(RegistryKey ieKey = RegistryEx.GetRegistryKey(IEPath))
+            var names = new List<string>();
+            using var ieKey = RegistryEx.GetRegistryKey(IEPath);
+            if (ieKey == null) return;
+            foreach (var part in IEItem.MeParts)
             {
-                if(ieKey == null) return;
-                foreach(string part in IEItem.MeParts)
+                using var meKey = ieKey.OpenSubKey(part);
+                if (meKey == null) continue;
+                foreach (var keyName in meKey.GetSubKeyNames())
                 {
-                    using(RegistryKey meKey = ieKey.OpenSubKey(part))
+                    if (names.Contains(keyName, StringComparer.OrdinalIgnoreCase)) continue;
+                    using var key = meKey.OpenSubKey(keyName);
+                    if (!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
                     {
-                        if(meKey == null) continue;
-                        foreach(string keyName in meKey.GetSubKeyNames())
-                        {
-                            if(names.Contains(keyName, StringComparer.OrdinalIgnoreCase)) continue;
-                            using(RegistryKey key = meKey.OpenSubKey(keyName))
-                            {
-                                if(!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
-                                {
-                                    AddItem(new IEItem(key.Name));
-                                    names.Add(keyName);
-                                }
-                            }
-                        }
+                        AddItem(new IEItem(key.Name));
+                        names.Add(keyName);
                     }
                 }
             }
@@ -48,15 +41,13 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem()
         {
-            NewItem newItem = new NewItem();
+            var newItem = new NewItem();
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using(NewIEDialog dlg = new NewIEDialog())
-                {
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
-                    InsertItem(new IEItem(dlg.RegPath), 1);
-                }
+                using var dlg = new NewIEDialog();
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                InsertItem(new IEItem(dlg.RegPath), 1);
             };
         }
     }

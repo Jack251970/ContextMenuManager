@@ -1,24 +1,24 @@
 ﻿using BluePointLilac.Methods;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace BluePointLilac.Controls
 {
     public sealed class MySideBar : Panel
     {
-        private readonly Panel PnlSelected = new Panel { Enabled = false, BackColor = Color.Transparent };
-        private readonly Panel PnlHovered = new Panel { Enabled = false, BackColor = Color.Transparent };
-        private readonly Label LblSeparator = new Label { Dock = DockStyle.Right, Width = 1 };
-        private readonly Timer animationTimer = new Timer { Interval = 16 };
-        
+        private readonly Panel PnlSelected = new() { Enabled = false, BackColor = Color.Transparent };
+        private readonly Panel PnlHovered = new() { Enabled = false, BackColor = Color.Transparent };
+        private readonly Label LblSeparator = new() { Dock = DockStyle.Right, Width = 1 };
+        private readonly Timer animationTimer = new() { Interval = 16 };
+
         private string[] itemNames;
         private int itemHeight = 36;
         private int selectIndex = -1;
         private int hoverIndex = -1;
-        
+
         private int animationTargetIndex = -1;
         private int animationCurrentIndex = -1;
         private float animationProgress = 0f;
@@ -31,9 +31,9 @@ namespace BluePointLilac.Controls
         public Color BackgroundGradientColor1 { get; set; } = Color.FromArgb(240, 240, 240);
         public Color BackgroundGradientColor2 { get; set; } = Color.FromArgb(220, 220, 220);
         public Color BackgroundGradientColor3 { get; set; } = Color.FromArgb(200, 200, 200);
-        
+
         [Browsable(false)] public bool EnableAnimation { get; set; } = true;
-        
+
         public string[] ItemNames
         {
             get => itemNames;
@@ -42,8 +42,8 @@ namespace BluePointLilac.Controls
                 itemNames = value;
                 if (value != null && !IsFixedWidth)
                 {
-                    int maxWidth = 0;
-                    foreach (string str in value)
+                    var maxWidth = 0;
+                    foreach (var str in value)
                         maxWidth = Math.Max(maxWidth, GetItemWidth(str));
                     Width = maxWidth + 2 * HorizontalSpace;
                 }
@@ -52,23 +52,23 @@ namespace BluePointLilac.Controls
                 SelectedIndex = -1;
             }
         }
-        
+
         public int ItemHeight { get => itemHeight; set => itemHeight = Math.Max(1, value); }
         public int TopSpace { get; set; } = 4.DpiZoom();
         public int HorizontalSpace { get; set; } = 20.DpiZoom();
         public bool IsFixedWidth { get; set; } = true;
-        
+
         public Color SeparatorColor { get => LblSeparator.BackColor; set => LblSeparator.BackColor = value; }
         public Color SelectedBackColor { get => PnlSelected.BackColor; set => PnlSelected.BackColor = value; }
         public Color HoveredBackColor { get => PnlHovered.BackColor; set => PnlHovered.BackColor = value; }
         public Color SelectedForeColor { get; set; } = Color.Black;
         public Color HoveredForeColor { get; set; }
-        
+
         private float VerticalSpace => (itemHeight - TextRenderer.MeasureText(" ", Font).Height) * 0.5F;
-        
+
         public event EventHandler SelectIndexChanged;
         public event EventHandler HoverIndexChanged;
-        
+
         public int SelectedIndex
         {
             get => selectIndex;
@@ -81,7 +81,7 @@ namespace BluePointLilac.Controls
                     SetSelectedIndexDirectly(value);
             }
         }
-        
+
         public int HoveredIndex
         {
             get => hoverIndex;
@@ -93,7 +93,7 @@ namespace BluePointLilac.Controls
                 HoverIndexChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        
+
         public MySideBar()
         {
             Dock = DockStyle.Left;
@@ -101,78 +101,78 @@ namespace BluePointLilac.Controls
             BackgroundImageLayout = ImageLayout.None;
             DoubleBuffered = true;
             Font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.Size + 1F);
-            
+
             InitializeColors();
             Controls.AddRange(new Control[] { LblSeparator, PnlSelected, PnlHovered });
-            
+
             SizeChanged += (sender, e) => UpdateBackground();
             PnlHovered.Paint += PaintHoveredItem;
             PnlSelected.Paint += PaintSelectedItem;
             animationTimer.Tick += AnimationTimer_Tick;
-            
+
             DarkModeHelper.ThemeChanged += OnThemeChanged;
             SelectedIndex = -1;
         }
-        
+
         private void StartAnimation(int fromIndex, int toIndex)
         {
             animationCurrentIndex = fromIndex;
             animationTargetIndex = toIndex;
             animationProgress = 0f;
             isAnimating = true;
-            
+
             if (!animationTimer.Enabled)
                 animationTimer.Start();
         }
-        
+
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
             animationProgress += ANIMATION_SPEED;
-            
+
             if (animationProgress >= 1f)
                 CompleteAnimation();
             else
                 UpdateAnimationFrame();
         }
-        
+
         private void UpdateAnimationFrame()
         {
             if (animationCurrentIndex < 0 || animationTargetIndex < 0) return;
-            
-            float easedProgress = EaseOutCubic(animationProgress);
-            int startTop = GetItemTop(animationCurrentIndex);
-            int targetTop = GetItemTop(animationTargetIndex);
-            int currentTop = Math.Max(0, Math.Min(
+
+            var easedProgress = EaseOutCubic(animationProgress);
+            var startTop = GetItemTop(animationCurrentIndex);
+            var targetTop = GetItemTop(animationTargetIndex);
+            var currentTop = Math.Max(0, Math.Min(
                 (int)(startTop + (targetTop - startTop) * easedProgress), Height - ItemHeight));
-            
+
             PnlSelected.Top = currentTop;
             PnlSelected.Height = ItemHeight;
-            
+
             if (hoverIndex == selectIndex)
             {
                 PnlHovered.Top = PnlSelected.Top;
                 PnlHovered.Height = ItemHeight;
             }
-            
+
             Invalidate();
             Update();
         }
-        
+
         private void CompleteAnimation()
         {
             animationProgress = 1f;
             isAnimating = false;
             animationTimer.Stop();
-            
+
             SetSelectedIndexDirectly(animationTargetIndex);
             PnlSelected.Top = GetItemTop(selectIndex);
-            
+
             if (hoverIndex == selectIndex)
                 PnlHovered.Top = PnlSelected.Top;
-            
+
             Refresh();
         }
-        
+
         private void SetSelectedIndexDirectly(int value)
         {
             selectIndex = value;
@@ -180,15 +180,28 @@ namespace BluePointLilac.Controls
             HoveredIndex = value;
             SelectIndexChanged?.Invoke(this, EventArgs.Empty);
         }
-        
-        private int GetItemTop(int index) => TopSpace + index * ItemHeight;
-        
-        private float EaseOutCubic(float t) => 1 - (float)Math.Pow(1 - t, 3);
-        
-        public void BeginUpdate() => SuspendLayout();
+
+        private int GetItemTop(int index)
+        {
+            return TopSpace + index * ItemHeight;
+        }
+
+        private float EaseOutCubic(float t)
+        {
+            return 1 - (float)Math.Pow(1 - t, 3);
+        }
+
+        public void BeginUpdate()
+        {
+            SuspendLayout();
+        }
+
         public void EndUpdate() { ResumeLayout(true); UpdateBackground(); }
-        public int GetItemWidth(string str) => TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
-        
+        public int GetItemWidth(string str)
+        {
+            return TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
+        }
+
         public void StopAnimation()
         {
             if (isAnimating)
@@ -198,13 +211,13 @@ namespace BluePointLilac.Controls
                 SetSelectedIndexDirectly(animationTargetIndex);
             }
         }
-        
+
         public void SmoothScrollTo(int index)
         {
             if (index >= 0 && index < ItemNames?.Length)
                 SelectedIndex = index;
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -215,7 +228,7 @@ namespace BluePointLilac.Controls
             }
             base.Dispose(disposing);
         }
-        
+
         private void InitializeColors()
         {
             BackColor = DarkModeHelper.SideBarBackground;
@@ -223,33 +236,31 @@ namespace BluePointLilac.Controls
             HoveredBackColor = DarkModeHelper.SideBarHovered;
             SeparatorColor = DarkModeHelper.SideBarSeparator;
             PnlSelected.BackColor = Color.Transparent;
-            
+
             BackgroundGradientColor1 = DarkModeHelper.ToolBarGradientTop;
             BackgroundGradientColor2 = DarkModeHelper.ToolBarGradientMiddle;
             BackgroundGradientColor3 = DarkModeHelper.ToolBarGradientBottom;
         }
-        
+
         private void UpdateBackground()
         {
             if (ItemNames == null) return;
-            int bgWidth = Math.Max(1, Width);
-            int bgHeight = ItemNames.Length == 0 ? Math.Max(1, Height) : 
+            var bgWidth = Math.Max(1, Width);
+            var bgHeight = ItemNames.Length == 0 ? Math.Max(1, Height) :
                 Math.Max(Height, Math.Max(0, ItemHeight) * ItemNames.Length);
-            
+
             try
             {
                 var oldBackground = BackgroundImage;
                 BackgroundImage = new Bitmap(bgWidth, bgHeight);
                 oldBackground?.Dispose();
-                
-                using (var g = Graphics.FromImage(BackgroundImage))
+
+                using var g = Graphics.FromImage(BackgroundImage);
+                DrawBackgroundGradient(g, bgWidth, bgHeight);
+                if (ItemNames.Length > 0 && ItemHeight > 0 && Width > 0 && Height > 0)
                 {
-                    DrawBackgroundGradient(g, bgWidth, bgHeight);
-                    if (ItemNames.Length > 0 && ItemHeight > 0 && Width > 0 && Height > 0)
-                    {
-                        DrawTextItems(g);
-                        DrawSeparators(g);
-                    }
+                    DrawTextItems(g);
+                    DrawSeparators(g);
                 }
             }
             catch (ArgumentException)
@@ -258,57 +269,51 @@ namespace BluePointLilac.Controls
                 BackgroundImage = null;
             }
         }
-        
+
         private void DrawBackgroundGradient(Graphics g, int width, int height)
         {
-            using (var brush = new LinearGradientBrush(new Rectangle(0, 0, width, height), Color.Empty, Color.Empty, 0f))
+            using var brush = new LinearGradientBrush(new Rectangle(0, 0, width, height), Color.Empty, Color.Empty, 0f);
+            brush.InterpolationColors = new ColorBlend
             {
-                brush.InterpolationColors = new ColorBlend
-                {
-                    Colors = new[] { BackgroundGradientColor1, BackgroundGradientColor2, BackgroundGradientColor3 },
-                    Positions = new[] { 0f, 0.5f, 1f }
-                };
-                g.FillRectangle(brush, new Rectangle(0, 0, width, height));
-            }
+                Colors = new[] { BackgroundGradientColor1, BackgroundGradientColor2, BackgroundGradientColor3 },
+                Positions = new[] { 0f, 0.5f, 1f }
+            };
+            g.FillRectangle(brush, new Rectangle(0, 0, width, height));
         }
-        
+
         private void DrawTextItems(Graphics g)
         {
             if (ItemNames == null || ItemNames.Length == 0) return;
-            using (var textBrush = new SolidBrush(ForeColor))
+            using var textBrush = new SolidBrush(ForeColor);
+            for (var i = 0; i < ItemNames.Length; i++)
             {
-                for (int i = 0; i < ItemNames.Length; i++)
-                {
-                    var item = ItemNames[i];
-                    if (string.IsNullOrEmpty(item)) continue;
-                    float yPos = TopSpace + i * ItemHeight + VerticalSpace;
-                    g.DrawString(item, Font, textBrush, new PointF(HorizontalSpace, yPos));
-                }
+                var item = ItemNames[i];
+                if (string.IsNullOrEmpty(item)) continue;
+                var yPos = TopSpace + i * ItemHeight + VerticalSpace;
+                g.DrawString(item, Font, textBrush, new PointF(HorizontalSpace, yPos));
             }
         }
-        
+
         private void DrawSeparators(Graphics g)
         {
-            using (var pen = new Pen(SeparatorColor))
+            using var pen = new Pen(SeparatorColor);
+            for (var i = 0; i < ItemNames.Length; i++)
             {
-                for (int i = 0; i < ItemNames.Length; i++)
-                {
-                    if (ItemNames[i] != null) continue;
-                    float yPos = TopSpace + (i + 0.5F) * ItemHeight;
-                    g.DrawLine(pen, HorizontalSpace, yPos, Width - HorizontalSpace, yPos);
-                }
+                if (ItemNames[i] != null) continue;
+                var yPos = TopSpace + (i + 0.5F) * ItemHeight;
+                g.DrawLine(pen, HorizontalSpace, yPos, Width - HorizontalSpace, yPos);
             }
         }
-        
+
         private int CalculateItemIndex(int yPos)
         {
             if (ItemNames == null || ItemHeight <= 0) return -1;
-            int index = (yPos - TopSpace) / ItemHeight;
+            var index = (yPos - TopSpace) / ItemHeight;
             if (index < 0 || index >= ItemNames.Length) return -1;
             if (string.IsNullOrEmpty(ItemNames[index])) return -1;
             return index;
         }
-        
+
         private void RefreshItem(Panel panel, int index)
         {
             if (index < 0 || index >= ItemNames?.Length)
@@ -318,14 +323,14 @@ namespace BluePointLilac.Controls
             }
             else
             {
-                int actualTop = Math.Max(0, Math.Min(TopSpace + index * ItemHeight, Height - ItemHeight));
+                var actualTop = Math.Max(0, Math.Min(TopSpace + index * ItemHeight, Height - ItemHeight));
                 panel.Top = actualTop;
                 panel.Text = ItemNames[index];
             }
             panel.Height = ItemHeight;
             panel.Refresh();
         }
-        
+
         private void PaintHoveredItem(object sender, PaintEventArgs e)
         {
             var ctr = (Control)sender;
@@ -333,12 +338,12 @@ namespace BluePointLilac.Controls
             e.Graphics.FillRectangle(new SolidBrush(HoveredBackColor), new Rectangle(0, 0, ctr.Width, ctr.Height));
             DrawItemText(e, ctr, HoveredForeColor);
         }
-        
+
         private void PaintSelectedItem(object sender, PaintEventArgs e)
         {
             var ctr = (Control)sender;
             if (string.IsNullOrEmpty(ctr.Text)) return;
-            
+
             using (var brush = new LinearGradientBrush(new Rectangle(0, 0, ctr.Width, ctr.Height), Color.Empty, Color.Empty, 0f))
             {
                 brush.InterpolationColors = new ColorBlend
@@ -350,22 +355,22 @@ namespace BluePointLilac.Controls
             }
             DrawItemText(e, ctr, SelectedForeColor);
         }
-        
+
         private void DrawItemText(PaintEventArgs e, Control ctr, Color textColor)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-            using (var brush = new SolidBrush(textColor == Color.Empty ? ForeColor : textColor))
-                e.Graphics.DrawString(ctr.Text, Font, brush, new PointF(HorizontalSpace, VerticalSpace));
+            using var brush = new SolidBrush(textColor == Color.Empty ? ForeColor : textColor);
+            e.Graphics.DrawString(ctr.Text, Font, brush, new PointF(HorizontalSpace, VerticalSpace));
         }
-        
+
         private void ShowItem(Panel panel, MouseEventArgs e)
         {
             if (ItemNames == null) return;
-            int index = CalculateItemIndex(e.Y);
-            bool isValid = index != -1 && index != SelectedIndex;
+            var index = CalculateItemIndex(e.Y);
+            var isValid = index != -1 && index != SelectedIndex;
             Cursor = isValid ? Cursors.Hand : Cursors.Default;
-            
+
             if (isValid)
             {
                 if (panel == PnlSelected)
@@ -377,14 +382,16 @@ namespace BluePointLilac.Controls
             }
             else HoveredIndex = SelectedIndex;
         }
-        
+
         protected override void OnMouseMove(MouseEventArgs e) { base.OnMouseMove(e); ShowItem(PnlHovered, e); }
         protected override void OnMouseDown(MouseEventArgs e) { base.OnMouseDown(e); if (e.Button == MouseButtons.Left) ShowItem(PnlSelected, e); }
         protected override void OnMouseLeave(EventArgs e) { base.OnMouseLeave(e); HoveredIndex = SelectedIndex; }
         protected override void OnBackColorChanged(EventArgs e) { base.OnBackColorChanged(e); InitializeColors(); UpdateBackground(); }
-        protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified) =>
+        protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
+        {
             base.SetBoundsCore(x, y, Math.Max(1, width), Math.Max(1, height), specified);
-            
+        }
+
         private void OnThemeChanged(object sender, EventArgs e)
         {
             InitializeColors();

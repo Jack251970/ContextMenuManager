@@ -8,7 +8,7 @@ namespace BluePointLilac.Methods
     public static class FileExtension
     {
         [Flags]
-        enum AssocF
+        private enum AssocF
         {
             Init_NoRemapCLSID = 0x1,
             Init_ByExeName = 0x2,
@@ -48,32 +48,30 @@ namespace BluePointLilac.Methods
         {
             uint pcchOut = 0;
             AssocQueryString(AssocF.Verify, assocStr, extension, null, null, ref pcchOut);
-            StringBuilder pszOut = new StringBuilder((int)pcchOut);
+            var pszOut = new StringBuilder((int)pcchOut);
             AssocQueryString(AssocF.Verify, assocStr, extension, null, pszOut, ref pcchOut);
             return pszOut.ToString();
         }
 
         public static string GetOpenMode(string extension)
         {
-            if(string.IsNullOrEmpty(extension)) return null;
+            if (string.IsNullOrEmpty(extension)) return null;
             string mode;
             bool CheckMode()
             {
-                if(mode.IsNullOrWhiteSpace()) return false;
-                if(mode.Length > 255) return false;
-                if(mode.ToLower().StartsWith(@"applications\")) return false;
-                using(RegistryKey root = Registry.ClassesRoot)
-                using(RegistryKey key = root.OpenSubKey(mode))
-                {
-                    return key != null;
-                }
+                if (mode.IsNullOrWhiteSpace()) return false;
+                if (mode.Length > 255) return false;
+                if (mode.ToLower().StartsWith(@"applications\")) return false;
+                using var root = Registry.ClassesRoot;
+                using var key = root.OpenSubKey(mode);
+                return key != null;
             }
             mode = Registry.GetValue($@"{FILEEXTSPATH}\{extension}\UserChoice", "ProgId", null)?.ToString();
-            if(CheckMode()) return mode;
+            if (CheckMode()) return mode;
             mode = Registry.GetValue($@"{HKLMCLASSES}\{extension}", "", null)?.ToString();
-            if(CheckMode()) return mode;
+            if (CheckMode()) return mode;
             mode = Registry.GetValue($@"{HKCRCLASSES}\{extension}", "", null)?.ToString();
-            if(CheckMode()) return mode;
+            if (CheckMode()) return mode;
             return null;
         }
     }

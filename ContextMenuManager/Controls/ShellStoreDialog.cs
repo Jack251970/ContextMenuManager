@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class ShellStoreDialog : CommonDialog
+    internal sealed class ShellStoreDialog : CommonDialog
     {
         public string[] SelectedKeyNames { get; private set; }
         public Func<string, bool> Filter { get; set; }
@@ -19,13 +19,11 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(ShellStoreForm frm = new ShellStoreForm(ShellPath, Filter, IsReference))
-            {
-                frm.TopMost = true;
-                bool flag = frm.ShowDialog() == DialogResult.OK;
-                if(flag) SelectedKeyNames = frm.SelectedKeyNames;
-                return flag;
-            }
+            using var frm = new ShellStoreForm(ShellPath, Filter, IsReference);
+            frm.TopMost = true;
+            var flag = frm.ShowDialog() == DialogResult.OK;
+            if (flag) SelectedKeyNames = frm.SelectedKeyNames;
+            return flag;
         }
 
         public sealed class ShellStoreForm : RForm
@@ -51,8 +49,8 @@ namespace ContextMenuManager.Controls
                 btnOK.Click += (sender, e) => GetSelectedItems();
                 chkSelectAll.Click += (sender, e) =>
                 {
-                    bool flag = chkSelectAll.Checked;
-                    foreach(StoreShellItem item in list.Controls)
+                    var flag = chkSelectAll.Checked;
+                    foreach (StoreShellItem item in list.Controls)
                     {
                         item.IsSelected = flag;
                     }
@@ -64,27 +62,27 @@ namespace ContextMenuManager.Controls
                 InitTheme();
             }
 
-            readonly MyList list = new MyList();
-            readonly MyListBox listBox = new MyListBox();
-            readonly Panel pnlBorder = new Panel
+            private readonly MyList list = new();
+            private readonly MyListBox listBox = new();
+            private readonly Panel pnlBorder = new()
             {
                 BackColor = DarkModeHelper.FormFore // 修改这里
             };
-            readonly Button btnOK = new Button
+            private readonly Button btnOK = new()
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
-            readonly Button btnCancel = new Button
+            private readonly Button btnCancel = new()
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,
                 AutoSize = true
             };
-            readonly CheckBox chkSelectAll = new CheckBox
+            private readonly CheckBox chkSelectAll = new()
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 Text = AppString.Dialog.SelectAll,
@@ -95,7 +93,7 @@ namespace ContextMenuManager.Controls
             private void InitializeComponents()
             {
                 Controls.AddRange(new Control[] { listBox, pnlBorder, btnOK, btnCancel, chkSelectAll });
-                int a = 20.DpiZoom();
+                var a = 20.DpiZoom();
                 listBox.Location = new Point(a, a);
                 pnlBorder.Location = new Point(a - 1, a - 1);
                 chkSelectAll.Top = btnOK.Top = btnCancel.Top = ClientSize.Height - btnCancel.Height - a;
@@ -116,46 +114,44 @@ namespace ContextMenuManager.Controls
 
             private void LoadItems(bool isReference)
             {
-                using(var shellKey = RegistryEx.GetRegistryKey(ShellPath))
+                using var shellKey = RegistryEx.GetRegistryKey(ShellPath);
+                foreach (var itemName in shellKey.GetSubKeyNames())
                 {
-                    foreach(string itemName in shellKey.GetSubKeyNames())
+                    if (Filter != null && !Filter(itemName)) continue;
+                    var regPath = $@"{ShellPath}\{itemName}";
+                    var item = new StoreShellItem(regPath, isReference);
+                    item.SelectedChanged += () =>
                     {
-                        if(Filter != null && !Filter(itemName)) continue;
-                        string regPath = $@"{ShellPath}\{itemName}";
-                        StoreShellItem item = new StoreShellItem(regPath, isReference);
-                        item.SelectedChanged += () =>
+                        foreach (StoreShellItem shellItem in list.Controls)
                         {
-                            foreach(StoreShellItem shellItem in list.Controls)
+                            if (!shellItem.IsSelected)
                             {
-                                if(!shellItem.IsSelected)
-                                {
-                                    chkSelectAll.Checked = false;
-                                    return;
-                                }
+                                chkSelectAll.Checked = false;
+                                return;
                             }
-                            chkSelectAll.Checked = true;
-                        };
-                        list.AddItem(item);
-                    }
+                        }
+                        chkSelectAll.Checked = true;
+                    };
+                    list.AddItem(item);
                 }
             }
 
             private void GetSelectedItems()
             {
-                List<string> names = new List<string>();
-                foreach(StoreShellItem item in list.Controls)
-                    if(item.IsSelected) names.Add(item.KeyName);
+                var names = new List<string>();
+                foreach (StoreShellItem item in list.Controls)
+                    if (item.IsSelected) names.Add(item.KeyName);
                 SelectedKeyNames = names.ToArray();
             }
         }
     }
 
-    sealed class StoreShellItem : ShellItem
+    internal sealed class StoreShellItem : ShellItem
     {
         public StoreShellItem(string regPath, bool isPublic, bool isSelect = true) : base(regPath)
         {
             IsPublic = isPublic;
-            if(isSelect)
+            if (isSelect)
             {
                 ContextMenuStrip = null;
                 AddCtr(chkSelected);
@@ -173,7 +169,7 @@ namespace ContextMenuManager.Controls
             set => chkSelected.Checked = value;
         }
 
-        readonly CheckBox chkSelected = new CheckBox
+        private readonly CheckBox chkSelected = new()
         {
             Cursor = Cursors.Hand,
             AutoSize = true
@@ -183,7 +179,7 @@ namespace ContextMenuManager.Controls
 
         public override void DeleteMe()
         {
-            if(IsPublic && AppMessageBox.Show(AppString.Message.ConfirmDeleteReferenced,
+            if (IsPublic && AppMessageBox.Show(AppString.Message.ConfirmDeleteReferenced,
                 MessageBoxButtons.YesNo) != DialogResult.Yes) return;
             base.DeleteMe();
         }

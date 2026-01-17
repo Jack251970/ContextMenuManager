@@ -6,8 +6,8 @@ namespace BluePointLilac.Methods
     {
         public static void SetToolTip(Control ctr, string tip)
         {
-            if(tip.IsNullOrWhiteSpace()) return;
-            ToolTip toolTip = new ToolTip { InitialDelay = 1 };
+            if (tip.IsNullOrWhiteSpace()) return;
+            var toolTip = new ToolTip { InitialDelay = 1 };
             toolTip.SetToolTip(ctr, tip);
             ctr.Disposed += (sender, e) => toolTip.Dispose();
         }

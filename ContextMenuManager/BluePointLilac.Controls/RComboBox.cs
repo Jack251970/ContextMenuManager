@@ -1,11 +1,11 @@
-﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Controls;
+using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using BluePointLilac.Controls;
 
 namespace ContextMenuManager.BluePointLilac.Controls
 {
@@ -142,10 +142,10 @@ namespace ContextMenuManager.BluePointLilac.Controls
 
         public void AutosizeDropDownWidth()
         {
-            int maxWidth = 0;
+            var maxWidth = 0;
             foreach (var item in Items)
             {
-                int width = TextRenderer.MeasureText(item.ToString(), Font).Width;
+                var width = TextRenderer.MeasureText(item.ToString(), Font).Width;
                 if (width > maxWidth)
                 {
                     maxWidth = width;
@@ -210,7 +210,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
                 return;
             }
 
-            bool needsRedraw = false;
+            var needsRedraw = false;
             if (Math.Abs(borderWidth - targetWidth) > 0.01f)
             {
                 borderWidth += (targetWidth - borderWidth) * 0.3f;
@@ -231,12 +231,12 @@ namespace ContextMenuManager.BluePointLilac.Controls
         {
             if (DroppedDown && dropDownHwnd != IntPtr.Zero)
             {
-                GetCursorPos(out POINT p);
+                GetCursorPos(out var p);
                 var r = new RECT();
                 GetWindowRect(dropDownHwnd, ref r);
-                Rectangle dropDownRect = new Rectangle(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
+                var dropDownRect = new Rectangle(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
 
-                int hoverIndex = -1;
+                var hoverIndex = -1;
                 if (dropDownRect.Contains(p.X, p.Y))
                 {
                     hoverIndex = (p.Y - dropDownRect.Top) / DropDownItemHeight.DpiZoom();
@@ -278,7 +278,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
                 previousAnimatedIndex = -1;
             }
         }
-        
+
         // 测量下拉列表中项的大小。
         protected override void OnMeasureItem(MeasureItemEventArgs e)
         {
@@ -290,8 +290,8 @@ namespace ContextMenuManager.BluePointLilac.Controls
         private void RComboBox_DropDown(object sender, EventArgs e)
         {
             originalSelectedIndex = SelectedIndex;
-            int totalHeight = 0;
-            for (int i = 0; i < Items.Count; i++)
+            var totalHeight = 0;
+            for (var i = 0; i < Items.Count; i++)
             {
                 totalHeight += DropDownItemHeight.DpiZoom();
             }
@@ -322,7 +322,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
             if (e.Index < 0) return;
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            Rectangle bounds = e.Bounds;
+            var bounds = e.Bounds;
             bool isActuallySelected;
             if (DroppedDown)
             {
@@ -333,10 +333,10 @@ namespace ContextMenuManager.BluePointLilac.Controls
                 isActuallySelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
             }
 
-            Font textFont = DropDownFont ?? Font;
-            Color textColor = DropDownForeColor;
+            var textFont = DropDownFont ?? Font;
+            var textColor = DropDownForeColor;
 
-            Color backColor = BackColor;
+            var backColor = BackColor;
             if (e.Index == animatedIndex)
             {
                 backColor = ColorLerp(BackColor, DropDownHoverColor, hoverProgress);
@@ -356,11 +356,11 @@ namespace ContextMenuManager.BluePointLilac.Controls
             using (var backBrush = new SolidBrush(backColor))
             {
                 Rectangle highlightBounds = new(bounds.X + 2, bounds.Y + 2, bounds.Width - 4, bounds.Height - 4);
-                using GraphicsPath path = DarkModeHelper.CreateRoundedRectanglePath(highlightBounds, 4);
+                using var path = DarkModeHelper.CreateRoundedRectanglePath(highlightBounds, 4);
                 e.Graphics.FillPath(backBrush, path);
             }
 
-            string text = GetItemText(Items[e.Index]);
+            var text = GetItemText(Items[e.Index]);
             Rectangle textBounds = new(bounds.Left + TextPadding, bounds.Top, bounds.Width - TextPadding * 2, bounds.Height);
             TextRenderer.DrawText(e.Graphics, text, textFont, textBounds, textColor,
                 TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
@@ -416,13 +416,15 @@ namespace ContextMenuManager.BluePointLilac.Controls
         // c2: 结束颜色。
         // t: 插值因子，范围从 0.0 到 1.0。
         // returns: 插值后的颜色。
-        private static Color ColorLerp(Color c1, Color c2, float t) =>
-            Color.FromArgb(
+        private static Color ColorLerp(Color c1, Color c2, float t)
+        {
+            return Color.FromArgb(
                 (int)(c1.A + (c2.A - c1.A) * t),
                 (int)(c1.R + (c2.R - c1.R) * t),
                 (int)(c1.G + (c2.G - c1.G) * t),
                 (int)(c1.B + (c2.B - c1.B) * t)
             );
+        }
 
         // 当系统主题（深色/浅色模式）更改时，更新控件的颜色。
         public void UpdateColors()
@@ -446,12 +448,12 @@ namespace ContextMenuManager.BluePointLilac.Controls
         // 根据控件的焦点和鼠标悬停状态更新边框的外观。
         private void UpdateState()
         {
-            if(focused)
+            if (focused)
             {
                 targetBorder = FocusColor;
                 targetWidth = 2f;
             }
-            else if(mouseOverDropDown || ClientRectangle.Contains(PointToClient(MousePosition)))
+            else if (mouseOverDropDown || ClientRectangle.Contains(PointToClient(MousePosition)))
             {
                 targetBorder = HoverColor;
                 targetWidth = 2f;
@@ -469,7 +471,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
         private void UpdateDropDownHoverState(Point location)
         {
             var dropDownRect = GetDropDownButtonRect();
-            bool wasHovered = mouseOverDropDown;
+            var wasHovered = mouseOverDropDown;
             mouseOverDropDown = dropDownRect.Contains(location);
             if (wasHovered != mouseOverDropDown)
             {
@@ -504,7 +506,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
             }
             else
             {
-                string textToMeasure = string.IsNullOrEmpty(Text) ? GetItemText(SelectedItem) : Text;
+                var textToMeasure = string.IsNullOrEmpty(Text) ? GetItemText(SelectedItem) : Text;
                 newWidth = TextRenderer.MeasureText(textToMeasure, Font).Width + TextPadding + GetDropDownButtonRect().Width;
             }
 
@@ -563,7 +565,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
             e.Graphics.DrawPath(pen, path);
 
             // 绘制文本
-            string text = Text;
+            var text = Text;
             if (string.IsNullOrEmpty(text) && SelectedItem != null)
             {
                 text = GetItemText(SelectedItem);
@@ -581,7 +583,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
                 dropDownRect.Top + dropDownRect.Height / 2
             );
 
-            int arrowSize = 6.DpiZoom();
+            var arrowSize = 6.DpiZoom();
             var arrowPoints = new Point[]
             {
                 new(middle.X - arrowSize, middle.Y - arrowSize / 2),

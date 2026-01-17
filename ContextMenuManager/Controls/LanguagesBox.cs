@@ -1,5 +1,6 @@
 using BluePointLilac.Controls;
 using BluePointLilac.Methods;
+using ContextMenuManager.BluePointLilac.Controls;
 using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Xml;
-using ContextMenuManager.BluePointLilac.Controls;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class LanguagesBox : FlowLayoutPanel
+    internal sealed class LanguagesBox : FlowLayoutPanel
     {
         public LanguagesBox()
         {
@@ -36,10 +35,8 @@ namespace ContextMenuManager.Controls
             };
             btnTranslate.MouseDown += (sender, e) =>
             {
-                using(TranslateDialog dlg = new TranslateDialog())
-                {
-                    dlg.ShowDialog();
-                }
+                using var dlg = new TranslateDialog();
+                dlg.ShowDialog();
             };
             ToolTipBox.SetToolTip(btnOpenDir, AppString.Menu.FileLocation);
             ToolTipBox.SetToolTip(btnDownLoad, AppString.Dialog.DownloadLanguages);
@@ -50,40 +47,41 @@ namespace ContextMenuManager.Controls
             ResumeLayout();
         }
 
-        readonly RComboBox cmbLanguages = new RComboBox
+        private readonly RComboBox cmbLanguages = new()
         {
             DropDownStyle = ComboBoxStyle.DropDownList,
             Width = 170.DpiZoom(),
         };
-        readonly PictureButton btnOpenDir = new PictureButton(AppImage.Open);
-        readonly PictureButton btnDownLoad = new PictureButton(AppImage.DownLoad);
-        readonly PictureButton btnTranslate = new PictureButton(AppImage.Translate);
-        readonly ToolTip toolTip = new ToolTip { InitialDelay = 1 };
-        readonly Panel pnlTranslators = new Panel
+        private readonly PictureButton btnOpenDir = new(AppImage.Open);
+        private readonly PictureButton btnDownLoad = new(AppImage.DownLoad);
+        private readonly PictureButton btnTranslate = new(AppImage.Translate);
+        private readonly ToolTip toolTip = new()
+        { InitialDelay = 1 };
+        private readonly Panel pnlTranslators = new()
         {
             BorderStyle = BorderStyle.FixedSingle,
             AutoScroll = true
         };
-        readonly Label lblHeader = new Label
+        private readonly Label lblHeader = new()
         {
             Text = AppString.Other.Translators + "\r\n" + new string('-', 96),
             ForeColor = DarkModeHelper.MainColor, // 修改这里
             Dock = DockStyle.Top,
             AutoSize = true
         };
-        readonly Label lblThank = new Label
+        private readonly Label lblThank = new()
         {
             Font = new Font("Lucida Handwriting", 11F),
             Text = "Thank you for your translation!",
             ForeColor = Color.DimGray,//Fixed
             AutoSize = true,
         };
-        readonly List<string> languages = new List<string>();
+        private readonly List<string> languages = new();
 
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            int a = 20.DpiZoom();
+            var a = 20.DpiZoom();
             pnlTranslators.Width = ClientSize.Width - 2 * a;
             pnlTranslators.Height = ClientSize.Height - pnlTranslators.Top - a;
             cmbLanguages.Margin = pnlTranslators.Margin = lblThank.Margin = btnOpenDir.Margin
@@ -98,33 +96,33 @@ namespace ContextMenuManager.Controls
             languages.Add("default");
             pnlTranslators.SuspendLayout();
             pnlTranslators.Controls.Remove(lblHeader);
-            foreach(Control ctr in pnlTranslators.Controls) ctr.Dispose();
+            foreach (Control ctr in pnlTranslators.Controls) ctr.Dispose();
             pnlTranslators.Controls.Clear();
             pnlTranslators.Controls.Add(lblHeader);
-            if(Directory.Exists(AppConfig.LangsDir))
+            if (Directory.Exists(AppConfig.LangsDir))
             {
-                Dictionary<Label, Control[]> dic = new Dictionary<Label, Control[]>();
-                foreach(string fileName in Directory.GetFiles(AppConfig.LangsDir, "*.ini"))
+                var dic = new Dictionary<Label, Control[]>();
+                foreach (var fileName in Directory.GetFiles(AppConfig.LangsDir, "*.ini"))
                 {
-                    IniWriter writer = new IniWriter(fileName);
-                    string language = writer.GetValue("General", "Language");
-                    string translator = writer.GetValue("General", "Translator");
-                    string translatorUrl = writer.GetValue("General", "TranslatorUrl");
+                    var writer = new IniWriter(fileName);
+                    var language = writer.GetValue("General", "Language");
+                    var translator = writer.GetValue("General", "Translator");
+                    var translatorUrl = writer.GetValue("General", "TranslatorUrl");
 
-                    string langName = Path.GetFileNameWithoutExtension(fileName);
-                    if(string.IsNullOrEmpty(language)) language = langName;
-                    string[] translators = translator.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
-                    string[] urls = translatorUrl.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    var langName = Path.GetFileNameWithoutExtension(fileName);
+                    if (string.IsNullOrEmpty(language)) language = langName;
+                    var translators = translator.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    var urls = translatorUrl.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-                    Label lblLanguage = new Label
+                    var lblLanguage = new Label
                     {
                         ForeColor = DarkModeHelper.FormFore, // 修改这里
                         Text = language,
                         AutoSize = true,
                         Font = Font
                     };
-                    Label[] ctrTranslators = new Label[translators.Length];
-                    for(int i = 0; i < translators.Length; i++)
+                    var ctrTranslators = new Label[translators.Length];
+                    for (var i = 0; i < translators.Length; i++)
                     {
                         ctrTranslators[i] = new Label
                         {
@@ -133,10 +131,10 @@ namespace ContextMenuManager.Controls
                             Text = translators[i],
                             ForeColor = Color.DimGray,//Fixed
                         };
-                        if(urls.Length > i)
+                        if (urls.Length > i)
                         {
-                            string url = urls[i].Trim();
-                            if(url != "null")
+                            var url = urls[i].Trim();
+                            if (url != "null")
                             {
                                 toolTip.SetToolTip(ctrTranslators[i], url);
                                 ctrTranslators[i].ForeColor = DarkModeHelper.FormFore; // 修改这里
@@ -149,15 +147,15 @@ namespace ContextMenuManager.Controls
                     cmbLanguages.Items.Add(language);
                     languages.Add(langName);
                 }
-                int left = 0;
+                var left = 0;
                 dic.Keys.ToList().ForEach(lbl => left = Math.Max(left, lbl.Width));
                 left += 250.DpiZoom();
-                int top = lblHeader.Bottom + 10.DpiZoom();
-                foreach(var item in dic)
+                var top = lblHeader.Bottom + 10.DpiZoom();
+                foreach (var item in dic)
                 {
                     item.Key.Top = top;
                     pnlTranslators.Controls.Add(item.Key);
-                    foreach(var ctr in item.Value)
+                    foreach (var ctr in item.Value)
                     {
                         ctr.Location = new Point(left, top);
                         pnlTranslators.Controls.Add(ctr);
@@ -171,23 +169,23 @@ namespace ContextMenuManager.Controls
 
         private void ChangeLanguage()
         {
-            int index = GetSelectIndex();
-            if(cmbLanguages.SelectedIndex == index) return;
-            string language = languages[cmbLanguages.SelectedIndex];
-            string msg = "";
-            if(cmbLanguages.SelectedIndex != 0)
+            var index = GetSelectIndex();
+            if (cmbLanguages.SelectedIndex == index) return;
+            var language = languages[cmbLanguages.SelectedIndex];
+            var msg = "";
+            if (cmbLanguages.SelectedIndex != 0)
             {
-                string langPath = $@"{AppConfig.LangsDir}\{language}.ini";
+                var langPath = $@"{AppConfig.LangsDir}\{language}.ini";
                 msg = new IniWriter(langPath).GetValue("Message", "RestartApp");
             }
-            if(msg == "") msg = AppString.Message.RestartApp;
-            if(AppMessageBox.Show(msg, MessageBoxButtons.OKCancel) != DialogResult.OK)
+            if (msg == "") msg = AppString.Message.RestartApp;
+            if (AppMessageBox.Show(msg, MessageBoxButtons.OKCancel) != DialogResult.OK)
             {
                 cmbLanguages.SelectedIndex = index;
             }
             else
             {
-                if(language == CultureInfo.CurrentUICulture.Name) language = "";
+                if (language == CultureInfo.CurrentUICulture.Name) language = "";
                 AppConfig.Language = language;
                 SingleInstance.Restart();
             }
@@ -195,83 +193,77 @@ namespace ContextMenuManager.Controls
 
         private int GetSelectIndex()
         {
-            int index = languages.FindIndex(language => language.Equals(AppConfig.Language, StringComparison.OrdinalIgnoreCase));
-            if(index == -1) index = 0;
+            var index = languages.FindIndex(language => language.Equals(AppConfig.Language, StringComparison.OrdinalIgnoreCase));
+            if (index == -1) index = 0;
             return index;
         }
 
         public async void ShowLanguageDialog()
         {
-            using(UAWebClient client = new UAWebClient())
+            using var client = new UAWebClient();
+            var apiUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsApi : AppConfig.GiteeLangsApi;
+            var doc = await client.GetWebJsonToXmlAsync(apiUrl);
+            if (doc == null)
             {
-                string apiUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsApi : AppConfig.GiteeLangsApi;
-                XmlDocument doc = await client.GetWebJsonToXmlAsync(apiUrl);
-                if(doc == null)
+                AppMessageBox.Show(AppString.Message.WebDataReadFailed);
+                return;
+            }
+            var list = doc.FirstChild.ChildNodes;
+            var langs = new string[list.Count];
+            for (var i = 0; i < list.Count; i++)
+            {
+                var nameXN = list.Item(i).SelectSingleNode("name");
+                langs[i] = Path.GetFileNameWithoutExtension(nameXN.InnerText);
+            }
+            if (langs.Length == 0)
+            {
+                AppMessageBox.Show(AppString.Message.WebDataReadFailed);
+                return;
+            }
+            using var dlg = new SelectDialog();
+            dlg.Items = langs;
+            dlg.Title = AppString.Dialog.DownloadLanguages;
+            var lang = CultureInfo.CurrentUICulture.Name;
+            if (dlg.Items.Contains(lang)) dlg.Selected = lang;
+            else dlg.SelectedIndex = 0;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                var fileName = $"{dlg.Selected}.ini";
+                var filePath = $@"{AppConfig.LangsDir}\{fileName}";
+                var dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsRawDir : AppConfig.GiteeLangsRawDir;
+                var fileUrl = $"{dirUrl}/{fileName}";
+                var flag = await client.WebStringToFileAsync(filePath, fileUrl);
+                if (!flag)
                 {
-                    AppMessageBox.Show(AppString.Message.WebDataReadFailed);
-                    return;
-                }
-                XmlNodeList list = doc.FirstChild.ChildNodes;
-                string[] langs = new string[list.Count];
-                for(int i = 0; i < list.Count; i++)
-                {
-                    XmlNode nameXN = list.Item(i).SelectSingleNode("name");
-                    langs[i] = Path.GetFileNameWithoutExtension(nameXN.InnerText);
-                }
-                if(langs.Length == 0)
-                {
-                    AppMessageBox.Show(AppString.Message.WebDataReadFailed);
-                    return;
-                }
-                using(SelectDialog dlg = new SelectDialog())
-                {
-                    dlg.Items = langs;
-                    dlg.Title = AppString.Dialog.DownloadLanguages;
-                    string lang = CultureInfo.CurrentUICulture.Name;
-                    if(dlg.Items.Contains(lang)) dlg.Selected = lang;
-                    else dlg.SelectedIndex = 0;
-                    if(dlg.ShowDialog() == DialogResult.OK)
+                    if (AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n ● " + fileName + "\r\n"
+                        + AppString.Message.OpenWebUrl, MessageBoxButtons.YesNo) == DialogResult.Yes)
                     {
-                        string fileName = $"{dlg.Selected}.ini";
-                        string filePath = $@"{AppConfig.LangsDir}\{fileName}";
-                        string dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsRawDir : AppConfig.GiteeLangsRawDir;
-                        string fileUrl = $"{dirUrl}/{fileName}";
-                        bool flag = await client.WebStringToFileAsync(filePath, fileUrl);
-                        if(!flag)
-                        {
-                            if(AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n ● " + fileName + "\r\n"
-                                + AppString.Message.OpenWebUrl, MessageBoxButtons.YesNo) == DialogResult.Yes)
-                            {
-                                ExternalProgram.OpenWebUrl(fileUrl);
-                            }
-                        }
-                        else
-                        {
-                            LoadLanguages();
-                            string language = new IniWriter(filePath).GetValue("General", "Language");
-                            if(language == "") language = dlg.Selected;
-                            cmbLanguages.Text = language;
-                            ChangeLanguage();
-                        }
+                        ExternalProgram.OpenWebUrl(fileUrl);
                     }
+                }
+                else
+                {
+                    LoadLanguages();
+                    var language = new IniWriter(filePath).GetValue("General", "Language");
+                    if (language == "") language = dlg.Selected;
+                    cmbLanguages.Text = language;
+                    ChangeLanguage();
                 }
             }
         }
 
-        sealed class TranslateDialog : CommonDialog
+        private sealed class TranslateDialog : CommonDialog
         {
             public override void Reset() { }
 
             protected override bool RunDialog(IntPtr hwndOwner)
             {
-                using(TranslateForm frm = new TranslateForm())
-                {
-                    frm.TopMost = true;
-                    return frm.ShowDialog() == DialogResult.OK;
-                }
+                using var frm = new TranslateForm();
+                frm.TopMost = true;
+                return frm.ShowDialog() == DialogResult.OK;
             }
 
-            sealed class TranslateForm : RForm
+            private sealed class TranslateForm : RForm
             {
                 public TranslateForm()
                 {
@@ -288,64 +280,64 @@ namespace ContextMenuManager.Controls
                     InitTheme();
                 }
 
-                readonly Label lblSections = new Label
+                private readonly Label lblSections = new()
                 {
                     AutoSize = true,
                     Text = "Section"
                 };
-                readonly Label lblKeys = new Label
+                private readonly Label lblKeys = new()
                 {
                     AutoSize = true,
                     Text = "Key"
                 };
-                readonly Label lblDefault = new Label
+                private readonly Label lblDefault = new()
                 {
                     Text = AppString.Dialog.DefaultText,
                     AutoSize = true
                 };
-                readonly Label lblOld = new Label
+                private readonly Label lblOld = new()
                 {
                     Text = AppString.Dialog.OldTranslation,
                     AutoSize = true
                 };
-                readonly Label lblNew = new Label
+                private readonly Label lblNew = new()
                 {
                     Text = AppString.Dialog.NewTranslation,
                     AutoSize = true
                 };
-                readonly TextBox txtDefault = new TextBox
+                private readonly TextBox txtDefault = new()
                 {
                     Multiline = true,
                     ReadOnly = true
                 };
-                readonly TextBox txtOld = new TextBox
+                private readonly TextBox txtOld = new()
                 {
                     Multiline = true,
                     ReadOnly = true
                 };
-                readonly TextBox txtNew = new TextBox
+                private readonly TextBox txtNew = new()
                 {
                     Multiline = true
                 };
-                readonly RComboBox cmbSections = new RComboBox
+                private readonly RComboBox cmbSections = new()
                 {
                     DropDownStyle = ComboBoxStyle.DropDownList
                 };
-                readonly RComboBox cmbKeys = new RComboBox
+                private readonly RComboBox cmbKeys = new()
                 {
                     DropDownStyle = ComboBoxStyle.DropDownList
                 };
-                readonly Button btnBrowse = new Button
+                private readonly Button btnBrowse = new()
                 {
                     Text = AppString.Dialog.Browse,
                     AutoSize = true
                 };
-                readonly Button btnSave = new Button
+                private readonly Button btnSave = new()
                 {
                     Text = AppString.Menu.Save,
                     AutoSize = true
                 };
-                readonly Button btnCancel = new Button
+                private readonly Button btnCancel = new()
                 {
                     DialogResult = DialogResult.Cancel,
                     Text = ResourceString.Cancel,
@@ -354,10 +346,10 @@ namespace ContextMenuManager.Controls
 
                 static TranslateForm()
                 {
-                    foreach(string section in AppString.DefLangReader.Sections)
+                    foreach (var section in AppString.DefLangReader.Sections)
                     {
                         var dic = new Dictionary<string, string>();
-                        foreach(string key in AppString.DefLangReader.GetSectionKeys(section))
+                        foreach (var key in AppString.DefLangReader.GetSectionKeys(section))
                         {
                             dic.Add(key, string.Empty);
                         }
@@ -365,10 +357,10 @@ namespace ContextMenuManager.Controls
                     }
                 }
 
-                static readonly Dictionary<string, Dictionary<string, string>> EditingDic
-                    = new Dictionary<string, Dictionary<string, string>>();
+                private static readonly Dictionary<string, Dictionary<string, string>> EditingDic
+                    = new();
 
-                static readonly IniWriter ReferentialWirter = new IniWriter();
+                private static readonly IniWriter ReferentialWirter = new();
 
                 private string Section => cmbSections.Text;
                 private string Key => cmbKeys.Text;
@@ -387,7 +379,7 @@ namespace ContextMenuManager.Controls
                     cmbSections.AutosizeDropDownWidth();
                     cmbKeys.AutosizeDropDownWidth();
 
-                    int a = 20.DpiZoom();
+                    var a = 20.DpiZoom();
 
                     lblSections.Top = lblSections.Left = cmbSections.Top = lblKeys.Left
                         = lblDefault.Left = lblOld.Left = lblNew.Left = btnBrowse.Left = a;
@@ -397,9 +389,9 @@ namespace ContextMenuManager.Controls
                     txtDefault.Height = txtOld.Height = txtNew.Height = 4 * a;
                     cmbSections.Width = cmbKeys.Width = txtDefault.Width = txtOld.Width = txtNew.Width = 20 * a;
 
-                    int h = cmbSections.Height + cmbKeys.Height + btnBrowse.Height;
+                    var h = cmbSections.Height + cmbKeys.Height + btnBrowse.Height;
                     int[] ws = { lblSections.Width, lblKeys.Width, lblDefault.Width, lblOld.Width, lblNew.Width };
-                    int w = ws.Max();
+                    var w = ws.Max();
 
                     cmbSections.Left = cmbKeys.Left = txtDefault.Left = txtOld.Left = txtNew.Left = w + 2 * a;
 
@@ -437,7 +429,7 @@ namespace ContextMenuManager.Controls
                     };
                     cmbSections.SelectedIndex = 0;
 
-                    txtOld.TextChanged += (sender, e) => { if(txtNew.Text == string.Empty) txtNew.Text = txtOld.Text; };
+                    txtOld.TextChanged += (sender, e) => { if (txtNew.Text == string.Empty) txtNew.Text = txtOld.Text; };
                     txtNew.TextChanged += (sender, e) => EditingDic[Section][Key] = txtNew.Text.Replace("\n", "\\n").Replace("\r", "\\r");
                     btnBrowse.Click += (sender, e) => SelectFile();
                     btnSave.Click += (sender, e) => Save();
@@ -445,41 +437,37 @@ namespace ContextMenuManager.Controls
 
                 private void SelectFile()
                 {
-                    using(OpenFileDialog dlg = new OpenFileDialog())
-                    {
-                        dlg.InitialDirectory = AppConfig.LangsDir;
-                        dlg.Filter = $"{AppString.SideBar.AppLanguage}|*.ini";
-                        if(dlg.ShowDialog() != DialogResult.OK) return;
-                        ReferentialWirter.FilePath = dlg.FileName;
-                        txtOld.Text = ReferentialWirter.GetValue(Section, Key).Replace("\\r", "\r").Replace("\\n", "\n");
-                    }
+                    using var dlg = new OpenFileDialog();
+                    dlg.InitialDirectory = AppConfig.LangsDir;
+                    dlg.Filter = $"{AppString.SideBar.AppLanguage}|*.ini";
+                    if (dlg.ShowDialog() != DialogResult.OK) return;
+                    ReferentialWirter.FilePath = dlg.FileName;
+                    txtOld.Text = ReferentialWirter.GetValue(Section, Key).Replace("\\r", "\r").Replace("\\n", "\n");
                 }
 
                 private void Save()
                 {
-                    using(SaveFileDialog dlg = new SaveFileDialog())
-                    {
-                        string language = EditingDic["General"]["Language"];
-                        int index = language.IndexOf(' ');
-                        if(index > 0) language = language.Substring(0, index);
-                        dlg.FileName = $"{language}.ini";
-                        dlg.InitialDirectory = AppConfig.LangsDir;
-                        dlg.Filter = $"{AppString.SideBar.AppLanguage}|*.ini";
-                        if(dlg.ShowDialog() != DialogResult.OK) return;
+                    using var dlg = new SaveFileDialog();
+                    var language = EditingDic["General"]["Language"];
+                    var index = language.IndexOf(' ');
+                    if (index > 0) language = language[..index];
+                    dlg.FileName = $"{language}.ini";
+                    dlg.InitialDirectory = AppConfig.LangsDir;
+                    dlg.Filter = $"{AppString.SideBar.AppLanguage}|*.ini";
+                    if (dlg.ShowDialog() != DialogResult.OK) return;
 
-                        string contents = string.Empty;
-                        foreach(string section in EditingDic.Keys)
+                    var contents = string.Empty;
+                    foreach (var section in EditingDic.Keys)
+                    {
+                        contents += $"[{section}]" + "\r\n";
+                        foreach (var key in EditingDic[section].Keys)
                         {
-                            contents += $"[{section}]" + "\r\n";
-                            foreach(string key in EditingDic[section].Keys)
-                            {
-                                string value = EditingDic[section][key];
-                                contents += $"{key} = {value}" + "\r\n";
-                            }
-                            contents += "\r\n";
+                            var value = EditingDic[section][key];
+                            contents += $"{key} = {value}" + "\r\n";
                         }
-                        File.WriteAllText(dlg.FileName, contents, Encoding.Unicode);
+                        contents += "\r\n";
                     }
+                    File.WriteAllText(dlg.FileName, contents, Encoding.Unicode);
                 }
             }
         }

@@ -9,30 +9,30 @@ using System.Xml;
 
 namespace ContextMenuManager.Methods
 {
-    static class XmlDicHelper
+    internal static class XmlDicHelper
     {
-        public static readonly List<XmlDocument> EnhanceMenusDic = new List<XmlDocument>();
-        public static readonly List<XmlDocument> DetailedEditDic = new List<XmlDocument>();
-        public static readonly List<XmlDocument> UwpModeItemsDic = new List<XmlDocument>();
+        public static readonly List<XmlDocument> EnhanceMenusDic = new();
+        public static readonly List<XmlDocument> DetailedEditDic = new();
+        public static readonly List<XmlDocument> UwpModeItemsDic = new();
         public static readonly Dictionary<string, bool> EnhanceMenuPathDic
-            = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-        public static readonly Dictionary<Guid, bool> DetailedEditGuidDic = new Dictionary<Guid, bool>();
+            = new(StringComparer.OrdinalIgnoreCase);
+        public static readonly Dictionary<Guid, bool> DetailedEditGuidDic = new();
 
         /// <summary>重新加载字典</summary>
         public static void ReloadDics()
         {
             XmlDocument LoadXml(string xmlPath)
             {
-                if(!File.Exists(xmlPath)) return null;
+                if (!File.Exists(xmlPath)) return null;
                 try
                 {
-                    XmlDocument doc = new XmlDocument();
-                    Encoding encoding = EncodingType.GetType(xmlPath);
-                    string xml = File.ReadAllText(xmlPath, encoding).Trim();
+                    var doc = new XmlDocument();
+                    var encoding = EncodingType.GetType(xmlPath);
+                    var xml = File.ReadAllText(xmlPath, encoding).Trim();
                     doc.LoadXml(xml);
                     return doc;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     AppMessageBox.Show(e.Message + "\n" + xmlPath);
                     return null;
@@ -41,7 +41,7 @@ namespace ContextMenuManager.Methods
 
             void LoadDic(List<XmlDocument> dic, string webPath, string userPath, string defaultContent)
             {
-                if(!File.Exists(webPath)) File.WriteAllText(webPath, defaultContent, Encoding.Unicode);
+                if (!File.Exists(webPath)) File.WriteAllText(webPath, defaultContent, Encoding.Unicode);
                 dic.Clear();
                 dic.Add(LoadXml(webPath));
                 dic.Add(LoadXml(userPath));
@@ -55,27 +55,27 @@ namespace ContextMenuManager.Methods
                 AppConfig.UserDetailedEditDic, Properties.Resources.DetailedEditDic);
 
             EnhanceMenuPathDic.Clear();
-            for(int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
-                XmlDocument doc = EnhanceMenusDic[i];
-                if(doc?.DocumentElement == null) continue;
-                foreach(XmlNode pathXN in doc.SelectNodes("Data/Group/RegPath"))
+                var doc = EnhanceMenusDic[i];
+                if (doc?.DocumentElement == null) continue;
+                foreach (XmlNode pathXN in doc.SelectNodes("Data/Group/RegPath"))
                 {
-                    if(EnhanceMenuPathDic.ContainsKey(pathXN.InnerText)) continue;
+                    if (EnhanceMenuPathDic.ContainsKey(pathXN.InnerText)) continue;
                     EnhanceMenuPathDic.Add(pathXN.InnerText, i == 1);
                 }
             }
 
             DetailedEditGuidDic.Clear();
-            for(int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
-                XmlDocument doc = DetailedEditDic[i];
-                if(doc?.DocumentElement == null) continue;
-                foreach(XmlNode guidXN in doc.SelectNodes("Data/Group/Guid"))
+                var doc = DetailedEditDic[i];
+                if (doc?.DocumentElement == null) continue;
+                foreach (XmlNode guidXN in doc.SelectNodes("Data/Group/Guid"))
                 {
-                    if(GuidEx.TryParse(guidXN.InnerText, out Guid guid))
+                    if (GuidEx.TryParse(guidXN.InnerText, out var guid))
                     {
-                        if(DetailedEditGuidDic.ContainsKey(guid)) continue;
+                        if (DetailedEditGuidDic.ContainsKey(guid)) continue;
                         DetailedEditGuidDic.Add(guid, i == 1);
                     }
                 }
@@ -85,32 +85,26 @@ namespace ContextMenuManager.Methods
         public static bool JudgeOSVersion(XmlNode itemXN)
         {
             //return true;//测试用
-            bool JudgeOne(XmlNode osXN)
+            static bool JudgeOne(XmlNode osXN)
             {
-                Version ver = new Version(osXN.InnerText);
-                Version osVer = Environment.OSVersion.Version;
-                int compare = osVer.CompareTo(ver);
-                string symbol = ((XmlElement)osXN).GetAttribute("Compare");
-                switch(symbol)
+                var ver = new Version(osXN.InnerText);
+                var osVer = Environment.OSVersion.Version;
+                var compare = osVer.CompareTo(ver);
+                var symbol = ((XmlElement)osXN).GetAttribute("Compare");
+                return symbol switch
                 {
-                    case ">":
-                        return compare > 0;
-                    case "<":
-                        return compare < 0;
-                    case "=":
-                        return compare == 0;
-                    case ">=":
-                        return compare >= 0;
-                    case "<=":
-                        return compare <= 0;
-                    default:
-                        return true;
-                }
+                    ">" => compare > 0,
+                    "<" => compare < 0,
+                    "=" => compare == 0,
+                    ">=" => compare >= 0,
+                    "<=" => compare <= 0,
+                    _ => true,
+                };
             }
 
-            foreach(XmlNode osXN in itemXN.SelectNodes("OSVersion"))
+            foreach (XmlNode osXN in itemXN.SelectNodes("OSVersion"))
             {
-                if(!JudgeOne(osXN)) return false;
+                if (!JudgeOne(osXN)) return false;
             }
             return true;
         }
@@ -118,10 +112,10 @@ namespace ContextMenuManager.Methods
         public static bool FileExists(XmlNode itemXN)
         {
             //return true;//测试用
-            foreach(XmlNode feXN in itemXN.SelectNodes("FileExists"))
+            foreach (XmlNode feXN in itemXN.SelectNodes("FileExists"))
             {
-                string path = Environment.ExpandEnvironmentVariables(feXN.InnerText);
-                if(!File.Exists(path)) return false;
+                var path = Environment.ExpandEnvironmentVariables(feXN.InnerText);
+                if (!File.Exists(path)) return false;
             }
             return true;
         }
@@ -129,10 +123,10 @@ namespace ContextMenuManager.Methods
         public static bool JudgeCulture(XmlNode itemXN)
         {
             //return true;//测试用
-            string culture = itemXN.SelectSingleNode("Culture")?.InnerText;
-            if(string.IsNullOrEmpty(culture)) return true;
-            if(culture.Equals(AppConfig.Language, StringComparison.OrdinalIgnoreCase)) return true;
-            if(culture.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase)) return true;
+            var culture = itemXN.SelectSingleNode("Culture")?.InnerText;
+            if (string.IsNullOrEmpty(culture)) return true;
+            if (culture.Equals(AppConfig.Language, StringComparison.OrdinalIgnoreCase)) return true;
+            if (culture.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase)) return true;
             return false;
         }
 
@@ -140,9 +134,9 @@ namespace ContextMenuManager.Methods
         {
             try
             {
-                string[] strs = value.Split(' ');
-                byte[] bs = new byte[strs.Length];
-                for(int i = 0; i < strs.Length; i++)
+                var strs = value.Split(' ');
+                var bs = new byte[strs.Length];
+                for (var i = 0; i < strs.Length; i++)
                 {
                     bs[i] = Convert.ToByte(strs[i], 16);
                 }
@@ -153,23 +147,16 @@ namespace ContextMenuManager.Methods
 
         public static RegistryValueKind GetValueKind(string type, RegistryValueKind defaultKind)
         {
-            switch(type.ToUpper())
+            return type.ToUpper() switch
             {
-                case "REG_SZ":
-                    return RegistryValueKind.String;
-                case "REG_BINARY":
-                    return RegistryValueKind.Binary;
-                case "REG_DWORD":
-                    return RegistryValueKind.DWord;
-                case "REG_QWORD":
-                    return RegistryValueKind.QWord;
-                case "REG_MULTI_SZ":
-                    return RegistryValueKind.MultiString;
-                case "REG_EXPAND_SZ":
-                    return RegistryValueKind.ExpandString;
-                default:
-                    return defaultKind;
-            }
+                "REG_SZ" => RegistryValueKind.String,
+                "REG_BINARY" => RegistryValueKind.Binary,
+                "REG_DWORD" => RegistryValueKind.DWord,
+                "REG_QWORD" => RegistryValueKind.QWord,
+                "REG_MULTI_SZ" => RegistryValueKind.MultiString,
+                "REG_EXPAND_SZ" => RegistryValueKind.ExpandString,
+                _ => defaultKind,
+            };
         }
     }
 }

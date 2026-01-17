@@ -1,28 +1,26 @@
 using BluePointLilac.Methods;
-using System;
-using System.Reflection;
 using System.Text;
 
 namespace ContextMenuManager.Methods
 {
-    static class AppString
+    internal static class AppString
     {
-        private static readonly IniReader UserLangReader = new IniReader(AppConfig.LanguageIniPath);
-        public static readonly IniReader DefLangReader = new IniReader(new StringBuilder(Properties.Resources.AppLanguageDic));
+        private static readonly IniReader UserLangReader = new(AppConfig.LanguageIniPath);
+        public static readonly IniReader DefLangReader = new(new StringBuilder(Properties.Resources.AppLanguageDic));
 
         private static string GetValue(string section, string key)
         {
-            string value = UserLangReader.GetValue(section, key);
-            if(string.IsNullOrEmpty(value)) value = DefLangReader.GetValue(section, key);
+            var value = UserLangReader.GetValue(section, key);
+            if (string.IsNullOrEmpty(value)) value = DefLangReader.GetValue(section, key);
             return value.Replace("\\r", "\r").Replace("\\n", "\n");
         }
 
         /// <summary>加载语言</summary>
         public static void LoadStrings()
         {
-            foreach(Type type in typeof(AppString).GetNestedTypes())
+            foreach (var type in typeof(AppString).GetNestedTypes())
             {
-                foreach(PropertyInfo pi in type.GetProperties())
+                foreach (var pi in type.GetProperties())
                 {
                     pi.SetValue(type, GetValue(type.Name, pi.Name), null);
                 }

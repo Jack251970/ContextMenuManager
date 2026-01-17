@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class OpenWithItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem,
+    internal sealed class OpenWithItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem,
         ITsiCommandItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem
     {
 
@@ -44,13 +44,13 @@ namespace ContextMenuManager.Controls
             get
             {
                 string name = null;
-                if(NameEquals)
+                if (NameEquals)
                 {
                     name = Registry.GetValue(AppPath, "FriendlyAppName", null)?.ToString();
                     name = ResourceString.GetDirectString(name);
                 }
-                if(string.IsNullOrEmpty(name)) name = FileVersionInfo.GetVersionInfo(ItemFilePath).FileDescription;
-                if(string.IsNullOrEmpty(name)) name = Path.GetFileName(ItemFilePath);
+                if (string.IsNullOrEmpty(name)) name = FileVersionInfo.GetVersionInfo(ItemFilePath).FileDescription;
+                if (string.IsNullOrEmpty(name)) name = Path.GetFileName(ItemFilePath);
                 return name;
             }
             set
@@ -65,7 +65,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "", null)?.ToString();
             set
             {
-                if(ObjectPath.ExtractFilePath(value) != ItemFilePath)
+                if (ObjectPath.ExtractFilePath(value) != ItemFilePath)
                 {
                     AppMessageBox.Show(AppString.Message.CannotChangePath);
                 }
@@ -78,7 +78,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(AppPath, "NoOpenWith", null) == null;
             set
             {
-                if(value) RegistryEx.DeleteValue(AppPath, "NoOpenWith");
+                if (value) RegistryEx.DeleteValue(AppPath, "NoOpenWith");
                 else Registry.SetValue(AppPath, "NoOpenWith", "");
             }
         }
@@ -98,7 +98,7 @@ namespace ContextMenuManager.Controls
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public RegExportMenuItem TsiRegExport { get; set; }
 
-        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
 
         private void InitializeComponents()
         {
@@ -125,10 +125,8 @@ namespace ContextMenuManager.Controls
         public void DeleteMe()
         {
             RegistryEx.DeleteKeyTree(RegPath);
-            using(RegistryKey key = RegistryEx.GetRegistryKey(ShellPath))
-            {
-                if(key.GetSubKeyNames().Length == 0) RegistryEx.DeleteKeyTree(AppPath);
-            }
+            using var key = RegistryEx.GetRegistryKey(ShellPath);
+            if (key.GetSubKeyNames().Length == 0) RegistryEx.DeleteKeyTree(AppPath);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    class SwitchDicList : MyList // 其他菜单 增强菜单
+    internal class SwitchDicList : MyList // 其他菜单 增强菜单
     {
         public bool UseUserDic { get; set; }
 
@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls
 
         public void AddSwitchItem()
         {
-            SwitchDicItem item = new SwitchDicItem { UseUserDic = UseUserDic };
+            var item = new SwitchDicItem { UseUserDic = UseUserDic };
             item.UseDicChanged += () =>
             {
                 UseUserDic = item.UseUserDic;
@@ -30,7 +30,7 @@ namespace ContextMenuManager.Controls
         }
     }
 
-    sealed class SwitchDicItem : MyListItem
+    internal sealed class SwitchDicItem : MyListItem
     {
         public SwitchDicItem()
         {
@@ -52,18 +52,18 @@ namespace ContextMenuManager.Controls
             get => useUserDic == true;
             set
             {
-                if(useUserDic == value) return;
-                bool flag = useUserDic == null;
+                if (useUserDic == value) return;
+                var flag = useUserDic == null;
                 useUserDic = value;
                 Image = UseUserDic ? AppImage.User : AppImage.Web;
                 cmbDic.SelectedIndex = value ? 1 : 0;
-                if(!flag) UseDicChanged?.Invoke();
+                if (!flag) UseDicChanged?.Invoke();
             }
         }
 
         public Action UseDicChanged;
 
-        readonly RComboBox cmbDic = new RComboBox
+        private readonly RComboBox cmbDic = new()
         {
             DropDownStyle = ComboBoxStyle.DropDownList,
             Width = 120.DpiZoom()

@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    class NewItemForm : ResizeLimitedForm
+    internal class NewItemForm : ResizeLimitedForm
     {
         public NewItemForm()
         {
@@ -30,45 +30,45 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                string filePath = ItemFilePath;
-                string arguments = Arguments;
-                if(arguments.IsNullOrWhiteSpace()) return filePath;
-                if(filePath.IsNullOrWhiteSpace()) return arguments;
-                if(filePath.Contains(" ")) filePath = $"\"{filePath}\"";
-                if(!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
+                var filePath = ItemFilePath;
+                var arguments = Arguments;
+                if (arguments.IsNullOrWhiteSpace()) return filePath;
+                if (filePath.IsNullOrWhiteSpace()) return arguments;
+                if (filePath.Contains(" ")) filePath = $"\"{filePath}\"";
+                if (!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
                 return $"{filePath} {arguments}";
             }
         }
 
-        protected readonly Label lblText = new Label
+        protected readonly Label lblText = new()
         {
             Text = AppString.Dialog.ItemText,
             AutoSize = true
         };
-        protected readonly Label lblCommand = new Label
+        protected readonly Label lblCommand = new()
         {
             Text = AppString.Dialog.ItemCommand,
             AutoSize = true
         };
-        protected readonly Label lblArguments = new Label
+        protected readonly Label lblArguments = new()
         {
             Text = AppString.Dialog.CommandArguments,
             AutoSize = true
         };
-        protected readonly TextBox txtText = new TextBox();
-        protected readonly TextBox txtFilePath = new TextBox();
-        protected readonly TextBox txtArguments = new TextBox();
-        protected readonly Button btnBrowse = new Button
+        protected readonly TextBox txtText = new();
+        protected readonly TextBox txtFilePath = new();
+        protected readonly TextBox txtArguments = new();
+        protected readonly Button btnBrowse = new()
         {
             Text = AppString.Dialog.Browse,
             AutoSize = true
         };
-        protected readonly Button btnOK = new Button
+        protected readonly Button btnOK = new()
         {
             Text = ResourceString.OK,
             AutoSize = true
         };
-        protected readonly Button btnCancel = new Button
+        protected readonly Button btnCancel = new()
         {
             DialogResult = DialogResult.Cancel,
             Text = ResourceString.Cancel,
@@ -79,7 +79,7 @@ namespace ContextMenuManager.Controls
         {
             Controls.AddRange(new Control[] { lblText, lblCommand, lblArguments,
                 txtText, txtFilePath, txtArguments, btnBrowse, btnOK, btnCancel });
-            int a = 20.DpiZoom();
+            var a = 20.DpiZoom();
             btnBrowse.Anchor = btnOK.Anchor = btnCancel.Anchor = AnchorStyles.Right | AnchorStyles.Top;
             txtText.Top = lblText.Top = lblText.Left = lblCommand.Left = lblArguments.Left = a;
             btnBrowse.Top = txtFilePath.Top = lblCommand.Top = txtText.Bottom + a;
@@ -87,7 +87,7 @@ namespace ContextMenuManager.Controls
             btnOK.Top = btnCancel.Top = txtArguments.Bottom + a;
             btnCancel.Left = btnBrowse.Left = ClientSize.Width - btnCancel.Width - a;
             btnOK.Left = btnCancel.Left - btnOK.Width - a;
-            int b = Math.Max(Math.Max(lblText.Width, lblCommand.Width), lblArguments.Width) + btnBrowse.Width + 4 * a;
+            var b = Math.Max(Math.Max(lblText.Width, lblCommand.Width), lblArguments.Width) + btnBrowse.Width + 4 * a;
             ClientSize = new Size(320.DpiZoom() + b, btnOK.Bottom + a);
             MinimumSize = Size;
             Resize += (sender, e) =>

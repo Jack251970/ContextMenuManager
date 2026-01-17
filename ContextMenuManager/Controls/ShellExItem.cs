@@ -8,32 +8,28 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class ShellExItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, ITsiGuidItem,
+    internal sealed class ShellExItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, ITsiGuidItem,
         ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, IProtectOpenItem
     {
         public static Dictionary<string, Guid> GetPathAndGuids(string shellExPath, bool isDragDrop = false)
         {
-            Dictionary<string, Guid> dic = new Dictionary<string, Guid>();
-            string[] parts = isDragDrop ? DdhParts : CmhParts;
-            foreach(string part in parts)
+            var dic = new Dictionary<string, Guid>();
+            var parts = isDragDrop ? DdhParts : CmhParts;
+            foreach (var part in parts)
             {
-                using(RegistryKey cmKey = RegistryEx.GetRegistryKey($@"{shellExPath}\{part}"))
+                using var cmKey = RegistryEx.GetRegistryKey($@"{shellExPath}\{part}");
+                if (cmKey == null) continue;
+                foreach (var keyName in cmKey.GetSubKeyNames())
                 {
-                    if(cmKey == null) continue;
-                    foreach(string keyName in cmKey.GetSubKeyNames())
+                    try
                     {
-                        try
-                        {
-                            using(RegistryKey key = cmKey.OpenSubKey(keyName))
-                            {
-                                if(!GuidEx.TryParse(key.GetValue("")?.ToString(), out Guid guid))
-                                    GuidEx.TryParse(keyName, out guid);
-                                if(!guid.Equals(Guid.Empty))
-                                    dic.Add(key.Name, guid);
-                            }
-                        }
-                        catch { continue; }
+                        using var key = cmKey.OpenSubKey(keyName);
+                        if (!GuidEx.TryParse(key.GetValue("")?.ToString(), out var guid))
+                            GuidEx.TryParse(keyName, out guid);
+                        if (!guid.Equals(Guid.Empty))
+                            dic.Add(key.Name, guid);
                     }
+                    catch { continue; }
                 }
             }
             return dic;
@@ -41,7 +37,7 @@ namespace ContextMenuManager.Controls
 
         public static readonly string[] DdhParts = { "DragDropHandlers", "-DragDropHandlers" };
         public static readonly string[] CmhParts = { "ContextMenuHandlers", "-ContextMenuHandlers" };
-        public static readonly Guid LnkOpenGuid = new Guid("00021401-0000-0000-c000-000000000046");
+        public static readonly Guid LnkOpenGuid = new("00021401-0000-0000-c000-000000000046");
 
         public ShellExItem(Guid guid, string regPath)
         {
@@ -78,7 +74,7 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                string[] parts = IsDragDropItem ? DdhParts : CmhParts;
+                var parts = IsDragDropItem ? DdhParts : CmhParts;
                 return $@"{ShellExPath}\{(ItemVisible ? parts[1] : parts[0])}\{KeyName}";
             }
         }
@@ -87,7 +83,7 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                string[] parts = IsDragDropItem ? DdhParts : CmhParts;
+                var parts = IsDragDropItem ? DdhParts : CmhParts;
                 return ParentKeyName.Equals(parts[0], StringComparison.OrdinalIgnoreCase);
             }
             set
@@ -116,7 +112,7 @@ namespace ContextMenuManager.Controls
         public RegExportMenuItem TsiRegExport { get; set; }
         public HandleGuidMenuItem TsiHandleGuid { get; set; }
 
-        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
 
         private void InitializeComponents()
         {
@@ -143,7 +139,7 @@ namespace ContextMenuManager.Controls
 
         public bool TryProtectOpenItem()
         {
-            if(!ChkVisible.Checked || !Guid.Equals(LnkOpenGuid) || !AppConfig.ProtectOpenItem) return true;
+            if (!ChkVisible.Checked || !Guid.Equals(LnkOpenGuid) || !AppConfig.ProtectOpenItem) return true;
             return AppMessageBox.Show(AppString.Message.PromptIsOpenItem, MessageBoxButtons.YesNo) == DialogResult.Yes;
         }
 

@@ -1,17 +1,17 @@
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
-using static ContextMenuManager.Controls.ShellList;
 using System.Xml;
-using System.Drawing;
-using static ContextMenuManager.Methods.BackupList;
 using System.Xml.Serialization;
+using static ContextMenuManager.Controls.ShellList;
 using static ContextMenuManager.Controls.ShellNewList;
-using BluePointLilac.Controls;
+using static ContextMenuManager.Methods.BackupList;
 
 namespace ContextMenuManager.Methods
 {
@@ -63,7 +63,7 @@ namespace ContextMenuManager.Methods
         EnableNotOnList,        // 启用备份列表上可见的菜单项以及不位于备份列表上的菜单项，禁用备份列表上不可见
     };
 
-    sealed class BackupHelper
+    internal sealed class BackupHelper
     {
         /*******************************外部变量、函数************************************/
 
@@ -118,7 +118,7 @@ namespace ContextMenuManager.Methods
             };
 
         public int backupCount = 0;     // 备份项目总数量
-        public List<RestoreChangedItem> restoreList = new List<RestoreChangedItem>();    // 恢复改变项目
+        public List<RestoreChangedItem> restoreList = new();    // 恢复改变项目
         public string createTime;       // 本次备份文件创建时间
         public string filePath;         // 本次备份文件目录
 
@@ -130,8 +130,8 @@ namespace ContextMenuManager.Methods
         // 获取备份恢复场景文字
         public string[] GetBackupRestoreScenesText(List<Scenes> scenes)
         {
-            List<string> scenesTextList = new List<string>();
-            foreach(Scenes scene in scenes)
+            var scenesTextList = new List<string>();
+            foreach (var scene in scenes)
             {
                 scenesTextList.Add(BackupScenesText[(int)scene]);
             }
@@ -147,9 +147,9 @@ namespace ContextMenuManager.Methods
             dialogInterface.SetProgress(0);
             backup = true;
             this.backupMode = backupMode;
-            DateTime dateTime = DateTime.Now;
-            string date = DateTime.Today.ToString("yyyy-MM-dd");
-            string time = dateTime.ToString("HH-mm-ss");
+            var dateTime = DateTime.Now;
+            var date = DateTime.Today.ToString("yyyy-MM-dd");
+            var time = dateTime.ToString("HH-mm-ss");
             createTime = $@"{date} {time}";
             filePath = $@"{AppConfig.MenuBackupDir}\{createTime}.xml";
             // 构建备份元数据
@@ -187,7 +187,7 @@ namespace ContextMenuManager.Methods
         /*******************************内部变量、函数************************************/
 
         // 目前备份恢复场景
-        private readonly List<Scenes> currentScenes = new List<Scenes>();
+        private readonly List<Scenes> currentScenes = new();
 
         private bool backup;                // 目前备份还是恢复
         private Scenes currentScene;        // 目前处理场景
@@ -198,12 +198,12 @@ namespace ContextMenuManager.Methods
         // 删除弃用版本的备份
         private void CheckDeprecatedBackup()
         {
-            string rootPath = AppConfig.MenuBackupRootDir;
-            string[] deviceDirs = Directory.GetDirectories(rootPath);
-            foreach (string deviceDir in deviceDirs)
+            var rootPath = AppConfig.MenuBackupRootDir;
+            var deviceDirs = Directory.GetDirectories(rootPath);
+            foreach (var deviceDir in deviceDirs)
             {
-                string[] xmlFiles = Directory.GetFiles(deviceDir, "*.xml");
-                foreach (string xmlFile in xmlFiles)
+                var xmlFiles = Directory.GetFiles(deviceDir, "*.xml");
+                foreach (var xmlFile in xmlFiles)
                 {
                     // 加载项目元数据
                     LoadBackupDataMetaData(xmlFile);
@@ -221,7 +221,7 @@ namespace ContextMenuManager.Methods
                     }
                 }
                 // 如果设备目录为空且不为本机目录，则删除该设备目录
-                string device = Path.GetFileName(deviceDir);
+                var device = Path.GetFileName(deviceDir);
                 if ((Directory.GetFiles(deviceDir).Length == 0) && (device != AppConfig.ComputerHostName))
                 {
                     Directory.Delete(deviceDir);
@@ -233,9 +233,9 @@ namespace ContextMenuManager.Methods
         private int GetBackupRestoreScenes(List<string> sceneTexts)
         {
             currentScenes.Clear();
-            for (int i = 0; i < BackupScenesText.Length; i++)
+            for (var i = 0; i < BackupScenesText.Length; i++)
             {
-                string text = BackupScenesText[i];
+                var text = BackupScenesText[i];
                 if (sceneTexts.Contains(text))
                 {
                     // 顺序对应，直接转换
@@ -248,7 +248,7 @@ namespace ContextMenuManager.Methods
         // 按照目前处理场景逐个备份或恢复
         private void BackupRestoreItems(LoadingDialogInterface dialogInterface)
         {
-            foreach(Scenes scene in currentScenes)
+            foreach (var scene in currentScenes)
             {
                 currentScene = scene;
                 // 加载某个Scene的恢复列表
@@ -349,12 +349,12 @@ namespace ContextMenuManager.Methods
 
         private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, bool currentItemData)
         {
-            foreach (BackupItem item in sceneRestoreList)
+            foreach (var item in sceneRestoreList)
             {
                 // 成功匹配到后的处理方式：KeyName和ItemType匹配后检查ItemVisible
                 if (item.KeyName == keyName && item.ItemType == itemType)
                 {
-                    bool itemData = false;
+                    var itemData = false;
                     try
                     {
                         itemData = Convert.ToBoolean(item.ItemData);
@@ -374,7 +374,7 @@ namespace ContextMenuManager.Methods
                     }
                 }
             }
-            if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) || 
+            if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) ||
                 (restoreMode == RestoreMode.EnableNotOnList && !currentItemData))
             {
                 restoreList.Add(new RestoreChangedItem(currentScene, itemName, (!currentItemData).ToString()));
@@ -393,8 +393,7 @@ namespace ContextMenuManager.Methods
             else
             {
                 // 恢复备份列表（新增备份类别处4）
-                int restoreItemData;
-                if (CheckItemNeedChange(itemName, keyName, backupItemType, itemData, out restoreItemData))
+                if (CheckItemNeedChange(itemName, keyName, backupItemType, itemData, out var restoreItemData))
                 {
                     switch (backupItemType)
                     {
@@ -411,7 +410,7 @@ namespace ContextMenuManager.Methods
 
         private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, int currentItemData, out int restoreItemData)
         {
-            foreach (BackupItem item in sceneRestoreList)
+            foreach (var item in sceneRestoreList)
             {
                 // 成功匹配到后的处理方式：KeyName和ItemType匹配后检查itemData
                 if (item.KeyName == keyName && item.ItemType == itemType)
@@ -453,8 +452,7 @@ namespace ContextMenuManager.Methods
             else
             {
                 // 恢复备份列表（新增备份类别处4）
-                string restoreItemData;
-                if (CheckItemNeedChange(itemName, keyName, backupItemType, itemData, out restoreItemData))
+                if (CheckItemNeedChange(itemName, keyName, backupItemType, itemData, out var restoreItemData))
                 {
                     switch (backupItemType)
                     {
@@ -471,12 +469,12 @@ namespace ContextMenuManager.Methods
 
         private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, string currentItemData, out string restoreItemData)
         {
-            foreach (BackupItem item in sceneRestoreList)
+            foreach (var item in sceneRestoreList)
             {
                 // 成功匹配到后的处理方式：KeyName和ItemType匹配后检查itemData
                 if (item.KeyName == keyName && item.ItemType == itemType)
                 {
-                    string itemData = item.ItemData;
+                    var itemData = item.ItemData;
                     if (itemData != currentItemData)
                     {
                         restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
@@ -497,33 +495,33 @@ namespace ContextMenuManager.Methods
         // SelectItem有单独的备份恢复机制
         private void BackupRestoreSelectItem(SelectItem item, string itemData, Scenes currentScene)
         {
-            string keyName = "";
+            var keyName = "";
             if (backup)
             {
                 AddItem(keyName, BackupItemType.SelectItem, itemData, currentScene);
             }
             else
             {
-                foreach (BackupItem restoreItem in sceneRestoreList)
+                foreach (var restoreItem in sceneRestoreList)
                 {
                     // 成功匹配到后的处理方式：只需检查ItemData和ItemType
                     if (restoreItem.ItemType == BackupItemType.SelectItem)
                     {
-                        string restoreItemData = restoreItem.ItemData;
+                        var restoreItemData = restoreItem.ItemData;
                         if (restoreItemData != itemData)
                         {
-                            int.TryParse(restoreItem.KeyName, out int itemDataIndex);
+                            int.TryParse(restoreItem.KeyName, out var itemDataIndex);
                             switch (currentScene)
                             {
                                 case Scenes.DragDrop:
-                                    DropEffect dropEffect = (DropEffect)itemDataIndex;
+                                    var dropEffect = (DropEffect)itemDataIndex;
                                     if (DefaultDropEffect != dropEffect)
                                     {
                                         DefaultDropEffect = dropEffect;
                                     }
                                     break;
                             }
-                            string itemName = keyName;
+                            var itemName = keyName;
                             restoreList.Add(new RestoreChangedItem(currentScene, itemName, restoreItemData.ToString()));
                         }
                     }
@@ -571,12 +569,12 @@ namespace ContextMenuManager.Methods
                         // From: FileExtensionDialog.Extension
                         var extensionProperty = fileExtension.Trim();
                         // From: FileExtensionDialog.RunDialog
-                        string extension = ObjectPath.RemoveIllegalChars(extensionProperty);
-                        int index = extension.LastIndexOf('.');
-                        if (index >= 0) extensionProperty = extension.Substring(index);
+                        var extension = ObjectPath.RemoveIllegalChars(extensionProperty);
+                        var index = extension.LastIndexOf('.');
+                        if (index >= 0) extensionProperty = extension[index..];
                         else extensionProperty = $".{extension}";
                         // From: ShellList.LoadItems
-                        bool isLnk = extensionProperty?.ToLower() == ".lnk";
+                        var isLnk = extensionProperty?.ToLower() == ".lnk";
                         if (isLnk) scenePath = GetOpenModePath(".lnk");
                         else scenePath = GetSysAssExtPath(extensionProperty);
                         currentExtension = extensionProperty;
@@ -611,8 +609,8 @@ namespace ContextMenuManager.Methods
                 case Scenes.UnknownType:
                     scenePath = MENUPATH_UNKNOWN; break;
                 case Scenes.DragDrop:
-                    SelectItem item = new SelectItem(currentScene);
-                    string dropEffect = ((int)DefaultDropEffect).ToString();
+                    var item = new SelectItem(currentScene);
+                    var dropEffect = ((int)DefaultDropEffect).ToString();
                     BackupRestoreSelectItem(item, dropEffect, currentScene);
                     GetBackupShellExItems(GetShellExPath(MENUPATH_FOLDER));
                     GetBackupShellExItems(GetShellExPath(MENUPATH_DIRECTORY));
@@ -630,11 +628,11 @@ namespace ContextMenuManager.Methods
             switch (currentScene)
             {
                 case Scenes.Background:
-                    VisibleRegRuleItem item = new VisibleRegRuleItem(VisibleRegRuleItem.CustomFolder);
-                    string regPath = item.RegPath;
-                    string valueName = item.ValueName;
-                    string itemName = item.Text;
-                    bool ifItemInMenu = item.ItemVisible;
+                    var item = new VisibleRegRuleItem(VisibleRegRuleItem.CustomFolder);
+                    var regPath = item.RegPath;
+                    var valueName = item.ValueName;
+                    var itemName = item.Text;
+                    var ifItemInMenu = item.ItemVisible;
                     BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
                     break;
                 case Scenes.Computer:
@@ -654,9 +652,9 @@ namespace ContextMenuManager.Methods
                     BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
                     break;
                 case Scenes.Library:
-                    string[] AddedScenePathes = new string[] { MENUPATH_LIBRARY_BACKGROUND, MENUPATH_LIBRARY_USER };
+                    var AddedScenePathes = new string[] { MENUPATH_LIBRARY_BACKGROUND, MENUPATH_LIBRARY_USER };
                     RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
-                    for (int j = 0; j < AddedScenePathes.Length; j++)
+                    for (var j = 0; j < AddedScenePathes.Length; j++)
                     {
                         scenePath = AddedScenePathes[j];
                         GetBackupShellItems(GetShellPath(scenePath));
@@ -696,93 +694,87 @@ namespace ContextMenuManager.Methods
 
         private void GetBackupShellItems(string shellPath)
         {
-            using (RegistryKey shellKey = RegistryEx.GetRegistryKey(shellPath))
+            using var shellKey = RegistryEx.GetRegistryKey(shellPath);
+            if (shellKey == null) return;
+            RegTrustedInstaller.TakeRegTreeOwnerShip(shellKey.Name);
+            foreach (var keyName in shellKey.GetSubKeyNames())
             {
-                if (shellKey == null) return;
-                RegTrustedInstaller.TakeRegTreeOwnerShip(shellKey.Name);
-                foreach (string keyName in shellKey.GetSubKeyNames())
+                var regPath = $@"{shellPath}\{keyName}";
+                var item = new ShellItem(regPath);
+                var itemName = item.ItemText;
+                var ifItemInMenu = item.ItemVisible;
+                if (currentScene is Scenes.CustomExtension or Scenes.PerceivedType or Scenes.DirectoryType)
                 {
-                    string regPath = $@"{shellPath}\{keyName}";
-                    ShellItem item = new ShellItem(regPath);
-                    string itemName = item.ItemText;
-                    bool ifItemInMenu = item.ItemVisible;
-                    if (currentScene == Scenes.CustomExtension || currentScene == Scenes.PerceivedType || currentScene == Scenes.DirectoryType)
-                    {
-                        // 加入Extension类别来区分这几个板块的不同备份项目
-                        BackupRestoreItem(item, itemName, $"{currentExtension}{keyName}", BackupItemType.ShellItem, ifItemInMenu, currentScene);
-                    }
-                    else
-                    {
-                        BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellItem, ifItemInMenu, currentScene);
-                    }
+                    // 加入Extension类别来区分这几个板块的不同备份项目
+                    BackupRestoreItem(item, itemName, $"{currentExtension}{keyName}", BackupItemType.ShellItem, ifItemInMenu, currentScene);
+                }
+                else
+                {
+                    BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellItem, ifItemInMenu, currentScene);
                 }
             }
         }
 
         private void GetBackupShellExItems(string shellExPath)
         {
-            List<string> names = new List<string>();
-            using (RegistryKey shellExKey = RegistryEx.GetRegistryKey(shellExPath))
+            var names = new List<string>();
+            using var shellExKey = RegistryEx.GetRegistryKey(shellExPath);
+            if (shellExKey == null) return;
+            var isDragDrop = currentScene == Scenes.DragDrop;
+            RegTrustedInstaller.TakeRegTreeOwnerShip(shellExKey.Name);
+            var dic = ShellExItem.GetPathAndGuids(shellExPath, isDragDrop);
+            FoldGroupItem groupItem = null;
+            if (isDragDrop)
             {
-                if (shellExKey == null) return;
-                bool isDragDrop = currentScene == Scenes.DragDrop;
-                RegTrustedInstaller.TakeRegTreeOwnerShip(shellExKey.Name);
-                Dictionary<string, Guid> dic = ShellExItem.GetPathAndGuids(shellExPath, isDragDrop);
-                FoldGroupItem groupItem = null;
-                if (isDragDrop)
+                groupItem = GetDragDropGroupItem(shellExPath);
+            }
+            foreach (var path in dic.Keys)
+            {
+                var keyName = RegistryEx.GetKeyName(path);
+                if (!names.Contains(keyName))
                 {
-                    groupItem = GetDragDropGroupItem(shellExPath);
-                }
-                foreach (string path in dic.Keys)
-                {
-                    string keyName = RegistryEx.GetKeyName(path);
-                    if (!names.Contains(keyName))
+                    var regPath = path; // 随是否显示于右键菜单中而改变
+                    var guid = dic[path];
+                    var item = new ShellExItem(guid, path);
+                    var itemName = item.ItemText;
+                    var ifItemInMenu = item.ItemVisible;
+                    if (groupItem != null)
                     {
-                        string regPath = path; // 随是否显示于右键菜单中而改变
-                        Guid guid = dic[path];
-                        ShellExItem item = new ShellExItem(guid, path);
-                        string itemName = item.ItemText;
-                        bool ifItemInMenu = item.ItemVisible;
-                        if (groupItem != null)
-                        {
-                            item.FoldGroupItem = groupItem;
-                            item.Indent();
-                        }
-                        if (currentScene == Scenes.CustomExtension || currentScene == Scenes.PerceivedType || currentScene == Scenes.DirectoryType)
-                        {
-                            // 加入Extension类别来区分这几个板块的不同备份项目
-                            BackupRestoreItem(item, itemName, $"{currentExtension}{keyName}", BackupItemType.ShellExItem, ifItemInMenu, currentScene);
-                        }
-                        else
-                        {
-                            BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
-                        }
-                        
-                        names.Add(keyName);
+                        item.FoldGroupItem = groupItem;
+                        item.Indent();
                     }
+                    if (currentScene is Scenes.CustomExtension or Scenes.PerceivedType or Scenes.DirectoryType)
+                    {
+                        // 加入Extension类别来区分这几个板块的不同备份项目
+                        BackupRestoreItem(item, itemName, $"{currentExtension}{keyName}", BackupItemType.ShellExItem, ifItemInMenu, currentScene);
+                    }
+                    else
+                    {
+                        BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
+                    }
+
+                    names.Add(keyName);
                 }
             }
         }
 
         private void GetBackupStoreItems()
         {
-            using (RegistryKey shellKey = RegistryEx.GetRegistryKey(ShellItem.CommandStorePath))
+            using var shellKey = RegistryEx.GetRegistryKey(ShellItem.CommandStorePath);
+            foreach (var itemName in shellKey.GetSubKeyNames())
             {
-                foreach (string itemName in shellKey.GetSubKeyNames())
-                {
-                    if (AppConfig.HideSysStoreItems && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)) continue;
-                    StoreShellItem item = new StoreShellItem($@"{ShellItem.CommandStorePath}\{itemName}", true, false);
-                    string regPath = item.RegPath;
-                    bool ifItemInMenu = item.ItemVisible;
-                    BackupRestoreItem(item, itemName, itemName, BackupItemType.StoreShellItem, ifItemInMenu, currentScene);
-                }
+                if (AppConfig.HideSysStoreItems && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)) continue;
+                var item = new StoreShellItem($@"{ShellItem.CommandStorePath}\{itemName}", true, false);
+                var regPath = item.RegPath;
+                var ifItemInMenu = item.ItemVisible;
+                BackupRestoreItem(item, itemName, itemName, BackupItemType.StoreShellItem, ifItemInMenu, currentScene);
             }
         }
 
         private void GetBackupUwpModeItem()
         {
-            List<Guid> guidList = new List<Guid>();
-            foreach (XmlDocument doc in XmlDicHelper.UwpModeItemsDic)
+            var guidList = new List<Guid>();
+            foreach (var doc in XmlDicHelper.UwpModeItemsDic)
             {
                 if (doc?.DocumentElement == null) continue;
                 foreach (XmlNode sceneXN in doc.DocumentElement.ChildNodes)
@@ -791,17 +783,17 @@ namespace ContextMenuManager.Methods
                     {
                         foreach (XmlElement itemXE in sceneXN.ChildNodes)
                         {
-                            if (GuidEx.TryParse(itemXE.GetAttribute("Guid"), out Guid guid))
+                            if (GuidEx.TryParse(itemXE.GetAttribute("Guid"), out var guid))
                             {
                                 if (guidList.Contains(guid)) continue;
                                 if (GuidInfo.GetFilePath(guid) == null) continue;
                                 guidList.Add(guid);
-                                string uwpName = GuidInfo.GetUwpName(guid); // uwp程序的名称
-                                UwpModeItem uwpItem = new UwpModeItem(uwpName, guid);
-                                string keyName = uwpItem.Text; // 右键菜单索引
+                                var uwpName = GuidInfo.GetUwpName(guid); // uwp程序的名称
+                                var uwpItem = new UwpModeItem(uwpName, guid);
+                                var keyName = uwpItem.Text; // 右键菜单索引
                                 // TODO:修复名称显示错误的问题
-                                string itemName = keyName;  // 右键菜单名称
-                                bool ifItemInMenu = uwpItem.ItemVisible;
+                                var itemName = keyName;  // 右键菜单名称
+                                var ifItemInMenu = uwpItem.ItemVisible;
                                 BackupRestoreItem(uwpItem, itemName, keyName, BackupItemType.UwpModelItem, ifItemInMenu, currentScene);
                             }
                         }
@@ -814,7 +806,7 @@ namespace ContextMenuManager.Methods
         {
             string text = null;
             Image image = null;
-            string path = shellExPath.Substring(0, shellExPath.LastIndexOf('\\'));
+            var path = shellExPath[..shellExPath.LastIndexOf('\\')];
             switch (path)
             {
                 case MENUPATH_FOLDER:
@@ -843,24 +835,22 @@ namespace ContextMenuManager.Methods
         {
             if (ShellNewLockItem.IsLocked)
             {
-                string[] extensions = (string[])Registry.GetValue(ShellNewPath, "Classes", null);
+                var extensions = (string[])Registry.GetValue(ShellNewPath, "Classes", null);
                 GetShellNewBackupItems(extensions.ToList());
             }
             else
             {
-                List<string> extensions = new List<string> { "Folder" };//文件夹
-                using (RegistryKey root = Registry.ClassesRoot)
-                {
-                    extensions.AddRange(Array.FindAll(root.GetSubKeyNames(), keyName => keyName.StartsWith(".")));
-                    if (WinOsVersion.Current < WinOsVersion.Win10) extensions.Add("Briefcase");//公文包(Win10没有)
-                    GetShellNewBackupItems(extensions);
-                }
+                var extensions = new List<string> { "Folder" };//文件夹
+                using var root = Registry.ClassesRoot;
+                extensions.AddRange(Array.FindAll(root.GetSubKeyNames(), keyName => keyName.StartsWith(".")));
+                if (WinOsVersion.Current < WinOsVersion.Win10) extensions.Add("Briefcase");//公文包(Win10没有)
+                GetShellNewBackupItems(extensions);
             }
         }
 
         private void GetShellNewBackupItems(List<string> extensions)
         {
-            foreach (string extension in ShellNewItem.UnableSortExtensions)
+            foreach (var extension in ShellNewItem.UnableSortExtensions)
             {
                 if (extensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
@@ -868,43 +858,35 @@ namespace ContextMenuManager.Methods
                     extensions.Insert(0, extension);
                 }
             }
-            using (RegistryKey root = Registry.ClassesRoot)
+            using var root = Registry.ClassesRoot;
+            foreach (var extension in extensions)
             {
-                foreach (string extension in extensions)
+                using var extKey = root.OpenSubKey(extension);
+                var defalutOpenMode = extKey?.GetValue("")?.ToString();
+                if (string.IsNullOrEmpty(defalutOpenMode) || defalutOpenMode.Length > 255) continue;
+                using (var openModeKey = root.OpenSubKey(defalutOpenMode))
                 {
-                    using (RegistryKey extKey = root.OpenSubKey(extension))
+                    if (openModeKey == null) continue;
+                    var value1 = openModeKey.GetValue("FriendlyTypeName")?.ToString();
+                    var value2 = openModeKey.GetValue("")?.ToString();
+                    value1 = ResourceString.GetDirectString(value1);
+                    if (value1.IsNullOrWhiteSpace() && value2.IsNullOrWhiteSpace()) continue;
+                }
+                using var tKey = extKey.OpenSubKey(defalutOpenMode);
+                foreach (var part in ShellNewItem.SnParts)
+                {
+                    var snPart = part;
+                    if (tKey != null) snPart = $@"{defalutOpenMode}\{snPart}";
+                    using var snKey = extKey.OpenSubKey(snPart);
+                    if (ShellNewItem.EffectValueNames.Any(valueName => snKey?.GetValue(valueName) != null))
                     {
-                        string defalutOpenMode = extKey?.GetValue("")?.ToString();
-                        if (string.IsNullOrEmpty(defalutOpenMode) || defalutOpenMode.Length > 255) continue;
-                        using (RegistryKey openModeKey = root.OpenSubKey(defalutOpenMode))
-                        {
-                            if (openModeKey == null) continue;
-                            string value1 = openModeKey.GetValue("FriendlyTypeName")?.ToString();
-                            string value2 = openModeKey.GetValue("")?.ToString();
-                            value1 = ResourceString.GetDirectString(value1);
-                            if (value1.IsNullOrWhiteSpace() && value2.IsNullOrWhiteSpace()) continue;
-                        }
-                        using (RegistryKey tKey = extKey.OpenSubKey(defalutOpenMode))
-                        {
-                            foreach (string part in ShellNewItem.SnParts)
-                            {
-                                string snPart = part;
-                                if (tKey != null) snPart = $@"{defalutOpenMode}\{snPart}";
-                                using (RegistryKey snKey = extKey.OpenSubKey(snPart))
-                                {
-                                    if (ShellNewItem.EffectValueNames.Any(valueName => snKey?.GetValue(valueName) != null))
-                                    {
-                                        ShellNewItem item = new ShellNewItem(snKey.Name);
-                                        string regPath = item.RegPath;
-                                        string openMode = item.OpenMode;
-                                        string itemName = item.Text;
-                                        bool ifItemInMenu = item.ItemVisible;
-                                        BackupRestoreItem(item, itemName, openMode, BackupItemType.ShellNewItem, ifItemInMenu, currentScene);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        var item = new ShellNewItem(snKey.Name);
+                        var regPath = item.RegPath;
+                        var openMode = item.OpenMode;
+                        var itemName = item.Text;
+                        var ifItemInMenu = item.ItemVisible;
+                        BackupRestoreItem(item, itemName, openMode, BackupItemType.ShellNewItem, ifItemInMenu, currentScene);
+                        break;
                     }
                 }
             }
@@ -916,19 +898,19 @@ namespace ContextMenuManager.Methods
         {
             string filePath, itemFileName, itemName;
             bool ifItemInMenu;
-            foreach (string path in Directory.GetFileSystemEntries(SendToList.SendToPath))
+            foreach (var path in Directory.GetFileSystemEntries(SendToList.SendToPath))
             {
                 if (Path.GetFileName(path).ToLower() == "desktop.ini") continue;
-                SendToItem sendToItem = new SendToItem(path);
+                var sendToItem = new SendToItem(path);
                 filePath = sendToItem.FilePath;
                 itemFileName = sendToItem.ItemFileName;
                 itemName = sendToItem.Text;
                 ifItemInMenu = sendToItem.ItemVisible;
                 BackupRestoreItem(sendToItem, itemName, itemFileName, BackupItemType.SendToItem, ifItemInMenu, currentScene);
             }
-            VisibleRegRuleItem item = new VisibleRegRuleItem(VisibleRegRuleItem.SendToDrive);
-            string regPath = item.RegPath;
-            string valueName = item.ValueName;
+            var item = new VisibleRegRuleItem(VisibleRegRuleItem.SendToDrive);
+            var regPath = item.RegPath;
+            var valueName = item.ValueName;
             itemName = item.Text;
             ifItemInMenu = item.ItemVisible;
             BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
@@ -944,50 +926,46 @@ namespace ContextMenuManager.Methods
 
         private void GetOpenWithListItems()
         {
-            using (RegistryKey root = Registry.ClassesRoot)
-            using (RegistryKey appKey = root.OpenSubKey("Applications"))
+            using (var root = Registry.ClassesRoot)
+            using (var appKey = root.OpenSubKey("Applications"))
             {
-                foreach (string appName in appKey.GetSubKeyNames())
+                foreach (var appName in appKey.GetSubKeyNames())
                 {
                     if (!appName.Contains('.')) continue;
-                    using (RegistryKey shellKey = appKey.OpenSubKey($@"{appName}\shell"))
+                    using var shellKey = appKey.OpenSubKey($@"{appName}\shell");
+                    if (shellKey == null) continue;
+
+                    var names = shellKey.GetSubKeyNames().ToList();
+                    if (names.Contains("open", StringComparer.OrdinalIgnoreCase)) names.Insert(0, "open");
+
+                    var keyName = names.Find(name =>
                     {
-                        if (shellKey == null) continue;
+                        using var cmdKey = shellKey.OpenSubKey(name);
+                        return cmdKey.GetValue("NeverDefault") == null;
+                    });
+                    if (keyName == null) continue;
 
-                        List<string> names = shellKey.GetSubKeyNames().ToList();
-                        if (names.Contains("open", StringComparer.OrdinalIgnoreCase)) names.Insert(0, "open");
-
-                        string keyName = names.Find(name =>
-                        {
-                            using (RegistryKey cmdKey = shellKey.OpenSubKey(name))
-                                return cmdKey.GetValue("NeverDefault") == null;
-                        });
-                        if (keyName == null) continue;
-
-                        using (RegistryKey commandKey = shellKey.OpenSubKey($@"{keyName}\command"))
-                        {
-                            string command = commandKey?.GetValue("")?.ToString();
-                            if (ObjectPath.ExtractFilePath(command) != null)
-                            {
-                                OpenWithItem item = new OpenWithItem(commandKey.Name);
-                                string regPath = item.RegPath;
-                                string itemFileName = item.ItemFileName;
-                                string itemName = item.Text;
-                                bool ifItemInMenu = item.ItemVisible;
-                                BackupRestoreItem(item, itemName, itemFileName, BackupItemType.OpenWithItem, ifItemInMenu, currentScene);
-                            }
-                        }
+                    using var commandKey = shellKey.OpenSubKey($@"{keyName}\command");
+                    var command = commandKey?.GetValue("")?.ToString();
+                    if (ObjectPath.ExtractFilePath(command) != null)
+                    {
+                        var item = new OpenWithItem(commandKey.Name);
+                        var regPath = item.RegPath;
+                        var itemFileName = item.ItemFileName;
+                        var itemName = item.Text;
+                        var ifItemInMenu = item.ItemVisible;
+                        BackupRestoreItem(item, itemName, itemFileName, BackupItemType.OpenWithItem, ifItemInMenu, currentScene);
                     }
                 }
             }
             //Win8及以上版本系统才有在应用商店中查找应用
             if (WinOsVersion.Current >= WinOsVersion.Win8)
             {
-                VisibleRegRuleItem storeItem = new VisibleRegRuleItem(VisibleRegRuleItem.UseStoreOpenWith);
-                string regPath = storeItem.RegPath;
-                string valueName = storeItem.ValueName;
-                string itemName = storeItem.Text;
-                bool ifItemInMenu = storeItem.ItemVisible;
+                var storeItem = new VisibleRegRuleItem(VisibleRegRuleItem.UseStoreOpenWith);
+                var regPath = storeItem.RegPath;
+                var valueName = storeItem.ValueName;
+                var itemName = storeItem.Text;
+                var ifItemInMenu = storeItem.ItemVisible;
                 BackupRestoreItem(storeItem, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
             }
         }
@@ -999,42 +977,42 @@ namespace ContextMenuManager.Methods
             if (WinOsVersion.Current >= WinOsVersion.Win8)
             {
                 AppConfig.BackupWinX();
-                string[] dirPaths1 = Directory.Exists(WinXList.WinXPath) ? Directory.GetDirectories(WinXList.WinXPath) : new string[] { };
-                string[] dirPaths2 = Directory.Exists(WinXList.BackupWinXPath) ? Directory.GetDirectories(WinXList.BackupWinXPath) : new string[] { };
-                List<string> dirKeyPaths = new List<string> { };
-                foreach (string dirPath in dirPaths1)
+                var dirPaths1 = Directory.Exists(WinXList.WinXPath) ? Directory.GetDirectories(WinXList.WinXPath) : new string[] { };
+                var dirPaths2 = Directory.Exists(WinXList.BackupWinXPath) ? Directory.GetDirectories(WinXList.BackupWinXPath) : new string[] { };
+                var dirKeyPaths = new List<string> { };
+                foreach (var dirPath in dirPaths1)
                 {
-                    string keyName = Path.GetFileNameWithoutExtension(dirPath);
+                    var keyName = Path.GetFileNameWithoutExtension(dirPath);
                     dirKeyPaths.Add(keyName);
                 }
-                foreach (string dirPath in dirPaths2)
+                foreach (var dirPath in dirPaths2)
                 {
-                    string keyName = Path.GetFileNameWithoutExtension(dirPath);
+                    var keyName = Path.GetFileNameWithoutExtension(dirPath);
                     if (!dirKeyPaths.Contains(keyName)) dirKeyPaths.Add(keyName);
                 }
                 dirKeyPaths.Sort();
                 dirKeyPaths.Reverse();
 
-                foreach (string dirKeyPath in dirKeyPaths)
+                foreach (var dirKeyPath in dirKeyPaths)
                 {
-                    string dirPath1 = $@"{WinXList.WinXPath}\{dirKeyPath}";
-                    string dirPath2 = $@"{WinXList.BackupWinXPath}\{dirKeyPath}";
+                    var dirPath1 = $@"{WinXList.WinXPath}\{dirKeyPath}";
+                    var dirPath2 = $@"{WinXList.BackupWinXPath}\{dirKeyPath}";
 
-                    WinXGroupItem groupItem = new WinXGroupItem(dirPath1);
+                    var groupItem = new WinXGroupItem(dirPath1);
 
                     List<string> lnkPaths;
                     lnkPaths = WinXList.GetInkFiles(dirKeyPath);
 
-                    foreach (string path in lnkPaths)
+                    foreach (var path in lnkPaths)
                     {
-                        WinXItem item = new WinXItem(path, groupItem);
-                        string filePath = item.FilePath;
-                        string fileName = item.FileName;
+                        var item = new WinXItem(path, groupItem);
+                        var filePath = item.FilePath;
+                        var fileName = item.FileName;
                         // 删除文件名称里的顺序索引
-                        int index = fileName.IndexOf(" - ");
-                        fileName = fileName.Substring(index + 3);
-                        string itemName = item.Text;
-                        bool ifItemInMenu = item.ItemVisible;
+                        var index = fileName.IndexOf(" - ");
+                        fileName = fileName[(index + 3)..];
+                        var itemName = item.Text;
+                        var ifItemInMenu = item.ItemVisible;
                         BackupRestoreItem(item, itemName, fileName, BackupItemType.WinXItem, ifItemInMenu, currentScene);
                     }
                     groupItem.Dispose();
@@ -1046,30 +1024,24 @@ namespace ContextMenuManager.Methods
 
         private void GetIEItems()
         {
-            List<string> names = new List<string>();
-            using (RegistryKey ieKey = RegistryEx.GetRegistryKey(IEList.IEPath))
+            var names = new List<string>();
+            using var ieKey = RegistryEx.GetRegistryKey(IEList.IEPath);
+            if (ieKey == null) return;
+            foreach (var part in IEItem.MeParts)
             {
-                if (ieKey == null) return;
-                foreach (string part in IEItem.MeParts)
+                using var meKey = ieKey.OpenSubKey(part);
+                if (meKey == null) continue;
+                foreach (var keyName in meKey.GetSubKeyNames())
                 {
-                    using (RegistryKey meKey = ieKey.OpenSubKey(part))
+                    if (names.Contains(keyName, StringComparer.OrdinalIgnoreCase)) continue;
+                    using var key = meKey.OpenSubKey(keyName);
+                    if (!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
                     {
-                        if (meKey == null) continue;
-                        foreach (string keyName in meKey.GetSubKeyNames())
-                        {
-                            if (names.Contains(keyName, StringComparer.OrdinalIgnoreCase)) continue;
-                            using (RegistryKey key = meKey.OpenSubKey(keyName))
-                            {
-                                if (!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
-                                {
-                                    IEItem item = new IEItem(key.Name);
-                                    string itemName = item.Text;
-                                    bool ifItemInMenu = item.ItemVisible;
-                                    BackupRestoreItem(item, itemName, keyName, BackupItemType.IEItem, ifItemInMenu, currentScene);
-                                    names.Add(keyName);
-                                }
-                            }
-                        }
+                        var item = new IEItem(key.Name);
+                        var itemName = item.Text;
+                        var ifItemInMenu = item.ItemVisible;
+                        BackupRestoreItem(item, itemName, keyName, BackupItemType.IEItem, ifItemInMenu, currentScene);
+                        names.Add(keyName);
                     }
                 }
             }
@@ -1079,10 +1051,10 @@ namespace ContextMenuManager.Methods
 
         private void GetDetailedEditListItems()
         {
-            for (int index = 0; index < 2; index++)
+            for (var index = 0; index < 2; index++)
             {
                 // 获取系统字典或用户字典
-                XmlDocument doc = XmlDicHelper.DetailedEditDic[index];
+                var doc = XmlDicHelper.DetailedEditDic[index];
                 if (doc?.DocumentElement == null) return;
                 // 遍历所有子节点
                 foreach (XmlNode groupXN in doc.DocumentElement.ChildNodes)
@@ -1090,11 +1062,11 @@ namespace ContextMenuManager.Methods
                     try
                     {
                         // 获取Guid列表
-                        List<Guid> guids = new List<Guid>();
-                        XmlNodeList guidList = groupXN.SelectNodes("Guid");
+                        var guids = new List<Guid>();
+                        var guidList = groupXN.SelectNodes("Guid");
                         foreach (XmlNode guidXN in guidList)
                         {
-                            if (!GuidEx.TryParse(guidXN.InnerText, out Guid guid)) continue;
+                            if (!GuidEx.TryParse(guidXN.InnerText, out var guid)) continue;
                             if (!File.Exists(GuidInfo.GetFilePath(guid))) continue;
                             guids.Add(guid);
                         }
@@ -1102,9 +1074,9 @@ namespace ContextMenuManager.Methods
 
                         // 获取groupItem列表
                         FoldGroupItem groupItem;
-                        bool isIniGroup = groupXN.SelectSingleNode("IsIniGroup") != null;
-                        string attribute = isIniGroup ? "FilePath" : "RegPath";
-                        ObjectPath.PathType pathType = isIniGroup ? ObjectPath.PathType.File : ObjectPath.PathType.Registry;
+                        var isIniGroup = groupXN.SelectSingleNode("IsIniGroup") != null;
+                        var attribute = isIniGroup ? "FilePath" : "RegPath";
+                        var pathType = isIniGroup ? ObjectPath.PathType.File : ObjectPath.PathType.Registry;
                         groupItem = new FoldGroupItem(groupXN.SelectSingleNode(attribute)?.InnerText, pathType);
 
                         string GetRuleFullRegPath(string regPath)
@@ -1112,7 +1084,8 @@ namespace ContextMenuManager.Methods
                             if (string.IsNullOrEmpty(regPath)) regPath = groupItem.GroupPath;
                             else if (regPath.StartsWith("\\")) regPath = groupItem.GroupPath + regPath;
                             return regPath;
-                        };
+                        }
+                        ;
 
                         // 遍历groupItem内所有Item节点
                         foreach (XmlElement itemXE in groupXN.SelectNodes("Item"))
@@ -1121,7 +1094,7 @@ namespace ContextMenuManager.Methods
                             {
                                 if (!XmlDicHelper.JudgeOSVersion(itemXE)) continue;
                                 RuleItem ruleItem;
-                                ItemInfo info = new ItemInfo();
+                                var info = new ItemInfo();
 
                                 // 获取文本、提示文本
                                 foreach (XmlElement textXE in itemXE.SelectNodes("Text"))
@@ -1138,7 +1111,7 @@ namespace ContextMenuManager.Methods
                                 int defaultValue = 0, maxValue = 0, minValue = 0;
                                 if (itemXE.SelectSingleNode("IsNumberItem") != null)
                                 {
-                                    XmlElement ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
+                                    var ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
                                     defaultValue = ruleXE.HasAttribute("Default") ? Convert.ToInt32(ruleXE.GetAttribute("Default")) : 0;
                                     maxValue = ruleXE.HasAttribute("Max") ? Convert.ToInt32(ruleXE.GetAttribute("Max")) : int.MaxValue;
                                     minValue = ruleXE.HasAttribute("Min") ? Convert.ToInt32(ruleXE.GetAttribute("Min")) : int.MinValue;
@@ -1147,11 +1120,11 @@ namespace ContextMenuManager.Methods
                                 // 建立三种类型的RuleItem
                                 if (isIniGroup)
                                 {
-                                    XmlElement ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
-                                    string iniPath = ruleXE.GetAttribute("FilePath");
+                                    var ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
+                                    var iniPath = ruleXE.GetAttribute("FilePath");
                                     if (iniPath.IsNullOrWhiteSpace()) iniPath = groupItem.GroupPath;
-                                    string section = ruleXE.GetAttribute("Section");
-                                    string keyName = ruleXE.GetAttribute("KeyName");
+                                    var section = ruleXE.GetAttribute("Section");
+                                    var keyName = ruleXE.GetAttribute("KeyName");
                                     if (itemXE.SelectSingleNode("IsNumberItem") != null)
                                     {
                                         var rule = new NumberIniRuleItem.IniRule
@@ -1164,9 +1137,9 @@ namespace ContextMenuManager.Methods
                                             MinValue = maxValue
                                         };
                                         ruleItem = new NumberIniRuleItem(rule, info);
-                                        string itemName = ruleItem.Text;
-                                        string infoText = info.Text;
-                                        int itemValue = ((NumberIniRuleItem)ruleItem).ItemValue;
+                                        var itemName = ruleItem.Text;
+                                        var infoText = info.Text;
+                                        var itemValue = ((NumberIniRuleItem)ruleItem).ItemValue;
                                         BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.NumberIniRuleItem, itemValue, currentScene);
                                     }
                                     else if (itemXE.SelectSingleNode("IsStringItem") != null)
@@ -1178,9 +1151,9 @@ namespace ContextMenuManager.Methods
                                             KeyName = keyName
                                         };
                                         ruleItem = new StringIniRuleItem(rule, info);
-                                        string itemName = ruleItem.Text;
-                                        string infoText = info.Text;
-                                        string itemValue = ((StringIniRuleItem)ruleItem).ItemValue;
+                                        var itemName = ruleItem.Text;
+                                        var infoText = info.Text;
+                                        var itemValue = ((StringIniRuleItem)ruleItem).ItemValue;
                                         BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.StringIniRuleItem, itemValue, currentScene);
                                     }
                                     else
@@ -1194,9 +1167,9 @@ namespace ContextMenuManager.Methods
                                             TurnOffValue = ruleXE.HasAttribute("Off") ? ruleXE.GetAttribute("Off") : null,
                                         };
                                         ruleItem = new VisbleIniRuleItem(rule, info);
-                                        string infoText = info.Text;
-                                        string itemName = ruleItem.Text;
-                                        bool itemVisible = ((VisbleIniRuleItem)ruleItem).ItemVisible;
+                                        var infoText = info.Text;
+                                        var itemName = ruleItem.Text;
+                                        var itemVisible = ((VisbleIniRuleItem)ruleItem).ItemVisible;
                                         BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.VisbleIniRuleItem, itemVisible, currentScene);
                                     }
                                 }
@@ -1204,7 +1177,7 @@ namespace ContextMenuManager.Methods
                                 {
                                     if (itemXE.SelectSingleNode("IsNumberItem") != null)
                                     {
-                                        XmlElement ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
+                                        var ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
                                         var rule = new NumberRegRuleItem.RegRule
                                         {
                                             RegPath = GetRuleFullRegPath(ruleXE.GetAttribute("RegPath")),
@@ -1215,40 +1188,40 @@ namespace ContextMenuManager.Methods
                                             MinValue = minValue
                                         };
                                         ruleItem = new NumberRegRuleItem(rule, info);
-                                        string itemName = ruleItem.Text;
-                                        string infoText = info.Text;
-                                        int itemValue = ((NumberRegRuleItem)ruleItem).ItemValue;// 备份值
+                                        var itemName = ruleItem.Text;
+                                        var infoText = info.Text;
+                                        var itemValue = ((NumberRegRuleItem)ruleItem).ItemValue;// 备份值
                                         BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.NumberRegRuleItem, itemValue, currentScene);
                                     }
                                     else if (itemXE.SelectSingleNode("IsStringItem") != null)
                                     {
-                                        XmlElement ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
+                                        var ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
                                         var rule = new StringRegRuleItem.RegRule
                                         {
                                             RegPath = GetRuleFullRegPath(ruleXE.GetAttribute("RegPath")),
                                             ValueName = ruleXE.GetAttribute("ValueName"),
                                         };
                                         ruleItem = new StringRegRuleItem(rule, info);
-                                        string itemName = ruleItem.Text;
-                                        string infoText = info.Text;
-                                        string itemValue = ((StringRegRuleItem)ruleItem).ItemValue; // 备份值
+                                        var itemName = ruleItem.Text;
+                                        var infoText = info.Text;
+                                        var itemValue = ((StringRegRuleItem)ruleItem).ItemValue; // 备份值
                                         BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.StringRegRuleItem, itemValue, currentScene);
                                     }
                                     else
                                     {
-                                        XmlNodeList ruleXNList = itemXE.SelectNodes("Rule");
+                                        var ruleXNList = itemXE.SelectNodes("Rule");
                                         var rules = new VisibleRegRuleItem.RegRule[ruleXNList.Count];
-                                        for (int i = 0; i < ruleXNList.Count; i++)
+                                        for (var i = 0; i < ruleXNList.Count; i++)
                                         {
-                                            XmlElement ruleXE = (XmlElement)ruleXNList[i];
+                                            var ruleXE = (XmlElement)ruleXNList[i];
                                             rules[i] = new VisibleRegRuleItem.RegRule
                                             {
                                                 RegPath = GetRuleFullRegPath(ruleXE.GetAttribute("RegPath")),
                                                 ValueName = ruleXE.GetAttribute("ValueName"),
                                                 ValueKind = XmlDicHelper.GetValueKind(ruleXE.GetAttribute("ValueKind"), RegistryValueKind.DWord)
                                             };
-                                            string turnOn = ruleXE.HasAttribute("On") ? ruleXE.GetAttribute("On") : null;
-                                            string turnOff = ruleXE.HasAttribute("Off") ? ruleXE.GetAttribute("Off") : null;
+                                            var turnOn = ruleXE.HasAttribute("On") ? ruleXE.GetAttribute("On") : null;
+                                            var turnOff = ruleXE.HasAttribute("Off") ? ruleXE.GetAttribute("Off") : null;
                                             switch (rules[i].ValueKind)
                                             {
                                                 case RegistryValueKind.Binary:
@@ -1268,9 +1241,9 @@ namespace ContextMenuManager.Methods
                                             }
                                         }
                                         ruleItem = new VisibleRegRuleItem(rules, info);
-                                        string itemName = ruleItem.Text;
-                                        string infoText = info.Text;
-                                        bool itemVisible = ((VisibleRegRuleItem)ruleItem).ItemVisible;  // 备份值
+                                        var itemName = ruleItem.Text;
+                                        var infoText = info.Text;
+                                        var itemVisible = ((VisibleRegRuleItem)ruleItem).ItemVisible;  // 备份值
                                         BackupRestoreItem(ruleItem, itemName, infoText, BackupItemType.VisibleRegRuleItem, itemVisible, currentScene);
                                     }
                                 }
@@ -1288,16 +1261,16 @@ namespace ContextMenuManager.Methods
 
         private void GetEnhanceMenuListItems()
         {
-            for (int index = 0; index < 2; index++)
+            for (var index = 0; index < 2; index++)
             {
-                XmlDocument doc = XmlDicHelper.EnhanceMenusDic[index];
+                var doc = XmlDicHelper.EnhanceMenusDic[index];
                 if (doc?.DocumentElement == null) return;
                 foreach (XmlNode xn in doc.DocumentElement.ChildNodes)
                 {
                     try
                     {
                         string text = null;
-                        string path = xn.SelectSingleNode("RegPath")?.InnerText;
+                        var path = xn.SelectSingleNode("RegPath")?.InnerText;
                         foreach (XmlElement textXE in xn.SelectNodes("Text"))
                         {
                             if (XmlDicHelper.JudgeCulture(textXE))
@@ -1307,13 +1280,13 @@ namespace ContextMenuManager.Methods
                         }
                         if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(text)) continue;
 
-                        FoldGroupItem groupItem = new FoldGroupItem(path, ObjectPath.PathType.Registry)
+                        var groupItem = new FoldGroupItem(path, ObjectPath.PathType.Registry)
                         {
                             Image = null,
                             Text = text
                         };
-                        XmlNode shellXN = xn.SelectSingleNode("Shell");
-                        XmlNode shellExXN = xn.SelectSingleNode("ShellEx");
+                        var shellXN = xn.SelectSingleNode("Shell");
+                        var shellExXN = xn.SelectSingleNode("ShellEx");
                         if (shellXN != null) GetEnhanceMenuListShellItems(shellXN, groupItem);
                         if (shellExXN != null) GetEnhanceMenuListShellExItems(shellExXN, groupItem);
                         groupItem.Dispose();
@@ -1330,9 +1303,9 @@ namespace ContextMenuManager.Methods
                 if (!XmlDicHelper.FileExists(itemXE)) continue;
                 if (!XmlDicHelper.JudgeCulture(itemXE)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXE)) continue;
-                string keyName = itemXE.GetAttribute("KeyName");
+                var keyName = itemXE.GetAttribute("KeyName");
                 if (keyName.IsNullOrWhiteSpace()) continue;
-                EnhanceShellItem item = new EnhanceShellItem()
+                var item = new EnhanceShellItem()
                 {
                     RegPath = $@"{groupItem.GroupPath}\shell\{keyName}",
                     FoldGroupItem = groupItem,
@@ -1347,21 +1320,21 @@ namespace ContextMenuManager.Methods
                 }
                 if (item.Image == null)
                 {
-                    XmlElement cmdXE = (XmlElement)itemXE.SelectSingleNode("SubKey/Command");
+                    var cmdXE = (XmlElement)itemXE.SelectSingleNode("SubKey/Command");
                     if (cmdXE != null)
                     {
                         Icon icon = null;
                         if (cmdXE.HasAttribute("Default"))
                         {
-                            string filePath = ObjectPath.ExtractFilePath(cmdXE.GetAttribute("Default"));
+                            var filePath = ObjectPath.ExtractFilePath(cmdXE.GetAttribute("Default"));
                             icon = ResourceIcon.GetIcon(filePath);
                         }
                         else
                         {
-                            XmlNode fileXE = cmdXE.SelectSingleNode("FileName");
+                            var fileXE = cmdXE.SelectSingleNode("FileName");
                             if (fileXE != null)
                             {
-                                string filePath = ObjectPath.ExtractFilePath(fileXE.InnerText);
+                                var filePath = ObjectPath.ExtractFilePath(fileXE.InnerText);
                                 icon = ResourceIcon.GetIcon(filePath);
                             }
                         }
@@ -1371,7 +1344,7 @@ namespace ContextMenuManager.Methods
                 }
                 if (item.Image == null) item.Image = AppImage.NotFound;
                 if (item.Text.IsNullOrWhiteSpace()) item.Text = keyName;
-                string tip = "";
+                var tip = "";
                 foreach (XmlElement tipXE in itemXE.SelectNodes("Tip"))
                 {
                     if (XmlDicHelper.JudgeCulture(tipXE)) tip = tipXE.GetAttribute("Value");
@@ -1382,14 +1355,14 @@ namespace ContextMenuManager.Methods
                     tip += AppString.Tip.CommandFiles;
                 }
                 ToolTipBox.SetToolTip(item.ChkVisible, tip);
-                string itemName = item.Text;
-                string regPath = item.RegPath;
-                string[] pathSegments = regPath.Split('\\');
-                int index = Array.LastIndexOf(pathSegments, "shell");
+                var itemName = item.Text;
+                var regPath = item.RegPath;
+                var pathSegments = regPath.Split('\\');
+                var index = Array.LastIndexOf(pathSegments, "shell");
                 string itemKey;
                 if (index != -1 && index < pathSegments.Length - 1)
                 {
-                    string[] targetFields = new string[pathSegments.Length - index];
+                    var targetFields = new string[pathSegments.Length - index];
                     Array.Copy(pathSegments, index, targetFields, 0, targetFields.Length);
                     itemKey = string.Join("\\", targetFields);
                 }
@@ -1397,7 +1370,7 @@ namespace ContextMenuManager.Methods
                 {
                     itemKey = regPath;
                 }
-                bool itemVisible = item.ItemVisible;
+                var itemVisible = item.ItemVisible;
                 BackupRestoreItem(item, itemName, itemKey, BackupItemType.EnhanceShellItem, itemVisible, currentScene);
             }
         }
@@ -1409,8 +1382,8 @@ namespace ContextMenuManager.Methods
                 if (!XmlDicHelper.FileExists(itemXN)) continue;
                 if (!XmlDicHelper.JudgeCulture(itemXN)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXN)) continue;
-                if (!GuidEx.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out Guid guid)) continue;
-                EnhanceShellExItem item = new EnhanceShellExItem
+                if (!GuidEx.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
+                var item = new EnhanceShellExItem
                 {
                     FoldGroupItem = groupItem,
                     ShellExPath = $@"{groupItem.GroupPath}\ShellEx",
@@ -1427,20 +1400,20 @@ namespace ContextMenuManager.Methods
                 }
                 if (item.Text.IsNullOrWhiteSpace()) item.Text = GuidInfo.GetText(guid);
                 if (item.DefaultKeyName.IsNullOrWhiteSpace()) item.DefaultKeyName = guid.ToString("B");
-                string tip = "";
+                var tip = "";
                 foreach (XmlElement tipXE in itemXN.SelectNodes("Tip"))
                 {
                     if (XmlDicHelper.JudgeCulture(tipXE)) tip = tipXE.GetAttribute("Text");
                 }
                 ToolTipBox.SetToolTip(item.ChkVisible, tip);
-                string itemName = item.Text;
-                string regPath = item.RegPath;
-                string[] pathSegments = regPath.Split('\\');
-                int index = Array.LastIndexOf(pathSegments, "ShellEx");
+                var itemName = item.Text;
+                var regPath = item.RegPath;
+                var pathSegments = regPath.Split('\\');
+                var index = Array.LastIndexOf(pathSegments, "ShellEx");
                 string itemKey;
                 if (index != -1 && index < pathSegments.Length - 1)
                 {
-                    string[] targetFields = new string[pathSegments.Length - index];
+                    var targetFields = new string[pathSegments.Length - index];
                     Array.Copy(pathSegments, index, targetFields, 0, targetFields.Length);
                     itemKey = string.Join("\\", targetFields);
                 }
@@ -1448,7 +1421,7 @@ namespace ContextMenuManager.Methods
                 {
                     itemKey = regPath;
                 }
-                bool itemVisible = item.ItemVisible;
+                var itemVisible = item.ItemVisible;
                 BackupRestoreItem(item, itemName, itemKey, BackupItemType.EnhanceShellExItem, itemVisible, currentScene);
             }
         }
@@ -1457,22 +1430,22 @@ namespace ContextMenuManager.Methods
     public sealed class BackupList
     {
         // 元数据缓存区
-        public static MetaData metaData = new MetaData();  
+        public static MetaData metaData = new();
 
         // 备份列表/恢复列表缓存区
-        private static List<BackupItem> backupRestoreList = new List<BackupItem>();
+        private static List<BackupItem> backupRestoreList = new();
 
         // 单场景恢复列表暂存区
-        public static List<BackupItem> sceneRestoreList = new List<BackupItem>();
+        public static List<BackupItem> sceneRestoreList = new();
 
         // 创建一个XmlSerializer实例并设置根节点
-        private static readonly XmlSerializer backupDataSerializer = new XmlSerializer(typeof(BackupData), 
+        private static readonly XmlSerializer backupDataSerializer = new(typeof(BackupData),
             new XmlRootAttribute("ContextMenuManager"));
         // 自定义命名空间
-        private static readonly XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
+        private static readonly XmlSerializerNamespaces namespaces = new();
 
         // 创建一个XmlSerializer实例并设置根节点
-        private static readonly XmlSerializer metaDataSerializer = new XmlSerializer(typeof(MetaData),
+        private static readonly XmlSerializer metaDataSerializer = new(typeof(MetaData),
             new XmlRootAttribute("MetaData"));
 
         static BackupList()
@@ -1515,24 +1488,22 @@ namespace ContextMenuManager.Methods
         public static void SaveBackupList(string filePath)
         {
             // 创建一个父对象，并将BackupList和MetaData对象包装到其中
-            BackupData myData = new BackupData()
+            var myData = new BackupData()
             {
                 MetaData = metaData,
                 BackupList = backupRestoreList,
             };
 
             // 序列化root对象并保存到XML文档
-            using (FileStream stream = new FileStream(filePath, FileMode.Create))
-            {
-                backupDataSerializer.Serialize(stream, myData, namespaces);
-            }
+            using var stream = new FileStream(filePath, FileMode.Create);
+            backupDataSerializer.Serialize(stream, myData, namespaces);
         }
 
         public static void LoadBackupList(string filePath)
         {
             // 反序列化XML文件并获取根对象
             BackupData myData;
-            using (FileStream stream = new FileStream(filePath, FileMode.Open))
+            using (var stream = new FileStream(filePath, FileMode.Open))
             {
                 myData = (BackupData)backupDataSerializer.Deserialize(stream);
             }
@@ -1552,7 +1523,7 @@ namespace ContextMenuManager.Methods
         {
             sceneRestoreList.Clear();
             // 根据backupScene加载列表
-            foreach (BackupItem item in backupRestoreList)
+            foreach (var item in backupRestoreList)
             {
                 if (item.BackupScene == scene)
                 {
@@ -1564,21 +1535,17 @@ namespace ContextMenuManager.Methods
         public static void LoadBackupDataMetaData(string filePath)
         {
             // 反序列化root对象并保存到XML文档
-            using (FileStream stream = new FileStream(filePath, FileMode.Open))
-            {
-                // 读取 <MetaData> 节点
-                using (XmlReader reader = XmlReader.Create(stream))
-                {
-                    // 寻找第一个<MetaData>节点
-                    reader.ReadToFollowing("MetaData");
+            using var stream = new FileStream(filePath, FileMode.Open);
+            // 读取 <MetaData> 节点
+            using var reader = XmlReader.Create(stream);
+            // 寻找第一个<MetaData>节点
+            reader.ReadToFollowing("MetaData");
 
-                    // 清理metaData变量
-                    metaData = null;
+            // 清理metaData变量
+            metaData = null;
 
-                    // 反序列化<MetaData>节点为MetaData对象
-                    metaData = (MetaData)metaDataSerializer.Deserialize(reader);
-                }
-            }
+            // 反序列化<MetaData>节点为MetaData对象
+            metaData = (MetaData)metaDataSerializer.Deserialize(reader);
         }
     }
 

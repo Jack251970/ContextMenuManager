@@ -19,8 +19,8 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            StringBuilder sb = new StringBuilder(IconPath, MAXLENGTH);
-            bool flag = PickIconDlg(hwndOwner, sb, MAXLENGTH, ref iconIndex);
+            var sb = new StringBuilder(IconPath, MAXLENGTH);
+            var flag = PickIconDlg(hwndOwner, sb, MAXLENGTH, ref iconIndex);
             IconPath = flag ? sb.ToString() : null;
             return flag;
         }

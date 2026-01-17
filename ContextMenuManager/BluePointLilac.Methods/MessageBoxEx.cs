@@ -21,10 +21,8 @@ namespace BluePointLilac.Methods
             MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon boxIcon = MessageBoxIcon.None,
             IWin32Window owner = null, DialogResult defaultResult = DialogResult.None, bool canMoveParent = true)
         {
-            using(MessageBoxForm frm = new MessageBoxForm(text, caption, buttons, boxIcon, defaultResult, canMoveParent))
-            {
-                return frm.ShowDialog(owner);
-            }
+            using var frm = new MessageBoxForm(text, caption, buttons, boxIcon, defaultResult, canMoveParent);
+            return frm.ShowDialog(owner);
         }
 
         /// <summary>弹出一个消息框</summary>
@@ -42,14 +40,12 @@ namespace BluePointLilac.Methods
             IWin32Window owner = null, string defaultResult = null,
             bool canMoveParent = true, bool closeBox = true)
         {
-            using(MessageBoxForm frm = new MessageBoxForm(text, caption, buttonTexts, boxImaage, defaultResult, canMoveParent, closeBox))
-            {
-                frm.ShowDialog(owner);
-                return frm.Tag?.ToString();
-            }
+            using var frm = new MessageBoxForm(text, caption, buttonTexts, boxImaage, defaultResult, canMoveParent, closeBox);
+            frm.ShowDialog(owner);
+            return frm.Tag?.ToString();
         }
 
-        sealed class MessageBoxForm : RForm
+        private sealed class MessageBoxForm : RForm
         {
             private MessageBoxForm(string text, string caption, bool canMoveParent)
             {
@@ -70,7 +66,7 @@ namespace BluePointLilac.Methods
             {
                 CloseBox = closeBox;
                 InitializeComponents(buttonTexts, boxImage);
-                foreach(Button button in flpButtons.Controls)
+                foreach (Button button in flpButtons.Controls)
                 {
                     button.Click += (sender, e) =>
                     {
@@ -79,7 +75,7 @@ namespace BluePointLilac.Methods
                     };
                     Shown += (sender, e) =>
                     {
-                        if(button.Text == defaultResult) button.Focus();
+                        if (button.Text == defaultResult) button.Focus();
                     };
                 }
             }
@@ -90,7 +86,7 @@ namespace BluePointLilac.Methods
             {
                 string[] buttonTexts = null;
                 Image boxImage = null;
-                switch(buttons)
+                switch (buttons)
                 {
                     case MessageBoxButtons.OK:
                         buttonTexts = new[] { "OK" }; break;
@@ -105,7 +101,7 @@ namespace BluePointLilac.Methods
                     case MessageBoxButtons.RetryCancel:
                         buttonTexts = new[] { "Cancel", "&Retry" }; break;
                 }
-                switch(boxIcon)
+                switch (boxIcon)
                 {
                     case MessageBoxIcon.Question:
                         boxImage = MessageBoxImage.Question; break;
@@ -117,12 +113,12 @@ namespace BluePointLilac.Methods
                         boxImage = MessageBoxImage.Information; break;
                 }
                 InitializeComponents(buttonTexts, boxImage);
-                foreach(Button button in flpButtons.Controls)
+                foreach (Button button in flpButtons.Controls)
                 {
-                    switch(button.Text)
+                    switch (button.Text)
                     {
                         case "OK":
-                            if(buttons == MessageBoxButtons.OK)
+                            if (buttons == MessageBoxButtons.OK)
                             {
                                 CancelButton = button;
                                 FormClosing += (sender, e) => button.PerformClick();
@@ -144,7 +140,7 @@ namespace BluePointLilac.Methods
                     }
                     Shown += (sender, e) =>
                     {
-                        if(button.DialogResult == defaultResult) button.Focus();
+                        if (button.DialogResult == defaultResult) button.Focus();
                     };
                 }
                 CloseBox = CancelButton != null;
@@ -153,11 +149,11 @@ namespace BluePointLilac.Methods
             private void InitializeComponents(string[] buttonTexts, Image boxImage)
             {
                 SuspendLayout();
-                int w1 = 36.DpiZoom();
-                Size buttonSize = new Size(75, 27).DpiZoom();
-                for(int i = 0; i < buttonTexts.Length; i++)
+                var w1 = 36.DpiZoom();
+                var buttonSize = new Size(75, 27).DpiZoom();
+                for (var i = 0; i < buttonTexts.Length; i++)
                 {
-                    Button button = new Button
+                    var button = new Button
                     {
                         Margin = new Padding(12, 0, 0, 0).DpiZoom(),
                         Text = buttonTexts[i],
@@ -170,7 +166,7 @@ namespace BluePointLilac.Methods
                     w1 += button.Width + button.Margin.Horizontal;
                 }
                 picIcon.Image = boxImage;
-                if(boxImage == null)
+                if (boxImage == null)
                 {
                     picIcon.Visible = false;
                     lblText.Left = picIcon.Left;
@@ -178,18 +174,18 @@ namespace BluePointLilac.Methods
                 pnlInfo.Controls.AddRange(new Control[] { picIcon, lblText });
                 Controls.AddRange(new Control[] { pnlInfo, flpButtons });
                 pnlInfo.Height = lblText.Height + lblText.Top * 2;
-                if(picIcon.Height > lblText.Height / 2)
+                if (picIcon.Height > lblText.Height / 2)
                 {
                     picIcon.Top = (pnlInfo.Height - picIcon.Height) / 2;
                 }
-                int w2 = lblText.Right + picIcon.Left;
-                int w = Math.Max(w1, w2);
-                int h = pnlInfo.Height + flpButtons.Height;
+                var w2 = lblText.Right + picIcon.Left;
+                var w = Math.Max(w1, w2);
+                var h = pnlInfo.Height + flpButtons.Height;
                 ClientSize = new Size(w, h);
                 ResumeLayout();
             }
 
-            readonly FlowLayoutPanel flpButtons = new FlowLayoutPanel
+            private readonly FlowLayoutPanel flpButtons = new()
             {
                 FlowDirection = FlowDirection.RightToLeft,
                 Padding = new Padding(12.DpiZoom()),
@@ -197,18 +193,18 @@ namespace BluePointLilac.Methods
                 Height = 50.DpiZoom(),
                 WrapContents = false,
             };
-            readonly Panel pnlInfo = new Panel
+            private readonly Panel pnlInfo = new()
             {
                 ForeColor = DarkModeHelper.FormFore,
                 BackColor = DarkModeHelper.FormBack,
                 Dock = DockStyle.Top,
             };
-            readonly PictureBox picIcon = new PictureBox
+            private readonly PictureBox picIcon = new()
             {
                 SizeMode = PictureBoxSizeMode.AutoSize,
                 Location = new Point(32, 32).DpiZoom(),
             };
-            readonly Label lblText = new Label
+            private readonly Label lblText = new()
             {
                 ForeColor = DarkModeHelper.FormFore,
                 BackColor = DarkModeHelper.FormBack,
@@ -216,29 +212,29 @@ namespace BluePointLilac.Methods
                 AutoSize = true,
             };
 
-            readonly bool CloseBox = true;//关闭按钮可用性
-            readonly bool CanMoveParent = true;//可移动父窗体
+            private readonly bool CloseBox = true;//关闭按钮可用性
+            private readonly bool CanMoveParent = true;//可移动父窗体
 
             protected override CreateParams CreateParams
             {
                 get
                 {
                     const int CP_NOCLOSE_BUTTON = 0x200;
-                    CreateParams cp = base.CreateParams;
-                    if(!CloseBox) cp.ClassStyle |= CP_NOCLOSE_BUTTON; //禁用关闭按钮
+                    var cp = base.CreateParams;
+                    if (!CloseBox) cp.ClassStyle |= CP_NOCLOSE_BUTTON; //禁用关闭按钮
                     return cp;
                 }
             }
 
             protected override void OnLoad(EventArgs e)
             {
-                if(Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
-                if(Owner == null) StartPosition = FormStartPosition.CenterScreen;
+                if (Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
+                if (Owner == null) StartPosition = FormStartPosition.CenterScreen;
                 else
                 {
                     TopMost = true;
                     StartPosition = FormStartPosition.CenterParent;
-                    if(CanMoveParent) this.MoveAsMove(Owner);
+                    if (CanMoveParent) this.MoveAsMove(Owner);
                 }
                 base.OnLoad(e);
             }
@@ -255,10 +251,8 @@ namespace BluePointLilac.Methods
 
         private static Image GetImage(int index)
         {
-            using(Icon icon = ResourceIcon.GetIcon("imageres.dll", index))
-            {
-                return icon?.ToBitmap();
-            }
+            using var icon = ResourceIcon.GetIcon("imageres.dll", index);
+            return icon?.ToBitmap();
         }
     }
 }

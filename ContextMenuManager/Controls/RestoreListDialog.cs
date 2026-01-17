@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class RestoreListDialog : CommonDialog
+    internal sealed class RestoreListDialog : CommonDialog
     {
         public List<RestoreChangedItem> RestoreData { get; set; }
 
@@ -16,22 +16,20 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            MainForm mainForm = (MainForm)Control.FromHandle(hwndOwner);
+            var mainForm = (MainForm)Control.FromHandle(hwndOwner);
             if (mainForm != null)
             {
-                using (RestoreListForm frm = new RestoreListForm())
-                {
-                    frm.ShowDonateList(RestoreData);
-                    frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
-                    frm.Top = mainForm.Top + 150.DpiZoom();
-                    frm.TopMost = true;
-                    frm.ShowDialog();
-                }
+                using var frm = new RestoreListForm();
+                frm.ShowDonateList(RestoreData);
+                frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
+                frm.Top = mainForm.Top + 150.DpiZoom();
+                frm.TopMost = true;
+                frm.ShowDialog();
             }
             return true;
         }
 
-        sealed class RestoreListForm : RForm
+        private sealed class RestoreListForm : RForm
         {
             public RestoreListForm()
             {
@@ -53,7 +51,7 @@ namespace ContextMenuManager.Controls
                 ApplyDarkModeToDataGridView(dgvRestore);
             }
 
-            readonly DataGridView dgvRestore = new DataGridView
+            private readonly DataGridView dgvRestore = new()
             {
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
@@ -67,14 +65,15 @@ namespace ContextMenuManager.Controls
                 ReadOnly = true
             };
 
-            readonly Label lblRestore = new Label {
+            private readonly Label lblRestore = new()
+            {
                 Width = 480.DpiZoom()
             };
 
             protected override void OnResize(EventArgs e)
             {
                 base.OnResize(e);
-                int a = 20.DpiZoom();
+                var a = 20.DpiZoom();
                 lblRestore.Location = new Point(a, a);
                 lblRestore.Width = ClientSize.Width;
                 dgvRestore.Location = new Point(a, lblRestore.Bottom + a);
@@ -84,21 +83,21 @@ namespace ContextMenuManager.Controls
 
             public void ShowDonateList(List<RestoreChangedItem> restoreList)
             {
-                string[] heads = new[] { AppString.Dialog.ItemLocation, AppString.Dialog.RestoredValue };
+                var heads = new[] { AppString.Dialog.ItemLocation, AppString.Dialog.RestoredValue };
                 dgvRestore.ColumnCount = heads.Length;
                 dgvRestore.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                int restoreCount = restoreList.Count;
-                for (int n = 0; n < heads.Length; n++)
+                var restoreCount = restoreList.Count;
+                for (var n = 0; n < heads.Length; n++)
                 {
                     dgvRestore.Columns[n].HeaderText = heads[n];
                 }
-                for (int n = 0; n < restoreCount; n++)
+                for (var n = 0; n < restoreCount; n++)
                 {
-                    RestoreChangedItem item = restoreList[n];
-                    Scenes scene = item.BackupScene;
-                    string sceneText = BackupHelper.BackupScenesText[(int)scene];
+                    var item = restoreList[n];
+                    var scene = item.BackupScene;
+                    var sceneText = BackupHelper.BackupScenesText[(int)scene];
                     string[] values;
-                    string changedValue = item.ItemData;
+                    var changedValue = item.ItemData;
                     if (changedValue == false.ToString()) changedValue = AppString.Dialog.Disabled;
                     if (changedValue == true.ToString()) changedValue = AppString.Dialog.Enabled;
                     if (Array.IndexOf(BackupHelper.TypeBackupScenesText, sceneText) != -1)

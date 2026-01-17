@@ -1,7 +1,6 @@
 ﻿using BluePointLilac.Methods;
 using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -23,20 +22,20 @@ namespace BluePointLilac.Controls
             MainBody.Dock = DockStyle.Left;
             StatusBar.CanMoveForm();
             ToolBar.CanMoveForm();
-            
+
             // 初始化主题
             DarkModeHelper.Initialize();
             DarkModeHelper.ThemeChanged += OnThemeChanged;
             DarkModeHelper.ApplyDarkModeToForm(this);
             Adjust();
-            
+
             ResumeLayout();
         }
 
-        public readonly MyToolBar ToolBar = new MyToolBar();
-        public readonly MySideBar SideBar = new MySideBar();
-        public readonly MyStatusBar StatusBar = new MyStatusBar();
-        public readonly MyListBox MainBody = new MyListBox();
+        public readonly MyToolBar ToolBar = new();
+        public readonly MySideBar SideBar = new();
+        public readonly MyStatusBar StatusBar = new();
+        public readonly MyListBox MainBody = new();
 
         /// <summary>窗体移动时是否临时挂起MainBody</summary>
         public bool SuspendMainBodyWhenMove { get; set; } = false;
@@ -60,11 +59,11 @@ namespace BluePointLilac.Controls
             const int SC_MOVE = 0xF012;
             const int SC_SIZE = 0xF000;
             const int HT_CAPTION = 0x2;
-            bool suspend = false;//临时挂起MainBody
-            switch(m.Msg)
+            var suspend = false;//临时挂起MainBody
+            switch (m.Msg)
             {
                 case WM_SYSCOMMAND:
-                    switch(m.WParam.ToInt32())
+                    switch (m.WParam.ToInt32())
                     {
                         //解决控件过多移动窗体时延迟问题
                         case SC_MOVE:
@@ -79,7 +78,7 @@ namespace BluePointLilac.Controls
                     }
                     break;
                 case WM_NCLBUTTONDBLCLK:
-                    switch(m.WParam.ToInt32())
+                    switch (m.WParam.ToInt32())
                     {
                         //双击标题栏最大化和还原窗口
                         case HT_CAPTION:
@@ -87,7 +86,7 @@ namespace BluePointLilac.Controls
                     }
                     break;
             }
-            if(suspend)
+            if (suspend)
             {
                 SuspendLayout();
                 MainBody.SuspendLayout();

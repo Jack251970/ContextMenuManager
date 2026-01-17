@@ -1,4 +1,4 @@
-﻿﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -16,16 +16,16 @@ namespace BluePointLilac.Controls
             BackColor = DarkModeHelper.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
-            
+
             // 监听主题变化
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
-        const int WM_SETFOCUS = 0x0007;
-        const int WM_KILLFOCUS = 0x0008;
+        private const int WM_SETFOCUS = 0x0007;
+        private const int WM_KILLFOCUS = 0x0008;
         protected override void WndProc(ref Message m)
         {
-            switch(m.Msg)
+            switch (m.Msg)
             {
                 case WM_SETFOCUS:
                     m.Msg = WM_KILLFOCUS; break;
@@ -38,17 +38,17 @@ namespace BluePointLilac.Controls
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
-            if(firstEnter) Focus();
+            if (firstEnter) Focus();
             firstEnter = false;
         }
-        
+
         // 主题变化事件处理
         private void OnThemeChanged(object sender, EventArgs e)
         {
             ForeColor = DarkModeHelper.FormFore;
             BackColor = DarkModeHelper.FormBack;
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -70,17 +70,17 @@ namespace BluePointLilac.Controls
             BackColor = DarkModeHelper.FormBack;
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
-            
+
             // 监听主题变化
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
-        const int WM_SETFOCUS = 0x0007;
-        const int WM_KILLFOCUS = 0x0008;
+        private const int WM_SETFOCUS = 0x0007;
+        private const int WM_KILLFOCUS = 0x0008;
 
         protected override void WndProc(ref Message m)
         {
-            switch(m.Msg)
+            switch (m.Msg)
             {
                 case WM_SETFOCUS:
                     m.Msg = WM_KILLFOCUS; break;
@@ -93,7 +93,7 @@ namespace BluePointLilac.Controls
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
-            if(firstEnter) Focus();
+            if (firstEnter) Focus();
             firstEnter = false;
         }
 
@@ -102,14 +102,14 @@ namespace BluePointLilac.Controls
             base.OnLinkClicked(e);
             ExternalProgram.OpenWebUrl(e.LinkText);
         }
-        
+
         // 主题变化事件处理
         private void OnThemeChanged(object sender, EventArgs e)
         {
             ForeColor = DarkModeHelper.FormFore;
             BackColor = DarkModeHelper.FormBack;
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

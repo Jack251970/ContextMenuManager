@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class IEItem : MyListItem, ITsiRegPathItem, ITsiFilePathItem, ITsiRegDeleteItem, ITsiCommandItem,
+    internal sealed class IEItem : MyListItem, ITsiRegPathItem, ITsiFilePathItem, ITsiRegDeleteItem, ITsiCommandItem,
         ITsiWebSearchItem, ITsiTextItem, ITsiRegExportItem, IBtnShowMenuItem, IChkVisibleItem
     {
         public static readonly string[] MeParts = { "MenuExt", "-MenuExt" };
@@ -41,9 +41,9 @@ namespace ContextMenuManager.Controls
             get => RegistryEx.GetKeyName(RegPath);
             set
             {
-                string newPath = $@"{RegistryEx.GetParentPath(RegPath)}\{value.Replace("\\", "")}";
-                string defaultValue = Registry.GetValue(newPath, "", null)?.ToString();
-                if(!defaultValue.IsNullOrWhiteSpace())
+                var newPath = $@"{RegistryEx.GetParentPath(RegPath)}\{value.Replace("\\", "")}";
+                var defaultValue = Registry.GetValue(newPath, "", null)?.ToString();
+                if (!defaultValue.IsNullOrWhiteSpace())
                 {
                     AppMessageBox.Show(AppString.Message.HasBeenAdded);
                 }
@@ -90,7 +90,7 @@ namespace ContextMenuManager.Controls
         public RegLocationMenuItem TsiRegLocation { get; set; }
         public RegExportMenuItem TsiRegExport { get; set; }
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
-        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
 
         private void InitializeComponents()
         {

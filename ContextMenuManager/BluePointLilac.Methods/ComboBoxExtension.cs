@@ -1,6 +1,5 @@
-using BluePointLilac.Controls;
-using System;
 using ContextMenuManager.BluePointLilac.Controls;
+using System;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Methods
@@ -11,8 +10,8 @@ namespace BluePointLilac.Methods
         {
             cmb.DropDown += (sender, e) =>
             {
-                int maxWidth = 0;
-                foreach(var item in cmb.Items)
+                var maxWidth = 0;
+                foreach (var item in cmb.Items)
                 {
                     maxWidth = Math.Max(maxWidth, TextRenderer.MeasureText(item.ToString(), cmb.Font).Width);
                 }

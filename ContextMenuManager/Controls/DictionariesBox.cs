@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class DictionariesBox : TabControl
+    internal sealed class DictionariesBox : TabControl
     {
         public DictionariesBox()
         {
@@ -21,10 +21,10 @@ namespace ContextMenuManager.Controls
             Font = SystemFonts.MenuFont;
             Font = new Font(Font.FontFamily, Font.Size + 1F);
             cms.Items.AddRange(items);
-            for(int i = 0; i < 6; i++)
+            for (var i = 0; i < 6; i++)
             {
                 boxs[i] = new ReadOnlyRichTextBox { Parent = pages[i] };
-                if(i > 0) boxs[i].ContextMenuStrip = cms;
+                if (i > 0) boxs[i].ContextMenuStrip = cms;
             }
             items[0].Click += (sender, e) => ExternalProgram.OpenNotepadWithText(GetInitialText());
             items[2].Click += (sender, e) => SaveFile();
@@ -37,23 +37,23 @@ namespace ContextMenuManager.Controls
             ResumeLayout();
         }
 
-        readonly TabPage[] pages =
+        private readonly TabPage[] pages =
         {
-            new TabPage(AppString.Other.DictionaryDescription),
-            new TabPage(AppString.SideBar.AppLanguage),
-            new TabPage(AppString.Other.GuidInfosDictionary),
-            new TabPage(AppString.SideBar.DetailedEdit),
-            new TabPage(AppString.SideBar.EnhanceMenu),
-            new TabPage(AppString.Other.UwpMode)
+            new(AppString.Other.DictionaryDescription),
+            new(AppString.SideBar.AppLanguage),
+            new(AppString.Other.GuidInfosDictionary),
+            new(AppString.SideBar.DetailedEdit),
+            new(AppString.SideBar.EnhanceMenu),
+            new(AppString.Other.UwpMode)
         };
-        readonly ReadOnlyRichTextBox[] boxs = new ReadOnlyRichTextBox[6];
-        readonly PictureButton btnOpenDir = new PictureButton(AppImage.Open)
+        private readonly ReadOnlyRichTextBox[] boxs = new ReadOnlyRichTextBox[6];
+        private readonly PictureButton btnOpenDir = new(AppImage.Open)
         {
             Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
             Left = 0
         };
-        readonly ContextMenuStrip cms = new ContextMenuStrip();
-        readonly ToolStripItem[] items =
+        private readonly ContextMenuStrip cms = new();
+        private readonly ToolStripItem[] items =
         {
             new RToolStripMenuItem(AppString.Menu.Edit),
             new RToolStripSeparator(),
@@ -62,65 +62,56 @@ namespace ContextMenuManager.Controls
 
         private void SaveFile()
         {
-            using(SaveFileDialog dlg = new SaveFileDialog())
+            using var dlg = new SaveFileDialog();
+            var dirPath = AppConfig.UserDicsDir;
+            switch (SelectedIndex)
             {
-                string dirPath = AppConfig.UserDicsDir;
-                switch(SelectedIndex)
-                {
-                    case 1:
-                        dirPath = AppConfig.LangsDir;
-                        dlg.FileName = AppConfig.ZH_CNINI;
-                        break;
-                    case 2:
-                        dlg.FileName = AppConfig.GUIDINFOSDICINI;
-                        break;
-                    case 3:
-                        dlg.FileName = AppConfig.DETAILEDEDITDICXML;
-                        break;
-                    case 4:
-                        dlg.FileName = AppConfig.ENHANCEMENUSICXML;
-                        break;
-                    case 5:
-                        dlg.FileName = AppConfig.UWPMODEITEMSDICXML;
-                        break;
-                }
-                dlg.Filter = $"{dlg.FileName}|*{Path.GetExtension(dlg.FileName)}";
-                Directory.CreateDirectory(dirPath);
-                dlg.InitialDirectory = dirPath;
-                if(dlg.ShowDialog() == DialogResult.OK)
-                {
-                    File.WriteAllText(dlg.FileName, GetInitialText(), Encoding.Unicode);
-                }
+                case 1:
+                    dirPath = AppConfig.LangsDir;
+                    dlg.FileName = AppConfig.ZH_CNINI;
+                    break;
+                case 2:
+                    dlg.FileName = AppConfig.GUIDINFOSDICINI;
+                    break;
+                case 3:
+                    dlg.FileName = AppConfig.DETAILEDEDITDICXML;
+                    break;
+                case 4:
+                    dlg.FileName = AppConfig.ENHANCEMENUSICXML;
+                    break;
+                case 5:
+                    dlg.FileName = AppConfig.UWPMODEITEMSDICXML;
+                    break;
+            }
+            dlg.Filter = $"{dlg.FileName}|*{Path.GetExtension(dlg.FileName)}";
+            Directory.CreateDirectory(dirPath);
+            dlg.InitialDirectory = dirPath;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllText(dlg.FileName, GetInitialText(), Encoding.Unicode);
             }
         }
 
         private string GetInitialText()
         {
-            switch(SelectedIndex)
+            return SelectedIndex switch
             {
-                case 0:
-                    return AppString.Other.Dictionaries;
-                case 1:
-                    return Properties.Resources.AppLanguageDic;
-                case 2:
-                    return Properties.Resources.GuidInfosDic;
-                case 3:
-                    return Properties.Resources.DetailedEditDic;
-                case 4:
-                    return Properties.Resources.EnhanceMenusDic;
-                case 5:
-                    return Properties.Resources.UwpModeItemsDic;
-                default:
-                    return string.Empty;
-            }
+                0 => AppString.Other.Dictionaries,
+                1 => Properties.Resources.AppLanguageDic,
+                2 => Properties.Resources.GuidInfosDic,
+                3 => Properties.Resources.DetailedEditDic,
+                4 => Properties.Resources.EnhanceMenusDic,
+                5 => Properties.Resources.UwpModeItemsDic,
+                _ => string.Empty,
+            };
         }
 
         public void LoadText()
         {
-            int index = SelectedIndex;
-            if(boxs[index].Text.Length > 0) return;
+            var index = SelectedIndex;
+            if (boxs[index].Text.Length > 0) return;
             Action<string> action = null;
-            switch(index)
+            switch (index)
             {
                 case 0:
                 case 1:

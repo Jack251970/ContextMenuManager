@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class DetailedEditDialog : CommonDialog
+    internal sealed class DetailedEditDialog : CommonDialog
     {
         public Guid GroupGuid { get; set; }
 
@@ -13,19 +13,17 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(SubItemsForm frm = new SubItemsForm())
-            using(DetailedEditList list = new DetailedEditList())
-            {
-                var location = GuidInfo.GetIconLocation(GroupGuid);
-                frm.Icon = ResourceIcon.GetIcon(location.IconPath, location.IconIndex);
-                frm.Text = AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid));
-                frm.TopMost = true;
-                frm.AddList(list);
-                list.GroupGuid = GroupGuid;
-                list.UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid];
-                list.LoadItems();
-                frm.ShowDialog();
-            }
+            using var frm = new SubItemsForm();
+            using var list = new DetailedEditList();
+            var location = GuidInfo.GetIconLocation(GroupGuid);
+            frm.Icon = ResourceIcon.GetIcon(location.IconPath, location.IconIndex);
+            frm.Text = AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid));
+            frm.TopMost = true;
+            frm.AddList(list);
+            list.GroupGuid = GroupGuid;
+            list.UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid];
+            list.LoadItems();
+            frm.ShowDialog();
             return false;
         }
     }

@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class GuidBlockedList : MyList // 其他规则 GUID锁
+    internal sealed class GuidBlockedList : MyList // 其他规则 GUID锁
     {
         public const string HKLMBLOCKED = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked";
         public const string HKCUBLOCKED = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked";
@@ -23,49 +23,45 @@ namespace ContextMenuManager.Controls
 
         private void LoadBlockedItems()
         {
-            List<string> values = new List<string>();
-            foreach(string path in BlockedPaths)
+            var values = new List<string>();
+            foreach (var path in BlockedPaths)
             {
-                using(RegistryKey key = RegistryEx.GetRegistryKey(path))
+                using var key = RegistryEx.GetRegistryKey(path);
+                if (key == null) continue;
+                foreach (var value in key.GetValueNames())
                 {
-                    if(key == null) continue;
-                    foreach(string value in key.GetValueNames())
-                    {
-                        if(values.Contains(value, StringComparer.OrdinalIgnoreCase)) continue;
-                        AddItem(new GuidBlockedItem(value));
-                        values.Add(value);
-                    }
+                    if (values.Contains(value, StringComparer.OrdinalIgnoreCase)) continue;
+                    AddItem(new GuidBlockedItem(value));
+                    values.Add(value);
                 }
             }
         }
 
         private void AddNewItem()
         {
-            NewItem newItem = new NewItem(AppString.Other.AddGuidBlockedItem);
+            var newItem = new NewItem(AppString.Other.AddGuidBlockedItem);
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using(InputDialog dlg = new InputDialog { Title = AppString.Dialog.InputGuid })
+                using var dlg = new InputDialog { Title = AppString.Dialog.InputGuid };
+                if (GuidEx.TryParse(Clipboard.GetText(), out var guid)) dlg.Text = guid.ToString();
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (GuidEx.TryParse(dlg.Text, out guid))
                 {
-                    if(GuidEx.TryParse(Clipboard.GetText(), out Guid guid)) dlg.Text = guid.ToString();
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
-                    if(GuidEx.TryParse(dlg.Text, out guid))
+                    var value = guid.ToString("B");
+                    Array.ForEach(BlockedPaths, path => Registry.SetValue(path, value, ""));
+                    for (var i = 1; i < Controls.Count; i++)
                     {
-                        string value = guid.ToString("B");
-                        Array.ForEach(BlockedPaths, path => Registry.SetValue(path, value, ""));
-                        for(int i = 1; i < Controls.Count; i++)
+                        if (((GuidBlockedItem)Controls[i]).Guid.Equals(guid))
                         {
-                            if(((GuidBlockedItem)Controls[i]).Guid.Equals(guid))
-                            {
-                                AppMessageBox.Show(AppString.Message.HasBeenAdded);
-                                return;
-                            }
+                            AppMessageBox.Show(AppString.Message.HasBeenAdded);
+                            return;
                         }
-                        InsertItem(new GuidBlockedItem(value), 1);
-                        ExplorerRestarter.Show();
                     }
-                    else AppMessageBox.Show(AppString.Message.MalformedGuid);
+                    InsertItem(new GuidBlockedItem(value), 1);
+                    ExplorerRestarter.Show();
                 }
+                else AppMessageBox.Show(AppString.Message.MalformedGuid);
             };
         }
     }

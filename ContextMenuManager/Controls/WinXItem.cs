@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class WinXItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, IBtnMoveUpDownItem, ITsiAdministratorItem,
+    internal sealed class WinXItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, IBtnMoveUpDownItem, ITsiAdministratorItem,
         ITsiTextItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiDeleteItem, ITsiShortcutCommandItem
     {
         public WinXItem(string filePath, FoldGroupItem group)
@@ -40,7 +40,7 @@ namespace ContextMenuManager.Controls
         {
             if (WinOsVersion.Current >= WinOsVersion.Win11)
             {
-                keyPath = FilePath.Substring((ItemVisible ? WinXList.WinXPath : WinXList.BackupWinXPath).Length);
+                keyPath = FilePath[(ItemVisible ? WinXList.WinXPath : WinXList.BackupWinXPath).Length..];
             }
         }
 
@@ -53,16 +53,16 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                string name = ShellLink.Description?.Trim();
-                if(name.IsNullOrWhiteSpace()) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
-                if(name == string.Empty) name = Path.GetFileNameWithoutExtension(FilePath);
+                var name = ShellLink.Description?.Trim();
+                if (name.IsNullOrWhiteSpace()) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
+                if (name == string.Empty) name = Path.GetFileNameWithoutExtension(FilePath);
                 return name;
             }
             set
             {
                 ShellLink.Description = value;
                 ShellLink.Save();
-                
+
                 if (WinOsVersion.Current >= WinOsVersion.Win11)
                 {
                     DesktopIni.SetLocalizedFileNames(FilePath, value);
@@ -84,15 +84,12 @@ namespace ContextMenuManager.Controls
         // Win11需要改变两处快捷方式，Win10仅需要隐藏一处快捷方式
         public bool ItemVisible
         {
-            get
-            {
-                return (WinOsVersion.Current >= WinOsVersion.Win11) ? 
-                    FilePath.Substring(0, WinXList.WinXPath.Length).Equals(WinXList.WinXPath, StringComparison.OrdinalIgnoreCase) : 
+            get => (WinOsVersion.Current >= WinOsVersion.Win11) ?
+                    FilePath[..WinXList.WinXPath.Length].Equals(WinXList.WinXPath, StringComparison.OrdinalIgnoreCase) :
                     (File.GetAttributes(FilePath) & FileAttributes.Hidden) != FileAttributes.Hidden;
-            }
             set
             {
-                void CreateGroupPath(string dirPath)
+                static void CreateGroupPath(string dirPath)
                 {
                     if (!Directory.Exists(dirPath))
                     {
@@ -100,7 +97,7 @@ namespace ContextMenuManager.Controls
                         Directory.CreateDirectory(dirPath);
 
                         // 初始化desktop.ini文件
-                        string iniPath = $@"{dirPath}\desktop.ini";
+                        var iniPath = $@"{dirPath}\desktop.ini";
                         File.WriteAllText(iniPath, string.Empty, Encoding.Unicode);
                         File.SetAttributes(iniPath, File.GetAttributes(iniPath) | FileAttributes.Hidden | FileAttributes.System);
                     }
@@ -109,8 +106,8 @@ namespace ContextMenuManager.Controls
                 if (WinOsVersion.Current >= WinOsVersion.Win11)
                 {
                     // 处理用户WinX菜单目录
-                    string name = DesktopIni.GetLocalizedFileNames(FilePath);
-                    string dirPath = Path.GetDirectoryName(BackupFilePath);
+                    var name = DesktopIni.GetLocalizedFileNames(FilePath);
+                    var dirPath = Path.GetDirectoryName(BackupFilePath);
                     CreateGroupPath(dirPath);
                     File.Move(FilePath, BackupFilePath);
                     // 处理用户WinX菜单目录下的desktop.ini文件（确保移动后名称在本地化下相同）
@@ -119,7 +116,7 @@ namespace ContextMenuManager.Controls
                     // 处理默认WinX菜单目录
                     if (value)  // 从禁用变为启用
                     {
-                        string defaultDirPath = Path.GetDirectoryName(DefaultFilePath);
+                        var defaultDirPath = Path.GetDirectoryName(DefaultFilePath);
                         CreateGroupPath(defaultDirPath);
                         File.Copy(BackupFilePath, DefaultFilePath, true);
                         if (name != string.Empty) DesktopIni.SetLocalizedFileNames(DefaultFilePath, name);
@@ -144,7 +141,7 @@ namespace ContextMenuManager.Controls
                 }
                 else
                 {
-                    FileAttributes attributes = File.GetAttributes(FilePath);
+                    var attributes = File.GetAttributes(FilePath);
                     if (value)
                     {
                         attributes &= ~FileAttributes.Hidden;
@@ -163,16 +160,16 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                ShellLink.ICONLOCATION iconLocation = ShellLink.IconLocation;
-                string iconPath = iconLocation.IconPath;
-                int iconIndex = iconLocation.IconIndex;
-                if(string.IsNullOrEmpty(iconPath)) iconPath = FilePath;
-                Icon icon = ResourceIcon.GetIcon(iconPath, iconIndex);
-                if(icon == null)
+                var iconLocation = ShellLink.IconLocation;
+                var iconPath = iconLocation.IconPath;
+                var iconIndex = iconLocation.IconIndex;
+                if (string.IsNullOrEmpty(iconPath)) iconPath = FilePath;
+                var icon = ResourceIcon.GetIcon(iconPath, iconIndex);
+                if (icon == null)
                 {
-                    string path = ItemFilePath;
-                    if(File.Exists(path)) icon = ResourceIcon.GetExtensionIcon(path);
-                    else if(Directory.Exists(path)) icon = ResourceIcon.GetFolderIcon(path);
+                    var path = ItemFilePath;
+                    if (File.Exists(path)) icon = ResourceIcon.GetExtensionIcon(path);
+                    else if (Directory.Exists(path)) icon = ResourceIcon.GetFolderIcon(path);
                 }
                 return icon;
             }
@@ -182,8 +179,8 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                string path = ShellLink.TargetPath;
-                if(!File.Exists(path) && !Directory.Exists(path)) path = FilePath;
+                var path = ShellLink.TargetPath;
+                if (!File.Exists(path) && !Directory.Exists(path)) path = FilePath;
                 return path;
             }
         }
@@ -211,8 +208,8 @@ namespace ContextMenuManager.Controls
         public MoveButton BtnMoveUp { get; set; }
         public MoveButton BtnMoveDown { get; set; }
 
-        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
-        readonly RToolStripMenuItem TsiChangeGroup = new RToolStripMenuItem(AppString.Menu.ChangeGroup);
+        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
+        private readonly RToolStripMenuItem TsiChangeGroup = new(AppString.Menu.ChangeGroup);
 
         private void InitializeComponents()
         {
@@ -240,7 +237,7 @@ namespace ContextMenuManager.Controls
             BtnMoveUp.MouseDown += (sender, e) => MoveItem(true);
             TsiChangeCommand.Click += (sender, e) =>
             {
-                if(TsiChangeCommand.ChangeCommand(ShellLink))
+                if (TsiChangeCommand.ChangeCommand(ShellLink))
                 {
                     Image = ItemImage;
                     WinXHasher.HashLnk(FilePath);
@@ -253,31 +250,31 @@ namespace ContextMenuManager.Controls
         {
             void ChangeFileGroup(string selectText, bool isWinX, out string lnkPath)
             {
-                string meFilePath = isWinX ? FilePath : DefaultFilePath;
-                string meDirPath = $@"{(isWinX ? WinXList.WinXPath : WinXList.DefaultWinXPath)}\{selectText}";
+                var meFilePath = isWinX ? FilePath : DefaultFilePath;
+                var meDirPath = $@"{(isWinX ? WinXList.WinXPath : WinXList.DefaultWinXPath)}\{selectText}";
 
-                int count = Directory.GetFiles(meDirPath, "*.lnk").Length;
-                string num = (count + 1).ToString().PadLeft(2, '0');    // TODO:修复本组内顺序的问题
-                string partName = FileName;
-                int index = partName.IndexOf(" - ");
-                if (index > 0) partName = partName.Substring(index + 3);
+                var count = Directory.GetFiles(meDirPath, "*.lnk").Length;
+                var num = (count + 1).ToString().PadLeft(2, '0');    // TODO:修复本组内顺序的问题
+                var partName = FileName;
+                var index = partName.IndexOf(" - ");
+                if (index > 0) partName = partName[(index + 3)..];
                 lnkPath = $@"{meDirPath}\{num} - {partName}";
                 lnkPath = ObjectPath.GetNewPathWithIndex(lnkPath, ObjectPath.PathType.File);
-                string text = DesktopIni.GetLocalizedFileNames(meFilePath);
+                var text = DesktopIni.GetLocalizedFileNames(meFilePath);
                 DesktopIni.DeleteLocalizedFileNames(meFilePath);
                 if (text != string.Empty) DesktopIni.SetLocalizedFileNames(lnkPath, text);
                 File.Move(meFilePath, lnkPath);
             }
 
-            using (SelectDialog dlg = new SelectDialog())
+            using (var dlg = new SelectDialog())
             {
                 dlg.Title = AppString.Dialog.SelectGroup;
                 dlg.Items = WinXList.GetGroupNames();
                 dlg.Selected = FoldGroupItem.Text;
-                if(dlg.ShowDialog() != DialogResult.OK) return;
-                if(dlg.Selected == FoldGroupItem.Text) return;
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.Selected == FoldGroupItem.Text) return;
 
-                ChangeFileGroup(dlg.Selected, true, out string lnkPath);
+                ChangeFileGroup(dlg.Selected, true, out var lnkPath);
                 if (WinOsVersion.Current >= WinOsVersion.Win11)
                 {
                     ChangeFileGroup(dlg.Selected, false, out _);
@@ -285,11 +282,11 @@ namespace ContextMenuManager.Controls
                 FilePath = lnkPath;
                 RefreshKeyPath();
 
-                WinXList list = (WinXList)Parent;
+                var list = (WinXList)Parent;
                 list.Controls.Remove(this);
-                for(int i = 0; i < list.Controls.Count; i++)
+                for (var i = 0; i < list.Controls.Count; i++)
                 {
-                    if(list.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
+                    if (list.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
                     {
                         list.Controls.Add(this);
                         list.SetItemIndex(this, i + 1);
@@ -306,15 +303,15 @@ namespace ContextMenuManager.Controls
 
         private void MoveItem(bool isUp)
         {
-            WinXList list = (WinXList)Parent;
-            int index = list.Controls.GetChildIndex(this);
-            if(index == list.Controls.Count - 1) return;
+            var list = (WinXList)Parent;
+            var index = list.Controls.GetChildIndex(this);
+            if (index == list.Controls.Count - 1) return;
             index += isUp ? -1 : 1;
-            Control ctr = list.Controls[index];
-            if(ctr is WinXGroupItem) return;
-            WinXItem item = (WinXItem)ctr;
+            var ctr = list.Controls[index];
+            if (ctr is WinXGroupItem) return;
+            var item = (WinXItem)ctr;
 
-            MoveFileItem(item, true, out string path1, out string path2);
+            MoveFileItem(item, true, out var path1, out var path2);
             if (WinOsVersion.Current >= WinOsVersion.Win11)
             {
                 MoveFileItem(item, false, out _, out _);
@@ -329,8 +326,8 @@ namespace ContextMenuManager.Controls
         }
         private void MoveFileItem(WinXItem item, bool isWinX, out string path1, out string path2)
         {
-            bool itemVisible1 = ItemVisible;
-            bool itemVisible2 = item.ItemVisible;
+            var itemVisible1 = ItemVisible;
+            var itemVisible2 = item.ItemVisible;
 
             if (!isWinX && !itemVisible1)
             {
@@ -339,13 +336,13 @@ namespace ContextMenuManager.Controls
             else
             {
                 // 获取旧路径
-                string meFilePath1 = isWinX ? FilePath : DefaultFilePath;
+                var meFilePath1 = isWinX ? FilePath : DefaultFilePath;
                 // 删除旧的本地化文件名
-                string name1 = DesktopIni.GetLocalizedFileNames(meFilePath1);
+                var name1 = DesktopIni.GetLocalizedFileNames(meFilePath1);
                 DesktopIni.DeleteLocalizedFileNames(meFilePath1);
                 // 获取新路径
-                string meDirPath1 = Path.GetDirectoryName(meFilePath1);
-                string fileName1 = $@"{item.FileName.Substring(0, 2)}{FileName.Substring(2)}";
+                var meDirPath1 = Path.GetDirectoryName(meFilePath1);
+                var fileName1 = $@"{item.FileName[..2]}{FileName[2..]}";
                 path1 = $@"{meDirPath1}\{fileName1}";
                 path1 = ObjectPath.GetNewPathWithIndex(path1, ObjectPath.PathType.File);
                 // 移动文件至新路径
@@ -360,11 +357,11 @@ namespace ContextMenuManager.Controls
             }
             else
             {
-                string meFilePath2 = isWinX ? item.FilePath : item.DefaultFilePath;
-                string name2 = DesktopIni.GetLocalizedFileNames(meFilePath2);
+                var meFilePath2 = isWinX ? item.FilePath : item.DefaultFilePath;
+                var name2 = DesktopIni.GetLocalizedFileNames(meFilePath2);
                 DesktopIni.DeleteLocalizedFileNames(meFilePath2);
-                string fileName2 = $@"{FileName.Substring(0, 2)}{item.FileName.Substring(2)}";
-                string meDirPath2 = Path.GetDirectoryName(meFilePath2);
+                var fileName2 = $@"{FileName[..2]}{item.FileName[2..]}";
+                var meDirPath2 = Path.GetDirectoryName(meFilePath2);
                 path2 = $@"{meDirPath2}\{fileName2}";
                 path2 = ObjectPath.GetNewPathWithIndex(path2, ObjectPath.PathType.File);
                 File.Move(meFilePath2, path2);

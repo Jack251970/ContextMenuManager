@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class WinXGroupItem : FoldGroupItem, IChkVisibleItem, ITsiDeleteItem, ITsiTextItem
+    internal sealed class WinXGroupItem : FoldGroupItem, IChkVisibleItem, ITsiDeleteItem, ITsiTextItem
     {
         public WinXGroupItem(string groupPath) : base(groupPath, ObjectPath.PathType.Directory)
         {
@@ -20,7 +20,7 @@ namespace ContextMenuManager.Controls
         {
             if (WinOsVersion.Current >= WinOsVersion.Win11)
             {
-                keyPath = GroupPath.Substring(WinXList.WinXPath.Length);
+                keyPath = GroupPath[WinXList.WinXPath.Length..];
             }
         }
 
@@ -33,12 +33,9 @@ namespace ContextMenuManager.Controls
 
         public bool ItemVisible
         {
-            get
-            {
-                return (WinOsVersion.Current >= WinOsVersion.Win11) ?
+            get => (WinOsVersion.Current >= WinOsVersion.Win11) ?
                     Directory.Exists(GroupPath) && Directory.GetFiles(GroupPath, "*.lnk").Length != 0 :
                     (File.GetAttributes(GroupPath) & FileAttributes.Hidden) != FileAttributes.Hidden;
-            }
             set
             {
                 if (WinOsVersion.Current >= WinOsVersion.Win11)
@@ -49,8 +46,8 @@ namespace ContextMenuManager.Controls
                         ignoreChange = false; return;
                     }
 
-                    bool flag = false;
-                    foreach (WinXItem item in winXItems)
+                    var flag = false;
+                    foreach (var item in winXItems)
                     {
                         if (item.ChkChecked != value)
                         {
@@ -70,7 +67,7 @@ namespace ContextMenuManager.Controls
                 }
                 else
                 {
-                    FileAttributes attributes = File.GetAttributes(GroupPath);
+                    var attributes = File.GetAttributes(GroupPath);
                     if (value) attributes &= ~FileAttributes.Hidden;
                     else attributes |= FileAttributes.Hidden;
                     File.SetAttributes(GroupPath, attributes);
@@ -84,7 +81,7 @@ namespace ContextMenuManager.Controls
             get => Path.GetFileNameWithoutExtension(GroupPath);
             set
             {
-                void MoveDirectory(string oldPath, string newPath)
+                static void MoveDirectory(string oldPath, string newPath)
                 {
                     if (Directory.Exists(oldPath))
                     {
@@ -93,16 +90,16 @@ namespace ContextMenuManager.Controls
                     }
                 }
 
-                string newKeyPath = $@"\{ObjectPath.RemoveIllegalChars(value)}";
-                string newGroupPath = $@"{WinXList.WinXPath}{newKeyPath}";
+                var newKeyPath = $@"\{ObjectPath.RemoveIllegalChars(value)}";
+                var newGroupPath = $@"{WinXList.WinXPath}{newKeyPath}";
                 MoveDirectory(GroupPath, newGroupPath);
 
                 if (WinOsVersion.Current >= WinOsVersion.Win11)
                 {
-                    string newBackupGroupPath = $@"{WinXList.BackupWinXPath}{newKeyPath}";
+                    var newBackupGroupPath = $@"{WinXList.BackupWinXPath}{newKeyPath}";
                     MoveDirectory(BackupGroupPath, newBackupGroupPath);
 
-                    string newDefaultGroupPath = $@"{WinXList.DefaultWinXPath}{newKeyPath}";
+                    var newDefaultGroupPath = $@"{WinXList.DefaultWinXPath}{newKeyPath}";
                     MoveDirectory(DefaultGroupPath, newDefaultGroupPath);
 
                     keyPath = newKeyPath;
@@ -115,8 +112,8 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        private readonly List<WinXItem> winXItems = new List<WinXItem> { };
-        
+        private readonly List<WinXItem> winXItems = new() { };
+
         public void AddWinXItem(WinXItem item)
         {
             winXItems.Add(item);
@@ -132,7 +129,7 @@ namespace ContextMenuManager.Controls
         public VisibleCheckBox ChkVisible { get; set; }
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public ChangeTextMenuItem TsiChangeText { get; set; }
-        readonly RToolStripMenuItem TsiRestoreDefault = new RToolStripMenuItem(AppString.Menu.RestoreDefault);
+        private readonly RToolStripMenuItem TsiRestoreDefault = new(AppString.Menu.RestoreDefault);
 
         public bool ChkChecked
         {
@@ -154,7 +151,7 @@ namespace ContextMenuManager.Controls
 
         private void RefreshList()
         {
-            WinXList list = (WinXList)Parent;
+            var list = (WinXList)Parent;
             list.ClearItems();
             list.LoadItems();
         }
@@ -165,16 +162,16 @@ namespace ContextMenuManager.Controls
             {
                 void RestoreDefaultFolder(bool isWinX)
                 {
-                    string meGroupPath = isWinX ? GroupPath : DefaultGroupPath;
+                    var meGroupPath = isWinX ? GroupPath : DefaultGroupPath;
 
                     File.SetAttributes(meGroupPath, FileAttributes.Normal);
                     Directory.Delete(meGroupPath, true);
                     Directory.CreateDirectory(meGroupPath);
                     File.SetAttributes(meGroupPath, File.GetAttributes(DefaultFolderPath));
 
-                    foreach (string srcPath in Directory.GetFiles(DefaultFolderPath))
+                    foreach (var srcPath in Directory.GetFiles(DefaultFolderPath))
                     {
-                        string dstPath = $@"{meGroupPath}\{Path.GetFileName(srcPath)}";
+                        var dstPath = $@"{meGroupPath}\{Path.GetFileName(srcPath)}";
                         File.Copy(srcPath, dstPath);
                     }
                 }
@@ -194,8 +191,8 @@ namespace ContextMenuManager.Controls
 
         public void DeleteMe()
         {
-            bool flag = Directory.GetFiles(GroupPath, "*.lnk").Length > 0;
-            if(flag && AppMessageBox.Show(AppString.Message.DeleteGroup, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+            var flag = Directory.GetFiles(GroupPath, "*.lnk").Length > 0;
+            if (flag && AppMessageBox.Show(AppString.Message.DeleteGroup, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
             DeletePath(new string[] { GroupPath, BackupGroupPath, DefaultGroupPath });
             if (flag)
             {
@@ -206,7 +203,7 @@ namespace ContextMenuManager.Controls
 
         private void DeletePath(string[] paths)
         {
-            foreach (string path in paths)
+            foreach (var path in paths)
             {
                 if (Directory.Exists(path))
                 {

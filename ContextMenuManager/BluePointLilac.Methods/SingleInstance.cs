@@ -20,24 +20,22 @@ namespace BluePointLilac.Methods
         /// <remarks>若正在运行激活窗口</remarks>
         public static bool IsRunning()
         {
-            using(Process current = Process.GetCurrentProcess())
+            using var current = Process.GetCurrentProcess();
+            foreach (var process in Process.GetProcessesByName(current.ProcessName))
             {
-                foreach(Process process in Process.GetProcessesByName(current.ProcessName))
+                using (process)
                 {
-                    using(process)
+                    if (process.Id == current.Id) continue;
+                    if (process.MainModule.FileName == current.MainModule.FileName)
                     {
-                        if(process.Id == current.Id) continue;
-                        if(process.MainModule.FileName == current.MainModule.FileName)
-                        {
-                            const int SW_RESTORE = 9;
-                            ShowWindowAsync(process.MainWindowHandle, SW_RESTORE);
-                            SetForegroundWindow(process.MainWindowHandle);
-                            return true;
-                        }
+                        const int SW_RESTORE = 9;
+                        ShowWindowAsync(process.MainWindowHandle, SW_RESTORE);
+                        SetForegroundWindow(process.MainWindowHandle);
+                        return true;
                     }
                 }
-                return false;
             }
+            return false;
         }
 
         /// <summary>重启单实例程序</summary>
@@ -45,10 +43,10 @@ namespace BluePointLilac.Methods
         /// <param name="updatePath">用于更新程序的新版本文件路径，为null则为普通重启</param>
         public static void Restart(string[] args = null, string updatePath = null)
         {
-            string appPath = Application.ExecutablePath;
-            string command = appPath;
-            if(args != null && args.Length > 0) command += "," + string.Join(" ", args);
-            List<string> contents = new List<string>();
+            var appPath = Application.ExecutablePath;
+            var command = appPath;
+            if (args != null && args.Length > 0) command += "," + string.Join(" ", args);
+            var contents = new List<string>();
             //vbs命令逐行执行不等待，故加些代码确定上一条命令执行是否完成
             contents.AddRange(new[]
             {
@@ -59,7 +57,7 @@ namespace BluePointLilac.Methods
                 "Set fso = CreateObject(\"Scripting.FileSystemObject\")",
             });
 
-            if(File.Exists(updatePath))
+            if (File.Exists(updatePath))
             {
                 contents.AddRange(new[]
                 {
@@ -81,9 +79,9 @@ namespace BluePointLilac.Methods
                 "Set fso = Nothing",
             });
 
-            string vbsPath = Path.GetTempPath() + Guid.NewGuid() + ".vbs";
+            var vbsPath = Path.GetTempPath() + Guid.NewGuid() + ".vbs";
             File.WriteAllLines(vbsPath, contents.ToArray(), Encoding.Unicode);
-            using(Process process = new Process())
+            using (var process = new Process())
             {
                 process.StartInfo.FileName = "wscript.exe";
                 process.StartInfo.Arguments = vbsPath;

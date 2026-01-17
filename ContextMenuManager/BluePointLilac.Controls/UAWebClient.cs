@@ -26,7 +26,7 @@ namespace BluePointLilac.Controls
         {
             try
             {
-                string str = await client.GetStringAsync(url);
+                var str = await client.GetStringAsync(url);
                 str = str?.Replace("\n", Environment.NewLine);//换行符转换
                 return str;
             }
@@ -38,9 +38,9 @@ namespace BluePointLilac.Controls
         /// <param name="fileUrl">网络文件Raw路径</param>
         public async Task<bool> WebStringToFileAsync(string filePath, string fileUrl)
         {
-            string contents = await GetWebStringAsync(fileUrl);
-            bool flag = contents != null;
-            if(flag) await File.WriteAllTextAsync(filePath, contents, Encoding.Unicode);
+            var contents = await GetWebStringAsync(fileUrl);
+            var flag = contents != null;
+            if (flag) await File.WriteAllTextAsync(filePath, contents, Encoding.Unicode);
             return flag;
         }
 
@@ -49,13 +49,11 @@ namespace BluePointLilac.Controls
         {
             try
             {
-                byte[] bytes = await client.GetByteArrayAsync(url);
-                using(XmlReader xReader = JsonReaderWriterFactory.CreateJsonReader(bytes, XmlDictionaryReaderQuotas.Max))
-                {
-                    XmlDocument doc = new XmlDocument();
-                    doc.Load(xReader);
-                    return doc;
-                }
+                var bytes = await client.GetByteArrayAsync(url);
+                using XmlReader xReader = JsonReaderWriterFactory.CreateJsonReader(bytes, XmlDictionaryReaderQuotas.Max);
+                var doc = new XmlDocument();
+                doc.Load(xReader);
+                return doc;
             }
             catch { return null; }
         }

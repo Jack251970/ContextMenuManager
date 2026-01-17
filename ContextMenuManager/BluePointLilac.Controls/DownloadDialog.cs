@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
 {
-    sealed class DownloadDialog : CommonDialog
+    internal sealed class DownloadDialog : CommonDialog
     {
         public string Text { get; set; }
         public string Url { get; set; }
@@ -16,17 +16,15 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(Process process = Process.GetCurrentProcess())
-            using(DownloadForm frm = new DownloadForm())
-            {
-                frm.Url = Url;
-                frm.Text = Text;
-                frm.FilePath = FilePath;
-                return frm.ShowDialog() == DialogResult.OK;
-            }
+            using var process = Process.GetCurrentProcess();
+            using var frm = new DownloadForm();
+            frm.Url = Url;
+            frm.Text = Text;
+            frm.FilePath = FilePath;
+            return frm.ShowDialog() == DialogResult.OK;
         }
 
-        sealed class DownloadForm : RForm
+        private sealed class DownloadForm : RForm
         {
             public DownloadForm()
             {
@@ -40,17 +38,17 @@ namespace BluePointLilac.Controls
                 InitializeComponents();
                 ResumeLayout();
                 InitTheme();
-                
+
                 // 监听主题变化
                 DarkModeHelper.ThemeChanged += OnThemeChanged;
             }
 
-            readonly ProgressBar pgbDownload = new ProgressBar
+            private readonly ProgressBar pgbDownload = new()
             {
                 Width = 200.DpiZoom(),
                 Maximum = 100
             };
-            readonly Button btnCancel = new Button
+            private readonly Button btnCancel = new()
             {
                 DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,
@@ -62,22 +60,22 @@ namespace BluePointLilac.Controls
 
             private void InitializeComponents()
             {
-                int a = 20.DpiZoom();
+                var a = 20.DpiZoom();
                 pgbDownload.Left = pgbDownload.Top = btnCancel.Top = a;
                 pgbDownload.Height = btnCancel.Height;
                 btnCancel.Left = pgbDownload.Right + a;
                 ClientSize = new Size(btnCancel.Right + a, btnCancel.Bottom + a);
             }
-            
+
             private new void InitTheme()
             {
                 BackColor = DarkModeHelper.FormBack;
                 ForeColor = DarkModeHelper.FormFore;
-                
+
                 btnCancel.BackColor = DarkModeHelper.ButtonMain;
                 btnCancel.ForeColor = DarkModeHelper.FormFore;
             }
-            
+
             // 主题变化事件处理
             private void OnThemeChanged(object sender, EventArgs e)
             {
@@ -89,39 +87,37 @@ namespace BluePointLilac.Controls
             {
                 try
                 {
-                    using(var client = new System.Net.Http.HttpClient())
-                    using(var response = await client.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead))
+                    using (var client = new System.Net.Http.HttpClient())
+                    using (var response = await client.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead))
                     {
                         response.EnsureSuccessStatusCode();
-                        long? totalBytes = response.Content.Headers.ContentLength;
+                        var totalBytes = response.Content.Headers.ContentLength;
                         long totalBytesRead = 0;
 
-                        using(var contentStream = await response.Content.ReadAsStreamAsync())
-                        using(var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                        using var contentStream = await response.Content.ReadAsStreamAsync();
+                        using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                        var buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                         {
-                            var buffer = new byte[8192];
-                            int bytesRead;
-                            while((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                            if (DialogResult == DialogResult.Cancel)
                             {
-                                if(DialogResult == DialogResult.Cancel)
-                                {
-                                    File.Delete(FilePath);
-                                    return;
-                                }
-                                await fileStream.WriteAsync(buffer, 0, bytesRead);
-                                totalBytesRead += bytesRead;
-                                if(totalBytes.HasValue)
-                                {
-                                    int progressPercentage = (int)((totalBytesRead * 100) / totalBytes.Value);
-                                    Text = $"Downloading: {progressPercentage}%";
-                                    pgbDownload.Value = progressPercentage;
-                                }
+                                File.Delete(FilePath);
+                                return;
+                            }
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
+                            if (totalBytes.HasValue)
+                            {
+                                var progressPercentage = (int)((totalBytesRead * 100) / totalBytes.Value);
+                                Text = $"Downloading: {progressPercentage}%";
+                                pgbDownload.Value = progressPercentage;
                             }
                         }
                     }
                     DialogResult = DialogResult.OK;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     DialogResult = DialogResult.Cancel;
@@ -130,8 +126,8 @@ namespace BluePointLilac.Controls
 
             protected override void OnLoad(EventArgs e)
             {
-                if(Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
-                if(Owner == null) StartPosition = FormStartPosition.CenterScreen;
+                if (Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
+                if (Owner == null) StartPosition = FormStartPosition.CenterScreen;
                 else
                 {
                     TopMost = true;
@@ -139,7 +135,7 @@ namespace BluePointLilac.Controls
                 }
                 base.OnLoad(e);
             }
-            
+
             protected override void Dispose(bool disposing)
             {
                 if (disposing)

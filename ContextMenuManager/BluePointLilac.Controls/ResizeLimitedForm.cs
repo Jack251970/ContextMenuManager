@@ -1,4 +1,3 @@
-using BluePointLilac.Methods;
 using System;
 using System.Windows.Forms;
 
@@ -16,7 +15,7 @@ namespace BluePointLilac.Controls
         public ResizeLimitedForm()
         {
             InitTheme();
-            
+
             // 监听主题变化
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
@@ -24,45 +23,45 @@ namespace BluePointLilac.Controls
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
-            if(m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
+            if (m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
             {
-                IntPtr hNowhere = new IntPtr((int)HitTest.Nowhere);
-                switch((HitTest)m.Result)
+                var hNowhere = new IntPtr((int)HitTest.Nowhere);
+                switch ((HitTest)m.Result)
                 {
                     case HitTest.Top:
                     case HitTest.Bottom:
-                        if(!VerticalResizable) m.Result = hNowhere;
+                        if (!VerticalResizable) m.Result = hNowhere;
                         break;
                     case HitTest.Left:
                     case HitTest.Right:
-                        if(!HorizontalResizable) m.Result = hNowhere;
+                        if (!HorizontalResizable) m.Result = hNowhere;
                         break;
                     case HitTest.TopLeft:
                     case HitTest.TopRight:
                     case HitTest.BottomLeft:
                     case HitTest.BottomRight:
-                        if(!VerticalResizable || !HorizontalResizable) m.Result = hNowhere;
+                        if (!VerticalResizable || !HorizontalResizable) m.Result = hNowhere;
                         break;
                 }
             }
         }
-        
+
         private new void InitTheme()
         {
             BackColor = DarkModeHelper.FormBack;
             ForeColor = DarkModeHelper.FormFore;
-            
+
             // 应用深色模式标题栏
             DarkModeHelper.ApplyDarkModeToForm(this);
         }
-        
+
         // 主题变化事件处理
         private void OnThemeChanged(object sender, EventArgs e)
         {
             InitTheme();
             Invalidate();
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -72,9 +71,9 @@ namespace BluePointLilac.Controls
             base.Dispose(disposing);
         }
 
-        const int WM_NCHITTEST = 0x84;//光标移动或鼠标按下、释放时的消息
+        private const int WM_NCHITTEST = 0x84;//光标移动或鼠标按下、释放时的消息
         /// <summary>鼠标击中位置</summary>
-        enum HitTest : int
+        private enum HitTest : int
         {
             Error = -2,
             Transparent = -1,

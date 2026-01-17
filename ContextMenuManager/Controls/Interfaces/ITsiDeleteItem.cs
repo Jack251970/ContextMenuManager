@@ -7,19 +7,19 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
-    interface ITsiDeleteItem
+    internal interface ITsiDeleteItem
     {
         DeleteMeMenuItem TsiDeleteMe { get; set; }
         void DeleteMe();
     }
 
-    interface ITsiRegDeleteItem : ITsiDeleteItem
+    internal interface ITsiRegDeleteItem : ITsiDeleteItem
     {
         string Text { get; }
         string RegPath { get; }
     }
 
-    sealed class DeleteMeMenuItem : RToolStripMenuItem
+    internal sealed class DeleteMeMenuItem : RToolStripMenuItem
     {
         public DeleteMeMenuItem(ITsiDeleteItem item) : base(item is RestoreItem ? AppString.Menu.DeleteBackup : AppString.Menu.Delete)
         {
@@ -31,20 +31,20 @@ namespace ContextMenuManager.Controls.Interfaces
                     {
                         return;
                     }
-                    string date = DateTime.Today.ToString("yyyy-MM-dd");
-                    string time = DateTime.Now.ToString("HH-mm-ss");
-                    string filePath = $@"{AppConfig.RegBackupDir}\{date}\{regItem.Text} - {time}.reg";
+                    var date = DateTime.Today.ToString("yyyy-MM-dd");
+                    var time = DateTime.Now.ToString("HH-mm-ss");
+                    var filePath = $@"{AppConfig.RegBackupDir}\{date}\{regItem.Text} - {time}.reg";
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath));
                     ExternalProgram.ExportRegistry(regItem.RegPath, filePath);
                 }
-                else if (AppMessageBox.Show(item is RestoreItem ? AppString.Message.ConfirmDeleteBackupPermanently : AppString.Message.ConfirmDeletePermanently, 
+                else if (AppMessageBox.Show(item is RestoreItem ? AppString.Message.ConfirmDeleteBackupPermanently : AppString.Message.ConfirmDeletePermanently,
                     MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {
                     return;
                 }
-                MyListItem listItem = (MyListItem)item;
-                MyList list = (MyList)listItem.Parent;
-                int index = list.GetItemIndex(listItem);
+                var listItem = (MyListItem)item;
+                var list = (MyList)listItem.Parent;
+                var index = list.GetItemIndex(listItem);
                 try
                 {
                     item.DeleteMe();

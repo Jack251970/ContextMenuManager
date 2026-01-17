@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
-    interface ITsiRegPathItem
+    internal interface ITsiRegPathItem
     {
         string RegPath { get; }
         string ValueName { get; }
@@ -12,15 +12,15 @@ namespace ContextMenuManager.Controls.Interfaces
         RegLocationMenuItem TsiRegLocation { get; set; }
     }
 
-    sealed class RegLocationMenuItem : RToolStripMenuItem
+    internal sealed class RegLocationMenuItem : RToolStripMenuItem
     {
         public RegLocationMenuItem(ITsiRegPathItem item) : base(AppString.Menu.RegistryLocation)
         {
             Click += (sender, e) => ExternalProgram.JumpRegEdit(item.RegPath, item.ValueName, AppConfig.OpenMoreRegedit);
             item.ContextMenuStrip.Opening += (sender, e) =>
             {
-                using(var key = RegistryEx.GetRegistryKey(item.RegPath))
-                    Visible = key != null;
+                using var key = RegistryEx.GetRegistryKey(item.RegPath);
+                Visible = key != null;
             };
         }
     }

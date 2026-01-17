@@ -20,7 +20,7 @@ namespace BluePointLilac.Methods
         /// <remarks>[fileName]:文件路径; [strID]:字符串资源索引; [packageName]:UWP带版本号包名; [resPath]:pri资源路径</remarks>
         public static string GetDirectString(string resStr)
         {
-            StringBuilder outBuff = new StringBuilder(1024);
+            var outBuff = new StringBuilder(1024);
             SHLoadIndirectString(resStr, outBuff, 1024, IntPtr.Zero);
             return outBuff.ToString();
         }

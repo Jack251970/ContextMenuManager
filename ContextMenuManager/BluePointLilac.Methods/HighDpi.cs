@@ -18,26 +18,59 @@ namespace BluePointLilac.Methods
         /// <summary>DPI缩放比</summary>
         public static readonly double DpiScale = Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
 
-        public static Point DpiZoom(this Point point) => new Point(DpiZoom(point.X), DpiZoom(point.Y));
+        public static Point DpiZoom(this Point point)
+        {
+            return new Point(DpiZoom(point.X), DpiZoom(point.Y));
+        }
 
-        public static PointF DpiZoom(this PointF point) => new PointF(DpiZoom(point.X), DpiZoom(point.Y));
+        public static PointF DpiZoom(this PointF point)
+        {
+            return new PointF(DpiZoom(point.X), DpiZoom(point.Y));
+        }
 
-        public static Size DpiZoom(this Size size) => new Size(DpiZoom(size.Width), DpiZoom(size.Height));
+        public static Size DpiZoom(this Size size)
+        {
+            return new Size(DpiZoom(size.Width), DpiZoom(size.Height));
+        }
 
-        public static SizeF DpiZoom(this SizeF size) => new SizeF(DpiZoom(size.Width), DpiZoom(size.Height));
+        public static SizeF DpiZoom(this SizeF size)
+        {
+            return new SizeF(DpiZoom(size.Width), DpiZoom(size.Height));
+        }
 
-        public static Rectangle DpiZoom(this Rectangle r) => new Rectangle(DpiZoom(r.Location), DpiZoom(r.Size));
+        public static Rectangle DpiZoom(this Rectangle r)
+        {
+            return new Rectangle(DpiZoom(r.Location), DpiZoom(r.Size));
+        }
 
-        public static RectangleF DpiZoom(this RectangleF r) => new RectangleF(DpiZoom(r.Location), DpiZoom(r.Size));
+        public static RectangleF DpiZoom(this RectangleF r)
+        {
+            return new RectangleF(DpiZoom(r.Location), DpiZoom(r.Size));
+        }
 
-        public static Padding DpiZoom(this Padding p) => new Padding(DpiZoom(p.Left), DpiZoom(p.Top), DpiZoom(p.Right), DpiZoom(p.Bottom));
+        public static Padding DpiZoom(this Padding p)
+        {
+            return new Padding(DpiZoom(p.Left), DpiZoom(p.Top), DpiZoom(p.Right), DpiZoom(p.Bottom));
+        }
 
-        public static Font DpiZoom(this Font font) => new Font(font.FontFamily, font.Size / DpiZoom(1F), font.Style);
+        public static Font DpiZoom(this Font font)
+        {
+            return new Font(font.FontFamily, font.Size / DpiZoom(1F), font.Style);
+        }
 
-        public static int DpiZoom(this int num) => (int)(num * DpiScale);
+        public static int DpiZoom(this int num)
+        {
+            return (int)(num * DpiScale);
+        }
 
-        public static float DpiZoom(this float num) => (float)(num * DpiScale);
+        public static float DpiZoom(this float num)
+        {
+            return (float)(num * DpiScale);
+        }
 
-        public static double DpiZoom(this double num) => num * DpiScale;
+        public static double DpiZoom(this double num)
+        {
+            return num * DpiScale;
+        }
     }
 }

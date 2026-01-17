@@ -13,7 +13,7 @@ namespace BluePointLilac.Methods
         [ComImport]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         [Guid("000214F9-0000-0000-C000-000000000046")]
-        interface IShellLinkW
+        private interface IShellLinkW
         {
             void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, ref WIN32_FIND_DATAW pfd, uint fFlags);
             void GetIDList(out IntPtr ppidl);
@@ -43,7 +43,7 @@ namespace BluePointLilac.Methods
         [ComImport]
         [Guid("45e2b4ae-b1c3-11d0-b92f-00a0c90312e1")]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        interface IShellLinkDataList
+        private interface IShellLinkDataList
         {
             void AddDataBlock(IntPtr pDataBlock);
             void CopyDataBlock(uint dwSig, out IntPtr ppDataBlock);
@@ -53,7 +53,7 @@ namespace BluePointLilac.Methods
         }
 
         [Flags]
-        enum ShellLinkDataFlags : uint
+        private enum ShellLinkDataFlags : uint
         {
             Default = 0x00000000,
             HasIdList = 0x00000001,
@@ -88,7 +88,7 @@ namespace BluePointLilac.Methods
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Unicode)]
-        struct WIN32_FIND_DATAW
+        private struct WIN32_FIND_DATAW
         {
             public uint dwFileAttributes;
             public ComTypes.FILETIME ftCreationTime;
@@ -131,57 +131,49 @@ namespace BluePointLilac.Methods
         {
             get
             {
-                StringBuilder targetPath = new StringBuilder(MAX_PATH);
-                WIN32_FIND_DATAW data = new WIN32_FIND_DATAW();
+                var targetPath = new StringBuilder(MAX_PATH);
+                var data = new WIN32_FIND_DATAW();
                 shellLinkW.GetPath(targetPath, targetPath.Capacity, ref data, SLGP_UNCPRIORITY);
                 return targetPath.ToString();
             }
-            set
-            {
-                shellLinkW.SetPath(value);
-            }
+
+            set => shellLinkW.SetPath(value);
         }
 
         public string Arguments
         {
             get
             {
-                StringBuilder arguments = new StringBuilder(INFOTIPSIZE);
+                var arguments = new StringBuilder(INFOTIPSIZE);
                 shellLinkW.GetArguments(arguments, arguments.Capacity);
                 return arguments.ToString();
             }
-            set
-            {
-                shellLinkW.SetArguments(value);
-            }
+
+            set => shellLinkW.SetArguments(value);
         }
 
         public string WorkingDirectory
         {
             get
             {
-                StringBuilder dirPath = new StringBuilder(MAX_PATH);
+                var dirPath = new StringBuilder(MAX_PATH);
                 shellLinkW.GetWorkingDirectory(dirPath, dirPath.Capacity);
                 return dirPath.ToString();
             }
-            set
-            {
-                shellLinkW.SetWorkingDirectory(value);
-            }
+
+            set => shellLinkW.SetWorkingDirectory(value);
         }
 
         public ICONLOCATION IconLocation
         {
             get
             {
-                StringBuilder iconPath = new StringBuilder(MAX_PATH);
-                shellLinkW.GetIconLocation(iconPath, iconPath.Capacity, out int iconIndex);
+                var iconPath = new StringBuilder(MAX_PATH);
+                shellLinkW.GetIconLocation(iconPath, iconPath.Capacity, out var iconIndex);
                 return new ICONLOCATION { IconPath = iconPath.ToString(), IconIndex = iconIndex };
             }
-            set
-            {
-                shellLinkW.SetIconLocation(value.IconPath, value.IconIndex);
-            }
+
+            set => shellLinkW.SetIconLocation(value.IconPath, value.IconIndex);
         }
 
         public string IconPath => IconLocation.IconPath;
@@ -192,28 +184,26 @@ namespace BluePointLilac.Methods
         {
             get
             {
-                StringBuilder description = new StringBuilder(INFOTIPSIZE);
+                var description = new StringBuilder(INFOTIPSIZE);
                 shellLinkW.GetDescription(description, description.Capacity);
                 return description.ToString();
             }
-            set
-            {
-                shellLinkW.SetDescription(value);
-            }
+
+            set => shellLinkW.SetDescription(value);
         }
 
         public Keys HotKey
         {
             get
             {
-                shellLinkW.GetHotKey(out ushort key);
-                int hotKey = ((key & 0xFF00) << 8) | (key & 0xFF);
+                shellLinkW.GetHotKey(out var key);
+                var hotKey = ((key & 0xFF00) << 8) | (key & 0xFF);
                 return (Keys)hotKey;
             }
             set
             {
-                if((value & Keys.Modifiers) == 0) throw new ArgumentException("Hotkey must include a modifier key.");
-                ushort key = unchecked((ushort)(((int)(value & Keys.Modifiers) >> 8) | (int)(value & Keys.KeyCode)));
+                if ((value & Keys.Modifiers) == 0) throw new ArgumentException("Hotkey must include a modifier key.");
+                var key = unchecked((ushort)(((int)(value & Keys.Modifiers) >> 8) | (int)(value & Keys.KeyCode)));
                 shellLinkW.SetHotKey(key);
             }
         }
@@ -222,32 +212,22 @@ namespace BluePointLilac.Methods
         {
             get
             {
-                shellLinkW.GetShowCmd(out int style);
-                switch(style)
+                shellLinkW.GetShowCmd(out var style);
+                return style switch
                 {
-                    case SW_SHOWMINIMIZED:
-                    case SW_SHOWMINNOACTIVE:
-                        return FormWindowState.Minimized;
-                    case SW_SHOWMAXIMIZED:
-                        return FormWindowState.Maximized;
-                    case SW_SHOWNORMAL:
-                    default:
-                        return FormWindowState.Normal;
-                }
+                    SW_SHOWMINIMIZED or SW_SHOWMINNOACTIVE => FormWindowState.Minimized,
+                    SW_SHOWMAXIMIZED => FormWindowState.Maximized,
+                    _ => FormWindowState.Normal,
+                };
             }
             set
             {
-                int style;
-                switch(value)
+                var style = value switch
                 {
-                    case FormWindowState.Minimized:
-                        style = SW_SHOWMINIMIZED; break;
-                    case FormWindowState.Maximized:
-                        style = SW_SHOWMAXIMIZED; break;
-                    case FormWindowState.Normal:
-                    default:
-                        style = SW_SHOWNORMAL; break;
-                }
+                    FormWindowState.Minimized => SW_SHOWMINIMIZED,
+                    FormWindowState.Maximized => SW_SHOWMAXIMIZED,
+                    _ => SW_SHOWNORMAL,
+                };
                 shellLinkW.SetShowCmd(style);
             }
         }
@@ -256,13 +236,13 @@ namespace BluePointLilac.Methods
         {
             get
             {
-                LinkDataList.GetFlags(out ShellLinkDataFlags flags);
+                LinkDataList.GetFlags(out var flags);
                 return (flags & ShellLinkDataFlags.RunasUser) == ShellLinkDataFlags.RunasUser;
             }
             set
             {
-                LinkDataList.GetFlags(out ShellLinkDataFlags flags);
-                if(value) flags |= ShellLinkDataFlags.RunasUser;
+                LinkDataList.GetFlags(out var flags);
+                if (value) flags |= ShellLinkDataFlags.RunasUser;
                 else flags &= ~ShellLinkDataFlags.RunasUser;
                 LinkDataList.SetFlags(flags);
             }
@@ -285,7 +265,7 @@ namespace BluePointLilac.Methods
 
         protected virtual void Dispose(bool disposing)
         {
-            if(shellLinkW == null) return;
+            if (shellLinkW == null) return;
             Marshal.FinalReleaseComObject(shellLinkW);
             shellLinkW = null;
         }
@@ -302,7 +282,7 @@ namespace BluePointLilac.Methods
         public void Load(string lnkPath)
         {
             ShortcutPath = lnkPath;
-            if(File.Exists(lnkPath)) PersistFile.Load(lnkPath, STGM_READWRITE);
+            if (File.Exists(lnkPath)) PersistFile.Load(lnkPath, STGM_READWRITE);
         }
     }
 }

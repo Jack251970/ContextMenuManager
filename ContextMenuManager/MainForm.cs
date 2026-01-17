@@ -6,17 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace ContextMenuManager
 {
-    sealed class MainForm : MyMainForm
+    internal sealed class MainForm : MyMainForm
     {
-        private SearchBox searchBox; // 添加搜索框成员变量
+        private readonly SearchBox searchBox; // 添加搜索框成员变量
         private Control currentListControl; // 当前显示的列表控件
-        private List<Control> originalListItems = new List<Control>(); // 保存原始列表项
-        
+        private readonly List<Control> originalListItems = new(); // 保存原始列表项
+
         public MainForm()
         {
             TopMost = AppConfig.TopMost;
@@ -25,23 +24,23 @@ namespace ContextMenuManager
             Text = AppString.General.AppName;
             Controls.Add(explorerRestarter);
             ToolBar.AddButtons(ToolBarButtons);
-            
+
             // 创建并添加搜索框到工具栏
             searchBox = new SearchBox();
             searchBox.PlaceholderText = AppString.General.Search ?? "搜索...";
             ToolBar.AddSearchBox(searchBox);
-            
+
             MainBody.Controls.AddRange(MainControls);
             ToolBarButtons[3].CanBeSelected = false;
             ToolBarButtons[3].MouseDown += (sender, e) => RefreshApp();
-            ToolBar.SelectedButtonChanged += (sender, e) => 
+            ToolBar.SelectedButtonChanged += (sender, e) =>
             {
                 searchBox.Clear(); // 切换标签页时清空搜索框
                 originalListItems.Clear(); // 清除保存的原始列表项
                 SwitchTab();
             };
             SideBar.HoverIndexChanged += (sender, e) => ShowItemInfo();
-            SideBar.SelectIndexChanged += (sender, e) => 
+            SideBar.SelectIndexChanged += (sender, e) =>
             {
                 searchBox.Clear(); // 切换侧边栏项时清空搜索框
                 originalListItems.Clear(); // 清除保存的原始列表项
@@ -49,10 +48,10 @@ namespace ContextMenuManager
             };
             Shown += (sender, e) => FirstRunDownloadLanguage();
             FormClosing += (sender, e) => CloseMainForm();
-            
+
             // 监听搜索框文本变化事件
             searchBox.TextChanged += (sender, e) => FilterItems(searchBox.Text);
-            
+
             HoveredToShowItemPath();
             DragDropToAnalysis();
             AddContextMenus();
@@ -60,44 +59,44 @@ namespace ContextMenuManager
             JumpItem(0, 0);
         }
 
-        readonly MyToolBarButton[] ToolBarButtons =
+        private readonly MyToolBarButton[] ToolBarButtons =
         {
-            new MyToolBarButton(AppImage.Home, AppString.ToolBar.Home),
-            new MyToolBarButton(AppImage.Type, AppString.ToolBar.Type),
-            new MyToolBarButton(AppImage.Star, AppString.ToolBar.Rule),
-            new MyToolBarButton(AppImage.Refresh, AppString.ToolBar.Refresh),
-            new MyToolBarButton(AppImage.About, AppString.ToolBar.About)
+            new(AppImage.Home, AppString.ToolBar.Home),
+            new(AppImage.Type, AppString.ToolBar.Type),
+            new(AppImage.Star, AppString.ToolBar.Rule),
+            new(AppImage.Refresh, AppString.ToolBar.Refresh),
+            new(AppImage.About, AppString.ToolBar.About)
         };
 
         private Control[] MainControls => new Control[]
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            appSettingBox, languagesBox, dictionariesBox, aboutMeBox, 
+            appSettingBox, languagesBox, dictionariesBox, aboutMeBox,
             donateBox, backupListBox
         };
 
-        readonly ShellList shellList = new ShellList();
-        readonly ShellNewList shellNewList = new ShellNewList();
-        readonly SendToList sendToList = new SendToList();
-        readonly OpenWithList openWithList = new OpenWithList();
-        readonly WinXList winXList = new WinXList();
+        private readonly ShellList shellList = new();
+        private readonly ShellNewList shellNewList = new();
+        private readonly SendToList sendToList = new();
+        private readonly OpenWithList openWithList = new();
+        private readonly WinXList winXList = new();
 
-        readonly EnhanceMenuList enhanceMenusList = new EnhanceMenuList();
-        readonly DetailedEditList detailedEditList = new DetailedEditList();
-        readonly GuidBlockedList guidBlockedList = new GuidBlockedList();
-        readonly IEList iEList = new IEList();
+        private readonly EnhanceMenuList enhanceMenusList = new();
+        private readonly DetailedEditList detailedEditList = new();
+        private readonly GuidBlockedList guidBlockedList = new();
+        private readonly IEList iEList = new();
 
-        readonly AppSettingBox appSettingBox = new AppSettingBox();
-        readonly LanguagesBox languagesBox = new LanguagesBox();
-        readonly DictionariesBox dictionariesBox = new DictionariesBox();
-        readonly ReadOnlyRichTextBox aboutMeBox = new ReadOnlyRichTextBox();
-        readonly DonateBox donateBox = new DonateBox();
-        readonly BackupListBox backupListBox = new BackupListBox();
-        readonly ExplorerRestarter explorerRestarter = new ExplorerRestarter();
+        private readonly AppSettingBox appSettingBox = new();
+        private readonly LanguagesBox languagesBox = new();
+        private readonly DictionariesBox dictionariesBox = new();
+        private readonly ReadOnlyRichTextBox aboutMeBox = new();
+        private readonly DonateBox donateBox = new();
+        private readonly BackupListBox backupListBox = new();
+        private readonly ExplorerRestarter explorerRestarter = new();
 
         // 主页
-        static readonly string[] GeneralItems =
+        private static readonly string[] GeneralItems =
         {
             AppString.SideBar.File,
             AppString.SideBar.Folder,
@@ -116,7 +115,7 @@ namespace ContextMenuManager
             null,
             AppString.SideBar.WinX
         };
-        static readonly string[] GeneralItemInfos =
+        private static readonly string[] GeneralItemInfos =
         {
             AppString.StatusBar.File,
             AppString.StatusBar.Folder,
@@ -137,7 +136,7 @@ namespace ContextMenuManager
         };
 
         // 文件类型
-        static readonly string[] TypeItems =
+        private static readonly string[] TypeItems =
         {
             AppString.SideBar.LnkFile,
             AppString.SideBar.UwpLnk,
@@ -150,7 +149,7 @@ namespace ContextMenuManager
             null,
             AppString.SideBar.MenuAnalysis
         };
-        static readonly string[] TypeItemInfos =
+        private static readonly string[] TypeItemInfos =
         {
             AppString.StatusBar.LnkFile,
             AppString.StatusBar.UwpLnk,
@@ -165,7 +164,7 @@ namespace ContextMenuManager
         };
 
         // 其他规则
-        static readonly string[] OtherRuleItems =
+        private static readonly string[] OtherRuleItems =
         {
             AppString.SideBar.EnhanceMenu,
             AppString.SideBar.DetailedEdit,
@@ -177,7 +176,7 @@ namespace ContextMenuManager
             AppString.SideBar.GuidBlocked,
             AppString.SideBar.CustomRegPath,
         };
-        static readonly string[] OtherRuleItemInfos =
+        private static readonly string[] OtherRuleItemInfos =
         {
             AppString.StatusBar.EnhanceMenu,
             AppString.StatusBar.DetailedEdit,
@@ -191,7 +190,7 @@ namespace ContextMenuManager
         };
 
         // 关于
-        static readonly string[] AboutItems =
+        private static readonly string[] AboutItems =
         {
             AppString.SideBar.AppSetting,
             AppString.SideBar.AppLanguage,
@@ -201,7 +200,7 @@ namespace ContextMenuManager
             AppString.SideBar.Donate,
         };
 
-        static readonly string[] SettingItems =
+        private static readonly string[] SettingItems =
         {
             AppString.Other.TopMost,
             null,
@@ -212,7 +211,7 @@ namespace ContextMenuManager
             AppString.Other.OpenMoreExplorer,
         };
 
-        static readonly Scenes[] GeneralShellScenes =
+        private static readonly Scenes[] GeneralShellScenes =
         {
             Scenes.File,
             Scenes.Folder,
@@ -226,7 +225,7 @@ namespace ContextMenuManager
             Scenes.Library
         };
 
-        static readonly Scenes?[] TypeShellScenes =
+        private static readonly Scenes?[] TypeShellScenes =
         {
             Scenes.LnkFile,
             Scenes.UwpLnk,
@@ -240,15 +239,15 @@ namespace ContextMenuManager
             Scenes.MenuAnalysis
         };
 
-        readonly int[] lastItemIndex = new int[5];
+        private readonly int[] lastItemIndex = new int[5];
 
         public void JumpItem(int toolBarIndex, int sideBarIndex)
         {
-            bool flag1 = ToolBar.SelectedIndex == toolBarIndex;
-            bool flag2 = SideBar.SelectedIndex == sideBarIndex;
+            var flag1 = ToolBar.SelectedIndex == toolBarIndex;
+            var flag2 = SideBar.SelectedIndex == sideBarIndex;
             lastItemIndex[toolBarIndex] = sideBarIndex;
             ToolBar.SelectedIndex = toolBarIndex;
-            if(flag1 || flag2)
+            if (flag1 || flag2)
             {
                 SideBar.SelectedIndex = sideBarIndex;
                 SwitchItem();
@@ -268,7 +267,7 @@ namespace ContextMenuManager
 
         private void SwitchTab()
         {
-            switch(ToolBar.SelectedIndex)
+            switch (ToolBar.SelectedIndex)
             {
                 case 0:
                     SideBar.ItemNames = GeneralItems; break;
@@ -286,14 +285,14 @@ namespace ContextMenuManager
         {
             // 清空原始列表项缓存
             originalListItems.Clear();
-            
-            foreach(Control ctr in MainControls)
+
+            foreach (var ctr in MainControls)
             {
                 ctr.Visible = false;
-                if(ctr is MyList list) list.ClearItems();
+                if (ctr is MyList list) list.ClearItems();
             }
-            if(SideBar.SelectedIndex == -1) return;
-            switch(ToolBar.SelectedIndex)
+            if (SideBar.SelectedIndex == -1) return;
+            switch (ToolBar.SelectedIndex)
             {
                 case 0:
                     SwitchGeneralItem(); break;
@@ -310,10 +309,10 @@ namespace ContextMenuManager
 
         private void ShowItemInfo()
         {
-            if(SideBar.HoveredIndex >= 0)
+            if (SideBar.HoveredIndex >= 0)
             {
-                int i = SideBar.HoveredIndex;
-                switch(ToolBar.SelectedIndex)
+                var i = SideBar.HoveredIndex;
+                switch (ToolBar.SelectedIndex)
                 {
                     case 0:
                         StatusBar.Text = GeneralItemInfos[i]; return;
@@ -328,18 +327,18 @@ namespace ContextMenuManager
 
         private void HoveredToShowItemPath()
         {
-            foreach(Control ctr in MainBody.Controls)
+            foreach (Control ctr in MainBody.Controls)
             {
-                if(ctr is MyList list && list != appSettingBox)
+                if (ctr is MyList list && list != appSettingBox)
                 {
                     list.HoveredItemChanged += (sender, e) =>
                     {
-                        if(!AppConfig.ShowFilePath) return;
-                        MyListItem item = list.HoveredItem;
-                        foreach(string prop in new[] { "ItemFilePath", "RegPath", "GroupPath", "SelectedPath" })
+                        if (!AppConfig.ShowFilePath) return;
+                        var item = list.HoveredItem;
+                        foreach (var prop in new[] { "ItemFilePath", "RegPath", "GroupPath", "SelectedPath" })
                         {
-                            string path = item.GetType().GetProperty(prop)?.GetValue(item, null)?.ToString();
-                            if(!path.IsNullOrWhiteSpace()) { StatusBar.Text = path; return; }
+                            var path = item.GetType().GetProperty(prop)?.GetValue(item, null)?.ToString();
+                            if (!path.IsNullOrWhiteSpace()) { StatusBar.Text = path; return; }
                         }
                         StatusBar.Text = item.Text;
                     };
@@ -359,7 +358,7 @@ namespace ContextMenuManager
 
         private void SwitchGeneralItem()
         {
-            switch(SideBar.SelectedIndex)
+            switch (SideBar.SelectedIndex)
             {
                 case 11:
                     shellNewList.LoadItems(); shellNewList.Visible = true;
@@ -401,7 +400,7 @@ namespace ContextMenuManager
 
         private void SwitchOtherRuleItem()
         {
-            switch(SideBar.SelectedIndex)
+            switch (SideBar.SelectedIndex)
             {
                 case 0:
                     enhanceMenusList.ScenePath = null; enhanceMenusList.LoadItems(); enhanceMenusList.Visible = true;
@@ -443,7 +442,7 @@ namespace ContextMenuManager
 
         private void SwitchAboutItem()
         {
-            switch(SideBar.SelectedIndex)
+            switch (SideBar.SelectedIndex)
             {
                 case 0:
                     appSettingBox.LoadItems(); appSettingBox.Visible = true;
@@ -458,7 +457,7 @@ namespace ContextMenuManager
                     dictionariesBox.LoadText(); dictionariesBox.Visible = true;
                     break;
                 case 4:
-                    if(aboutMeBox.TextLength == 0) aboutMeBox.LoadIni(AppString.Other.AboutApp);
+                    if (aboutMeBox.TextLength == 0) aboutMeBox.LoadIni(AppString.Other.AboutApp);
                     aboutMeBox.Visible = true;
                     break;
                 case 5:
@@ -472,8 +471,8 @@ namespace ContextMenuManager
         private void SaveOriginalListItems()
         {
             originalListItems.Clear();
-            
-            if (currentListControl != null && currentListControl is MyList myList)
+
+            if (currentListControl is not null and MyList myList)
             {
                 foreach (Control control in myList.Controls)
                 {
@@ -491,58 +490,58 @@ namespace ContextMenuManager
                 RestoreOriginalListItems();
                 return;
             }
-            
-            string searchText = filterText.ToLower();
-            
+
+            var searchText = filterText.ToLower();
+
             // 根据当前列表控件进行过滤
-            if (currentListControl != null && currentListControl is MyList myList)
+            if (currentListControl is not null and MyList myList)
             {
                 FilterListItems(myList, searchText);
             }
         }
-        
+
         // 恢复原始列表项
         private void RestoreOriginalListItems()
         {
-            if (currentListControl != null && currentListControl is MyList myList)
+            if (currentListControl is not null and MyList myList)
             {
                 // 先清空当前列表
                 myList.Controls.Clear();
-                
+
                 // 恢复所有原始项
                 foreach (var item in originalListItems)
                 {
                     myList.Controls.Add(item);
                 }
-                
+
                 // 恢复状态栏文本
                 StatusBar.Text = MyStatusBar.DefaultText;
             }
         }
-        
+
         private void FilterListItems(MyList listControl, string searchText)
         {
             // 遍历列表项并过滤
             var itemsToShow = new List<Control>();
-            
+
             foreach (Control control in listControl.Controls)
             {
                 if (control is MyListItem item)
                 {
-                    bool matches = false;
-                    
+                    var matches = false;
+
                     // 检查主文本
                     if (item.Text != null && item.Text.ToLower().Contains(searchText))
                     {
                         matches = true;
                     }
-                    
+
                     // 检查SubText
                     if (!matches && !string.IsNullOrEmpty(item.SubText) && item.SubText.ToLower().Contains(searchText))
                     {
                         matches = true;
                     }
-                    
+
                     // 检查其他可能包含文本的属性
                     if (!matches)
                     {
@@ -553,10 +552,9 @@ namespace ContextMenuManager
                             if (prop.PropertyType == typeof(string))
                             {
                                 // 排除 Text 属性，因为已经检查过了
-                                if (prop.Name != "Text" && prop.Name != "SubText")
+                                if (prop.Name is not "Text" and not "SubText")
                                 {
-                                    var value = prop.GetValue(item) as string;
-                                    if (value != null && value.ToLower().Contains(searchText))
+                                    if (prop.GetValue(item) is string value && value.ToLower().Contains(searchText))
                                     {
                                         matches = true;
                                         break;
@@ -565,21 +563,21 @@ namespace ContextMenuManager
                             }
                         }
                     }
-                    
+
                     if (matches)
                     {
                         itemsToShow.Add(item);
                     }
                 }
             }
-            
+
             // 清除当前列表并添加匹配的项
             listControl.Controls.Clear();
             foreach (var item in itemsToShow)
             {
                 listControl.Controls.Add(item);
             }
-            
+
             // 如果没有匹配项，显示提示
             if (itemsToShow.Count == 0 && !string.IsNullOrWhiteSpace(searchText))
             {
@@ -590,7 +588,7 @@ namespace ContextMenuManager
                 StatusBar.Text = $"找到 {itemsToShow.Count} 个匹配项";
             }
         }
-        
+
         // 添加快捷键支持
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
@@ -600,21 +598,21 @@ namespace ContextMenuManager
                 searchBox?.FocusTextBox();
                 return true;
             }
-            
+
             // ESC 清除搜索框
             if (keyData == Keys.Escape && searchBox != null && !string.IsNullOrEmpty(searchBox.Text))
             {
                 searchBox.Clear();
                 return true;
             }
-            
+
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void ResizeSideBar()
         {
             SideBar.Width = 0;
-            string[] strs = GeneralItems.Concat(TypeItems).Concat(OtherRuleItems).Concat(AboutItems).ToArray();
+            var strs = GeneralItems.Concat(TypeItems).Concat(OtherRuleItems).Concat(AboutItems).ToArray();
             Array.ForEach(strs, str => SideBar.Width = Math.Max(SideBar.Width, SideBar.GetItemWidth(str)));
         }
 
@@ -628,36 +626,36 @@ namespace ContextMenuManager
                 { ToolBarButtons[4], SettingItems }
             };
 
-            foreach(var item in dic)
+            foreach (var item in dic)
             {
-                ContextMenuStrip cms = new ContextMenuStrip();
+                var cms = new ContextMenuStrip();
                 cms.MouseEnter += (sender, e) =>
                 {
-                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.HoveredOpacity;
+                    if (item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.HoveredOpacity;
                 };
                 cms.Closed += (sender, e) =>
                 {
-                    if(item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.UnSelctedOpacity;
+                    if (item.Key != ToolBar.SelectedButton) item.Key.Opacity = MyToolBar.UnSelctedOpacity;
                 };
                 item.Key.MouseDown += (sender, e) =>
                 {
-                    if(e.Button != MouseButtons.Right) return;
-                    if(sender == ToolBar.SelectedButton) return;
+                    if (e.Button != MouseButtons.Right) return;
+                    if (sender == ToolBar.SelectedButton) return;
                     cms.Show(item.Key, e.Location);
                 };
-                for(int i = 0; i < item.Value.Length; i++)
+                for (var i = 0; i < item.Value.Length; i++)
                 {
-                    if(item.Value[i] == null) cms.Items.Add(new RToolStripSeparator());
+                    if (item.Value[i] == null) cms.Items.Add(new RToolStripSeparator());
                     else
                     {
                         var tsi = new RToolStripMenuItem(item.Value[i]);
                         cms.Items.Add(tsi);
-                        
+
                         // 修复：使用 ButtonControls 而不是 Controls
-                        int toolBarIndex = ToolBar.ButtonControls.GetChildIndex(item.Key);
-                        int index = i;
-                        
-                        if(toolBarIndex != 4)
+                        var toolBarIndex = ToolBar.ButtonControls.GetChildIndex(item.Key);
+                        var index = i;
+
+                        if (toolBarIndex != 4)
                         {
                             tsi.Click += (sender, e) => JumpItem(toolBarIndex, index);
                             cms.Opening += (sender, e) => tsi.Checked = lastItemIndex[toolBarIndex] == index;
@@ -666,7 +664,7 @@ namespace ContextMenuManager
                         {
                             tsi.Click += (sender, e) =>
                             {
-                                switch(index)
+                                switch (index)
                                 {
                                     case 0:
                                         AppConfig.TopMost = TopMost = !tsi.Checked; break;
@@ -682,7 +680,7 @@ namespace ContextMenuManager
                             };
                             cms.Opening += (sender, e) =>
                             {
-                                switch(index)
+                                switch (index)
                                 {
                                     case 0:
                                         tsi.Checked = TopMost; break;
@@ -704,9 +702,9 @@ namespace ContextMenuManager
 
         private void FirstRunDownloadLanguage()
         {
-            if(AppConfig.IsFirstRun && CultureInfo.CurrentUICulture.Name != "zh-CN")
+            if (AppConfig.IsFirstRun && CultureInfo.CurrentUICulture.Name != "zh-CN")
             {
-                if(AppMessageBox.Show("It is detected that you may be running this program for the first time,\n" +
+                if (AppMessageBox.Show("It is detected that you may be running this program for the first time,\n" +
                     "and your system display language is not simplified Chinese (zh-CN),\n" +
                     "do you need to download another language?",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -719,7 +717,7 @@ namespace ContextMenuManager
 
         private void CloseMainForm()
         {
-            if(explorerRestarter.Visible && AppMessageBox.Show(explorerRestarter.Text,
+            if (explorerRestarter.Visible && AppMessageBox.Show(explorerRestarter.Text,
                 MessageBoxButtons.OKCancel) == DialogResult.OK) ExternalProgram.RestartExplorer();
             Opacity = 0;
             WindowState = FormWindowState.Normal;

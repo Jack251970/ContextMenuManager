@@ -6,12 +6,12 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    interface ITsiRestoreFile
+    internal interface ITsiRestoreFile
     {
         void RestoreItems(string restoreFile);
     }
 
-    sealed class RestoreItem : MyListItem, IBtnShowMenuItem, ITsiFilePathItem, ITsiDeleteItem, ITsiRestoreItem
+    internal sealed class RestoreItem : MyListItem, IBtnShowMenuItem, ITsiFilePathItem, ITsiDeleteItem, ITsiRestoreItem
     {
         public RestoreItem(ITsiRestoreFile item, string filePath, string deviceName, string creatTime)
         {
@@ -32,7 +32,7 @@ namespace ContextMenuManager.Controls
             get => filePath;
             set => filePath = value;
         }
-        public string ItemFilePath { get { return filePath; } }
+        public string ItemFilePath => filePath;
 
         public MenuButton BtnShowMenu { get; set; }
         public FilePropertiesMenuItem TsiFileProperties { get; set; }
@@ -40,7 +40,7 @@ namespace ContextMenuManager.Controls
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public RestoreMeMenuItem TsiRestoreMe { get; set; }
 
-        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
 
         private void InitializeComponents()
         {
@@ -51,7 +51,7 @@ namespace ContextMenuManager.Controls
             TsiRestoreMe = new RestoreMeMenuItem(this);
 
             // 设置菜单：详细信息；删除备份；恢复备份
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiDetails, new RToolStripSeparator(), 
+            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiDetails, new RToolStripSeparator(),
                 TsiRestoreMe, new RToolStripSeparator(), TsiDeleteMe });
 
             // 详细信息

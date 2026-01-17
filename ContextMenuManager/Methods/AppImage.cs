@@ -1,11 +1,10 @@
 using BluePointLilac.Methods;
 using ContextMenuManager.Properties;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
-    static class AppImage
+    internal static class AppImage
     {
         private static readonly double Scale = HighDpi.DpiScale / 1.5;
         ///<summary>主页</summary>
@@ -101,7 +100,7 @@ namespace ContextMenuManager.Methods
 
         private static Image GetIconImage(string dllName, int iconIndex)
         {
-            using(Icon icon = ResourceIcon.GetIcon(dllName, iconIndex)) return icon?.ToBitmap();
+            using var icon = ResourceIcon.GetIcon(dllName, iconIndex); return icon?.ToBitmap();
         }
     }
 }

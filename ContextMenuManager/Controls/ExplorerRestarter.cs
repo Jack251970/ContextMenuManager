@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class ExplorerRestarter : MyListItem
+    internal sealed class ExplorerRestarter : MyListItem
     {
         public ExplorerRestarter()
         {
@@ -32,18 +32,25 @@ namespace ContextMenuManager.Controls
             get => base.Visible;
             set
             {
-                bool flag = base.Visible != value && Parent != null;
+                var flag = base.Visible != value && Parent != null;
                 base.Visible = value;
-                if(flag) Parent.Height += value ? Height : -Height;
+                if (flag) Parent.Height += value ? Height : -Height;
             }
         }
 
-        private readonly PictureButton BtnRestart = new PictureButton(AppImage.RestartExplorer);
+        private readonly PictureButton BtnRestart = new(AppImage.RestartExplorer);
 
         private static Action ShowHandler;
         private static Action HideHandler;
 
-        public static new void Show() => ShowHandler?.Invoke();
-        public static new void Hide() => HideHandler?.Invoke();
+        public static new void Show()
+        {
+            ShowHandler?.Invoke();
+        }
+
+        public static new void Hide()
+        {
+            HideHandler?.Invoke();
+        }
     }
 }

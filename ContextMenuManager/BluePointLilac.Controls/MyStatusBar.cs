@@ -98,14 +98,14 @@ namespace BluePointLilac.Controls
         protected override void OnPaint(PaintEventArgs e)
         {
             // 绘制渐变色背景
-            using (LinearGradientBrush brush = new LinearGradientBrush(
+            using (var brush = new LinearGradientBrush(
                 ClientRectangle,
                 Color.Empty,
                 Color.Empty,
                 LinearGradientMode.Vertical))
             {
                 // 设置渐变色
-                ColorBlend colorBlend = new ColorBlend(3);
+                var colorBlend = new ColorBlend(3);
                 colorBlend.Colors = new Color[] { TopColor, MiddleColor, BottomColor };
                 colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
                 brush.InterpolationColors = colorBlend;
@@ -114,21 +114,19 @@ namespace BluePointLilac.Controls
             }
 
             // 绘制文本（带有省略号处理）
-            string txt = Text;
-            int left = Height / 3;
-            for (int i = Text.Length - 1; i >= 0; i--)
+            var txt = Text;
+            var left = Height / 3;
+            for (var i = Text.Length - 1; i >= 0; i--)
             {
-                Size size = TextRenderer.MeasureText(txt, Font);
+                var size = TextRenderer.MeasureText(txt, Font);
                 if (size.Width < ClientSize.Width - 2 * left)
                 {
-                    using (Brush brush = new SolidBrush(ForeColor))
-                    {
-                        int top = (Height - size.Height) / 2;
-                        e.Graphics.DrawString(txt, Font, brush, left, top);
-                        break;
-                    }
+                    using Brush brush = new SolidBrush(ForeColor);
+                    var top = (Height - size.Height) / 2;
+                    e.Graphics.DrawString(txt, Font, brush, left, top);
+                    break;
                 }
-                txt = Text.Substring(0, i) + "...";
+                txt = Text[..i] + "...";
             }
         }
 
@@ -152,7 +150,7 @@ namespace BluePointLilac.Controls
         {
             base.OnBackColorChanged(e); Refresh();
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
-    static class AppConfig
+    internal static class AppConfig
     {
         static AppConfig()
         {
@@ -79,7 +79,7 @@ namespace ContextMenuManager.Methods
         public const string ENHANCEMENUSICXML = "EnhanceMenusDic.xml";
         public const string UWPMODEITEMSDICXML = "UwpModeItemsDic.xml";
 
-        public static readonly Dictionary<string, string> EngineUrlsDic = new Dictionary<string, string>
+        public static readonly Dictionary<string, string> EngineUrlsDic = new()
         {
             { "Bing", "https://www.bing.com/search?q=%s" },
             { "Baidu", "https://www.baidu.com/s?wd=%s" },
@@ -88,25 +88,25 @@ namespace ContextMenuManager.Methods
             { "DuckDuckGo", "https://duckduckgo.com/?q=%s" },
         };
 
-        private static readonly IniReader ConfigReader = new IniReader(ConfigIni);
-        private static readonly IniWriter ConfigWriter = new IniWriter(ConfigIni);
+        private static readonly IniReader ConfigReader = new(ConfigIni);
+        private static readonly IniWriter ConfigWriter = new(ConfigIni);
 
         public static void BackupWinX()
         {
             if (WinOsVersion.Current >= WinOsVersion.Win11)
             {
                 // 备份默认WinX项目文件与desktop.ini
-                string DefaultWinXBackupDir = WinXList.WinXDefaultPath;
+                var DefaultWinXBackupDir = WinXList.WinXDefaultPath;
                 if (!Directory.Exists(DefaultWinXBackupDir))
                 {
                     Directory.CreateDirectory(DefaultWinXBackupDir);
-                    foreach (string dirPath in Directory.GetDirectories(WinXList.DefaultWinXPath, "*", SearchOption.AllDirectories))
+                    foreach (var dirPath in Directory.GetDirectories(WinXList.DefaultWinXPath, "*", SearchOption.AllDirectories))
                     {
                         Directory.CreateDirectory(dirPath.Replace(WinXList.DefaultWinXPath, DefaultWinXBackupDir));
                     }
-                    foreach (string filePath in Directory.GetFiles(WinXList.DefaultWinXPath, "*.*", SearchOption.AllDirectories))
+                    foreach (var filePath in Directory.GetFiles(WinXList.DefaultWinXPath, "*.*", SearchOption.AllDirectories))
                     {
-                        string dstPath = filePath.Replace(WinXList.DefaultWinXPath, DefaultWinXBackupDir);
+                        var dstPath = filePath.Replace(WinXList.DefaultWinXPath, DefaultWinXBackupDir);
                         File.Copy(filePath, dstPath, true);
                     }
                 }
@@ -142,12 +142,12 @@ namespace ContextMenuManager.Methods
 
         private static void CreateDirectory()
         {
-            foreach(string dirPath in new[] { AppDataDir, ConfigDir, ProgramsDir, RegBackupDir, MenuBackupDir, LangsDir, DicsDir, WebDicsDir, UserDicsDir })
+            foreach (var dirPath in new[] { AppDataDir, ConfigDir, ProgramsDir, RegBackupDir, MenuBackupDir, LangsDir, DicsDir, WebDicsDir, UserDicsDir })
             {
                 Directory.CreateDirectory(dirPath);
                 Application.ApplicationExit += (sender, e) =>
                 {
-                    if(Directory.Exists(dirPath) && Directory.GetFileSystemEntries(dirPath).Length == 0)
+                    if (Directory.Exists(dirPath) && Directory.GetFileSystemEntries(dirPath).Length == 0)
                     {
                         try
                         {
@@ -165,14 +165,14 @@ namespace ContextMenuManager.Methods
         private static void LoadLanguage()
         {
             language = GetGeneralValue("Language");
-            if(language.ToLower() == "default")
+            if (language.ToLower() == "default")
             {
                 LanguageIniPath = "";
                 return;
             }
-            if(language == "") language = CultureInfo.CurrentUICulture.Name;
+            if (language == "") language = CultureInfo.CurrentUICulture.Name;
             LanguageIniPath = $@"{LangsDir}\{language}.ini";
-            if(!File.Exists(LanguageIniPath))
+            if (!File.Exists(LanguageIniPath))
             {
                 LanguageIniPath = "";
                 Language = "";
@@ -200,7 +200,7 @@ namespace ContextMenuManager.Methods
             {
                 try
                 {
-                    string time = GetGeneralValue("LastCheckUpdateTime");
+                    var time = GetGeneralValue("LastCheckUpdateTime");
                     //二进制数据时间不会受系统时间格式影响
                     return DateTime.FromBinary(Convert.ToInt64(time));
                 }
@@ -224,8 +224,8 @@ namespace ContextMenuManager.Methods
         {
             get
             {
-                string url = GetGeneralValue("EngineUrl");
-                if(string.IsNullOrEmpty(url)) url = EngineUrlsDic.Values.ToArray()[0];
+                var url = GetGeneralValue("EngineUrl");
+                if (string.IsNullOrEmpty(url)) url = EngineUrlsDic.Values.ToArray()[0];
                 return url;
             }
             set => SetGeneralValue("EngineUrl", value);
@@ -271,9 +271,9 @@ namespace ContextMenuManager.Methods
         {
             get
             {
-                string value = GetGeneralValue("RequestUseGithub");
-                if(!string.IsNullOrEmpty(value)) return value == "1";
-                if(CultureInfo.CurrentCulture.Name == "zh-CN") return false;
+                var value = GetGeneralValue("RequestUseGithub");
+                if (!string.IsNullOrEmpty(value)) return value == "1";
+                if (CultureInfo.CurrentCulture.Name == "zh-CN") return false;
                 return true;
             }
             set => SetGeneralValue("RequestUseGithub", value ? 1 : 0);
@@ -283,10 +283,10 @@ namespace ContextMenuManager.Methods
         {
             get
             {
-                string value = GetGeneralValue("UpdateFrequency");
-                if(int.TryParse(value, out int day))
+                var value = GetGeneralValue("UpdateFrequency");
+                if (int.TryParse(value, out var day))
                 {
-                    if(day == -1 || day == 7 || day == 90) return day;
+                    if (day is -1 or 7 or 90) return day;
                 }
                 return 30;
             }
@@ -303,11 +303,11 @@ namespace ContextMenuManager.Methods
         {
             get
             {
-                string str = GetWindowValue("MainFormSize");
-                int index = str.IndexOf(',');
-                if(index == -1) return Size.Empty;
-                if(int.TryParse(str.Substring(0, index), out int x))
-                    if(int.TryParse(str.Substring(index + 1), out int y))
+                var str = GetWindowValue("MainFormSize");
+                var index = str.IndexOf(',');
+                if (index == -1) return Size.Empty;
+                if (int.TryParse(str[..index], out var x))
+                    if (int.TryParse(str[(index + 1)..], out var y))
                         return new Size(x, y);
                 return Size.Empty;
             }

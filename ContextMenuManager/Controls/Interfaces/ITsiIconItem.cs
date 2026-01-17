@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
-    interface ITsiIconItem
+    internal interface ITsiIconItem
     {
         ChangeIconMenuItem TsiChangeIcon { get; set; }
         string IconLocation { get; set; }
@@ -16,27 +16,23 @@ namespace ContextMenuManager.Controls.Interfaces
         Icon ItemIcon { get; }
     }
 
-    sealed class ChangeIconMenuItem : RToolStripMenuItem
+    internal sealed class ChangeIconMenuItem : RToolStripMenuItem
     {
         public ChangeIconMenuItem(ITsiIconItem item) : base(AppString.Menu.ChangeIcon)
         {
             Click += (sender, e) =>
             {
-                using(IconDialog dlg = new IconDialog())
-                {
-                    dlg.IconPath = item.IconPath;
-                    dlg.IconIndex = item.IconIndex;
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
-                    using(Icon icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex))
-                    {
-                        Image image = icon?.ToBitmap();
-                        if(image == null) return;
-                        item.Image = image;
-                        item.IconPath = dlg.IconPath;
-                        item.IconIndex = dlg.IconIndex;
-                        item.IconLocation = $"{dlg.IconPath},{dlg.IconIndex}";
-                    }
-                }
+                using var dlg = new IconDialog();
+                dlg.IconPath = item.IconPath;
+                dlg.IconIndex = item.IconIndex;
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                using var icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex);
+                Image image = icon?.ToBitmap();
+                if (image == null) return;
+                item.Image = image;
+                item.IconPath = dlg.IconPath;
+                item.IconIndex = dlg.IconIndex;
+                item.IconLocation = $"{dlg.IconPath},{dlg.IconIndex}";
             };
         }
     }

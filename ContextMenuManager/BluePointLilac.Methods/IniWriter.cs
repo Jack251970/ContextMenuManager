@@ -20,11 +20,11 @@ namespace BluePointLilac.Methods
 
         private List<string> GetLines()
         {
-            List<string> lines = new List<string>();
-            if(!File.Exists(FilePath)) return lines;
-            using(StreamReader reader = new StreamReader(FilePath, EncodingType.GetType(FilePath)))
+            var lines = new List<string>();
+            if (!File.Exists(FilePath)) return lines;
+            using (var reader = new StreamReader(FilePath, EncodingType.GetType(FilePath)))
             {
-                while(!reader.EndOfStream)
+                while (!reader.EndOfStream)
                 {
                     lines.Add(reader.ReadLine().Trim());
                 }
@@ -35,41 +35,41 @@ namespace BluePointLilac.Methods
         /// <param name="isGetValue">是否是获取value值</param>
         private void SetValue(string section, string key, ref string value, bool isGetValue)
         {
-            if(section == null) return;
-            List<string> lines = GetLines();
-            string sectionLine = $"[{section}]";
-            string keyLine = $"{key}={value}";
+            if (section == null) return;
+            var lines = GetLines();
+            var sectionLine = $"[{section}]";
+            var keyLine = $"{key}={value}";
             int sectionRow = -1, keyRow = -1;//先假设不存在目标section和目标key
-            int nextSectionRow = -1;//下一个section的行数
-            for(int i = 0; i < lines.Count; i++)
+            var nextSectionRow = -1;//下一个section的行数
+            for (var i = 0; i < lines.Count; i++)
             {
-                if(lines[i].StartsWith(sectionLine, StringComparison.OrdinalIgnoreCase))
+                if (lines[i].StartsWith(sectionLine, StringComparison.OrdinalIgnoreCase))
                 {
                     sectionRow = i; break;//得到目标section所在行
                 }
             }
-            if(sectionRow >= 0)//如果目标section存在
+            if (sectionRow >= 0)//如果目标section存在
             {
-                for(int i = sectionRow + 1; i < lines.Count; i++)
+                for (var i = sectionRow + 1; i < lines.Count; i++)
                 {
-                    if(lines[i].StartsWith(";") || lines[i].StartsWith("#"))
+                    if (lines[i].StartsWith(";") || lines[i].StartsWith("#"))
                     {
                         continue;//跳过注释
                     }
-                    if(lines[i].StartsWith("["))
+                    if (lines[i].StartsWith("["))
                     {
                         nextSectionRow = i; break;//读取到下一个section
                     }
-                    if(key != null && keyRow == -1)
+                    if (key != null && keyRow == -1)
                     {
-                        int index = lines[i].IndexOf('=');
-                        if(index < 0) continue;
-                        string str = lines[i].Substring(0, index).TrimEnd();
-                        if(str.Equals(key, StringComparison.OrdinalIgnoreCase))
+                        var index = lines[i].IndexOf('=');
+                        if (index < 0) continue;
+                        var str = lines[i][..index].TrimEnd();
+                        if (str.Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if(isGetValue)//如果是获取Value值，直接返回
+                            if (isGetValue)//如果是获取Value值，直接返回
                             {
-                                value = lines[i].Substring(index + 1).Trim();
+                                value = lines[i][(index + 1)..].Trim();
                                 return;
                             }
                             keyRow = i; continue;//得到目标key行
@@ -78,11 +78,11 @@ namespace BluePointLilac.Methods
                 }
             }
 
-            if(isGetValue) return;
+            if (isGetValue) return;
 
-            if(sectionRow == -1)
+            if (sectionRow == -1)
             {
-                if(key != null && value != null)
+                if (key != null && value != null)
                 {
                     lines.Add(string.Empty);//添加空行
                     //目标section不存在则添加到最后
@@ -92,12 +92,12 @@ namespace BluePointLilac.Methods
             }
             else
             {
-                if(keyRow == -1)
+                if (keyRow == -1)
                 {
-                    if(key != null)
+                    if (key != null)
                     {
                         //存在下一个section时插入到其上方
-                        if(nextSectionRow != -1)
+                        if (nextSectionRow != -1)
                         {
                             //目标section存在但目标key不存在
                             keyRow = nextSectionRow;
@@ -113,14 +113,14 @@ namespace BluePointLilac.Methods
                     {
                         //key为null则删除整个section
                         int count;
-                        if(nextSectionRow == -1) count = lines.Count - sectionRow;
+                        if (nextSectionRow == -1) count = lines.Count - sectionRow;
                         else count = nextSectionRow - sectionRow;
                         lines.RemoveRange(sectionRow, count);
                     }
                 }
                 else
                 {
-                    if(value != null)
+                    if (value != null)
                     {
                         //目标section和目标key都存在
                         lines[keyRow] = keyLine;
@@ -134,9 +134,9 @@ namespace BluePointLilac.Methods
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
-            FileAttributes attributes = FileAttributes.Normal;
-            Encoding encoding = Encoding.Unicode;
-            if(File.Exists(FilePath))
+            var attributes = FileAttributes.Normal;
+            var encoding = Encoding.Unicode;
+            if (File.Exists(FilePath))
             {
                 encoding = EncodingType.GetType(FilePath);
                 attributes = File.GetAttributes(FilePath);
@@ -145,7 +145,7 @@ namespace BluePointLilac.Methods
             File.WriteAllLines(FilePath, lines.ToArray(), encoding);
             File.SetAttributes(FilePath, attributes);
 
-            if(DeleteFileWhenEmpty && lines.TrueForAll(line => line.IsNullOrWhiteSpace()))
+            if (DeleteFileWhenEmpty && lines.TrueForAll(line => line.IsNullOrWhiteSpace()))
             {
                 File.Delete(FilePath);
             }
@@ -174,7 +174,7 @@ namespace BluePointLilac.Methods
         /// <summary>一次读取只获取一个值，用此方法比IniReader.GetValue要快</summary>
         public string GetValue(string section, string key)
         {
-            string value = string.Empty;
+            var value = string.Empty;
             SetValue(section, key, ref value, true);
             return value;
         }

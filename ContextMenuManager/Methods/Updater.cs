@@ -8,17 +8,17 @@ using System.Xml;
 
 namespace ContextMenuManager.Methods
 {
-    sealed class Updater
+    internal sealed class Updater
     {
         /// <summary>定期检查更新</summary>
         public static void PeriodicUpdate()
         {
-            int day = AppConfig.UpdateFrequency;
-            if(day == -1) return;//自动检测更新频率为-1则从不自动检查更新
+            var day = AppConfig.UpdateFrequency;
+            if (day == -1) return;//自动检测更新频率为-1则从不自动检查更新
             //如果上次检测更新时间加上时间间隔早于或等于今天以前就进行更新操作
-            DateTime time = AppConfig.LastCheckUpdateTime.AddDays(day);
+            var time = AppConfig.LastCheckUpdateTime.AddDays(day);
             //time = DateTime.Today;//测试用
-            if(time <= DateTime.Today) _ = Task.Run(() => Update(false));
+            if (time <= DateTime.Today) _ = Task.Run(() => Update(false));
         }
 
         /// <summary>更新程序以及程序字典</summary>
@@ -34,60 +34,56 @@ namespace ContextMenuManager.Methods
         /// <param name="isManual">是否为手动点击更新</param>
         private static async void UpdateApp(bool isManual)
         {
-            using(UAWebClient client = new UAWebClient())
+            using var client = new UAWebClient();
+            var url = AppConfig.RequestUseGithub ? AppConfig.GithubLatestApi : AppConfig.GiteeLatestApi;
+            var doc = await client.GetWebJsonToXmlAsync(url);
+            if (doc == null)
             {
-                string url = AppConfig.RequestUseGithub ? AppConfig.GithubLatestApi : AppConfig.GiteeLatestApi;
-                XmlDocument doc = await client.GetWebJsonToXmlAsync(url);
-                if(doc == null)
+                if (isManual)
                 {
-                    if(isManual)
-                    {
-                        if(AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
-                            + AppString.Message.OpenWebUrl, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
-                        url = AppConfig.RequestUseGithub ? AppConfig.GithubLatest : AppConfig.GiteeReleases;
-                        ExternalProgram.OpenWebUrl(url);
-                    }
-                    return;
+                    if (AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
+                        + AppString.Message.OpenWebUrl, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+                    url = AppConfig.RequestUseGithub ? AppConfig.GithubLatest : AppConfig.GiteeReleases;
+                    ExternalProgram.OpenWebUrl(url);
                 }
-                XmlNode root = doc.FirstChild;
-                XmlNode tagNameXN = root.SelectSingleNode("tag_name");
-                Version webVer = new Version(tagNameXN.InnerText);
-                Version appVer = new Version(Application.ProductVersion);
+                return;
+            }
+            var root = doc.FirstChild;
+            var tagNameXN = root.SelectSingleNode("tag_name");
+            var webVer = new Version(tagNameXN.InnerText);
+            var appVer = new Version(Application.ProductVersion);
 #if DEBUG
             appVer = new Version(0, 0, 0, 0);//测试用
 #endif
-                if(appVer >= webVer)
+            if (appVer >= webVer)
+            {
+                if (isManual) AppMessageBox.Show(AppString.Message.VersionIsLatest,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                var bodyXN = root.SelectSingleNode("body");
+                var info = AppString.Message.UpdateInfo.Replace("%v1", appVer.ToString()).Replace("%v2", webVer.ToString());
+                info += "\r\n\r\n" + MachinedInfo(bodyXN.InnerText);
+                if (MessageBox.Show(info, AppString.General.AppName,
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    if(isManual) AppMessageBox.Show(AppString.Message.VersionIsLatest,
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    XmlNode bodyXN = root.SelectSingleNode("body");
-                    string info = AppString.Message.UpdateInfo.Replace("%v1", appVer.ToString()).Replace("%v2", webVer.ToString());
-                    info += "\r\n\r\n" + MachinedInfo(bodyXN.InnerText);
-                    if(MessageBox.Show(info, AppString.General.AppName, 
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    var assetsXN = root.SelectSingleNode("assets");
+                    foreach (XmlNode itemXN in assetsXN.SelectNodes("item"))
                     {
-                        XmlNode assetsXN = root.SelectSingleNode("assets");
-                        foreach(XmlNode itemXN in assetsXN.SelectNodes("item"))
+                        var nameXN = itemXN.SelectSingleNode("name");
+                        if (nameXN != null && nameXN.InnerText.Contains(".exe"))
                         {
-                            XmlNode nameXN = itemXN.SelectSingleNode("name");
-                            if(nameXN != null && nameXN.InnerText.Contains(".exe"))
+                            var urlXN = itemXN.SelectSingleNode("browser_download_url");
+                            using var dlg = new DownloadDialog();
+                            dlg.Url = urlXN?.InnerText;
+                            dlg.FilePath = $@"{AppConfig.AppDataDir}\{webVer}.exe";
+                            dlg.Text = AppString.General.AppName;
+                            if (dlg.ShowDialog() == DialogResult.OK)
                             {
-                                XmlNode urlXN = itemXN.SelectSingleNode("browser_download_url");
-                                using(DownloadDialog dlg = new DownloadDialog())
-                                {
-                                    dlg.Url = urlXN?.InnerText;
-                                    dlg.FilePath = $@"{AppConfig.AppDataDir}\{webVer}.exe";
-                                    dlg.Text = AppString.General.AppName;
-                                    if(dlg.ShowDialog() == DialogResult.OK)
-                                    {
-                                        AppMessageBox.Show(AppString.Message.UpdateSucceeded,
-                                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                        SingleInstance.Restart(null, dlg.FilePath);
-                                    }
-                                }
+                                AppMessageBox.Show(AppString.Message.UpdateSucceeded,
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                SingleInstance.Restart(null, dlg.FilePath);
                             }
                         }
                     }
@@ -104,20 +100,18 @@ namespace ContextMenuManager.Methods
             async Task WriteFiles(string dirName, string[] paths, Action<string, string> callback)
             {
                 string succeeded = "", failed = "";
-                foreach(string filePath in paths)
+                foreach (var filePath in paths)
                 {
-                    using(UAWebClient client = new UAWebClient())
-                    {
-                        string fileUrl = $"{dirUrl}/{Path.GetFileName(filePath)}";
-                        bool flag = await client.WebStringToFileAsync(filePath, fileUrl);
-                        string item = "\r\n ● " + Path.GetFileName(filePath);
-                        if(flag) succeeded += item;
-                        else failed += item;
-                    }
+                    using var client = new UAWebClient();
+                    var fileUrl = $"{dirUrl}/{Path.GetFileName(filePath)}";
+                    var flag = await client.WebStringToFileAsync(filePath, fileUrl);
+                    var item = "\r\n ● " + Path.GetFileName(filePath);
+                    if (flag) succeeded += item;
+                    else failed += item;
                 }
                 dirName = "\r\n\r\n" + dirName + ":";
-                if(succeeded != "") succeeded = dirName + succeeded;
-                if(failed != "") failed = dirName + failed;
+                if (succeeded != "") succeeded = dirName + succeeded;
+                if (failed != "") failed = dirName + failed;
                 callback(succeeded, failed);
             }
 
@@ -135,12 +129,12 @@ namespace ContextMenuManager.Methods
             filePaths = Directory.GetFiles(AppConfig.LangsDir, "*.ini");
             await WriteFiles("Languages", filePaths, (s, f) => { succeeded2 = s; failed2 = f; });
 
-            if(isManual)
+            if (isManual)
             {
-                string failed = failed1 + failed2;
-                string succeeded = succeeded1 + succeeded2;
-                if(failed != "") AppMessageBox.Show(AppString.Message.WebDataReadFailed + failed);
-                if(succeeded != "") AppMessageBox.Show(AppString.Message.DicUpdateSucceeded + succeeded,
+                var failed = failed1 + failed2;
+                var succeeded = succeeded1 + succeeded2;
+                if (failed != "") AppMessageBox.Show(AppString.Message.WebDataReadFailed + failed);
+                if (succeeded != "") AppMessageBox.Show(AppString.Message.DicUpdateSucceeded + succeeded,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -148,16 +142,16 @@ namespace ContextMenuManager.Methods
         /// <summary>加工处理更新信息，去掉标题头</summary>
         private static string MachinedInfo(string info)
         {
-            string str = string.Empty;
-            string[] lines = info.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-            for(int m = 0; m < lines.Length; m++)
+            var str = string.Empty;
+            var lines = info.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            for (var m = 0; m < lines.Length; m++)
             {
-                string line = lines[m];
-                for(int n = 1; n <= 6; n++)
+                var line = lines[m];
+                for (var n = 1; n <= 6; n++)
                 {
-                    if(line.StartsWith(new string('#', n) + ' '))
+                    if (line.StartsWith(new string('#', n) + ' '))
                     {
-                        line = line.Substring(n + 1);
+                        line = line[(n + 1)..];
                         break;
                     }
                 }

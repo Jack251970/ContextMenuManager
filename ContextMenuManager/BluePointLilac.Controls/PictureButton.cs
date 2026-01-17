@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
@@ -8,7 +7,7 @@ namespace BluePointLilac.Controls
 {
     public class PictureButton : PictureBox
     {
-        private Timer animationTimer;
+        private readonly Timer animationTimer;
         private float currentOpacity = 0f;
         private float targetOpacity = 0f;
         private const float ANIMATION_SPEED = 0.1f;
@@ -79,21 +78,21 @@ namespace BluePointLilac.Controls
             }
 
             // 创建混合图像
-            Image normalImage = BaseImage;
-            Image disabledImage = CreateDisabledImage(BaseImage);
+            var normalImage = BaseImage;
+            var disabledImage = CreateDisabledImage(BaseImage);
 
             // 创建一个临时位图来绘制混合效果
-            Bitmap mixedImage = new Bitmap(normalImage.Width, normalImage.Height);
-            using (Graphics g = Graphics.FromImage(mixedImage))
+            var mixedImage = new Bitmap(normalImage.Width, normalImage.Height);
+            using (var g = Graphics.FromImage(mixedImage))
             {
                 // 先绘制禁用效果的图像
                 g.DrawImage(disabledImage, 0, 0);
 
                 // 然后根据当前不透明度绘制正常图像
-                float opacity = Math.Max(0, Math.Min(1, currentOpacity));
-                ColorMatrix matrix = new ColorMatrix();
+                var opacity = Math.Max(0, Math.Min(1, currentOpacity));
+                var matrix = new ColorMatrix();
                 matrix.Matrix33 = opacity; // 设置透明度
-                ImageAttributes attributes = new ImageAttributes();
+                var attributes = new ImageAttributes();
                 attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 
                 g.DrawImage(
@@ -119,7 +118,7 @@ namespace BluePointLilac.Controls
         {
             return ToolStripRenderer.CreateDisabledImage(image);
         }
-        
+
         // 主题变化事件处理
         private void OnThemeChanged(object sender, EventArgs e)
         {
@@ -136,7 +135,7 @@ namespace BluePointLilac.Controls
             if (disposing)
             {
                 DarkModeHelper.ThemeChanged -= OnThemeChanged;
-                
+
                 animationTimer?.Stop();
                 animationTimer?.Dispose();
             }

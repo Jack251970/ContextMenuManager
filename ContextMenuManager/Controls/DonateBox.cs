@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class DonateBox : Panel
+    internal sealed class DonateBox : Panel
     {
         public DonateBox()
         {
@@ -28,13 +28,13 @@ namespace ContextMenuManager.Controls
             ResumeLayout();
         }
 
-        readonly Label lblInfo = new Label
+        private readonly Label lblInfo = new()
         {
             Text = AppString.Other.Donate,
             AutoSize = true
         };
 
-        readonly Label lblList = new Label
+        private readonly Label lblList = new()
         {
             ForeColor = DarkModeHelper.FormFore, // 修改这里
             Text = AppString.Other.DonationList,
@@ -42,24 +42,24 @@ namespace ContextMenuManager.Controls
             AutoSize = true
         };
 
-        readonly PictureBox picQR = new PictureBox
+        private readonly PictureBox picQR = new()
         {
             SizeMode = PictureBoxSizeMode.AutoSize,
             Cursor = Cursors.Hand,
             Image = AllQR,
         };
 
-        static readonly Image AllQR = Properties.Resources.Donate;
-        static readonly Image WechatQR = GetSingleQR(0);
-        static readonly Image AlipayQR = GetSingleQR(1);
-        static readonly Image QQQR = GetSingleQR(2);
+        private static readonly Image AllQR = Properties.Resources.Donate;
+        private static readonly Image WechatQR = GetSingleQR(0);
+        private static readonly Image AlipayQR = GetSingleQR(1);
+        private static readonly Image QQQR = GetSingleQR(2);
         private static Image GetSingleQR(int index)
         {
-            Bitmap bitmap = new Bitmap(200, 200);
-            using(Graphics g = Graphics.FromImage(bitmap))
+            var bitmap = new Bitmap(200, 200);
+            using (var g = Graphics.FromImage(bitmap))
             {
-                Rectangle destRect = new Rectangle(0, 0, 200, 200);
-                Rectangle srcRect = new Rectangle(index * 200, 0, 200, 200);
+                var destRect = new Rectangle(0, 0, 200, 200);
+                var srcRect = new Rectangle(index * 200, 0, 200, 200);
                 g.DrawImage(AllQR, destRect, srcRect, GraphicsUnit.Pixel);
             }
             return bitmap;
@@ -67,7 +67,7 @@ namespace ContextMenuManager.Controls
 
         protected override void OnResize(EventArgs e)
         {
-            int a = 60.DpiZoom();
+            var a = 60.DpiZoom();
             base.OnResize(e);
             picQR.Left = (Width - picQR.Width) / 2;
             lblInfo.Left = (Width - lblInfo.Width) / 2;
@@ -79,10 +79,10 @@ namespace ContextMenuManager.Controls
 
         private void SwitchQR(object sender, MouseEventArgs e)
         {
-            if(picQR.Image == AllQR)
+            if (picQR.Image == AllQR)
             {
-                if(e.X < 200) picQR.Image = WechatQR;
-                else if(e.X < 400) picQR.Image = AlipayQR;
+                if (e.X < 200) picQR.Image = WechatQR;
+                else if (e.X < 400) picQR.Image = AlipayQR;
                 else picQR.Image = QQQR;
             }
             else
@@ -94,14 +94,14 @@ namespace ContextMenuManager.Controls
         private async void ShowDonateDialog()
         {
             Cursor = Cursors.WaitCursor;
-            using(UAWebClient client = new UAWebClient())
+            using (var client = new UAWebClient())
             {
-                string url = AppConfig.RequestUseGithub ? AppConfig.GithubDonateRaw : AppConfig.GiteeDonateRaw;
-                string contents = await client.GetWebStringAsync(url);
+                var url = AppConfig.RequestUseGithub ? AppConfig.GithubDonateRaw : AppConfig.GiteeDonateRaw;
+                var contents = await client.GetWebStringAsync(url);
                 //contents = System.IO.File.ReadAllText(@"..\..\..\Donate.md");//用于求和更新Donate.md文件
-                if(contents == null)
+                if (contents == null)
                 {
-                    if(AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
+                    if (AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
                         + AppString.Message.OpenWebUrl, MessageBoxButtons.OKCancel) == DialogResult.OK)
                     {
                         url = AppConfig.RequestUseGithub ? AppConfig.GithubDonate : AppConfig.GiteeDonate;
@@ -110,17 +110,15 @@ namespace ContextMenuManager.Controls
                 }
                 else
                 {
-                    using(DonateListDialog dlg = new DonateListDialog())
-                    {
-                        dlg.DanateData = contents;
-                        dlg.ShowDialog();
-                    }
+                    using var dlg = new DonateListDialog();
+                    dlg.DanateData = contents;
+                    dlg.ShowDialog();
                 }
             }
             Cursor = Cursors.Default;
         }
 
-        sealed class DonateListDialog : CommonDialog
+        private sealed class DonateListDialog : CommonDialog
         {
             public string DanateData { get; set; }
 
@@ -128,19 +126,17 @@ namespace ContextMenuManager.Controls
 
             protected override bool RunDialog(IntPtr hwndOwner)
             {
-                using(DonateListForm frm = new DonateListForm())
-                {
-                    frm.ShowDonateList(DanateData);
-                    MainForm mainForm = (MainForm)FromHandle(hwndOwner);
-                    frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
-                    frm.Top = mainForm.Top + 150.DpiZoom();
-                    frm.TopMost = true;
-                    frm.ShowDialog();
-                }
+                using var frm = new DonateListForm();
+                frm.ShowDonateList(DanateData);
+                var mainForm = (MainForm)FromHandle(hwndOwner);
+                frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
+                frm.Top = mainForm.Top + 150.DpiZoom();
+                frm.TopMost = true;
+                frm.ShowDialog();
                 return true;
             }
 
-            sealed class DonateListForm : RForm
+            private sealed class DonateListForm : RForm
             {
                 public DonateListForm()
                 {
@@ -164,7 +160,7 @@ namespace ContextMenuManager.Controls
                     ApplyDarkModeToDataGridView(dgvDonate);
                 }
 
-                readonly DataGridView dgvDonate = new DataGridView
+                private readonly DataGridView dgvDonate = new()
                 {
                     ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
                     AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
@@ -178,8 +174,9 @@ namespace ContextMenuManager.Controls
                     ReadOnly = true
                 };
 
-                readonly Label lblDonate = new Label { AutoSize = true };
-                readonly Label lblThank = new Label
+                private readonly Label lblDonate = new()
+                { AutoSize = true };
+                private readonly Label lblThank = new()
                 {
                     Font = new Font("Lucida Handwriting", 15F),
                     ForeColor = Color.DimGray,//Fixed
@@ -190,7 +187,7 @@ namespace ContextMenuManager.Controls
                 protected override void OnResize(EventArgs e)
                 {
                     base.OnResize(e);
-                    int a = 20.DpiZoom();
+                    var a = 20.DpiZoom();
                     lblDonate.Location = new Point(a, a);
                     dgvDonate.Location = new Point(a, lblDonate.Bottom + a);
                     dgvDonate.Width = ClientSize.Width - 2 * a;
@@ -200,37 +197,33 @@ namespace ContextMenuManager.Controls
 
                 public void ShowDonateList(string contents)
                 {
-                    string[] lines = contents.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                    int index = Array.FindIndex(lines, line => line == "|:--:|:--:|:--:|:--:|:--:");
-                    if(index == -1) return;
-                    string[] heads = lines[index - 1].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    var lines = contents.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    var index = Array.FindIndex(lines, line => line == "|:--:|:--:|:--:|:--:|:--:");
+                    if (index == -1) return;
+                    var heads = lines[index - 1].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                     dgvDonate.ColumnCount = heads.Length;
                     dgvDonate.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                    for(int m = 0; m < heads.Length; m++)
+                    for (var m = 0; m < heads.Length; m++)
                     {
                         dgvDonate.Columns[m].HeaderText = heads[m];
                     }
-                    for(int n = index + 1; n < lines.Length; n++)
+                    for (var n = index + 1; n < lines.Length; n++)
                     {
-                        string[] strs = lines[n].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-                        object[] values = new object[strs.Length];
-                        for(int k = 0; k < strs.Length; k++)
+                        var strs = lines[n].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                        var values = new object[strs.Length];
+                        for (var k = 0; k < strs.Length; k++)
                         {
-                            switch(k)
+                            values[k] = k switch
                             {
-                                case 3:
-                                    values[k] = Convert.ToSingle(strs[k]);
-                                    break;
-                                default:
-                                    values[k] = strs[k];
-                                    break;
-                            }
+                                3 => Convert.ToSingle(strs[k]),
+                                _ => strs[k],
+                            };
                         }
                         dgvDonate.Rows.Add(values);
                     }
                     dgvDonate.Sort(dgvDonate.Columns[0], ListSortDirection.Descending);
-                    DateTime date = Convert.ToDateTime(dgvDonate.Rows[0].Cells[0].Value);
-                    float money = dgvDonate.Rows.Cast<DataGridViewRow>().Sum(row => (float)row.Cells[3].Value);
+                    var date = Convert.ToDateTime(dgvDonate.Rows[0].Cells[0].Value);
+                    var money = dgvDonate.Rows.Cast<DataGridViewRow>().Sum(row => (float)row.Cells[3].Value);
                     lblDonate.Text = AppString.Dialog.DonateInfo.Replace("%date", date.ToLongDateString())
                         .Replace("%money", money.ToString()).Replace("%count", dgvDonate.RowCount.ToString());
                 }

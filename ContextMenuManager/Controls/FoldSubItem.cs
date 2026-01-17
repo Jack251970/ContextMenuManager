@@ -10,19 +10,19 @@ using static ContextMenuManager.Methods.ObjectPath;
 
 namespace ContextMenuManager.Controls
 {
-    class FoldSubItem : MyListItem
+    internal class FoldSubItem : MyListItem
     {
         public FoldGroupItem FoldGroupItem { get; set; }
 
         public void Indent()
         {
-            int w = 40.DpiZoom();
+            var w = 40.DpiZoom();
             Controls["Image"].Left += w;
             Controls["Text"].Left += w;
         }
     }
 
-    class FoldGroupItem : MyListItem, IBtnShowMenuItem
+    internal class FoldGroupItem : MyListItem, IBtnShowMenuItem
     {
         private bool isFold;
         public bool IsFold
@@ -30,7 +30,7 @@ namespace ContextMenuManager.Controls
             get => isFold;
             set
             {
-                if(isFold == value) return;
+                if (isFold == value) return;
                 isFold = value;
                 FoldMe(value);
             }
@@ -40,10 +40,10 @@ namespace ContextMenuManager.Controls
         public PathType PathType { get; set; }
 
         public MenuButton BtnShowMenu { get; set; }
-        readonly PictureButton btnFold;
-        readonly PictureButton btnOpenPath;
-        readonly RToolStripMenuItem tsiFoldAll = new RToolStripMenuItem(AppString.Menu.FoldAll);
-        readonly RToolStripMenuItem tsiUnfoldAll = new RToolStripMenuItem(AppString.Menu.UnfoldAll);
+        private readonly PictureButton btnFold;
+        private readonly PictureButton btnOpenPath;
+        private readonly RToolStripMenuItem tsiFoldAll = new(AppString.Menu.FoldAll);
+        private readonly RToolStripMenuItem tsiUnfoldAll = new(AppString.Menu.UnfoldAll);
 
         public FoldGroupItem(string groupPath, PathType pathType)
         {
@@ -51,13 +51,13 @@ namespace ContextMenuManager.Controls
             BtnShowMenu = new MenuButton(this);
             btnOpenPath = new PictureButton(AppImage.Open);
 
-            if(pathType == PathType.File || pathType == PathType.Directory)
+            if (pathType is PathType.File or PathType.Directory)
             {
                 groupPath = Environment.ExpandEnvironmentVariables(groupPath);
             }
             string tip = null;
             Action openPath = null;
-            switch(pathType)
+            switch (pathType)
             {
                 case PathType.File:
                     tip = AppString.Menu.FileLocation;
@@ -83,7 +83,7 @@ namespace ContextMenuManager.Controls
             ContextMenuStrip.Items.AddRange(new[] { tsiFoldAll, tsiUnfoldAll });
             MouseDown += (sender, e) =>
             {
-                if(e.Button == MouseButtons.Left) Fold();
+                if (e.Button == MouseButtons.Left) Fold();
             };
             btnFold.MouseDown += (sender, e) =>
             {
@@ -98,9 +98,9 @@ namespace ContextMenuManager.Controls
 
         public void SetVisibleWithSubItemCount()
         {
-            foreach(Control ctr in Parent.Controls)
+            foreach (Control ctr in Parent.Controls)
             {
-                if(ctr is FoldSubItem item && item.FoldGroupItem == this)
+                if (ctr is FoldSubItem item && item.FoldGroupItem == this)
                 {
                     Visible = true;
                     return;
@@ -119,18 +119,18 @@ namespace ContextMenuManager.Controls
         private void FoldMe(bool isFold)
         {
             btnFold.BaseImage = isFold ? AppImage.Down : AppImage.Up;
-            foreach(Control ctr in Parent?.Controls)
+            foreach (Control ctr in Parent?.Controls)
             {
-                if(ctr is FoldSubItem item && item.FoldGroupItem == this) ctr.Visible = !isFold;
+                if (ctr is FoldSubItem item && item.FoldGroupItem == this) ctr.Visible = !isFold;
             }
         }
 
         private void FoldAll(bool isFold)
         {
             Parent.SuspendLayout();
-            foreach(Control ctr in Parent.Controls)
+            foreach (Control ctr in Parent.Controls)
             {
-                if(ctr is FoldGroupItem groupItem) groupItem.IsFold = isFold;
+                if (ctr is FoldGroupItem groupItem) groupItem.IsFold = isFold;
             }
             Parent.ResumeLayout();
         }

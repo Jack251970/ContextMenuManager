@@ -5,7 +5,7 @@ using System;
 
 namespace ContextMenuManager.Controls
 {
-    class NewItem : MyListItem
+    internal class NewItem : MyListItem
     {
         public NewItem() : this(AppString.Other.NewItem) { }
 
@@ -20,6 +20,6 @@ namespace ContextMenuManager.Controls
 
         }
         public Action AddNewItem;
-        readonly PictureButton BtnAddNewItem = new PictureButton(AppImage.AddNewItem);
+        private readonly PictureButton BtnAddNewItem = new(AppImage.AddNewItem);
     }
 }

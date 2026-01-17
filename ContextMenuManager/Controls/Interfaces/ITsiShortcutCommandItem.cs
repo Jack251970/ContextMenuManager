@@ -7,14 +7,14 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
-    interface ITsiShortcutCommandItem
+    internal interface ITsiShortcutCommandItem
     {
         ShellLink ShellLink { get; }
         ShortcutCommandMenuItem TsiChangeCommand { get; set; }
         ContextMenuStrip ContextMenuStrip { get; set; }
     }
 
-    sealed class ShortcutCommandMenuItem : RToolStripMenuItem
+    internal sealed class ShortcutCommandMenuItem : RToolStripMenuItem
     {
         public ShortcutCommandMenuItem(ITsiShortcutCommandItem item) : base(AppString.Menu.ChangeCommand)
         {
@@ -26,19 +26,17 @@ namespace ContextMenuManager.Controls.Interfaces
 
         public bool ChangeCommand(ShellLink shellLink)
         {
-            using(CommandDialog dlg = new CommandDialog())
-            {
-                dlg.Command = shellLink.TargetPath;
-                dlg.Arguments = shellLink.Arguments;
-                if(dlg.ShowDialog() != DialogResult.OK) return false;
-                shellLink.TargetPath = dlg.Command;
-                shellLink.Arguments = dlg.Arguments;
-                shellLink.Save();
-                return true;
-            }
+            using var dlg = new CommandDialog();
+            dlg.Command = shellLink.TargetPath;
+            dlg.Arguments = shellLink.Arguments;
+            if (dlg.ShowDialog() != DialogResult.OK) return false;
+            shellLink.TargetPath = dlg.Command;
+            shellLink.Arguments = dlg.Arguments;
+            shellLink.Save();
+            return true;
         }
 
-        sealed class CommandDialog : CommonDialog
+        private sealed class CommandDialog : CommonDialog
         {
             public string Command { get; set; }
             public string Arguments { get; set; }
@@ -47,22 +45,20 @@ namespace ContextMenuManager.Controls.Interfaces
 
             protected override bool RunDialog(IntPtr hwndOwner)
             {
-                using(CommandForm frm = new CommandForm())
+                using var frm = new CommandForm();
+                frm.Command = Command;
+                frm.Arguments = Arguments;
+                frm.TopMost = true;
+                var flag = frm.ShowDialog() == DialogResult.OK;
+                if (flag)
                 {
-                    frm.Command = Command;
-                    frm.Arguments = Arguments;
-                    frm.TopMost = true;
-                    bool flag = frm.ShowDialog() == DialogResult.OK;
-                    if(flag)
-                    {
-                        Command = frm.Command;
-                        Arguments = frm.Arguments;
-                    }
-                    return flag;
+                    Command = frm.Command;
+                    Arguments = frm.Arguments;
                 }
+                return flag;
             }
 
-            sealed class CommandForm : ResizeLimitedForm
+            private sealed class CommandForm : ResizeLimitedForm
             {
                 public CommandForm()
                 {
@@ -89,25 +85,25 @@ namespace ContextMenuManager.Controls.Interfaces
                     set => txtArguments.Text = value;
                 }
 
-                readonly Label lblCommand = new Label
+                private readonly Label lblCommand = new()
                 {
                     Text = AppString.Dialog.ItemCommand,
                     AutoSize = true
                 };
-                readonly Label lblArguments = new Label
+                private readonly Label lblArguments = new()
                 {
                     Text = AppString.Dialog.CommandArguments,
                     AutoSize = true
                 };
-                readonly TextBox txtCommand = new TextBox();
-                readonly TextBox txtArguments = new TextBox();
-                readonly Button btnOK = new Button
+                private readonly TextBox txtCommand = new();
+                private readonly TextBox txtArguments = new();
+                private readonly Button btnOK = new()
                 {
                     DialogResult = DialogResult.OK,
                     Text = ResourceString.OK,
                     AutoSize = true
                 };
-                readonly Button btnCancel = new Button
+                private readonly Button btnCancel = new()
                 {
                     DialogResult = DialogResult.Cancel,
                     Text = ResourceString.Cancel,
@@ -117,11 +113,11 @@ namespace ContextMenuManager.Controls.Interfaces
                 private void InitializeComponents()
                 {
                     Controls.AddRange(new Control[] { lblCommand, lblArguments, txtCommand, txtArguments, btnOK, btnCancel });
-                    int a = 20.DpiZoom();
+                    var a = 20.DpiZoom();
                     lblArguments.Left = lblCommand.Left = lblCommand.Top = txtCommand.Top = a;
                     lblArguments.Top = txtArguments.Top = txtCommand.Bottom + a;
                     btnOK.Top = btnCancel.Top = txtArguments.Bottom + a;
-                    int b = Math.Max(lblCommand.Width, lblArguments.Width) + 3 * a;
+                    var b = Math.Max(lblCommand.Width, lblArguments.Width) + 3 * a;
                     ClientSize = new Size(250.DpiZoom() + b, btnOK.Bottom + a);
                     btnOK.Anchor = btnCancel.Anchor = AnchorStyles.Right | AnchorStyles.Top;
                     btnCancel.Left = ClientSize.Width - btnCancel.Width - a;

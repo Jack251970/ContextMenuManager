@@ -67,7 +67,7 @@ namespace BluePointLilac.Methods
         /// <returns>获取到的图标</returns>
         public static Icon GetExtensionIcon(string extension)
         {
-            FileInfoFlags flags = FileInfoFlags.SHGFI_ICON | FileInfoFlags.SHGFI_LARGEICON | FileInfoFlags.SHGFI_USEFILEATTRIBUTES;
+            var flags = FileInfoFlags.SHGFI_ICON | FileInfoFlags.SHGFI_LARGEICON | FileInfoFlags.SHGFI_USEFILEATTRIBUTES;
             return GetIcon(extension, flags);
         }
 
@@ -76,7 +76,7 @@ namespace BluePointLilac.Methods
         /// <returns>获取到的图标</returns>
         public static Icon GetFolderIcon(string folderPath)
         {
-            FileInfoFlags flags = FileInfoFlags.SHGFI_ICON | FileInfoFlags.SHGFI_LARGEICON;
+            var flags = FileInfoFlags.SHGFI_ICON | FileInfoFlags.SHGFI_LARGEICON;
             return GetIcon(folderPath, flags);
         }
 
@@ -86,10 +86,10 @@ namespace BluePointLilac.Methods
         /// <returns>获取到的图标</returns>
         public static Icon GetIcon(string filePath, FileInfoFlags flags)
         {
-            SHFILEINFO info = new SHFILEINFO();
-            IntPtr hInfo = SHGetFileInfo(filePath, 0, ref info, (uint)Marshal.SizeOf(info), flags);
-            if(hInfo.Equals(IntPtr.Zero)) return null;
-            Icon icon = (Icon)Icon.FromHandle(info.hIcon).Clone();
+            var info = new SHFILEINFO();
+            var hInfo = SHGetFileInfo(filePath, 0, ref info, (uint)Marshal.SizeOf(info), flags);
+            if (hInfo.Equals(IntPtr.Zero)) return null;
+            var icon = (Icon)Icon.FromHandle(info.hIcon).Clone();
             DestroyIcon(info.hIcon); //释放资源
             return icon;
         }
@@ -110,17 +110,17 @@ namespace BluePointLilac.Methods
         public static Icon GetIcon(string iconLocation, out string iconPath, out int iconIndex)
         {
             iconIndex = 0; iconPath = null;
-            if(iconLocation.IsNullOrWhiteSpace()) return null;
+            if (iconLocation.IsNullOrWhiteSpace()) return null;
             iconLocation = Environment.ExpandEnvironmentVariables(iconLocation).Replace("\"", "");
-            int index = iconLocation.LastIndexOf(',');
-            if(index == -1) iconPath = iconLocation;
+            var index = iconLocation.LastIndexOf(',');
+            if (index == -1) iconPath = iconLocation;
             else
             {
-                if(File.Exists(iconLocation)) iconPath = iconLocation;
+                if (File.Exists(iconLocation)) iconPath = iconLocation;
                 else
                 {
-                    bool flag = int.TryParse(iconLocation.Substring(index + 1), out iconIndex);
-                    iconPath = flag ? iconLocation.Substring(0, index) : null;
+                    var flag = int.TryParse(iconLocation[(index + 1)..], out iconIndex);
+                    iconPath = flag ? iconLocation[..index] : null;
                 }
             }
             return GetIcon(iconPath, iconIndex);
@@ -133,20 +133,20 @@ namespace BluePointLilac.Methods
         public static Icon GetIcon(string iconPath, int iconIndex)
         {
             Icon icon = null;
-            if(iconPath.IsNullOrWhiteSpace()) return icon;
+            if (iconPath.IsNullOrWhiteSpace()) return icon;
             iconPath = Environment.ExpandEnvironmentVariables(iconPath).Replace("\"", "");
 
-            if(Path.GetFileName(iconPath).ToLower() == "shell32.dll")
+            if (Path.GetFileName(iconPath).ToLower() == "shell32.dll")
             {
                 iconPath = "shell32.dll";//系统强制文件重定向
                 icon = GetReplacedShellIcon(iconIndex);//注册表图标重定向
-                if(icon != null) return icon;
+                if (icon != null) return icon;
             }
 
-            IntPtr hInst = IntPtr.Zero;
-            IntPtr[] hIcons = new[] { IntPtr.Zero };
+            var hInst = IntPtr.Zero;
+            var hIcons = new[] { IntPtr.Zero };
             //iconIndex为负数就是指定资源标识符, 为正数就是该图标在资源文件中的顺序序号, 为-1时不能使用ExtractIconEx提取图标
-            if(iconIndex == -1)
+            if (iconIndex == -1)
             {
                 hInst = LoadLibrary(iconPath);
                 hIcons[0] = LoadImage(hInst, "#1", 1, SystemInformation.IconSize.Width, SystemInformation.IconSize.Height, 0);
@@ -165,8 +165,8 @@ namespace BluePointLilac.Methods
         /// <returns>获取到的图标</returns>
         public static Icon GetReplacedShellIcon(int iconIndex)
         {
-            string iconLocation = Registry.GetValue(ShellIconPath, iconIndex.ToString(), null)?.ToString();
-            if(iconLocation != null) return GetIcon(iconLocation) ?? GetIcon("imageres.dll", 2);
+            var iconLocation = Registry.GetValue(ShellIconPath, iconIndex.ToString(), null)?.ToString();
+            if (iconLocation != null) return GetIcon(iconLocation) ?? GetIcon("imageres.dll", 2);
             else return null;
         }
     }

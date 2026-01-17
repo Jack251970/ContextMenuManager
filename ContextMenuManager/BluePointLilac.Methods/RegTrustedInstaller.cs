@@ -11,7 +11,7 @@ namespace BluePointLilac.Methods
     /// 代码原文：https://gist.github.com/JPBlanc/ca0e4f1830e4ca18a526#file-write_a_registry_own_by_trustedinstaller-cs
     public class RegTrustedInstaller
     {
-        static class NativeMethod
+        private static class NativeMethod
         {
             public const string TakeOwnership = "SeTakeOwnershipPrivilege";
             public const string Restore = "SeRestorePrivilege";
@@ -123,33 +123,33 @@ namespace BluePointLilac.Methods
             public static bool TrySetPrivilege(string sPrivilege, bool enablePrivilege)
             {
                 bool blRc;
-                TOKEN_PRIVILEGES newTP = new TOKEN_PRIVILEGES();
-                TOKEN_PRIVILEGES oldTP = new TOKEN_PRIVILEGES();
-                LUID luid = new LUID();
-                int retrunLength = 0;
-                IntPtr processToken = IntPtr.Zero;
+                var newTP = new TOKEN_PRIVILEGES();
+                var oldTP = new TOKEN_PRIVILEGES();
+                var luid = new LUID();
+                var retrunLength = 0;
+                var processToken = IntPtr.Zero;
 
                 //本地进程令牌恢复
                 blRc = OpenProcessToken(GetCurrentProcess(), TokenAccessRights.AllAccess, ref processToken);
-                if(blRc == false) return false;
+                if (blRc == false) return false;
 
                 //恢复特权的唯一标识符空间
                 blRc = LookupPrivilegeValue(null, sPrivilege, ref luid);
-                if(blRc == false) return false;
+                if (blRc == false) return false;
 
                 //建立或取消特权
                 newTP.PrivilegeCount = 1;
                 newTP.Privileges = new LUID_AND_ATTRIBUTES[64];
                 newTP.Privileges[0].Luid = luid;
 
-                if(enablePrivilege) newTP.Privileges[0].Attributes = (int)PrivilegeAttributes.Enabled;
+                if (enablePrivilege) newTP.Privileges[0].Attributes = (int)PrivilegeAttributes.Enabled;
                 else newTP.Privileges[0].Attributes = (int)PrivilegeAttributes.Disabled;
 
                 oldTP.PrivilegeCount = 64;
                 oldTP.Privileges = new LUID_AND_ATTRIBUTES[64];
                 blRc = AdjustTokenPrivileges(processToken, false, ref newTP, 16, ref oldTP, ref retrunLength);
 
-                if(blRc == false) { GetLastError(); return false; }
+                if (blRc == false) { GetLastError(); return false; }
                 return true;
             }
         }
@@ -159,7 +159,7 @@ namespace BluePointLilac.Methods
         /// <param name="regPath">要获取权限的注册表完整路径</param>
         public static void TakeRegKeyOwnerShip(string regPath)
         {
-            if(regPath.IsNullOrWhiteSpace()) return;
+            if (regPath.IsNullOrWhiteSpace()) return;
             RegistryKey key = null;
             WindowsIdentity id = null;
             //利用试错判断是否有写入权限
@@ -172,17 +172,17 @@ namespace BluePointLilac.Methods
                     id = WindowsIdentity.GetCurrent();
 
                     //添加TakeOwnership特权
-                    bool flag = NativeMethod.TrySetPrivilege(NativeMethod.TakeOwnership, true);
-                    if(!flag) throw new PrivilegeNotHeldException(NativeMethod.TakeOwnership);
+                    var flag = NativeMethod.TrySetPrivilege(NativeMethod.TakeOwnership, true);
+                    if (!flag) throw new PrivilegeNotHeldException(NativeMethod.TakeOwnership);
 
                     //添加恢复特权(必须这样做才能更改所有者)
                     flag = NativeMethod.TrySetPrivilege(NativeMethod.Restore, true);
-                    if(!flag) throw new PrivilegeNotHeldException(NativeMethod.Restore);
+                    if (!flag) throw new PrivilegeNotHeldException(NativeMethod.Restore);
 
                     //打开没有权限的注册表路径
                     key = RegistryEx.GetRegistryKey(regPath, RegistryKeyPermissionCheck.ReadWriteSubTree, RegistryRights.TakeOwnership);
 
-                    RegistrySecurity security = key.GetAccessControl(AccessControlSections.All);
+                    var security = key.GetAccessControl(AccessControlSections.All);
 
                     //得到真正所有者
                     //IdentityReference oldId = security.GetOwner(typeof(SecurityIdentifier));
@@ -193,7 +193,7 @@ namespace BluePointLilac.Methods
                     key.SetAccessControl(security);
 
                     //添加完全控制
-                    RegistryAccessRule fullAccess = new RegistryAccessRule(id.User, RegistryRights.FullControl,
+                    var fullAccess = new RegistryAccessRule(id.User, RegistryRights.FullControl,
                         InheritanceFlags.ContainerInherit, PropagationFlags.None, AccessControlType.Allow);
                     security.AddAccessRule(fullAccess);
                     key.SetAccessControl(security);
@@ -224,17 +224,15 @@ namespace BluePointLilac.Methods
         /// <param name="regPath">要获取权限的注册表完整路径</param>
         public static void TakeRegTreeOwnerShip(string regPath)
         {
-            if(regPath.IsNullOrWhiteSpace()) return;
+            if (regPath.IsNullOrWhiteSpace()) return;
             TakeRegKeyOwnerShip(regPath);
             try
             {
-                using(RegistryKey key = RegistryEx.GetRegistryKey(regPath))
+                using var key = RegistryEx.GetRegistryKey(regPath);
+                if (key == null) return;
+                foreach (var subKeyName in key.GetSubKeyNames())
                 {
-                    if(key == null) return;
-                    foreach(string subKeyName in key.GetSubKeyNames())
-                    {
-                        TakeRegTreeOwnerShip($@"{key.Name}\{subKeyName}");
-                    }
+                    TakeRegTreeOwnerShip($@"{key.Name}\{subKeyName}");
                 }
             }
             catch { }

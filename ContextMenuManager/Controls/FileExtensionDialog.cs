@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class FileExtensionDialog : SelectDialog
+    internal sealed class FileExtensionDialog : SelectDialog
     {
         public string Extension
         {
@@ -25,14 +25,14 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                List<string> items = new List<string>();
+                var items = new List<string>();
                 using (var key = RegistryEx.GetRegistryKey(FileExtension.FILEEXTSPATH))
                 {
                     if (key != null)
                     {
-                        foreach (string keyName in key.GetSubKeyNames())
+                        foreach (var keyName in key.GetSubKeyNames())
                         {
-                            if (keyName.StartsWith(".")) items.Add(keyName.Substring(1));
+                            if (keyName.StartsWith(".")) items.Add(keyName[1..]);
                         }
                     }
                 }
@@ -42,12 +42,12 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            bool flag = base.RunDialog(hwndOwner);
-            if(flag)
+            var flag = base.RunDialog(hwndOwner);
+            if (flag)
             {
-                string extension = ObjectPath.RemoveIllegalChars(Extension);
-                int index = extension.LastIndexOf('.');
-                if(index >= 0) Extension = extension.Substring(index);
+                var extension = ObjectPath.RemoveIllegalChars(Extension);
+                var index = extension.LastIndexOf('.');
+                if (index >= 0) Extension = extension[index..];
                 else Extension = $".{extension}";
             }
             return flag;

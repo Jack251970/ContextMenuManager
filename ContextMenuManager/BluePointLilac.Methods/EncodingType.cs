@@ -10,7 +10,7 @@ namespace BluePointLilac.Methods
     public static class EncodingType
     {
         /// <summary>各种带BOM的编码BOM值</summary>
-        private static readonly Dictionary<byte[], Encoding> EncodingBomBytes = new Dictionary<byte[], Encoding>
+        private static readonly Dictionary<byte[], Encoding> EncodingBomBytes = new()
         {
             { new byte[] { 0xEF, 0xBB, 0xBF }, Encoding.UTF8 },                         //UTF-8         EF BB BF
             { new byte[] { 0xFF, 0xFE, 0x00, 0x00 }, Encoding.UTF32 },                  //UTF-32LE      FF FE 00 00
@@ -25,15 +25,15 @@ namespace BluePointLilac.Methods
         /// <returns>文件的编码类型</returns> 
         public static Encoding GetType(string filePath)
         {
-            byte[] fs = File.ReadAllBytes(filePath);
-            foreach(var kv in EncodingBomBytes)
+            var fs = File.ReadAllBytes(filePath);
+            foreach (var kv in EncodingBomBytes)
             {
-                if(fs.Length < kv.Key.Length) continue;
-                int i = -1;
-                bool flag = kv.Key.All(s => { i++; return s == fs[i]; });
-                if(flag) return kv.Value;
+                if (fs.Length < kv.Key.Length) continue;
+                var i = -1;
+                var flag = kv.Key.All(s => { i++; return s == fs[i]; });
+                if (flag) return kv.Value;
             }
-            if(IsUTF8Bytes(fs)) return Encoding.UTF8; //不带BOM的UTF-8
+            if (IsUTF8Bytes(fs)) return Encoding.UTF8; //不带BOM的UTF-8
             return Encoding.Default;
         }
 
@@ -41,17 +41,17 @@ namespace BluePointLilac.Methods
         /// <param name=“bytes“></param> 
         private static bool IsUTF8Bytes(byte[] bytes)
         {
-            int count = 1; //计算当前正分析的字符应还有的字节数 
-            for(int i = 0; i < bytes.Length; i++)
+            var count = 1; //计算当前正分析的字符应还有的字节数 
+            for (var i = 0; i < bytes.Length; i++)
             {
-                byte curByte = bytes[i];//当前分析的字节. 
-                if(count == 1)
+                var curByte = bytes[i];//当前分析的字节. 
+                if (count == 1)
                 {
-                    if(curByte >= 0x80)
+                    if (curByte >= 0x80)
                     {
                         //计算当前字符所占的字节数
                         //修复了EncodingType内造成en语言下debug错误的问题（算术溢出）
-                        int byteCount = 7;
+                        var byteCount = 7;
                         if (curByte < 0xC0)
                         {
                             byteCount = 0;
@@ -86,13 +86,13 @@ namespace BluePointLilac.Methods
                             count++;
                         }*/
                         //标记位首位若为非0 则至少以2个1开始 如:110XXXXX...........1111110X 
-                        if (count == 1 || count > 6) return false;
+                        if (count is 1 or > 6) return false;
                     }
                 }
                 else
                 {
                     //若是UTF-8 此时第一位必须为1 
-                    if((curByte & 0xC0) != 0x80) return false;
+                    if ((curByte & 0xC0) != 0x80) return false;
                     else count--;
                 }
             }

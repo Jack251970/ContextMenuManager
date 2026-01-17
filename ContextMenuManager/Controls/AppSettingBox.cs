@@ -2,7 +2,6 @@
 using BluePointLilac.Methods;
 using ContextMenuManager.BluePointLilac.Controls;
 using ContextMenuManager.Methods;
-using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class AppSettingBox : MyList
+    internal sealed class AppSettingBox : MyList
     {
         public AppSettingBox()
         {
@@ -73,81 +72,81 @@ namespace ContextMenuManager.Controls
             ResumeLayout();
         }
 
-        readonly MyListItem mliConfigDir = new MyListItem
+        private readonly MyListItem mliConfigDir = new()
         {
             Text = AppString.Other.ConfigPath
         };
-        readonly RComboBox cmbConfigDir = new RComboBox();
-        readonly PictureButton btnConfigDir = new PictureButton(AppImage.Open);
+        private readonly RComboBox cmbConfigDir = new();
+        private readonly PictureButton btnConfigDir = new(AppImage.Open);
 
-        readonly MyListItem mliRepo = new MyListItem
+        private readonly MyListItem mliRepo = new()
         {
             Text = AppString.Other.SetRequestRepo
         };
-        readonly RComboBox cmbRepo = new RComboBox();
+        private readonly RComboBox cmbRepo = new();
 
-        readonly MyListItem mliBackup = new MyListItem
+        private readonly MyListItem mliBackup = new()
         {
             Text = AppString.Other.AutoBackup
         };
-        readonly MyCheckBox chkBackup = new MyCheckBox();
-        readonly PictureButton btnBackupDir = new PictureButton(AppImage.Open);
+        private readonly MyCheckBox chkBackup = new();
+        private readonly PictureButton btnBackupDir = new(AppImage.Open);
 
-        readonly MyListItem mliUpdate = new MyListItem
+        private readonly MyListItem mliUpdate = new()
         {
             Text = AppString.Other.SetUpdateFrequency
         };
-        readonly RComboBox cmbUpdate = new RComboBox();
-        readonly PictureButton btnUpdate = new PictureButton(AppImage.CheckUpdate);
+        private readonly RComboBox cmbUpdate = new();
+        private readonly PictureButton btnUpdate = new(AppImage.CheckUpdate);
 
-        readonly MyListItem mliTopMost = new MyListItem
+        private readonly MyListItem mliTopMost = new()
         {
             Text = AppString.Other.TopMost
         };
-        readonly MyCheckBox chkTopMost = new MyCheckBox();
+        private readonly MyCheckBox chkTopMost = new();
 
-        readonly MyListItem mliProtect = new MyListItem
+        private readonly MyListItem mliProtect = new()
         {
             Text = AppString.Other.ProtectOpenItem
         };
-        readonly MyCheckBox chkProtect = new MyCheckBox();
+        private readonly MyCheckBox chkProtect = new();
 
-        readonly MyListItem mliEngine = new MyListItem
+        private readonly MyListItem mliEngine = new()
         {
             Text = AppString.Other.WebSearchEngine
         };
-        readonly RComboBox cmbEngine = new RComboBox();
+        private readonly RComboBox cmbEngine = new();
 
-        readonly MyListItem mliShowFilePath = new MyListItem
+        private readonly MyListItem mliShowFilePath = new()
         {
             Text = AppString.Other.ShowFilePath
         };
-        readonly MyCheckBox chkShowFilePath = new MyCheckBox();
+        private readonly MyCheckBox chkShowFilePath = new();
 
-        readonly MyListItem mliOpenMoreRegedit = new MyListItem
+        private readonly MyListItem mliOpenMoreRegedit = new()
         {
             Text = AppString.Other.OpenMoreRegedit
         };
-        readonly MyCheckBox chkOpenMoreRegedit = new MyCheckBox();
+        private readonly MyCheckBox chkOpenMoreRegedit = new();
 
-        readonly MyListItem mliOpenMoreExplorer = new MyListItem
+        private readonly MyListItem mliOpenMoreExplorer = new()
         {
             Text = AppString.Other.OpenMoreExplorer
         };
-        readonly MyCheckBox chkOpenMoreExplorer = new MyCheckBox();
+        private readonly MyCheckBox chkOpenMoreExplorer = new();
 
-        readonly MyListItem mliHideDisabledItems = new MyListItem
+        private readonly MyListItem mliHideDisabledItems = new()
         {
             Text = AppString.Other.HideDisabledItems
         };
-        readonly MyCheckBox chkHideDisabledItems = new MyCheckBox();
+        private readonly MyCheckBox chkHideDisabledItems = new();
 
-        readonly MyListItem mliHideSysStoreItems = new MyListItem
+        private readonly MyListItem mliHideSysStoreItems = new()
         {
             Text = AppString.Other.HideSysStoreItems,
             Visible = WinOsVersion.Current >= WinOsVersion.Win7
         };
-        readonly MyCheckBox chkHideSysStoreItems = new MyCheckBox();
+        private readonly MyCheckBox chkHideSysStoreItems = new();
 
         public override void ClearItems()
         {
@@ -158,7 +157,7 @@ namespace ContextMenuManager.Controls
         {
             AddItems(new[] { mliConfigDir, mliUpdate, mliRepo, mliEngine, mliBackup, mliTopMost, mliProtect, mliShowFilePath,
                 mliHideDisabledItems, mliHideSysStoreItems, mliOpenMoreRegedit, mliOpenMoreExplorer });
-            foreach(MyListItem item in Controls) item.HasImage = false;
+            foreach (MyListItem item in Controls) item.HasImage = false;
             cmbConfigDir.SelectedIndex = AppConfig.SaveToAppDir ? 1 : 0;
             cmbRepo.SelectedIndex = AppConfig.RequestUseGithub ? 0 : 1;
             cmbUpdate.SelectedIndex = GetUpdateSelectIndex();
@@ -175,9 +174,9 @@ namespace ContextMenuManager.Controls
 
         private void ChangeConfigDir()
         {
-            string newPath = (cmbConfigDir.SelectedIndex == 0) ? AppConfig.AppDataConfigDir : AppConfig.AppConfigDir;
-            if(newPath == AppConfig.ConfigDir) return;
-            if(AppMessageBox.Show(AppString.Message.RestartApp, MessageBoxButtons.OKCancel) != DialogResult.OK)
+            var newPath = (cmbConfigDir.SelectedIndex == 0) ? AppConfig.AppDataConfigDir : AppConfig.AppConfigDir;
+            if (newPath == AppConfig.ConfigDir) return;
+            if (AppMessageBox.Show(AppString.Message.RestartApp, MessageBoxButtons.OKCancel) != DialogResult.OK)
             {
                 cmbConfigDir.SelectedIndex = AppConfig.SaveToAppDir ? 1 : 0;
             }
@@ -191,26 +190,24 @@ namespace ContextMenuManager.Controls
 
         private void ChangeEngineUrl()
         {
-            if(cmbEngine.SelectedIndex < cmbEngine.Items.Count - 1)
+            if (cmbEngine.SelectedIndex < cmbEngine.Items.Count - 1)
             {
                 AppConfig.EngineUrl = AppConfig.EngineUrlsDic[cmbEngine.Text];
             }
             else
             {
-                using(InputDialog dlg = new InputDialog())
-                {
-                    dlg.Text = AppConfig.EngineUrl;
-                    dlg.Title = AppString.Other.SetCustomEngine;
-                    if(dlg.ShowDialog() == DialogResult.OK) AppConfig.EngineUrl = dlg.Text;
-                    cmbEngine.SelectedIndex = GetEngineSelectIndex();
-                }
+                using var dlg = new InputDialog();
+                dlg.Text = AppConfig.EngineUrl;
+                dlg.Title = AppString.Other.SetCustomEngine;
+                if (dlg.ShowDialog() == DialogResult.OK) AppConfig.EngineUrl = dlg.Text;
+                cmbEngine.SelectedIndex = GetEngineSelectIndex();
             }
         }
 
         private void ChangeUpdateFrequency()
         {
-            int day = 30;
-            switch(cmbUpdate.SelectedIndex)
+            var day = 30;
+            switch (cmbUpdate.SelectedIndex)
             {
                 case 0:
                     day = 7; break;
@@ -224,8 +221,8 @@ namespace ContextMenuManager.Controls
 
         private int GetUpdateSelectIndex()
         {
-            int index = 1;
-            switch(AppConfig.UpdateFrequency)
+            var index = 1;
+            switch (AppConfig.UpdateFrequency)
             {
                 case 7:
                     index = 0; break;
@@ -239,10 +236,10 @@ namespace ContextMenuManager.Controls
 
         private int GetEngineSelectIndex()
         {
-            string[] urls = AppConfig.EngineUrlsDic.Values.ToArray();
-            for(int i = 0; i < urls.Length; i++)
+            var urls = AppConfig.EngineUrlsDic.Values.ToArray();
+            for (var i = 0; i < urls.Length; i++)
             {
-                if(AppConfig.EngineUrl.Equals(urls[i])) return i;
+                if (AppConfig.EngineUrl.Equals(urls[i])) return i;
             }
             return cmbEngine.Items.Count - 1;
         }

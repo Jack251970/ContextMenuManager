@@ -1,3 +1,4 @@
+using ContextMenuManager.BluePointLilac.Controls;
 using Microsoft.Win32;
 using System;
 using System.Drawing;
@@ -5,7 +6,6 @@ using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
-using ContextMenuManager.BluePointLilac.Controls;
 
 namespace BluePointLilac.Controls
 {
@@ -58,7 +58,7 @@ namespace BluePointLilac.Controls
             {
                 uiContext = new WindowsFormsSynchronizationContext();
             }
-            
+
             UpdateTheme();
             StartListeningForThemeChanges();
         }
@@ -85,12 +85,10 @@ namespace BluePointLilac.Controls
         {
             try
             {
-                using (var key = Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-                {
-                    var value = key?.GetValue("AppsUseLightTheme");
-                    return value != null && (int)value == 0;
-                }
+                using var key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                var value = key?.GetValue("AppsUseLightTheme");
+                return value != null && (int)value == 0;
             }
             catch
             {
@@ -101,12 +99,12 @@ namespace BluePointLilac.Controls
 
         public static bool UpdateTheme()
         {
-            bool newDarkTheme = IsDarkThemeEnabled();
-            bool changed = _isDarkTheme != newDarkTheme;
+            var newDarkTheme = IsDarkThemeEnabled();
+            var changed = _isDarkTheme != newDarkTheme;
             _isDarkTheme = newDarkTheme;
 
             UpdateAllColors(_isDarkTheme);
-            
+
             if (changed)
             {
                 if (uiContext != null)
@@ -195,15 +193,15 @@ namespace BluePointLilac.Controls
 
         public static Color GetBorderColor(bool isFocused = false)
         {
-            return isFocused ? MainColor : (IsDarkTheme ? 
-                Color.FromArgb(255, 80, 80, 80) : 
+            return isFocused ? MainColor : (IsDarkTheme ?
+                Color.FromArgb(255, 80, 80, 80) :
                 Color.FromArgb(255, 200, 200, 200));
         }
 
         public static Color GetPlaceholderColor()
         {
-            return IsDarkTheme ? 
-                Color.FromArgb(255, 150, 150, 150) : 
+            return IsDarkTheme ?
+                Color.FromArgb(255, 150, 150, 150) :
                 Color.FromArgb(255, 120, 120, 120);
         }
 
@@ -240,10 +238,10 @@ namespace BluePointLilac.Controls
 
             try
             {
-                string typeName = control.GetType().FullName;
-                
-                if (typeName == "BluePointLilac.Controls.MyListBox" ||
-                    typeName == "BluePointLilac.Controls.MyListItem")
+                var typeName = control.GetType().FullName;
+
+                if (typeName is "BluePointLilac.Controls.MyListBox" or
+                    "BluePointLilac.Controls.MyListItem")
                 {
                     control.BackColor = FormBack;
                     control.ForeColor = FormFore;
@@ -276,7 +274,7 @@ namespace BluePointLilac.Controls
                 }
                 else if (control is SearchBox searchBox)
                 {
-                    searchBox.Invoke(new Action(() => 
+                    searchBox.Invoke(new Action(() =>
                     {
                         var method = searchBox.GetType().GetMethod("UpdateThemeColors");
                         method?.Invoke(searchBox, null);
@@ -289,15 +287,15 @@ namespace BluePointLilac.Controls
         public static GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
         {
             var path = new GraphicsPath();
-            if (radius <= 0) 
+            if (radius <= 0)
             {
                 path.AddRectangle(rect);
                 return path;
             }
-            
-            int diameter = radius * 2;
+
+            var diameter = radius * 2;
             var arc = new Rectangle(rect.Location, new Size(diameter, diameter));
-            
+
             path.AddArc(arc, 180, 90);
             arc.X = rect.Right - diameter;
             path.AddArc(arc, 270, 90);
@@ -305,7 +303,7 @@ namespace BluePointLilac.Controls
             path.AddArc(arc, 0, 90);
             arc.X = rect.Left;
             path.AddArc(arc, 90, 90);
-            
+
             path.CloseFigure();
             return path;
         }

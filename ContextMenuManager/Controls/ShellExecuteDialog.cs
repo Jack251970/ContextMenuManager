@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class ShellExecuteDialog : CommonDialog
+    internal sealed class ShellExecuteDialog : CommonDialog
     {
         public string Verb { get; set; }
         public int WindowStyle { get; set; }
@@ -16,32 +16,30 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(ShellExecuteForm frm = new ShellExecuteForm())
+            using var frm = new ShellExecuteForm();
+            frm.TopMost = true;
+            var flag = frm.ShowDialog() == DialogResult.OK;
+            if (flag)
             {
-                frm.TopMost = true;
-                bool flag = frm.ShowDialog() == DialogResult.OK;
-                if(flag)
-                {
-                    Verb = frm.Verb;
-                    WindowStyle = frm.WindowStyle;
-                }
-                return flag;
+                Verb = frm.Verb;
+                WindowStyle = frm.WindowStyle;
             }
+            return flag;
         }
 
         public static string GetCommand(string fileName, string arguments, string verb, int windowStyle, string directory = null)
         {
             arguments = arguments.Replace("\"", "\"\"");
-            if(directory == null)
+            if (directory == null)
             {
-                ObjectPath.GetFullFilePath(fileName, out string filePath);
+                ObjectPath.GetFullFilePath(fileName, out var filePath);
                 directory = Path.GetDirectoryName(filePath);
             }
             return "mshta vbscript:createobject(\"shell.application\").shellexecute" +
                 $"(\"{fileName}\",\"{arguments}\",\"{directory}\",\"{verb}\",{windowStyle})(close)";
         }
 
-        sealed class ShellExecuteForm : RForm
+        private sealed class ShellExecuteForm : RForm
         {
             private const string ApiInfoUrl = "https://docs.microsoft.com/windows/win32/api/shellapi/nf-shellapi-shellexecutea";
             private static readonly string[] Verbs = new[] { "open", "runas", "edit", "print", "find", "explore" };
@@ -64,14 +62,15 @@ namespace ContextMenuManager.Controls
             public string Verb { get; set; }
             public int WindowStyle { get; set; }
 
-            readonly RadioButton[] rdoVerbs = new RadioButton[6];
-            readonly GroupBox grpVerb = new GroupBox { Text = "Verb" };
-            readonly Label lblStyle = new Label
+            private readonly RadioButton[] rdoVerbs = new RadioButton[6];
+            private readonly GroupBox grpVerb = new()
+            { Text = "Verb" };
+            private readonly Label lblStyle = new()
             {
                 Text = "WindowStyle",
                 AutoSize = true
             };
-            readonly NumericUpDown nudStyle = new NumericUpDown
+            private readonly NumericUpDown nudStyle = new()
             {
                 ForeColor = DarkModeHelper.FormFore, // 修改这里
                 BackColor = DarkModeHelper.ButtonMain, // 修改这里
@@ -81,13 +80,13 @@ namespace ContextMenuManager.Controls
                 Minimum = 0,
                 Value = 1
             };
-            readonly Button btnOK = new Button
+            private readonly Button btnOK = new()
             {
                 Text = ResourceString.OK,
                 DialogResult = DialogResult.OK,
                 AutoSize = true
             };
-            readonly Button btnCancel = new Button
+            private readonly Button btnCancel = new()
             {
                 Text = ResourceString.Cancel,
                 DialogResult = DialogResult.Cancel,
@@ -97,9 +96,9 @@ namespace ContextMenuManager.Controls
             private void InitializeComponents()
             {
                 Controls.AddRange(new Control[] { grpVerb, lblStyle, nudStyle, btnOK, btnCancel });
-                int a = 10.DpiZoom();
-                int b = 2 * a;
-                for(int i = 0; i < 6; i++)
+                var a = 10.DpiZoom();
+                var b = 2 * a;
+                for (var i = 0; i < 6; i++)
                 {
                     rdoVerbs[i] = new RadioButton
                     {
@@ -108,7 +107,7 @@ namespace ContextMenuManager.Controls
                         Parent = grpVerb,
                         Location = new Point(a, b + a)
                     };
-                    if(i > 0) rdoVerbs[i].Left += rdoVerbs[i - 1].Right;
+                    if (i > 0) rdoVerbs[i].Left += rdoVerbs[i - 1].Right;
                 }
                 rdoVerbs[0].Checked = true;
                 grpVerb.Width = rdoVerbs[5].Right + a;
@@ -121,9 +120,9 @@ namespace ContextMenuManager.Controls
                 ClientSize = new Size(btnCancel.Right + b, btnCancel.Bottom + b);
                 btnOK.Click += (sender, e) =>
                 {
-                    for(int i = 0; i < 6; i++)
+                    for (var i = 0; i < 6; i++)
                     {
-                        if(rdoVerbs[i].Checked)
+                        if (rdoVerbs[i].Checked)
                         {
                             Verb = rdoVerbs[i].Text;
                             break;
@@ -135,7 +134,7 @@ namespace ContextMenuManager.Controls
         }
     }
 
-    sealed class ShellExecuteCheckBox : CheckBox
+    internal sealed class ShellExecuteCheckBox : CheckBox
     {
         public ShellExecuteCheckBox()
         {
@@ -148,25 +147,24 @@ namespace ContextMenuManager.Controls
         public string Verb { get; set; }
         public int WindowStyle { get; set; }
 
-        readonly ToolTip ttpInfo = new ToolTip { InitialDelay = 1 };
+        private readonly ToolTip ttpInfo = new()
+        { InitialDelay = 1 };
 
         protected override void OnClick(EventArgs e)
         {
-            if(Checked)
+            if (Checked)
             {
                 Checked = false;
                 ttpInfo.RemoveAll();
             }
             else
             {
-                using(ShellExecuteDialog dlg = new ShellExecuteDialog())
-                {
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
-                    Verb = dlg.Verb;
-                    WindowStyle = dlg.WindowStyle;
-                    Checked = true;
-                    ttpInfo.SetToolTip(this, $"Verb: \"{Verb}\"\nWindowStyle: {WindowStyle}");
-                }
+                using var dlg = new ShellExecuteDialog();
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                Verb = dlg.Verb;
+                WindowStyle = dlg.WindowStyle;
+                Checked = true;
+                ttpInfo.SetToolTip(this, $"Verb: \"{Verb}\"\nWindowStyle: {WindowStyle}");
             }
         }
     }

@@ -12,7 +12,7 @@ namespace BluePointLilac.Controls
         {
             AutoScroll = true;
             UpdateColors();
-            
+
             // 订阅主题变化事件
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
@@ -77,7 +77,7 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Top;
             DoubleBuffered = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            
+
             // 订阅主题变化事件
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
@@ -88,8 +88,8 @@ namespace BluePointLilac.Controls
             get => hoveredItem;
             set
             {
-                if(hoveredItem == value) return;
-                if(hoveredItem != null)
+                if (hoveredItem == value) return;
+                if (hoveredItem != null)
                 {
                     hoveredItem.ForeColor = DarkModeHelper.FormFore;
                     hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
@@ -113,7 +113,11 @@ namespace BluePointLilac.Controls
             item.Parent = this;
             item.MouseEnter += (sender, e) => HoveredItem = item;
             MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
-            void ResizeItem() => item.Width = Owner.Width - item.Margin.Horizontal;
+            void ResizeItem()
+            {
+                item.Width = Owner.Width - item.Margin.Horizontal;
+            }
+
             Owner.Resize += (sender, e) => ResizeItem();
             ResizeItem();
             ResumeLayout();
@@ -141,18 +145,18 @@ namespace BluePointLilac.Controls
 
         public void InsertItem(MyListItem item, int index)
         {
-            if(item == null) return;
+            if (item == null) return;
             AddItem(item);
             SetItemIndex(item, index);
         }
 
         public virtual void ClearItems()
         {
-            if(Controls.Count == 0) return;
+            if (Controls.Count == 0) return;
             SuspendLayout();
-            for(int i = Controls.Count - 1; i >= 0; i--)
+            for (var i = Controls.Count - 1; i >= 0; i--)
             {
-                Control ctr = Controls[i];
+                var ctr = Controls[i];
                 Controls.Remove(ctr);
                 ctr.Dispose();
             }
@@ -161,8 +165,8 @@ namespace BluePointLilac.Controls
 
         public void SortItemByText()
         {
-            List<MyListItem> items = new List<MyListItem>();
-            foreach(MyListItem item in Controls) items.Add(item);
+            var items = new List<MyListItem>();
+            foreach (MyListItem item in Controls) items.Add(item);
             Controls.Clear();
             items.Sort(new TextComparer());
             items.ForEach(item => AddItem(item));
@@ -172,10 +176,10 @@ namespace BluePointLilac.Controls
         {
             public int Compare(MyListItem x, MyListItem y)
             {
-                if(x.Equals(y)) return 0;
+                if (x.Equals(y)) return 0;
                 string[] strs = { x.Text, y.Text };
                 Array.Sort(strs);
-                if(strs[0] == x.Text) return -1;
+                if (strs[0] == x.Text) return -1;
                 else return 1;
             }
         }
@@ -220,10 +224,10 @@ namespace BluePointLilac.Controls
             Height = 50.DpiZoom();
             Margin = new Padding(0);
             Font = SystemFonts.IconTitleFont;
-            
+
             // 初始化颜色
             UpdateColors();
-            
+
             Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
             Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
             flpControls.MouseClick += (sender, e) => OnMouseClick(e);
@@ -234,10 +238,10 @@ namespace BluePointLilac.Controls
             CenterControl(lblText);
             CenterControl(picImage);
             AddCtr(pnlScrollbar, 0);
-            
+
             // 订阅主题变化事件
             DarkModeHelper.ThemeChanged += OnThemeChanged;
-            
+
             ResumeLayout();
         }
 
@@ -265,12 +269,7 @@ namespace BluePointLilac.Controls
         // 添加SubText属性
         public string SubText
         {
-            get => subText;
-            set
-            {
-                subText = value;
-                // 如果需要显示副文本，可以在这里添加UI更新逻辑
-            }
+            get => subText; set => subText = value;// 如果需要显示副文本，可以在这里添加UI更新逻辑
         }
 
         private bool hasImage;
@@ -285,19 +284,19 @@ namespace BluePointLilac.Controls
             }
         }
 
-        private readonly Label lblText = new Label
+        private readonly Label lblText = new()
         {
             AutoSize = true,
             Name = "Text"
         };
-        private readonly PictureBox picImage = new PictureBox
+        private readonly PictureBox picImage = new()
         {
             SizeMode = PictureBoxSizeMode.AutoSize,
             Left = 20.DpiZoom(),
             Enabled = false,
             Name = "Image"
         };
-        private readonly FlowLayoutPanel flpControls = new FlowLayoutPanel
+        private readonly FlowLayoutPanel flpControls = new()
         {
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             FlowDirection = FlowDirection.RightToLeft,
@@ -305,14 +304,14 @@ namespace BluePointLilac.Controls
             AutoSize = true,
             Name = "Controls"
         };
-        private readonly Label lblSeparator = new Label
+        private readonly Label lblSeparator = new()
         {
             BackColor = DarkModeHelper.FormFore,
             Dock = DockStyle.Bottom,
             Name = "Separator",
             Height = 1
         };//分割线
-        private readonly Panel pnlScrollbar = new Panel
+        private readonly Panel pnlScrollbar = new()
         {
             Width = SystemInformation.VerticalScrollBarWidth,
             Enabled = false
@@ -327,10 +326,10 @@ namespace BluePointLilac.Controls
         {
             void reSize()
             {
-                if(ctr.Parent == null) return;
-                int top = (ClientSize.Height - ctr.Height) / 2;
+                if (ctr.Parent == null) return;
+                var top = (ClientSize.Height - ctr.Height) / 2;
                 ctr.Top = top;
-                if(ctr.Parent == flpControls)
+                if (ctr.Parent == flpControls)
                 {
                     ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
                 }
@@ -363,7 +362,7 @@ namespace BluePointLilac.Controls
 
         public void RemoveCtrAt(int index)
         {
-            if(flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
+            if (flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
         }
 
         public int GetCtrIndex(Control ctr)
@@ -395,7 +394,7 @@ namespace BluePointLilac.Controls
         {
             BackColor = DarkModeHelper.FormBack;
             ForeColor = DarkModeHelper.FormFore;
-            
+
             // 更新子控件颜色
             lblSeparator.BackColor = DarkModeHelper.FormFore;
             lblText.ForeColor = DarkModeHelper.FormFore;

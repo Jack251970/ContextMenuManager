@@ -1,6 +1,6 @@
 ﻿using BluePointLilac.Methods;
-using System;
 using ContextMenuManager.BluePointLilac.Controls;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -18,25 +18,23 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(SelectForm frm = new SelectForm())
+            using var frm = new SelectForm();
+            frm.Text = Title;
+            frm.Items = Items;
+            if (Selected != null) frm.Selected = Selected;
+            else frm.SelectedIndex = SelectedIndex;
+            frm.CanEdit = CanEdit;
+            if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
+            var flag = frm.ShowDialog() == DialogResult.OK;
+            if (flag)
             {
-                frm.Text = Title;
-                frm.Items = Items;
-                if(Selected != null) frm.Selected = Selected;
-                else frm.SelectedIndex = SelectedIndex;
-                frm.CanEdit = CanEdit;
-                if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
-                bool flag = frm.ShowDialog() == DialogResult.OK;
-                if(flag)
-                {
-                    Selected = frm.Selected;
-                    SelectedIndex = frm.SelectedIndex;
-                }
-                return flag;
+                Selected = frm.Selected;
+                SelectedIndex = frm.SelectedIndex;
             }
+            return flag;
         }
 
-        sealed class SelectForm : RForm
+        private sealed class SelectForm : RForm
         {
             public SelectForm()
             {
@@ -63,7 +61,7 @@ namespace BluePointLilac.Controls
             {
                 get
                 {
-                    string[] value = new string[cmbItems.Items.Count];
+                    var value = new string[cmbItems.Items.Count];
                     cmbItems.Items.CopyTo(value, 0);
                     return value;
                 }
@@ -101,19 +99,19 @@ namespace BluePointLilac.Controls
                 set => cmbItems.SelectedIndex = value;
             }
 
-            readonly Button btnOK = new Button
+            private readonly Button btnOK = new()
             {
                 DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
-            readonly Button btnCancel = new Button
+            private readonly Button btnCancel = new()
             {
                 DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,
                 AutoSize = true
             };
-            readonly RComboBox cmbItems = new RComboBox
+            private readonly RComboBox cmbItems = new()
             {
                 // 移除初始化时的 AutoCompleteMode 和 AutoCompleteSource 设置
                 // 这些设置将在 CanEdit 属性中根据模式动态设置
@@ -124,7 +122,7 @@ namespace BluePointLilac.Controls
             private void InitializeComponents()
             {
                 Controls.AddRange(new Control[] { cmbItems, btnOK, btnCancel });
-                int a = 20.DpiZoom();
+                var a = 20.DpiZoom();
                 cmbItems.Left = a;
                 cmbItems.Width = 85.DpiZoom();
                 cmbItems.Top = btnOK.Top = btnCancel.Top = a;

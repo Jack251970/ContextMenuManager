@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class SubItemsForm : RForm
+    internal sealed class SubItemsForm : RForm
     {
         public SubItemsForm()
         {
@@ -21,20 +21,21 @@ namespace ContextMenuManager.Controls
             InitTheme();
         }
 
-        readonly MyListBox listBox = new MyListBox { Dock = DockStyle.Fill };
-        readonly MyStatusBar statusBar = new MyStatusBar();
+        private readonly MyListBox listBox = new()
+        { Dock = DockStyle.Fill };
+        private readonly MyStatusBar statusBar = new();
 
         public void AddList(MyList myList)
         {
             myList.Owner = listBox;
             myList.HoveredItemChanged += (sender, e) =>
             {
-                if(!AppConfig.ShowFilePath) return;
-                MyListItem item = myList.HoveredItem;
-                foreach(string prop in new[] { "ItemFilePath", "RegPath", "GroupPath" })
+                if (!AppConfig.ShowFilePath) return;
+                var item = myList.HoveredItem;
+                foreach (var prop in new[] { "ItemFilePath", "RegPath", "GroupPath" })
                 {
-                    string path = item.GetType().GetProperty(prop)?.GetValue(item, null)?.ToString();
-                    if(!path.IsNullOrWhiteSpace()) { statusBar.Text = path; return; }
+                    var path = item.GetType().GetProperty(prop)?.GetValue(item, null)?.ToString();
+                    if (!path.IsNullOrWhiteSpace()) { statusBar.Text = path; return; }
                 }
                 statusBar.Text = item.Text;
             };

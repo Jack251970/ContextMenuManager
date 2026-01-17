@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    sealed class UwpModeItem : MyListItem, IChkVisibleItem, ITsiRegPathItem, ITsiFilePathItem,
+    internal sealed class UwpModeItem : MyListItem, IChkVisibleItem, ITsiRegPathItem, ITsiFilePathItem,
         IBtnShowMenuItem, ITsiWebSearchItem, ITsiRegExportItem, ITsiRegDeleteItem, ITsiGuidItem
     {
         public UwpModeItem(string uwpName, Guid guid)
@@ -28,21 +28,19 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                foreach(string path in GuidBlockedList.BlockedPaths)
+                foreach (var path in GuidBlockedList.BlockedPaths)
                 {
-                    using(RegistryKey key = RegistryEx.GetRegistryKey(path))
-                    {
-                        if(key == null) continue;
-                        if(key.GetValue(Guid.ToString("B")) != null) return false;
-                    }
+                    using var key = RegistryEx.GetRegistryKey(path);
+                    if (key == null) continue;
+                    if (key.GetValue(Guid.ToString("B")) != null) return false;
                 }
                 return true;
             }
             set
             {
-                foreach(string path in GuidBlockedList.BlockedPaths)
+                foreach (var path in GuidBlockedList.BlockedPaths)
                 {
-                    if(value)
+                    if (value)
                     {
                         RegistryEx.DeleteValue(path, Guid.ToString("B"));
                     }
@@ -72,7 +70,7 @@ namespace ContextMenuManager.Controls
         public RegExportMenuItem TsiRegExport { get; set; }
         public HandleGuidMenuItem TsiHandleGuid { get; set; }
 
-        readonly RToolStripMenuItem TsiDetails = new RToolStripMenuItem(AppString.Menu.Details);
+        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
 
         private void InitializeComponents()
         {

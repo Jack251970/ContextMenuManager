@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
-    interface ITsiFilePathItem
+    internal interface ITsiFilePathItem
     {
         string ItemFilePath { get; }
         ContextMenuStrip ContextMenuStrip { get; set; }
@@ -13,7 +13,7 @@ namespace ContextMenuManager.Controls.Interfaces
         FilePropertiesMenuItem TsiFileProperties { get; set; }
     }
 
-    sealed class FileLocationMenuItem : RToolStripMenuItem
+    internal sealed class FileLocationMenuItem : RToolStripMenuItem
     {
         public FileLocationMenuItem(ITsiFilePathItem item) : base(AppString.Menu.FileLocation)
         {
@@ -25,13 +25,13 @@ namespace ContextMenuManager.Controls.Interfaces
         }
     }
 
-    sealed class FilePropertiesMenuItem : RToolStripMenuItem
+    internal sealed class FilePropertiesMenuItem : RToolStripMenuItem
     {
         public FilePropertiesMenuItem(ITsiFilePathItem item) : base(AppString.Menu.FileProperties)
         {
             item.ContextMenuStrip.Opening += (sender, e) =>
             {
-                string path = item.ItemFilePath;
+                var path = item.ItemFilePath;
                 Visible = Directory.Exists(path) || File.Exists(path);
             };
             Click += (sender, e) => ExternalProgram.ShowPropertiesDialog(item.ItemFilePath);

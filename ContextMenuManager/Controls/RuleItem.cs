@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    class RuleItem : FoldSubItem, IBtnShowMenuItem, ITsiWebSearchItem
+    internal class RuleItem : FoldSubItem, IBtnShowMenuItem, ITsiWebSearchItem
     {
         public RuleItem(ItemInfo info)
         {
@@ -31,7 +31,7 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                if(FoldGroupItem == null) return Text;
+                if (FoldGroupItem == null) return Text;
                 else return $"{FoldGroupItem.Text} {Text}";
             }
         }
@@ -45,7 +45,7 @@ namespace ContextMenuManager.Controls
         public bool RestartExplorer { get; set; }
     }
 
-    sealed class VisibleRegRuleItem : RuleItem, IChkVisibleItem, ITsiRegPathItem
+    internal sealed class VisibleRegRuleItem : RuleItem, IChkVisibleItem, ITsiRegPathItem
     {
         public struct RegRule
         {
@@ -95,30 +95,28 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                for(int i = 0; i < Rules.Length; i++)
+                for (var i = 0; i < Rules.Length; i++)
                 {
-                    RegRule rule = Rules[i];
-                    using(RegistryKey key = RegistryEx.GetRegistryKey(rule.RegPath))
+                    var rule = Rules[i];
+                    using var key = RegistryEx.GetRegistryKey(rule.RegPath);
+                    var value = key?.GetValue(rule.ValueName)?.ToString().ToLower();
+                    var turnOnValue = rule.TurnOnValue?.ToString().ToLower();
+                    var turnOffValue = rule.TurnOffValue?.ToString().ToLower();
+                    if (value == null || key.GetValueKind(rule.ValueName) != rule.ValueKind)
                     {
-                        string value = key?.GetValue(rule.ValueName)?.ToString().ToLower();
-                        string turnOnValue = rule.TurnOnValue?.ToString().ToLower();
-                        string turnOffValue = rule.TurnOffValue?.ToString().ToLower();
-                        if(value == null || key.GetValueKind(rule.ValueName) != rule.ValueKind)
-                        {
-                            if(i < Rules.Length - 1) continue;
-                        }
-                        if(value == turnOnValue) return true;
-                        if(value == turnOffValue) return false;
+                        if (i < Rules.Length - 1) continue;
                     }
+                    if (value == turnOnValue) return true;
+                    if (value == turnOffValue) return false;
                 }
                 return true;
             }
             set
             {
-                foreach(RegRule rule in Rules)
+                foreach (var rule in Rules)
                 {
-                    object data = value ? rule.TurnOnValue : rule.TurnOffValue;
-                    if(data != null)
+                    var data = value ? rule.TurnOnValue : rule.TurnOffValue;
+                    if (data != null)
                     {
                         Registry.SetValue(rule.RegPath, rule.ValueName, data, rule.ValueKind);
                     }
@@ -127,21 +125,21 @@ namespace ContextMenuManager.Controls
                         RegistryEx.DeleteValue(rule.RegPath, rule.ValueName);
                     }
                 }
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
 
         public string RegPath => Rules[0].RegPath;
         public string ValueName => Rules[0].ValueName;
 
-        const string LM_SMWCPE = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer";
-        const string CU_SMWCPE = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";
-        const string LM_SMWCE = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer";
-        const string CU_SMWCE = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer";
-        const string LM_SPMWE = @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer";
-        const string CU_SPMWE = @"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer";
+        private const string LM_SMWCPE = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer";
+        private const string CU_SMWCPE = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer";
+        private const string LM_SMWCE = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer";
+        private const string CU_SMWCE = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer";
+        private const string LM_SPMWE = @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer";
+        private const string CU_SPMWE = @"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer";
 
-        public static readonly RuleAndInfo CustomFolder = new RuleAndInfo
+        public static readonly RuleAndInfo CustomFolder = new()
         {
             Rules = new[] {
                 new RegRule(LM_SMWCPE, "NoCustomizeThisFolder", null, 1),
@@ -158,7 +156,7 @@ namespace ContextMenuManager.Controls
             }
         };
 
-        public static readonly RuleAndInfo NetworkDrive = new RuleAndInfo
+        public static readonly RuleAndInfo NetworkDrive = new()
         {
             Rules = new[] {
                 new RegRule(LM_SMWCPE, "NoNetConnectDisconnect", null, 1),
@@ -172,7 +170,7 @@ namespace ContextMenuManager.Controls
             }
         };
 
-        public static readonly RuleAndInfo RecycleBinProperties = new RuleAndInfo
+        public static readonly RuleAndInfo RecycleBinProperties = new()
         {
             Rules = new[] {
                 new RegRule(LM_SMWCPE, "NoPropertiesRecycleBin", null, 1),
@@ -186,7 +184,7 @@ namespace ContextMenuManager.Controls
             }
         };
 
-        public static readonly RuleAndInfo SendToDrive = new RuleAndInfo
+        public static readonly RuleAndInfo SendToDrive = new()
         {
             Rules = new[] {
                 new RegRule(LM_SMWCPE, "NoDrivesInSendToMenu", null, 1),
@@ -201,7 +199,7 @@ namespace ContextMenuManager.Controls
             }
         };
 
-        public static readonly RuleAndInfo DeferBuildSendTo = new RuleAndInfo
+        public static readonly RuleAndInfo DeferBuildSendTo = new()
         {
             Rules = new[] {
                 new RegRule(LM_SMWCE, "DelaySendToMenuBuild", null, 1),
@@ -215,7 +213,7 @@ namespace ContextMenuManager.Controls
             }
         };
 
-        public static readonly RuleAndInfo UseStoreOpenWith = new RuleAndInfo
+        public static readonly RuleAndInfo UseStoreOpenWith = new()
         {
             Rules = new[] {
                 new RegRule(LM_SPMWE, "NoUseStoreOpenWith", null, 1),
@@ -229,7 +227,7 @@ namespace ContextMenuManager.Controls
         };
     }
 
-    sealed class NumberRegRuleItem : RuleItem, ITsiRegPathItem
+    internal sealed class NumberRegRuleItem : RuleItem, ITsiRegPathItem
     {
         public struct RegRule
         {
@@ -241,7 +239,7 @@ namespace ContextMenuManager.Controls
             public int DefaultValue { get; set; }
         }
 
-        readonly NumericUpDown NudValue = new NumericUpDown
+        private readonly NumericUpDown NudValue = new()
         {
             ForeColor = DarkModeHelper.FormFore,
             BackColor = DarkModeHelper.ButtonMain,
@@ -262,7 +260,7 @@ namespace ContextMenuManager.Controls
             NudValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             NudValue.ValueChanged += (sender, e) =>
             {
-                if(NudValue.Value == Rule.DefaultValue)
+                if (NudValue.Value == Rule.DefaultValue)
                 {
                     NudValue.ForeColor = DarkModeHelper.MainColor;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Bold);
@@ -285,22 +283,22 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                object value = Registry.GetValue(Rule.RegPath, Rule.ValueName, null);
-                if(value == null) return Rule.DefaultValue;
-                int num = Convert.ToInt32(value);
-                if(num > Rule.MaxValue) return Rule.MaxValue;
-                if(num < Rule.MinValue) return Rule.MinValue;
+                var value = Registry.GetValue(Rule.RegPath, Rule.ValueName, null);
+                if (value == null) return Rule.DefaultValue;
+                var num = Convert.ToInt32(value);
+                if (num > Rule.MaxValue) return Rule.MaxValue;
+                if (num < Rule.MinValue) return Rule.MinValue;
                 else return num;
             }
             set
             {
                 Registry.SetValue(Rule.RegPath, Rule.ValueName, value, Rule.ValueKind);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
 
-    sealed class StringRegRuleItem : RuleItem, ITsiRegPathItem
+    internal sealed class StringRegRuleItem : RuleItem, ITsiRegPathItem
     {
         public struct RegRule
         {
@@ -308,7 +306,7 @@ namespace ContextMenuManager.Controls
             public string ValueName { get; set; }
         }
 
-        readonly Label LblValue = new Label
+        private readonly Label LblValue = new()
         {
             BorderStyle = BorderStyle.FixedSingle,
             ForeColor = DarkModeHelper.FormFore,
@@ -329,13 +327,11 @@ namespace ContextMenuManager.Controls
             LblValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             LblValue.MouseDown += (sender, e) =>
             {
-                using(InputDialog dlg = new InputDialog())
-                {
-                    dlg.Title = AppString.Menu.ChangeText;
-                    dlg.Text = ItemValue;
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
-                    ItemValue = LblValue.Text = dlg.Text;
-                }
+                using var dlg = new InputDialog();
+                dlg.Title = AppString.Menu.ChangeText;
+                dlg.Text = ItemValue;
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                ItemValue = LblValue.Text = dlg.Text;
             };
             LblValue.TextChanged += (sender, e) => ItemValue = LblValue.Text;
         }
@@ -350,12 +346,12 @@ namespace ContextMenuManager.Controls
             set
             {
                 Registry.SetValue(Rule.RegPath, Rule.ValueName, value);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
 
-    sealed class VisbleIniRuleItem : RuleItem, IChkVisibleItem
+    internal sealed class VisbleIniRuleItem : RuleItem, IChkVisibleItem
     {
         public struct IniRule
         {
@@ -383,12 +379,12 @@ namespace ContextMenuManager.Controls
             set
             {
                 IniWriter.SetValue(Rule.Section, Rule.KeyName, value ? Rule.TurnOnValue : Rule.TurnOffValue);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
 
-    sealed class NumberIniRuleItem : RuleItem
+    internal sealed class NumberIniRuleItem : RuleItem
     {
         public struct IniRule
         {
@@ -411,7 +407,7 @@ namespace ContextMenuManager.Controls
             NudValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             NudValue.ValueChanged += (sender, e) =>
             {
-                if(NudValue.Value == Rule.DefaultValue)
+                if (NudValue.Value == Rule.DefaultValue)
                 {
                     NudValue.ForeColor = DarkModeHelper.MainColor;
                     NudValue.Font = new Font(NudValue.Font, FontStyle.Bold);
@@ -429,7 +425,7 @@ namespace ContextMenuManager.Controls
         public IniRule Rule { get; set; }
         public IniWriter IniWriter { get; set; }
 
-        readonly NumericUpDown NudValue = new NumericUpDown
+        private readonly NumericUpDown NudValue = new()
         {
             ForeColor = DarkModeHelper.FormFore,
             BackColor = DarkModeHelper.ButtonMain,
@@ -441,22 +437,22 @@ namespace ContextMenuManager.Controls
         {
             get
             {
-                string value = IniWriter.GetValue(Rule.Section, Rule.KeyName);
-                if(value.IsNullOrWhiteSpace()) return Rule.DefaultValue;
-                int num = Convert.ToInt32(value);
-                if(num > Rule.MaxValue) return Rule.MaxValue;
-                if(num < Rule.MinValue) return Rule.MinValue;
+                var value = IniWriter.GetValue(Rule.Section, Rule.KeyName);
+                if (value.IsNullOrWhiteSpace()) return Rule.DefaultValue;
+                var num = Convert.ToInt32(value);
+                if (num > Rule.MaxValue) return Rule.MaxValue;
+                if (num < Rule.MinValue) return Rule.MinValue;
                 else return num;
             }
             set
             {
                 IniWriter.SetValue(Rule.Section, Rule.KeyName, value);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }
 
-    sealed class StringIniRuleItem : RuleItem
+    internal sealed class StringIniRuleItem : RuleItem
     {
         public struct IniRule
         {
@@ -466,7 +462,7 @@ namespace ContextMenuManager.Controls
         }
 
 
-        readonly Label LblValue = new Label
+        private readonly Label LblValue = new()
         {
             BorderStyle = BorderStyle.FixedSingle,
             ForeColor = DarkModeHelper.FormFore,
@@ -484,13 +480,11 @@ namespace ContextMenuManager.Controls
             LblValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             LblValue.MouseDown += (sender, e) =>
             {
-                using(InputDialog dlg = new InputDialog())
-                {
-                    dlg.Title = AppString.Menu.ChangeText;
-                    dlg.Text = ItemValue;
-                    if(dlg.ShowDialog() != DialogResult.OK) return;
-                    ItemValue = LblValue.Text = dlg.Text;
-                }
+                using var dlg = new InputDialog();
+                dlg.Title = AppString.Menu.ChangeText;
+                dlg.Text = ItemValue;
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                ItemValue = LblValue.Text = dlg.Text;
             };
             LblValue.TextChanged += (sender, e) => ItemValue = LblValue.Text;
         }
@@ -504,7 +498,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 IniWriter.SetValue(Rule.Secation, Rule.KeyName, value);
-                if(RestartExplorer) ExplorerRestarter.Show();
+                if (RestartExplorer) ExplorerRestarter.Show();
             }
         }
     }

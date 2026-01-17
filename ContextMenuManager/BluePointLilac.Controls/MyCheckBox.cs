@@ -10,13 +10,13 @@ namespace BluePointLilac.Controls
     [DefaultProperty("Checked")]
     public class MyCheckBox : Control
     {
-        private Timer animationTimer = new Timer { Interval = 16 };
+        private readonly Timer animationTimer = new() { Interval = 16 };
         private double animationProgress = 0;
         private bool isAnimating = false;
         private bool targetCheckedState;
         private bool currentCheckedState;
 
-        private int WidthPx, HeightPx, RadiusPx, PaddingPx, ButtonSizePx;
+        private readonly int WidthPx, HeightPx, RadiusPx, PaddingPx, ButtonSizePx;
 
         public MyCheckBox()
         {
@@ -33,7 +33,7 @@ namespace BluePointLilac.Controls
 
             Size = new Size(WidthPx, HeightPx);
             Cursor = Cursors.Hand;
-            
+
             animationTimer.Tick += AnimationTimer_Tick;
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
@@ -118,11 +118,11 @@ namespace BluePointLilac.Controls
 
             try
             {
-                Graphics g = e.Graphics;
+                var g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                double easedProgress = EaseInOutCubic(animationProgress);
-                bool visualState = isAnimating ? 
-                    (animationProgress > 0.5 ? targetCheckedState : currentCheckedState) : 
+                var easedProgress = EaseInOutCubic(animationProgress);
+                var visualState = isAnimating ?
+                    (animationProgress > 0.5 ? targetCheckedState : currentCheckedState) :
                     currentCheckedState;
 
                 DrawBackground(g, visualState, easedProgress);
@@ -133,65 +133,59 @@ namespace BluePointLilac.Controls
 
         private void DrawBackground(Graphics g, bool visualState, double easedProgress)
         {
-            using (var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx))
+            using var bgPath = CreateRoundedRect(0, 0, WidthPx, HeightPx, RadiusPx);
+            Color topColor, middleColor, bottomColor;
+
+            if (visualState)
             {
-                Color topColor, middleColor, bottomColor;
-                
-                if (visualState)
-                {
-                    topColor = Color.FromArgb(255, 195, 0);
-                    middleColor = Color.FromArgb(255, 141, 26);
-                    bottomColor = Color.FromArgb(255, 195, 0);
-                }
-                else
-                {
-                    topColor = Color.FromArgb(200, 200, 200);
-                    middleColor = Color.FromArgb(150, 150, 150);
-                    bottomColor = Color.FromArgb(200, 200, 200);
-                }
-
-                if (isAnimating)
-                {
-                    var targetColors = GetTargetColors(targetCheckedState);
-                    topColor = InterpolateColor(topColor, targetColors.Top, easedProgress);
-                    middleColor = InterpolateColor(middleColor, targetColors.Middle, easedProgress);
-                    bottomColor = InterpolateColor(bottomColor, targetColors.Bottom, easedProgress);
-                }
-
-                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx), 
-                    Color.Empty, Color.Empty, 90f))
-                {
-                    bgBrush.InterpolationColors = new ColorBlend
-                    {
-                        Colors = new[] { topColor, middleColor, bottomColor },
-                        Positions = new[] { 0f, 0.5f, 1f }
-                    };
-                    g.FillPath(bgBrush, bgPath);
-                }
+                topColor = Color.FromArgb(255, 195, 0);
+                middleColor = Color.FromArgb(255, 141, 26);
+                bottomColor = Color.FromArgb(255, 195, 0);
             }
+            else
+            {
+                topColor = Color.FromArgb(200, 200, 200);
+                middleColor = Color.FromArgb(150, 150, 150);
+                bottomColor = Color.FromArgb(200, 200, 200);
+            }
+
+            if (isAnimating)
+            {
+                var targetColors = GetTargetColors(targetCheckedState);
+                topColor = InterpolateColor(topColor, targetColors.Top, easedProgress);
+                middleColor = InterpolateColor(middleColor, targetColors.Middle, easedProgress);
+                bottomColor = InterpolateColor(bottomColor, targetColors.Bottom, easedProgress);
+            }
+
+            using var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, WidthPx, HeightPx),
+                Color.Empty, Color.Empty, 90f);
+            bgBrush.InterpolationColors = new ColorBlend
+            {
+                Colors = new[] { topColor, middleColor, bottomColor },
+                Positions = new[] { 0f, 0.5f, 1f }
+            };
+            g.FillPath(bgBrush, bgPath);
         }
 
         private void DrawButton(Graphics g, double easedProgress)
         {
-            int startX = currentCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
-            int endX = targetCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
-            int buttonX = (int)(startX + (endX - startX) * easedProgress);
-            int buttonY = PaddingPx;
+            var startX = currentCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
+            var endX = targetCheckedState ? (WidthPx - HeightPx + PaddingPx) : PaddingPx;
+            var buttonX = (int)(startX + (endX - startX) * easedProgress);
+            var buttonY = PaddingPx;
 
-            for (int i = 3; i > 0; i--)
+            for (var i = 3; i > 0; i--)
             {
-                int shadowSize = i * 2;
-                int shadowOffset = i;
-                using (var shadowPath = CreateRoundedRect(
+                var shadowSize = i * 2;
+                var shadowOffset = i;
+                using var shadowPath = CreateRoundedRect(
                     buttonX - shadowSize / 2 + shadowOffset / 2,
                     buttonY - shadowSize / 2 + shadowOffset,
                     ButtonSizePx + shadowSize,
                     ButtonSizePx + shadowSize,
-                    (ButtonSizePx + shadowSize) / 2))
-                using (var shadowBrush = new SolidBrush(Color.FromArgb(20 / i, 0, 0, 0)))
-                {
-                    g.FillPath(shadowBrush, shadowPath);
-                }
+                    (ButtonSizePx + shadowSize) / 2);
+                using var shadowBrush = new SolidBrush(Color.FromArgb(20 / i, 0, 0, 0));
+                g.FillPath(shadowBrush, shadowPath);
             }
 
             using (var buttonPath = CreateRoundedRect(buttonX, buttonY, ButtonSizePx, ButtonSizePx, ButtonSizePx / 2))
@@ -200,11 +194,9 @@ namespace BluePointLilac.Controls
                 g.FillPath(buttonBrush, buttonPath);
             }
 
-            using (var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, ButtonSizePx / 2, ButtonSizePx / 2, ButtonSizePx / 4))
-            using (var highlightBrush = new SolidBrush(Color.FromArgb(100, 255, 255, 255)))
-            {
-                g.FillPath(highlightBrush, highlightPath);
-            }
+            using var highlightPath = CreateRoundedRect(buttonX + 2, buttonY + 2, ButtonSizePx / 2, ButtonSizePx / 2, ButtonSizePx / 4);
+            using var highlightBrush = new SolidBrush(Color.FromArgb(100, 255, 255, 255));
+            g.FillPath(highlightBrush, highlightPath);
         }
 
         private (Color Top, Color Middle, Color Bottom) GetTargetColors(bool targetState)
@@ -215,14 +207,18 @@ namespace BluePointLilac.Controls
                 return (Color.FromArgb(200, 200, 200), Color.FromArgb(150, 150, 150), Color.FromArgb(200, 200, 200));
         }
 
-        private static double EaseInOutCubic(double t) => 
-            t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
+        private static double EaseInOutCubic(double t)
+        {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
+        }
 
-        private static Color InterpolateColor(Color start, Color end, double progress) => 
-            Color.FromArgb(
+        private static Color InterpolateColor(Color start, Color end, double progress)
+        {
+            return Color.FromArgb(
                 (int)(start.R + (end.R - start.R) * progress),
                 (int)(start.G + (end.G - start.G) * progress),
                 (int)(start.B + (end.B - start.B) * progress));
+        }
 
         private static GraphicsPath CreateRoundedRect(float x, float y, float width, float height, float radius)
         {
@@ -235,7 +231,10 @@ namespace BluePointLilac.Controls
             return path;
         }
 
-        private void OnThemeChanged(object sender, EventArgs e) => Invalidate();
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            Invalidate();
+        }
 
         protected override void Dispose(bool disposing)
         {

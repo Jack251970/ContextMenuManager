@@ -17,19 +17,17 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using(InputBox frm = new InputBox())
-            {
-                frm.Text = Title;
-                frm.InputedText = Text;
-                frm.Size = Size;
-                if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
-                bool flag = frm.ShowDialog() == DialogResult.OK;
-                Text = flag ? frm.InputedText : null;
-                return flag;
-            }
+            using var frm = new InputBox();
+            frm.Text = Title;
+            frm.InputedText = Text;
+            frm.Size = Size;
+            if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
+            var flag = frm.ShowDialog() == DialogResult.OK;
+            Text = flag ? frm.InputedText : null;
+            return flag;
         }
 
-        sealed class InputBox : RForm
+        private sealed class InputBox : RForm
         {
             public InputBox()
             {
@@ -44,7 +42,7 @@ namespace BluePointLilac.Controls
                 txtInput.CanResizeFont();
                 InitializeComponents();
                 InitTheme();
-                
+
                 // 监听主题变化
                 DarkModeHelper.ThemeChanged += OnThemeChanged;
             }
@@ -55,20 +53,20 @@ namespace BluePointLilac.Controls
                 set => txtInput.Text = value;
             }
 
-            readonly TextBox txtInput = new TextBox
+            private readonly TextBox txtInput = new()
             {
                 Font = SystemFonts.MenuFont,
                 ScrollBars = ScrollBars.Vertical,
                 Multiline = true
             };
-            readonly Button btnOK = new Button
+            private readonly Button btnOK = new()
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
-            readonly Button btnCancel = new Button
+            private readonly Button btnCancel = new()
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 DialogResult = DialogResult.Cancel,
@@ -79,7 +77,7 @@ namespace BluePointLilac.Controls
             private void InitializeComponents()
             {
                 SuspendLayout();
-                int a = 20.DpiZoom();
+                var a = 20.DpiZoom();
                 txtInput.Location = new Point(a, a);
                 txtInput.Size = new Size(340, 24).DpiZoom();
                 ClientSize = new Size(txtInput.Width + a * 2, txtInput.Height + btnOK.Height + a * 3);
@@ -94,28 +92,28 @@ namespace BluePointLilac.Controls
                     txtInput.Height = btnCancel.Top - 2 * a;
                 };
             }
-            
+
             private new void InitTheme()
             {
                 BackColor = DarkModeHelper.FormBack;
                 ForeColor = DarkModeHelper.FormFore;
-                
+
                 txtInput.BackColor = DarkModeHelper.FormBack;
                 txtInput.ForeColor = DarkModeHelper.FormFore;
-                
+
                 btnOK.BackColor = DarkModeHelper.ButtonMain;
                 btnOK.ForeColor = DarkModeHelper.FormFore;
                 btnCancel.BackColor = DarkModeHelper.ButtonMain;
                 btnCancel.ForeColor = DarkModeHelper.FormFore;
             }
-            
+
             // 主题变化事件处理
             private void OnThemeChanged(object sender, EventArgs e)
             {
                 InitTheme();
                 Invalidate();
             }
-            
+
             protected override void Dispose(bool disposing)
             {
                 if (disposing)
