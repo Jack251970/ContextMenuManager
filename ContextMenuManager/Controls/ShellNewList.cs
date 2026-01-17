@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
@@ -11,6 +11,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Windows.Forms;
 using System.Xml;
+using System.Threading.Tasks;
 
 namespace ContextMenuManager.Controls
 {
@@ -23,34 +24,8 @@ namespace ContextMenuManager.Controls
         public void LoadItems()
         {
             AddNewItem();
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine($@"LoadShellNewItems:");
-                }
-            }
-            int i = 0;
-#endif
-            // TODO:加入可以锁定的功能；新建菜单可以进行排序
             ShellNewLockItem item = new ShellNewLockItem(this);
             AddItem(item);
-#if DEBUG
-            string regPath = item.RegPath;
-            string valueName = item.ValueName;
-            string itemName = item.Text;
-            bool ifItemInMenu = item.ItemVisible;
-            i++;
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\tShellNewLockItems");
-                    sw.WriteLine("\t\t" + $@"{i}. {valueName} {itemName} {ifItemInMenu} {regPath}");
-                }
-            }
-#endif
             Separator = new ShellNewSeparator();
             AddItem(Separator);
             if(ShellNewLockItem.IsLocked) LoadLockItems();
@@ -60,15 +35,6 @@ namespace ContextMenuManager.Controls
         /// <summary>直接扫描所有扩展名</summary>
         private void LoadUnlockItems()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\tLoadUnlockItems");
-                }
-            }
-#endif
             List<string> extensions = new List<string> { "Folder" };//文件夹
             using(RegistryKey root = Registry.ClassesRoot)
             {
@@ -81,24 +47,12 @@ namespace ContextMenuManager.Controls
         /// <summary>根据ShellNewPath的Classes键值扫描</summary>
         private void LoadLockItems()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\tLoadLockItems");
-                }
-            }
-#endif
             string[] extensions = (string[])Registry.GetValue(ShellNewPath, "Classes", null);
             LoadItems(extensions.ToList());
         }
 
         private void LoadItems(List<string> extensions)
         {
-#if DEBUG
-            int i = 0;
-#endif
             foreach (string extension in ShellNewItem.UnableSortExtensions)
             {
                 if(extensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
@@ -134,20 +88,6 @@ namespace ContextMenuManager.Controls
                                     if(ShellNewItem.EffectValueNames.Any(valueName => snKey?.GetValue(valueName) != null))
                                     {
                                         ShellNewItem item = new ShellNewItem(snKey.Name, this);
-#if DEBUG
-                                        string regPath = item.RegPath;
-                                        string openMode = item.OpenMode;
-                                        string itemName = item.Text;
-                                        bool ifItemInMenu = item.ItemVisible;
-                                        i++;
-                                        if (AppConfig.EnableLog)
-                                        {
-                                            using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                                            {
-                                                sw.WriteLine("\t\t" + $@"{i}. {openMode} {itemName} {ifItemInMenu} {regPath}");
-                                            }
-                                        }
-#endif
                                         if (item.BeforeSeparator)
                                         {
                                             int index2 = GetItemIndex(Separator);
@@ -199,7 +139,7 @@ namespace ContextMenuManager.Controls
         {
             NewItem newItem = new NewItem();
             AddItem(newItem);
-            newItem.AddNewItem += () =>
+            newItem.AddNewItem += async () =>
             {
                 using(FileExtensionDialog dlg = new FileExtensionDialog())
                 {
@@ -229,35 +169,37 @@ namespace ContextMenuManager.Controls
                     }
 
                     using(RegistryKey root = Registry.ClassesRoot)
-                    using(RegistryKey exKey = root.OpenSubKey(extension, true))
-                    using(RegistryKey snKey = exKey.CreateSubKey("ShellNew", true))
                     {
-                        string defaultOpenMode = exKey.GetValue("")?.ToString();
-                        if(string.IsNullOrEmpty(defaultOpenMode)) exKey.SetValue("", openMode);
-
-                        byte[] bytes = GetWebShellNewData(extension);
-                        if(bytes != null) snKey.SetValue("Data", bytes, RegistryValueKind.Binary);
-                        else snKey.SetValue("NullFile", "", RegistryValueKind.String);
-
-                        ShellNewItem item = new ShellNewItem(snKey.Name, this);
-                        AddItem(item);
-                        item.Focus();
-                        if(item.ItemText.IsNullOrWhiteSpace())
+                        using(RegistryKey exKey = root.OpenSubKey(extension, true) ?? root.CreateSubKey(extension, true))
+                        using(RegistryKey snKey = exKey.CreateSubKey("ShellNew", true))
                         {
-                            item.ItemText = FileExtension.GetExtentionInfo(FileExtension.AssocStr.FriendlyDocName, extension);
+                            string defaultOpenMode = exKey.GetValue("")?.ToString();
+                            if(string.IsNullOrEmpty(defaultOpenMode)) exKey.SetValue("", openMode);
+
+                            byte[] bytes = await GetWebShellNewData(extension);
+                            if(bytes != null) snKey.SetValue("Data", bytes, RegistryValueKind.Binary);
+                            else snKey.SetValue("NullFile", "", RegistryValueKind.String);
+
+                            ShellNewItem item = new ShellNewItem(snKey.Name, this);
+                            AddItem(item);
+                            item.Focus();
+                            if(item.ItemText.IsNullOrWhiteSpace())
+                            {
+                                item.ItemText = FileExtension.GetExtentionInfo(FileExtension.AssocStr.FriendlyDocName, extension);
+                            }
+                            if(ShellNewLockItem.IsLocked) SaveSorting();
                         }
-                        if(ShellNewLockItem.IsLocked) SaveSorting();
                     }
                 }
             };
         }
 
-        private static byte[] GetWebShellNewData(string extension)
+        private static async Task<byte[]> GetWebShellNewData(string extension)
         {
             string apiUrl = AppConfig.RequestUseGithub ? AppConfig.GithubShellNewApi : AppConfig.GiteeShellNewApi;
             using(UAWebClient client = new UAWebClient())
             {
-                XmlDocument doc = client.GetWebJsonToXml(apiUrl);
+                XmlDocument doc = await client.GetWebJsonToXmlAsync(apiUrl);
                 if(doc == null) return null;
                 foreach(XmlNode node in doc.FirstChild.ChildNodes)
                 {
@@ -269,7 +211,7 @@ namespace ContextMenuManager.Controls
                         {
                             string dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubShellNewRawDir : AppConfig.GiteeShellNewRawDir;
                             string fileUrl = $"{dirUrl}/{nameXN.InnerText}";
-                            return client.DownloadData(fileUrl);
+                            return await client.GetWebDataAsync(fileUrl);
                         }
                         catch { return null; }
                     }

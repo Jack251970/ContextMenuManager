@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +16,7 @@ namespace BluePointLilac.Methods
             { new byte[] { 0xFF, 0xFE, 0x00, 0x00 }, Encoding.UTF32 },                  //UTF-32LE      FF FE 00 00
             { new byte[] { 0xFF, 0xFE }, Encoding.Unicode },                            //UTF-16LE      FF FE
             { new byte[] { 0xFE, 0xFF }, Encoding.BigEndianUnicode },                   //UTF-16BE      FE FF
-            { new byte[] { 0x2B, 0x2F, 0x76 }, Encoding.UTF7 },                         //UTF-7         2B 2F 76
+            { new byte[] { 0x2B, 0x2F, 0x76 }, Encoding.UTF8 },                         //UTF-7         2B 2F 76
             { new byte[] { 0x00, 0x00, 0xFE, 0xFF }, new UTF32Encoding(true, true) },   //UTF-32BE      00 00 FE FF
         };
 

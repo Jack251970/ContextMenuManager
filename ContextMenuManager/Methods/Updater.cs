@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using System;
 using System.IO;
@@ -32,12 +32,12 @@ namespace ContextMenuManager.Methods
 
         /// <summary>更新程序</summary>
         /// <param name="isManual">是否为手动点击更新</param>
-        private static void UpdateApp(bool isManual)
+        private static async void UpdateApp(bool isManual)
         {
             using(UAWebClient client = new UAWebClient())
             {
                 string url = AppConfig.RequestUseGithub ? AppConfig.GithubLatestApi : AppConfig.GiteeLatestApi;
-                XmlDocument doc = client.GetWebJsonToXml(url);
+                XmlDocument doc = await client.GetWebJsonToXmlAsync(url);
                 if(doc == null)
                 {
                     if(isManual)
@@ -97,19 +97,19 @@ namespace ContextMenuManager.Methods
 
         /// <summary>更新程序字典</summary>
         /// <param name="isManual">是否为手动点击更新</param>
-        private static void UpdateText(bool isManual)
+        private static async void UpdateText(bool isManual)
         {
             string dirUrl;
             string[] filePaths;
-            void WriteFiles(string dirName, out string succeeded, out string failed)
+            async Task WriteFiles(string dirName, string[] paths, Action<string, string> callback)
             {
-                succeeded = failed = "";
-                foreach(string filePath in filePaths)
+                string succeeded = "", failed = "";
+                foreach(string filePath in paths)
                 {
                     using(UAWebClient client = new UAWebClient())
                     {
                         string fileUrl = $"{dirUrl}/{Path.GetFileName(filePath)}";
-                        bool flag = client.WebStringToFile(filePath, fileUrl);
+                        bool flag = await client.WebStringToFileAsync(filePath, fileUrl);
                         string item = "\r\n ● " + Path.GetFileName(filePath);
                         if(flag) succeeded += item;
                         else failed += item;
@@ -118,7 +118,10 @@ namespace ContextMenuManager.Methods
                 dirName = "\r\n\r\n" + dirName + ":";
                 if(succeeded != "") succeeded = dirName + succeeded;
                 if(failed != "") failed = dirName + failed;
+                callback(succeeded, failed);
             }
+
+            string succeeded1 = "", failed1 = "", succeeded2 = "", failed2 = "";
 
             dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubTexts : AppConfig.GiteeTexts;
             filePaths = new[]
@@ -126,11 +129,11 @@ namespace ContextMenuManager.Methods
                 AppConfig.WebGuidInfosDic, AppConfig.WebEnhanceMenusDic,
                 AppConfig.WebDetailedEditDic, AppConfig.WebUwpModeItemsDic
             };
-            WriteFiles("Dictionaries", out string succeeded1, out string failed1);
+            await WriteFiles("Dictionaries", filePaths, (s, f) => { succeeded1 = s; failed1 = f; });
 
             dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsRawDir : AppConfig.GiteeLangsRawDir;
             filePaths = Directory.GetFiles(AppConfig.LangsDir, "*.ini");
-            WriteFiles("Languages", out string succeeded2, out string failed2);
+            await WriteFiles("Languages", filePaths, (s, f) => { succeeded2 = s; failed2 = f; });
 
             if(isManual)
             {

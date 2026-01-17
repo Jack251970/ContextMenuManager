@@ -1,4 +1,5 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
+using ContextMenuManager.BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
@@ -332,17 +333,7 @@ namespace ContextMenuManager.Controls
                 if(isDragDrop)
                 {
                     groupItem = GetDragDropGroupItem(shellExPath);
-                    // TODO:什么是groupItem？
                     AddItem(groupItem);
-#if DEBUG
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine($@"\t\t!!!!!!{shellExPath}(FoldGroupItem)");
-                        }
-                    }
-#endif
                 }
                 foreach (string path in dic.Keys)
                 {

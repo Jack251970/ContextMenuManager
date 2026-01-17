@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+using ContextMenuManager.BluePointLilac.Controls;
 
 namespace BluePointLilac.Controls
 {
@@ -43,6 +44,8 @@ namespace BluePointLilac.Controls
         public static Color ComboBoxFore { get; private set; }
         public static Color ComboBoxBorder { get; private set; }
         public static Color ComboBoxArrow { get; private set; }
+        public static Color ComboBoxHover { get; private set; }
+        public static Color ComboBoxSelected { get; private set; }
 
         private static bool _isDarkTheme = false;
         public static bool IsDarkTheme => _isDarkTheme;
@@ -158,6 +161,8 @@ namespace BluePointLilac.Controls
             ComboBoxFore = Color.FromArgb(255, 245, 245, 245);
             ComboBoxBorder = Color.FromArgb(255, 70, 70, 75);
             ComboBoxArrow = Color.FromArgb(255, 200, 200, 200);
+            ComboBoxHover = SideBarHovered;
+            ComboBoxSelected = MainColor;
         }
 
         private static void SetLightModeColors()
@@ -184,6 +189,8 @@ namespace BluePointLilac.Controls
             ComboBoxFore = Color.FromArgb(255, 25, 25, 25);
             ComboBoxBorder = Color.FromArgb(255, 210, 210, 215);
             ComboBoxArrow = Color.FromArgb(255, 100, 100, 100);
+            ComboBoxHover = SideBarHovered;
+            ComboBoxSelected = MainColor;
         }
 
         public static Color GetBorderColor(bool isFocused = false)

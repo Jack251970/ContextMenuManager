@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
@@ -91,13 +91,13 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        private void ShowDonateDialog()
+        private async void ShowDonateDialog()
         {
             Cursor = Cursors.WaitCursor;
             using(UAWebClient client = new UAWebClient())
             {
                 string url = AppConfig.RequestUseGithub ? AppConfig.GithubDonateRaw : AppConfig.GiteeDonateRaw;
-                string contents = client.GetWebString(url);
+                string contents = await client.GetWebStringAsync(url);
                 //contents = System.IO.File.ReadAllText(@"..\..\..\Donate.md");//用于求和更新Donate.md文件
                 if(contents == null)
                 {

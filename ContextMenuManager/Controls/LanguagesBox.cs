@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using ContextMenuManager.BluePointLilac.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -199,12 +200,12 @@ namespace ContextMenuManager.Controls
             return index;
         }
 
-        public void ShowLanguageDialog()
+        public async void ShowLanguageDialog()
         {
             using(UAWebClient client = new UAWebClient())
             {
                 string apiUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsApi : AppConfig.GiteeLangsApi;
-                XmlDocument doc = client.GetWebJsonToXml(apiUrl);
+                XmlDocument doc = await client.GetWebJsonToXmlAsync(apiUrl);
                 if(doc == null)
                 {
                     AppMessageBox.Show(AppString.Message.WebDataReadFailed);
@@ -235,7 +236,7 @@ namespace ContextMenuManager.Controls
                         string filePath = $@"{AppConfig.LangsDir}\{fileName}";
                         string dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsRawDir : AppConfig.GiteeLangsRawDir;
                         string fileUrl = $"{dirUrl}/{fileName}";
-                        bool flag = client.WebStringToFile(filePath, fileUrl);
+                        bool flag = await client.WebStringToFileAsync(filePath, fileUrl);
                         if(!flag)
                         {
                             if(AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n ● " + fileName + "\r\n"

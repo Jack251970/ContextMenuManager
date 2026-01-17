@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -69,7 +69,7 @@ namespace BluePointLilac.Controls
                 ClientSize = new Size(btnCancel.Right + a, btnCancel.Bottom + a);
             }
             
-            private void InitTheme()
+            private new void InitTheme()
             {
                 BackColor = DarkModeHelper.FormBack;
                 ForeColor = DarkModeHelper.FormFore;
@@ -85,29 +85,41 @@ namespace BluePointLilac.Controls
                 Invalidate();
             }
 
-            private void DownloadFile(string url, string filePath)
+            private async void DownloadFile(string url, string filePath)
             {
                 try
                 {
-                    using(UAWebClient client = new UAWebClient())
+                    using(var client = new System.Net.Http.HttpClient())
+                    using(var response = await client.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead))
                     {
-                        client.DownloadProgressChanged += (sender, e) =>
+                        response.EnsureSuccessStatusCode();
+                        long? totalBytes = response.Content.Headers.ContentLength;
+                        long totalBytesRead = 0;
+
+                        using(var contentStream = await response.Content.ReadAsStreamAsync())
+                        using(var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                         {
-                            int value = e.ProgressPercentage;
-                            Text = $"Downloading: {value}%";
-                            pgbDownload.Value = value;
-                            if(DialogResult == DialogResult.Cancel)
+                            var buffer = new byte[8192];
+                            int bytesRead;
+                            while((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                             {
-                                client.CancelAsync();
-                                File.Delete(FilePath);
+                                if(DialogResult == DialogResult.Cancel)
+                                {
+                                    File.Delete(FilePath);
+                                    return;
+                                }
+                                await fileStream.WriteAsync(buffer, 0, bytesRead);
+                                totalBytesRead += bytesRead;
+                                if(totalBytes.HasValue)
+                                {
+                                    int progressPercentage = (int)((totalBytesRead * 100) / totalBytes.Value);
+                                    Text = $"Downloading: {progressPercentage}%";
+                                    pgbDownload.Value = progressPercentage;
+                                }
                             }
-                        };
-                        client.DownloadFileCompleted += (sender, e) =>
-                        {
-                            DialogResult = DialogResult.OK;
-                        };
-                        client.DownloadFileAsync(new Uri(url), filePath);
+                        }
                     }
+                    DialogResult = DialogResult.OK;
                 }
                 catch(Exception e)
                 {

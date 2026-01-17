@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using System;
 using System.Windows.Forms;
 
@@ -47,7 +47,7 @@ namespace BluePointLilac.Controls
             }
         }
         
-        private void InitTheme()
+        private new void InitTheme()
         {
             BackColor = DarkModeHelper.FormBack;
             ForeColor = DarkModeHelper.FormFore;

@@ -1,5 +1,6 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
+using ContextMenuManager.BluePointLilac.Controls;
 using ContextMenuManager.Methods;
 using System;
 using System.Drawing;

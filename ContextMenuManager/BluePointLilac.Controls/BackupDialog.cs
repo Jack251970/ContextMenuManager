@@ -1,4 +1,5 @@
-﻿﻿using BluePointLilac.Methods;
+﻿using BluePointLilac.Methods;
+using ContextMenuManager.BluePointLilac.Controls;
 using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
@@ -165,7 +166,7 @@ namespace BluePointLilac.Controls
                 treeView.AfterCheck += TreeView_AfterCheck;
             }
             
-            private void InitTheme()
+            private new void InitTheme()
             {
                 BackColor = DarkModeHelper.FormBack;
                 ForeColor = DarkModeHelper.FormFore;

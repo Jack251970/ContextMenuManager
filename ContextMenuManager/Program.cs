@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
@@ -14,15 +14,6 @@ namespace ContextMenuManager
         [STAThread]
         static void Main()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine($@"--------------------{DateTime.Now:yyyy-MM-dd HH:mm:ss}--------------------");
-                }
-            }
-#endif
             // 首先设置应用程序属性
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
