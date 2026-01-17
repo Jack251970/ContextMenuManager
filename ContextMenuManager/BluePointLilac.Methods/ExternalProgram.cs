@@ -160,22 +160,68 @@ namespace BluePointLilac.Methods
         /// <summary>重启Explorer</summary>
         public static void RestartExplorer()
         {
-            using (var kill = Process.Start(new ProcessStartInfo
+            try
             {
-                FileName = "taskkill.exe",
-                Arguments = "-f -im explorer.exe",
-                WindowStyle = ProcessWindowStyle.Hidden,
-                CreateNoWindow = true,
-                UseShellExecute = false
-            }))
-            {
-                kill?.WaitForExit();
+                // 获取所有 explorer.exe 进程
+                var explorerProcesses = Process.GetProcessesByName("explorer");
+                
+                // 终止所有 explorer.exe 进程
+                foreach (var process in explorerProcesses)
+                {
+                    try
+                    {
+                        process.Kill();
+                        // 等待进程完全退出，最多等待5秒
+                        process.WaitForExit(5000);
+                    }
+                    catch
+                    {
+                        // 忽略无法终止的进程
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+                
+                // 等待一小段时间确保所有进程已完全退出
+                Thread.Sleep(500);
+                
+                // 启动新的 explorer.exe 进程
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    UseShellExecute = true
+                });
             }
-            Process.Start(new ProcessStartInfo
+            catch
             {
-                FileName = "explorer.exe",
-                UseShellExecute = true
-            });
+                // 如果上述方法失败，回退到使用 taskkill
+                try
+                {
+                    using (var kill = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill.exe",
+                        Arguments = "-f -im explorer.exe",
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    }))
+                    {
+                        kill?.WaitForExit();
+                    }
+                    Thread.Sleep(500);
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        UseShellExecute = true
+                    });
+                }
+                catch
+                {
+                    // 忽略所有错误，避免程序崩溃
+                }
+            }
         }
 
         /// <summary>调用默认浏览器打开指定网址</summary>
