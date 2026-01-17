@@ -147,9 +147,9 @@ namespace ContextMenuManager.Controls
                 }
                 foreach (Control ctr in Controls)
                 {
-                    if (ctr is ShellNewItem item)
+                    if (ctr is ShellNewItem shellItem)
                     {
-                        if (item.Extension.Equals(extension, StringComparison.OrdinalIgnoreCase))
+                        if (shellItem.Extension.Equals(extension, StringComparison.OrdinalIgnoreCase))
                         {
                             AppMessageBox.Show(AppString.Message.HasBeenAdded);
                             return;
