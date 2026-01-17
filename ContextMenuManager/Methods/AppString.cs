@@ -171,6 +171,8 @@ namespace ContextMenuManager.Methods
         /// <summary>对话框子窗口</summary>
         public static class Dialog
         {
+            public static string OK { get; set; }
+            public static string Cancel { get; set; }
             public static string Browse { get; set; }
             public static string Program { get; set; }
             public static string AllFiles { get; set; }
