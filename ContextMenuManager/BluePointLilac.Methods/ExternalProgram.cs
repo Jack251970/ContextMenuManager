@@ -198,7 +198,11 @@ namespace BluePointLilac.Methods
                 });
                 newExplorer?.Dispose();
             }
-            catch (Exception)
+            catch (Exception ex) when (
+                ex is Win32Exception || 
+                ex is InvalidOperationException || 
+                ex is UnauthorizedAccessException ||
+                ex is SystemException)
             {
                 // 如果上述方法失败，回退到使用 taskkill
                 // 可能的原因：权限不足、进程保护等
@@ -223,10 +227,15 @@ namespace BluePointLilac.Methods
                     });
                     newExplorer?.Dispose();
                 }
-                catch (Exception)
+                catch (Exception ex) when (
+                    ex is Win32Exception || 
+                    ex is InvalidOperationException || 
+                    ex is UnauthorizedAccessException ||
+                    ex is SystemException)
                 {
                     // 两种方法都失败，静默失败避免程序崩溃
                     // 用户会看到 explorer 没有重启，可以手动处理
+                    // 在调试模式下可以通过调试器查看异常信息
                 }
             }
         }
