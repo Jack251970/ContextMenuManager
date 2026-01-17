@@ -8,7 +8,7 @@ namespace BluePointLilac.Methods
     {
         public static bool TryParse(string str, out Guid guid)
         {
-            if (IsGuid(str))
+            if(IsGuid(str))
             {
                 guid = new Guid(str);
                 return true;
@@ -24,9 +24,9 @@ namespace BluePointLilac.Methods
 
         public static bool IsGuid(string str)
         {
-            if (string.IsNullOrEmpty(str)) return false;
-            if (str.Length == 38 && str.StartsWith("{") && str.EndsWith("}") && GuidRegex.IsMatch(str)) return true;
-            if (str.Length == 36 && GuidRegex.IsMatch(str)) return true;
+            if(string.IsNullOrEmpty(str)) return false;
+            if(str.Length == 38 && str.StartsWith("{") && str.EndsWith("}") && GuidRegex.IsMatch(str)) return true;
+            if(str.Length == 36 && GuidRegex.IsMatch(str)) return true;
             return false;
         }
     }

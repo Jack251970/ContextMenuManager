@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -13,41 +13,43 @@ namespace BluePointLilac.Controls
         public const float SelctedOpacity = 0.8F;
         public const float HoveredOpacity = 0.4F;
         public const float UnSelctedOpacity = 0;
-
-        private FlowLayoutPanel buttonPanel;
+        
+        private FlowLayoutPanel buttonContainer;
+        private Panel searchBoxContainer;
 
         public MyToolBar()
         {
             Height = 80.DpiZoom();
             Dock = DockStyle.Top;
             DoubleBuffered = true;
-            BackColor = MyMainForm.titleArea;
-            ForeColor = MyMainForm.FormFore;
-
-            // 启用透明背景支持
-            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-            SetStyle(ControlStyles.Opaque, false);
-
-            // 创建按钮面板
-            InitializeButtonPanel();
-
-            // 添加搜索框
-            InitializeSearchBox();
-        }
-
-        private void InitializeButtonPanel()
-        {
-            buttonPanel = new FlowLayoutPanel
+            BackColor = DarkModeHelper.TitleArea;
+            ForeColor = DarkModeHelper.FormFore;
+            
+            // 创建按钮容器（左侧）
+            buttonContainer = new FlowLayoutPanel
             {
                 Dock = DockStyle.Left,
+                Height = Height,
                 AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                BackColor = Color.Transparent,
                 FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false
+                WrapContents = false,
+                BackColor = Color.Transparent
             };
-
-            Controls.Add(buttonPanel);
+            
+            // 创建搜索框容器（右侧）
+            searchBoxContainer = new Panel
+            {
+                Dock = DockStyle.Right,
+                Width = 240.DpiZoom(),
+                Height = Height,
+                BackColor = Color.Transparent
+            };
+            
+            Controls.Add(buttonContainer);
+            Controls.Add(searchBoxContainer);
+            
+            // 监听主题变化
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         private MyToolBarButton selectedButton;
@@ -74,133 +76,22 @@ namespace BluePointLilac.Controls
             }
         }
 
-        // 搜索框相关属性
-        private ModernSearchBox searchBox;
-        private Panel searchPanel;
-        public string SearchText => searchBox?.SearchText ?? string.Empty;
-        public event EventHandler SearchTextChanged;
-        public event EventHandler SearchPerformed;
-
         public event EventHandler SelectedButtonChanged;
 
         public int SelectedIndex
         {
-            get
-            {
-                if (SelectedButton == null) return -1;
-                // 从 buttonPanel 中查找按钮索引
-                var buttons = buttonPanel.Controls.OfType<MyToolBarButton>().ToList();
-                return buttons.IndexOf(SelectedButton);
-            }
-            set
-            {
-                // 从 buttonPanel 中获取按钮
-                var buttons = buttonPanel.Controls.OfType<MyToolBarButton>().ToList();
-                SelectedButton = value < 0 || value >= buttons.Count ? null : buttons[value];
-            }
+            get => SelectedButton == null ? -1 : buttonContainer.Controls.GetChildIndex(SelectedButton);
+            set => SelectedButton = value < 0 || value >= buttonContainer.Controls.Count ? 
+                   null : (MyToolBarButton)buttonContainer.Controls[value];
         }
 
-        // 获取所有工具栏按钮（不包括搜索框）
-        public MyToolBarButton[] ToolBarButtons => buttonPanel.Controls.OfType<MyToolBarButton>().ToArray();
-
-        private void InitializeSearchBox()
-        {
-            // 创建搜索面板 - 固定在右侧
-            searchPanel = new Panel
-            {
-                Height = 40.DpiZoom(),
-                Width = 220.DpiZoom(),
-                Anchor = AnchorStyles.Right | AnchorStyles.Top,
-                BackColor = Color.Transparent
-            };
-
-            // 启用透明背景支持
-            searchPanel.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-            searchPanel.SetStyle(ControlStyles.Opaque, false);
-
-            // 创建现代化搜索框
-            searchBox = new ModernSearchBox
-            {
-                Size = new Size(200.DpiZoom(), 32.DpiZoom()),
-                Location = new Point(10, 4)
-            };
-
-            // 搜索事件
-            searchBox.SearchPerformed += (sender, e) =>
-            {
-                SearchPerformed?.Invoke(this, e);
-            };
-
-            // 文本改变事件
-            searchBox.GetTextBox().TextChanged += (sender, e) =>
-            {
-                SearchTextChanged?.Invoke(this, e);
-            };
-
-            // 将搜索框添加到搜索面板
-            searchPanel.Controls.Add(searchBox);
-
-            // 将搜索面板添加到工具栏
-            Controls.Add(searchPanel);
-
-            // 设置搜索面板在最前面
-            searchPanel.BringToFront();
-
-            // 初始定位
-            AdjustSearchBoxPosition();
-        }
-
-        // 公开获取内部文本框的方法
-        public TextBox GetSearchTextBox()
-        {
-            return searchBox?.GetTextBox();
-        }
-
-        protected override void OnParentChanged(EventArgs e)
-        {
-            base.OnParentChanged(e);
-            AdjustSearchBoxPosition();
-        }
-
-        protected override void OnVisibleChanged(EventArgs e)
-        {
-            base.OnVisibleChanged(e);
-            if (searchPanel != null)
-            {
-                searchPanel.Visible = this.Visible;
-                if (this.Visible)
-                {
-                    AdjustSearchBoxPosition();
-                }
-            }
-        }
-
-        private void AdjustSearchBoxPosition()
-        {
-            if (searchPanel != null)
-            {
-                // 定位到工具栏的右侧
-                searchPanel.Location = new Point(
-                    this.ClientSize.Width - searchPanel.Width - 20.DpiZoom(),
-                    (this.Height - searchPanel.Height) / 2
-                );
-            }
-        }
-
-        public void ClearSearch()
-        {
-            searchBox?.ClearSearch();
-        }
-
-        public void FocusSearchBox()
-        {
-            searchBox?.FocusSearch();
-        }
+        // 添加一个方法来获取所有按钮（用于兼容旧代码）
+        public Control.ControlCollection ButtonControls => buttonContainer.Controls;
 
         public void AddButton(MyToolBarButton button)
         {
-            buttonPanel.SuspendLayout();
-            button.Parent = buttonPanel;
+            buttonContainer.SuspendLayout();
+            button.Parent = buttonContainer;
             button.Margin = new Padding(12, 4, 0, 0).DpiZoom();
 
             button.MouseDown += (sender, e) =>
@@ -227,7 +118,7 @@ namespace BluePointLilac.Controls
                 }
             };
 
-            buttonPanel.ResumeLayout(true);
+            buttonContainer.ResumeLayout();
         }
 
         public void AddButtons(MyToolBarButton[] buttons)
@@ -237,34 +128,57 @@ namespace BluePointLilac.Controls
             Array.ForEach(buttons, button => { button.Width = maxWidth; AddButton(button); });
         }
 
+        // 添加搜索框到工具栏右侧
+        public void AddSearchBox(SearchBox searchBox)
+        {
+            // 清除现有搜索框
+            searchBoxContainer.Controls.Clear();
+            
+            // 设置搜索框
+            searchBox.Parent = searchBoxContainer;
+            searchBox.Width = searchBoxContainer.Width - 40.DpiZoom();
+            searchBox.Height = 36.DpiZoom();
+            searchBox.Left = 20.DpiZoom();
+            searchBox.Top = (searchBoxContainer.Height - searchBox.Height) / 2;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            
+            // 调整搜索框容器的宽度
+            if (searchBoxContainer != null)
+            {
+                searchBoxContainer.Width = 240.DpiZoom();
+                searchBoxContainer.Height = Height;
+                
+                // 确保搜索框在容器中垂直居中
+                var searchBox = searchBoxContainer.Controls.OfType<SearchBox>().FirstOrDefault();
+                if (searchBox != null)
+                {
+                    searchBox.Width = searchBoxContainer.Width - 40.DpiZoom();
+                    searchBox.Top = (searchBoxContainer.Height - searchBox.Height) / 2;
+                }
+            }
+        }
+
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             base.OnPaintBackground(e);
 
             var rect = ClientRectangle;
 
-            Color color1, color2, color3;
-            if (MyMainForm.IsDarkTheme())
-            {
-                // 深色模式三色渐变
-                color1 = Color.FromArgb(128, 128, 128);   // 顶部颜色
-                color2 = Color.FromArgb(56, 56, 56);   // 中间颜色
-                color3 = Color.FromArgb(128, 128, 128);   // 底部颜色
-            }
-            else
-            {
-                // 浅色模式三色渐变
-                color1 = Color.FromArgb(255, 255, 255); // 顶部颜色
-                color2 = Color.FromArgb(230, 230, 230); // 中间颜色
-                color3 = Color.FromArgb(255, 255, 255); // 底部颜色
-            }
+            // 使用DarkModeHelper中的颜色
+            Color color1 = DarkModeHelper.ToolBarGradientTop;
+            Color color2 = DarkModeHelper.ToolBarGradientMiddle;
+            Color color3 = DarkModeHelper.ToolBarGradientBottom;
 
             // 创建三色渐变
-            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                rect, Color.Empty, Color.Empty, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+            using (var brush = new LinearGradientBrush(
+                rect, Color.Empty, Color.Empty, LinearGradientMode.Vertical))
             {
                 // 使用ColorBlend创建三色渐变
-                var colorBlend = new System.Drawing.Drawing2D.ColorBlend(3);
+                var colorBlend = new ColorBlend(3);
                 colorBlend.Colors = new Color[] { color1, color2, color3 };
                 colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
                 brush.InterpolationColors = colorBlend;
@@ -272,12 +186,32 @@ namespace BluePointLilac.Controls
                 e.Graphics.FillRectangle(brush, rect);
             }
         }
-
-        protected override void OnResize(EventArgs e)
+        
+        // 重写Controls属性以保持向后兼容（注意：这可能会影响一些代码）
+        public new Control.ControlCollection Controls
         {
-            base.OnResize(e);
-            // 调整搜索面板位置到右侧
-            AdjustSearchBoxPosition();
+            get
+            {
+                // 返回包含所有子控件的集合
+                return base.Controls;
+            }
+        }
+        
+        // 主题变化事件处理
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            BackColor = DarkModeHelper.TitleArea;
+            ForeColor = DarkModeHelper.FormFore;
+            Invalidate();
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 
@@ -293,7 +227,7 @@ namespace BluePointLilac.Controls
         {
             SuspendLayout();
             DoubleBuffered = true;
-            ForeColor = MyMainForm.FormFore;
+            ForeColor = DarkModeHelper.FormFore;
             BackColor = Color.Transparent;
             Cursor = Cursors.Hand;
             Size = new Size(72, 72).DpiZoom();
@@ -324,10 +258,11 @@ namespace BluePointLilac.Controls
 
         readonly Label lblText = new Label
         {
-            ForeColor = MyMainForm.FormFore,
+            ForeColor = DarkModeHelper.FormFore,
             BackColor = Color.Transparent,
             Font = SystemFonts.MenuFont,
             AutoSize = true,
+            Anchor = AnchorStyles.Left | AnchorStyles.Right
         };
 
         public Image Image
@@ -342,6 +277,8 @@ namespace BluePointLilac.Controls
             set => lblText.Text = value;
         }
 
+        public bool CanBeSelected = true;
+        private float opacity;
         public float Opacity
         {
             get => currentOpacity;
@@ -361,14 +298,10 @@ namespace BluePointLilac.Controls
             base.OnPaint(e);
 
             // 创建圆角矩形路径
-            using (var path = CreateRoundedRectanglePath(ClientRectangle, borderRadius))
+            using (var path = DarkModeHelper.CreateRoundedRectanglePath(ClientRectangle, borderRadius))
             {
                 // 根据当前模式选择颜色
-                bool isDarkMode = false;
-                if (Parent?.Parent is MyToolBar toolbar)
-                {
-                    isDarkMode = MyMainForm.IsDarkTheme();
-                }
+                bool isDarkMode = DarkModeHelper.IsDarkTheme;
 
                 // 深色模式使用白色，浅色模式使用黑色
                 Color baseColor = isDarkMode ? Color.White : Color.Black;
@@ -392,11 +325,7 @@ namespace BluePointLilac.Controls
         // 更新文字颜色的方法
         public void UpdateTextColor()
         {
-            bool isDarkMode = false;
-            if (Parent?.Parent is MyToolBar toolbar)
-            {
-                isDarkMode = MyMainForm.IsDarkTheme();
-            }
+            bool isDarkMode = DarkModeHelper.IsDarkTheme;
 
             // 浅色模式下，当按钮被选中或悬停时，文字颜色改为白色
             if (!isDarkMode && currentOpacity > 0.1f)
@@ -405,20 +334,8 @@ namespace BluePointLilac.Controls
             }
             else
             {
-                lblText.ForeColor = MyMainForm.FormFore;
+                lblText.ForeColor = DarkModeHelper.FormFore;
             }
-        }
-
-        // 创建圆角矩形路径的辅助方法
-        private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
-        {
-            var path = new GraphicsPath();
-            path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
-            path.AddArc(rect.Right - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
-            path.AddArc(rect.Right - radius * 2, rect.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
-            path.CloseFigure();
-            return path;
         }
 
         private void UpdateAnimation()
@@ -440,8 +357,6 @@ namespace BluePointLilac.Controls
             this.Update();
         }
 
-        public bool CanBeSelected { get; set; } = true;
-
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
@@ -459,6 +374,16 @@ namespace BluePointLilac.Controls
                 cp.ExStyle |= 0x20; // 添加 WS_EX_TRANSPARENT 样式
                 return cp;
             }
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                animationTimer?.Stop();
+                animationTimer?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

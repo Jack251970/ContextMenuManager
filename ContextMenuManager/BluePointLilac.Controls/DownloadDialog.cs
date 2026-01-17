@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -16,8 +16,8 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (Process process = Process.GetCurrentProcess())
-            using (DownloadForm frm = new DownloadForm())
+            using(Process process = Process.GetCurrentProcess())
+            using(DownloadForm frm = new DownloadForm())
             {
                 frm.Url = Url;
                 frm.Text = Text;
@@ -40,6 +40,9 @@ namespace BluePointLilac.Controls
                 InitializeComponents();
                 ResumeLayout();
                 InitTheme();
+                
+                // 监听主题变化
+                DarkModeHelper.ThemeChanged += OnThemeChanged;
             }
 
             readonly ProgressBar pgbDownload = new ProgressBar
@@ -65,32 +68,60 @@ namespace BluePointLilac.Controls
                 btnCancel.Left = pgbDownload.Right + a;
                 ClientSize = new Size(btnCancel.Right + a, btnCancel.Bottom + a);
             }
+            
+            private new void InitTheme()
+            {
+                BackColor = DarkModeHelper.FormBack;
+                ForeColor = DarkModeHelper.FormFore;
+                
+                btnCancel.BackColor = DarkModeHelper.ButtonMain;
+                btnCancel.ForeColor = DarkModeHelper.FormFore;
+            }
+            
+            // 主题变化事件处理
+            private void OnThemeChanged(object sender, EventArgs e)
+            {
+                InitTheme();
+                Invalidate();
+            }
 
-            private void DownloadFile(string url, string filePath)
+            private async void DownloadFile(string url, string filePath)
             {
                 try
                 {
-                    using (UAWebClient client = new UAWebClient())
+                    using(var client = new System.Net.Http.HttpClient())
+                    using(var response = await client.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead))
                     {
-                        client.DownloadProgressChanged += (sender, e) =>
+                        response.EnsureSuccessStatusCode();
+                        long? totalBytes = response.Content.Headers.ContentLength;
+                        long totalBytesRead = 0;
+
+                        using(var contentStream = await response.Content.ReadAsStreamAsync())
+                        using(var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                         {
-                            int value = e.ProgressPercentage;
-                            Text = $"Downloading: {value}%";
-                            pgbDownload.Value = value;
-                            if (DialogResult == DialogResult.Cancel)
+                            var buffer = new byte[8192];
+                            int bytesRead;
+                            while((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                             {
-                                client.CancelAsync();
-                                File.Delete(FilePath);
+                                if(DialogResult == DialogResult.Cancel)
+                                {
+                                    File.Delete(FilePath);
+                                    return;
+                                }
+                                await fileStream.WriteAsync(buffer, 0, bytesRead);
+                                totalBytesRead += bytesRead;
+                                if(totalBytes.HasValue)
+                                {
+                                    int progressPercentage = (int)((totalBytesRead * 100) / totalBytes.Value);
+                                    Text = $"Downloading: {progressPercentage}%";
+                                    pgbDownload.Value = progressPercentage;
+                                }
                             }
-                        };
-                        client.DownloadFileCompleted += (sender, e) =>
-                        {
-                            DialogResult = DialogResult.OK;
-                        };
-                        client.DownloadFileAsync(new Uri(url), filePath);
+                        }
                     }
+                    DialogResult = DialogResult.OK;
                 }
-                catch (Exception e)
+                catch(Exception e)
                 {
                     MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     DialogResult = DialogResult.Cancel;
@@ -99,14 +130,23 @@ namespace BluePointLilac.Controls
 
             protected override void OnLoad(EventArgs e)
             {
-                if (Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
-                if (Owner == null) StartPosition = FormStartPosition.CenterScreen;
+                if(Owner == null && Form.ActiveForm != this) Owner = Form.ActiveForm;
+                if(Owner == null) StartPosition = FormStartPosition.CenterScreen;
                 else
                 {
                     TopMost = true;
                     StartPosition = FormStartPosition.CenterParent;
                 }
                 base.OnLoad(e);
+            }
+            
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                }
+                base.Dispose(disposing);
             }
         }
     }

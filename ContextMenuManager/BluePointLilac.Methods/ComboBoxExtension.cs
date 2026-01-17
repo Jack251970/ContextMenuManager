@@ -1,22 +1,23 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using System;
+using ContextMenuManager.BluePointLilac.Controls;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Methods
 {
-    public static class ComboBoxExtension
+    internal static class ComboBoxExtension
     {
-        public static void AutosizeDropDownWidth(this RComboBox box)
+        public static void AutosizeDropDownWidth(this RComboBox cmb)
         {
-            box.DropDown += (sender, e) =>
+            cmb.DropDown += (sender, e) =>
             {
                 int maxWidth = 0;
-                foreach (var item in box.Items)
+                foreach(var item in cmb.Items)
                 {
-                    maxWidth = Math.Max(maxWidth, TextRenderer.MeasureText(item.ToString(), box.Font).Width);
+                    maxWidth = Math.Max(maxWidth, TextRenderer.MeasureText(item.ToString(), cmb.Font).Width);
                 }
-                maxWidth = Math.Max(maxWidth, box.Width);
-                box.DropDownWidth = maxWidth;
+                maxWidth = Math.Max(maxWidth, cmb.Width);
+                cmb.DropDownWidth = maxWidth;
             };
         }
     }

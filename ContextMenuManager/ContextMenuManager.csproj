@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
@@ -39,6 +39,7 @@ xcopy $(ProjectDir)\Properties\Resources\Texts $(TargetDir)\Config\Dictionaries\
 del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);WFO1000;CA1416</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <ErrorReport>send</ErrorReport>
@@ -54,7 +55,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Svg" Version="3.4.7" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Management" Version="10.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.2.1" />
@@ -293,18 +293,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Content Include="Properties\Resources\ShellNew\0.xml" />
     <Content Include="Properties\Resources\Texts\UwpModeItemsDic.xml" />
   </ItemGroup>
-  <!--<ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.6">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.6 %28x86 和 x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>-->
+
   <ItemGroup>
     <Content Include="Properties\AppIcon.ico" />
     <Content Include="Properties\Resources\Images\Custom.png" />

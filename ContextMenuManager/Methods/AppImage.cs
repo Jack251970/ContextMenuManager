@@ -1,6 +1,7 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using ContextMenuManager.Properties;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
@@ -95,10 +96,12 @@ namespace ContextMenuManager.Methods
         public static readonly Image Lock = GetIconImage("imageres.dll", -59);
         ///<summary>快捷方式图标</summary>
         public static readonly Image LnkFile = GetIconImage("shell32.dll", -16769);
+        ///<summary>搜索</summary>
+        public static readonly Image Search = GetIconImage("shell32.dll", -23);
 
         private static Image GetIconImage(string dllName, int iconIndex)
         {
-            using (Icon icon = ResourceIcon.GetIcon(dllName, iconIndex)) return icon?.ToBitmap();
+            using(Icon icon = ResourceIcon.GetIcon(dllName, iconIndex)) return icon?.ToBitmap();
         }
     }
 }

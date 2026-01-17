@@ -1,4 +1,5 @@
 ﻿using BluePointLilac.Methods;
+using ContextMenuManager.BluePointLilac.Controls;
 using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
@@ -23,24 +24,24 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (SelectForm frm = new SelectForm())
+            using(var frm = new SelectForm())
             {
                 frm.Text = Title;
                 frm.CmbTitle = CmbTitle;
                 frm.CmbItems = CmbItems;
                 frm.TvTitle = TvTitle;
                 frm.TvItems = TvItems;
-                if (CmbSelectedText != null) frm.CmbSelectedText = CmbSelectedText;
-                else frm.CmbSelectedIndex = CmbSelectedIndex;
+                frm.CmbSelectedText = CmbSelectedText ?? (CmbSelectedIndex >= 0 ? CmbItems?[CmbSelectedIndex] : null);
                 if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
-                bool flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag)
+                
+                if (frm.ShowDialog() == DialogResult.OK)
                 {
                     CmbSelectedText = frm.CmbSelectedText;
                     CmbSelectedIndex = frm.CmbSelectedIndex;
                     TvSelectedItems = frm.TvSelectedItems;
+                    return true;
                 }
-                return flag;
+                return false;
             }
         }
 
@@ -52,32 +53,28 @@ namespace BluePointLilac.Controls
                 AcceptButton = btnOK;
                 CancelButton = btnCancel;
                 Font = SystemFonts.MenuFont;
-                ShowIcon = ShowInTaskbar = false;
-                MaximizeBox = MinimizeBox = false;
+                ShowIcon = ShowInTaskbar = MaximizeBox = MinimizeBox = false;
                 FormBorderStyle = FormBorderStyle.FixedSingle;
                 StartPosition = FormStartPosition.CenterParent;
                 InitializeComponents();
                 ResumeLayout();
                 InitTheme();
+                DarkModeHelper.ThemeChanged += OnThemeChanged;
             }
 
             public string CmbTitle
             {
                 get => cmbInfo.Text;
-                set
-                {
-                    cmbInfo.Text = value;
-                    cmbItems.Left = cmbInfo.Right;
-                    cmbItems.Width -= cmbInfo.Width;
-                }
+                set { cmbInfo.Text = value; cmbItems.Left = cmbInfo.Right; cmbItems.Width -= cmbInfo.Width; }
             }
+            
             public string[] CmbItems
             {
-                get
-                {
-                    string[] value = new string[cmbItems.Items.Count];
-                    cmbItems.Items.CopyTo(value, 0);
-                    return value;
+                get 
+                { 
+                    var items = new string[cmbItems.Items.Count]; 
+                    cmbItems.Items.CopyTo(items, 0); 
+                    return items; 
                 }
                 set
                 {
@@ -85,67 +82,59 @@ namespace BluePointLilac.Controls
                     cmbItems.Items.AddRange(value);
                 }
             }
-            public int CmbSelectedIndex
-            {
-                get => cmbItems.SelectedIndex;
-                set => cmbItems.SelectedIndex = value;
-            }
-            public string CmbSelectedText
-            {
-                get => cmbItems.Text;
-                set => cmbItems.Text = value;
-            }
-
-            public string TvTitle
-            {
-                get => tvInfo.Text;
-                set => tvInfo.Text = value;
-            }
-            private string[] tvValue;
+            
+            public int CmbSelectedIndex { get => cmbItems.SelectedIndex; set => cmbItems.SelectedIndex = value; }
+            public string CmbSelectedText { get => cmbItems.Text; set => cmbItems.Text = value; }
+            public string TvTitle { get => tvInfo.Text; set => tvInfo.Text = value; }
+            
             public string[] TvItems
             {
                 get => tvValue;
                 set { tvValue = value; ShowTreeView(); }
             }
-            private readonly List<string> tvSelectedItems = new List<string>();
+            
             public List<string> TvSelectedItems => GetSortedTvSelectedItems();
 
-            readonly Label tvInfo = new Label { AutoSize = true };
-            readonly TreeView treeView = new TreeView
+            private string[] tvValue;
+            private readonly List<string> tvSelectedItems = new List<string>();
+            private bool isFirst = true;
+            private bool changeDone = false;
+
+            private readonly Label tvInfo = new Label { AutoSize = true };
+            private readonly TreeView treeView = new TreeView
             {
-                ForeColor = MyMainForm.FormFore,
-                BackColor = MyMainForm.FormBack,
+                ForeColor = DarkModeHelper.FormFore,
+                BackColor = DarkModeHelper.FormBack,
                 CheckBoxes = true,
                 Indent = 20.DpiZoom(),
                 ItemHeight = 25.DpiZoom(),
             };
-            private bool isFirst = true;
-            private bool changeDone = false;
-
-            readonly CheckBox checkAll = new CheckBox
+            
+            private readonly CheckBox checkAll = new CheckBox
             {
                 Name = "CheckAll",
                 Text = AppString.Dialog.SelectAll,
                 AutoSize = true,
             };
-
-            readonly Label cmbInfo = new Label { AutoSize = true };
-            readonly RComboBox cmbItems = new RComboBox
+            
+            private readonly Label cmbInfo = new Label { AutoSize = true };
+            private readonly RComboBox cmbItems = new RComboBox
             {
-                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-                AutoCompleteSource = AutoCompleteSource.ListItems,
+                AutoCompleteMode = AutoCompleteMode.None,
+                AutoCompleteSource = AutoCompleteSource.None,
                 DropDownHeight = 300.DpiZoom(),
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 ImeMode = ImeMode.Disable
             };
-
-            readonly Button btnOK = new Button
+            
+            private readonly Button btnOK = new Button
             {
                 DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
-            readonly Button btnCancel = new Button
+            
+            private readonly Button btnCancel = new Button
             {
                 DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,
@@ -156,54 +145,70 @@ namespace BluePointLilac.Controls
             {
                 Controls.AddRange(new Control[] { tvInfo, treeView, checkAll, cmbInfo, cmbItems, btnOK, btnCancel });
                 int margin = 20.DpiZoom();
-                int cmbItemsWidth = 300.DpiZoom();
-                int tvHeight = 300.DpiZoom();
                 tvInfo.Top = checkAll.Top = margin;
                 tvInfo.Left = treeView.Left = cmbInfo.Left = margin;
                 treeView.Top = tvInfo.Bottom + 5.DpiZoom();
-                treeView.Height = tvHeight;
+                treeView.Height = 300.DpiZoom();
                 cmbInfo.Top = cmbItems.Top = treeView.Bottom + margin;
                 cmbItems.Left = cmbInfo.Right;
-                cmbItems.Width = cmbItemsWidth;
+                cmbItems.Width = 300.DpiZoom();
                 btnOK.Top = btnCancel.Top = cmbItems.Bottom + margin;
                 btnOK.Left = (cmbItems.Width + cmbInfo.Width + 2 * margin - margin) / 2 - btnOK.Width;
                 btnCancel.Left = btnOK.Right + margin;
                 ClientSize = new Size(cmbItems.Right + margin, btnCancel.Bottom + margin);
                 treeView.Width = ClientSize.Width - 2 * margin;
                 checkAll.Left = treeView.Right - checkAll.Width;
-                checkAll.Click += CheckAll_CheckBoxMouseClick;
+                checkAll.Click += CheckAll_Click;
                 cmbItems.AutosizeDropDownWidth();
+                
+                treeView.BeforeCheck += TreeView_BeforeCheck;
+                treeView.AfterSelect += TreeView_AfterSelect;
+                treeView.AfterCheck += TreeView_AfterCheck;
+            }
+            
+            private new void InitTheme()
+            {
+                BackColor = DarkModeHelper.FormBack;
+                ForeColor = DarkModeHelper.FormFore;
+                tvInfo.ForeColor = DarkModeHelper.FormFore;
+                checkAll.ForeColor = DarkModeHelper.FormFore;
+                cmbInfo.ForeColor = DarkModeHelper.FormFore;
+                btnOK.BackColor = btnCancel.BackColor = DarkModeHelper.ButtonMain;
+                btnOK.ForeColor = btnCancel.ForeColor = DarkModeHelper.FormFore;
+                DarkModeHelper.AdjustControlColors(this);
+            }
+            
+            private void OnThemeChanged(object sender, EventArgs e)
+            {
+                InitTheme();
+                Invalidate();
             }
 
             private void ShowTreeView()
             {
-                treeView.Nodes.Add(new TreeNode(AppString.ToolBar.Home));
-                treeView.Nodes.Add(new TreeNode(AppString.ToolBar.Type));
-                treeView.Nodes.Add(new TreeNode(AppString.ToolBar.Rule));
-
-                for (int i = 0; i < TvItems.Length; i++)
+                treeView.Nodes.AddRange(new[]
                 {
-                    string treeNodeText = TvItems[i];
-                    if (BackupHelper.HomeBackupScenesText.Contains(treeNodeText))
-                        treeView.Nodes[0].Nodes.Add(new TreeNode(treeNodeText));
-                    else if (BackupHelper.TypeBackupScenesText.Contains(treeNodeText))
-                        treeView.Nodes[1].Nodes.Add(new TreeNode(treeNodeText));
-                    else if (BackupHelper.RuleBackupScenesText.Contains(treeNodeText))
-                        treeView.Nodes[2].Nodes.Add(new TreeNode(treeNodeText));
+                    new TreeNode(AppString.ToolBar.Home),
+                    new TreeNode(AppString.ToolBar.Type),
+                    new TreeNode(AppString.ToolBar.Rule)
+                });
+
+                foreach (var item in TvItems)
+                {
+                    var node = new TreeNode(item);
+                    if (BackupHelper.HomeBackupScenesText.Contains(item))
+                        treeView.Nodes[0].Nodes.Add(node);
+                    else if (BackupHelper.TypeBackupScenesText.Contains(item))
+                        treeView.Nodes[1].Nodes.Add(node);
+                    else if (BackupHelper.RuleBackupScenesText.Contains(item))
+                        treeView.Nodes[2].Nodes.Add(node);
                 }
 
-                for (int i = 0; i < treeView.Nodes.Count; i++)
+                for (int i = treeView.Nodes.Count - 1; i >= 0; i--)
                 {
                     if (treeView.Nodes[i].Nodes.Count == 0)
-                    {
                         treeView.Nodes.RemoveAt(i);
-                        i--;
-                    }
                 }
-
-                treeView.BeforeCheck += TreeView_BeforeCheck;
-                treeView.AfterSelect += TreeView_AfterSelect;
-                treeView.AfterCheck += TreeView_AfterCheck;
             }
 
             private void TreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
@@ -217,43 +222,43 @@ namespace BluePointLilac.Controls
 
             private void TreeView_AfterCheck(object sender, TreeViewEventArgs e)
             {
-                if (e.Node != null && !changeDone)
-                {
-                    TreeNode node = e.Node;
-                    bool isChecked = node.Checked;
-                    string nodeText = e.Node.Text;
-                    changeDone = true;
+                if (e.Node == null || changeDone) return;
+                
+                var node = e.Node;
+                changeDone = true;
 
-                    if (nodeText == AppString.ToolBar.Home || nodeText == AppString.ToolBar.Type || nodeText == AppString.ToolBar.Rule)
+                if (node.Parent == null)
+                {
+                    foreach (TreeNode child in node.Nodes)
                     {
-                        for (int i = 0; i < node.Nodes.Count; i++)
-                        {
-                            TreeNode childNode = node.Nodes[i];
-                            childNode.Checked = isChecked;
-                            if (isChecked)
-                            {
-                                if (!tvSelectedItems.Contains(childNode.Text))
-                                    tvSelectedItems.Add(childNode.Text);
-                            }
-                            else
-                                tvSelectedItems.Remove(childNode.Text);
-                        }
+                        child.Checked = node.Checked;
+                        UpdateSelectedItems(child, node.Checked);
                     }
-                    else
-                    {
-                        int brotherNodeCheckedCount = node.Parent.Nodes.Cast<TreeNode>().Count(tn => tn.Checked);
-                        node.Parent.Checked = brotherNodeCheckedCount >= 1;
-                        if (isChecked)
-                        {
-                            if (!tvSelectedItems.Contains(node.Text))
-                                tvSelectedItems.Add(node.Text);
-                        }
-                        else
-                            tvSelectedItems.Remove(node.Text);
-                    }
-                    checkAll.Checked = tvSelectedItems.Count == tvValue.Length;
-                    changeDone = false;
                 }
+                else
+                {
+                    UpdateParentNodeState(node.Parent);
+                    UpdateSelectedItems(node, node.Checked);
+                }
+                
+                checkAll.Checked = tvSelectedItems.Count == tvValue.Length;
+                changeDone = false;
+            }
+            
+            private void UpdateParentNodeState(TreeNode parent)
+            {
+                bool anyChecked = parent.Nodes.Cast<TreeNode>().Any(n => n.Checked);
+                parent.Checked = anyChecked;
+            }
+            
+            private void UpdateSelectedItems(TreeNode node, bool isChecked)
+            {
+                if (node.Parent == null) return;
+                
+                if (isChecked && !tvSelectedItems.Contains(node.Text))
+                    tvSelectedItems.Add(node.Text);
+                else if (!isChecked)
+                    tvSelectedItems.Remove(node.Text);
             }
 
             private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
@@ -265,43 +270,47 @@ namespace BluePointLilac.Controls
                 }
             }
 
-            private void CheckAll_CheckBoxMouseClick(object sender, EventArgs e)
+            private void CheckAll_Click(object sender, EventArgs e)
             {
-                // 修复：设置 changeDone 为 true 防止递归调用
-                changeDone = true;
-
-                bool isChecked = checkAll.Checked;
-                for (int i = 0; i < treeView.Nodes.Count; i++)
+                bool check = checkAll.Checked;
+                foreach (TreeNode parent in treeView.Nodes)
                 {
-                    for (int j = 0; j < treeView.Nodes[i].Nodes.Count; j++)
+                    parent.Checked = check;
+                    foreach (TreeNode child in parent.Nodes)
                     {
-                        treeView.Nodes[i].Nodes[j].Checked = isChecked;
-                        if (isChecked)
-                        {
-                            if (!tvSelectedItems.Contains(treeView.Nodes[i].Nodes[j].Text))
-                                tvSelectedItems.Add(treeView.Nodes[i].Nodes[j].Text);
-                        }
-                        else
-                            tvSelectedItems.Remove(treeView.Nodes[i].Nodes[j].Text);
+                        child.Checked = check;
+                        UpdateSelectedItems(child, check);
                     }
-                    treeView.Nodes[i].Checked = isChecked;
                 }
-
-                changeDone = false;
             }
 
             private List<string> GetSortedTvSelectedItems()
             {
-                // 直接从 tvSelectedItems 获取已选项，而不是重新遍历树节点
-                List<string> sortedTvSelectedItems =
-                [
-                    // 按照原始顺序排序
-                    .. BackupHelper.HomeBackupScenesText.Where(tvSelectedItems.Contains),
-                    .. BackupHelper.TypeBackupScenesText.Where(tvSelectedItems.Contains),
-                    .. BackupHelper.RuleBackupScenesText.Where(tvSelectedItems.Contains),
-                ];
+                var selected = treeView.Nodes
+                    .Cast<TreeNode>()
+                    .SelectMany(p => p.Nodes.Cast<TreeNode>())
+                    .Where(n => n.Checked)
+                    .Select(n => n.Text)
+                    .ToList();
 
-                return sortedTvSelectedItems;
+                var sorted = new List<string>();
+                var allItems = BackupHelper.HomeBackupScenesText
+                    .Concat(BackupHelper.TypeBackupScenesText)
+                    .Concat(BackupHelper.RuleBackupScenesText);
+                
+                foreach (var item in allItems)
+                {
+                    if (selected.Contains(item))
+                        sorted.Add(item);
+                }
+                
+                return sorted;
+            }
+            
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing) DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                base.Dispose(disposing);
             }
         }
     }

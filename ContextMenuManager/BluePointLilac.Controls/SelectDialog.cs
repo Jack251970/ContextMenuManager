@@ -1,5 +1,6 @@
 ﻿using BluePointLilac.Methods;
 using System;
+using ContextMenuManager.BluePointLilac.Controls;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -17,16 +18,16 @@ namespace BluePointLilac.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (SelectForm frm = new SelectForm())
+            using(SelectForm frm = new SelectForm())
             {
                 frm.Text = Title;
                 frm.Items = Items;
-                if (Selected != null) frm.Selected = Selected;
+                if(Selected != null) frm.Selected = Selected;
                 else frm.SelectedIndex = SelectedIndex;
                 frm.CanEdit = CanEdit;
                 if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag)
+                if(flag)
                 {
                     Selected = frm.Selected;
                     SelectedIndex = frm.SelectedIndex;
@@ -76,7 +77,22 @@ namespace BluePointLilac.Controls
             public bool CanEdit
             {
                 get => cmbItems.DropDownStyle == ComboBoxStyle.DropDown;
-                set => cmbItems.DropDownStyle = value ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
+                set
+                {
+                    cmbItems.DropDownStyle = value ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
+                    // 根据 DropDownStyle 设置合适的 AutoCompleteMode
+                    if (value)
+                    {
+                        cmbItems.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                        cmbItems.AutoCompleteSource = AutoCompleteSource.ListItems;
+                    }
+                    else
+                    {
+                        // 当 DropDownStyle 是 DropDownList 时，AutoCompleteMode 必须为 None
+                        cmbItems.AutoCompleteMode = AutoCompleteMode.None;
+                        cmbItems.AutoCompleteSource = AutoCompleteSource.None;
+                    }
+                }
             }
 
             public int SelectedIndex
@@ -99,8 +115,8 @@ namespace BluePointLilac.Controls
             };
             readonly RComboBox cmbItems = new RComboBox
             {
-                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-                AutoCompleteSource = AutoCompleteSource.ListItems,
+                // 移除初始化时的 AutoCompleteMode 和 AutoCompleteSource 设置
+                // 这些设置将在 CanEdit 属性中根据模式动态设置
                 DropDownHeight = 294.DpiZoom(),
                 ImeMode = ImeMode.Disable
             };

@@ -26,11 +26,11 @@ namespace ContextMenuManager.Controls.Interfaces
 
         public bool ChangeCommand(ShellLink shellLink)
         {
-            using (CommandDialog dlg = new CommandDialog())
+            using(CommandDialog dlg = new CommandDialog())
             {
                 dlg.Command = shellLink.TargetPath;
                 dlg.Arguments = shellLink.Arguments;
-                if (dlg.ShowDialog() != DialogResult.OK) return false;
+                if(dlg.ShowDialog() != DialogResult.OK) return false;
                 shellLink.TargetPath = dlg.Command;
                 shellLink.Arguments = dlg.Arguments;
                 shellLink.Save();
@@ -47,13 +47,13 @@ namespace ContextMenuManager.Controls.Interfaces
 
             protected override bool RunDialog(IntPtr hwndOwner)
             {
-                using (CommandForm frm = new CommandForm())
+                using(CommandForm frm = new CommandForm())
                 {
                     frm.Command = Command;
                     frm.Arguments = Arguments;
                     frm.TopMost = true;
                     bool flag = frm.ShowDialog() == DialogResult.OK;
-                    if (flag)
+                    if(flag)
                     {
                         Command = frm.Command;
                         Arguments = frm.Arguments;

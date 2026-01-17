@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
@@ -43,11 +43,11 @@ namespace ContextMenuManager.Controls
         protected override bool RunDialog(IntPtr hwndOwner)
         {
             bool flag = base.RunDialog(hwndOwner);
-            if (flag)
+            if(flag)
             {
                 string extension = ObjectPath.RemoveIllegalChars(Extension);
                 int index = extension.LastIndexOf('.');
-                if (index >= 0) Extension = extension.Substring(index);
+                if(index >= 0) Extension = extension.Substring(index);
                 else Extension = $".{extension}";
             }
             return flag;

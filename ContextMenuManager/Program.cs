@@ -1,8 +1,9 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ContextMenuManager
@@ -13,19 +14,20 @@ namespace ContextMenuManager
         [STAThread]
         static void Main()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine($@"--------------------{DateTime.Now:yyyy-MM-dd HH:mm:ss}--------------------");
-                }
-            }
-#endif
-            MyMainForm.InitColors();
+            // 首先设置应用程序属性
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if (SingleInstance.IsRunning()) return;
+            
+            // 然后设置Windows Forms同步上下文
+            if (SynchronizationContext.Current == null)
+            {
+                SynchronizationContext.SetSynchronizationContext(new WindowsFormsSynchronizationContext());
+            }
+            
+            // 最后初始化DarkModeHelper（这时可能会有控件创建）
+            DarkModeHelper.Initialize();
+            
+            if(SingleInstance.IsRunning()) return;
             AppString.LoadStrings();
             Updater.PeriodicUpdate();
             XmlDicHelper.ReloadDics();

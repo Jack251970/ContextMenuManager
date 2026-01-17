@@ -19,11 +19,11 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (ShellStoreForm frm = new ShellStoreForm(ShellPath, Filter, IsReference))
+            using(ShellStoreForm frm = new ShellStoreForm(ShellPath, Filter, IsReference))
             {
                 frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag) SelectedKeyNames = frm.SelectedKeyNames;
+                if(flag) SelectedKeyNames = frm.SelectedKeyNames;
                 return flag;
             }
         }
@@ -52,7 +52,7 @@ namespace ContextMenuManager.Controls
                 chkSelectAll.Click += (sender, e) =>
                 {
                     bool flag = chkSelectAll.Checked;
-                    foreach (StoreShellItem item in list.Controls)
+                    foreach(StoreShellItem item in list.Controls)
                     {
                         item.IsSelected = flag;
                     }
@@ -68,7 +68,7 @@ namespace ContextMenuManager.Controls
             readonly MyListBox listBox = new MyListBox();
             readonly Panel pnlBorder = new Panel
             {
-                BackColor = MyMainForm.FormFore
+                BackColor = DarkModeHelper.FormFore // 修改这里
             };
             readonly Button btnOK = new Button
             {
@@ -116,18 +116,18 @@ namespace ContextMenuManager.Controls
 
             private void LoadItems(bool isReference)
             {
-                using (var shellKey = RegistryEx.GetRegistryKey(ShellPath))
+                using(var shellKey = RegistryEx.GetRegistryKey(ShellPath))
                 {
-                    foreach (string itemName in shellKey.GetSubKeyNames())
+                    foreach(string itemName in shellKey.GetSubKeyNames())
                     {
-                        if (Filter != null && !Filter(itemName)) continue;
+                        if(Filter != null && !Filter(itemName)) continue;
                         string regPath = $@"{ShellPath}\{itemName}";
                         StoreShellItem item = new StoreShellItem(regPath, isReference);
                         item.SelectedChanged += () =>
                         {
-                            foreach (StoreShellItem shellItem in list.Controls)
+                            foreach(StoreShellItem shellItem in list.Controls)
                             {
-                                if (!shellItem.IsSelected)
+                                if(!shellItem.IsSelected)
                                 {
                                     chkSelectAll.Checked = false;
                                     return;
@@ -143,8 +143,8 @@ namespace ContextMenuManager.Controls
             private void GetSelectedItems()
             {
                 List<string> names = new List<string>();
-                foreach (StoreShellItem item in list.Controls)
-                    if (item.IsSelected) names.Add(item.KeyName);
+                foreach(StoreShellItem item in list.Controls)
+                    if(item.IsSelected) names.Add(item.KeyName);
                 SelectedKeyNames = names.ToArray();
             }
         }
@@ -155,7 +155,7 @@ namespace ContextMenuManager.Controls
         public StoreShellItem(string regPath, bool isPublic, bool isSelect = true) : base(regPath)
         {
             IsPublic = isPublic;
-            if (isSelect)
+            if(isSelect)
             {
                 ContextMenuStrip = null;
                 AddCtr(chkSelected);
@@ -183,7 +183,7 @@ namespace ContextMenuManager.Controls
 
         public override void DeleteMe()
         {
-            if (IsPublic && AppMessageBox.Show(AppString.Message.ConfirmDeleteReferenced,
+            if(IsPublic && AppMessageBox.Show(AppString.Message.ConfirmDeleteReferenced,
                 MessageBoxButtons.YesNo) != DialogResult.Yes) return;
             base.DeleteMe();
         }

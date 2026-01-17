@@ -15,20 +15,20 @@ namespace ContextMenuManager.Controls
         {
             Dictionary<string, Guid> dic = new Dictionary<string, Guid>();
             string[] parts = isDragDrop ? DdhParts : CmhParts;
-            foreach (string part in parts)
+            foreach(string part in parts)
             {
-                using (RegistryKey cmKey = RegistryEx.GetRegistryKey($@"{shellExPath}\{part}"))
+                using(RegistryKey cmKey = RegistryEx.GetRegistryKey($@"{shellExPath}\{part}"))
                 {
-                    if (cmKey == null) continue;
-                    foreach (string keyName in cmKey.GetSubKeyNames())
+                    if(cmKey == null) continue;
+                    foreach(string keyName in cmKey.GetSubKeyNames())
                     {
                         try
                         {
-                            using (RegistryKey key = cmKey.OpenSubKey(keyName))
+                            using(RegistryKey key = cmKey.OpenSubKey(keyName))
                             {
-                                if (!GuidEx.TryParse(key.GetValue("")?.ToString(), out Guid guid))
+                                if(!GuidEx.TryParse(key.GetValue("")?.ToString(), out Guid guid))
                                     GuidEx.TryParse(keyName, out guid);
-                                if (!guid.Equals(Guid.Empty))
+                                if(!guid.Equals(Guid.Empty))
                                     dic.Add(key.Name, guid);
                             }
                         }
@@ -143,7 +143,7 @@ namespace ContextMenuManager.Controls
 
         public bool TryProtectOpenItem()
         {
-            if (!ChkVisible.Checked || !Guid.Equals(LnkOpenGuid) || !AppConfig.ProtectOpenItem) return true;
+            if(!ChkVisible.Checked || !Guid.Equals(LnkOpenGuid) || !AppConfig.ProtectOpenItem) return true;
             return AppMessageBox.Show(AppString.Message.PromptIsOpenItem, MessageBoxButtons.YesNo) == DialogResult.Yes;
         }
 

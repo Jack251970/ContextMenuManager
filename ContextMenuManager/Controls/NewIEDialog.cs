@@ -13,11 +13,11 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            using (NewIEForm frm = new NewIEForm())
+            using(NewIEForm frm = new NewIEForm())
             {
                 frm.TopMost = true;
                 bool flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag) RegPath = frm.RegPath;
+                if(flag) RegPath = frm.RegPath;
                 return flag;
             }
         }
@@ -31,12 +31,12 @@ namespace ContextMenuManager.Controls
                 base.InitializeComponents();
                 btnOK.Click += (sender, e) =>
                 {
-                    if (ItemText.IsNullOrWhiteSpace())
+                    if(ItemText.IsNullOrWhiteSpace())
                     {
                         AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                         return;
                     }
-                    if (ItemCommand.IsNullOrWhiteSpace())
+                    if(ItemCommand.IsNullOrWhiteSpace())
                     {
                         AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
                         return;
@@ -47,9 +47,9 @@ namespace ContextMenuManager.Controls
 
                 btnBrowse.Click += (sender, e) =>
                 {
-                    using (OpenFileDialog dlg = new OpenFileDialog())
+                    using(OpenFileDialog dlg = new OpenFileDialog())
                     {
-                        if (dlg.ShowDialog() != DialogResult.OK) return;
+                        if(dlg.ShowDialog() != DialogResult.OK) return;
                         ItemFilePath = dlg.FileName;
                         ItemText = Path.GetFileNameWithoutExtension(dlg.FileName);
                     }

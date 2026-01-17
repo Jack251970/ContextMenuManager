@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls.Interfaces
             Click += (sender, e) => ExternalProgram.JumpRegEdit(item.RegPath, item.ValueName, AppConfig.OpenMoreRegedit);
             item.ContextMenuStrip.Opening += (sender, e) =>
             {
-                using (var key = RegistryEx.GetRegistryKey(item.RegPath))
+                using(var key = RegistryEx.GetRegistryKey(item.RegPath))
                     Visible = key != null;
             };
         }

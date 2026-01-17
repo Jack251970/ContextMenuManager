@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Microsoft.Win32;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System;
 using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
@@ -14,14 +15,16 @@ namespace BluePointLilac.Controls
         {
             StartPosition = FormStartPosition.CenterScreen;
             base.OnLoad(e);
+            // 初始化主题
+            InitTheme();
         }
 
-        public static Color ButtonMain => MyMainForm.ButtonMain;
-        public static Color ButtonSecond => MyMainForm.ButtonSecond;
+        public static Color ButtonMain => DarkModeHelper.ButtonMain;
+        public static Color ButtonSecond => DarkModeHelper.ButtonSecond;
 
-        public static Color FormBack => MyMainForm.FormBack;
-        public static Color FormFore => MyMainForm.FormFore;
-        public static Color FormBorder => MyMainForm.FormBorder;
+        public static Color FormBack => DarkModeHelper.FormBack;
+        public static Color FormFore => DarkModeHelper.FormFore;
+        public static Color FormBorder => DarkModeHelper.FormBorder;
 
         [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
         public static extern bool CheckSystemDarkModeStatus();
@@ -43,14 +46,30 @@ namespace BluePointLilac.Controls
 
         public bool InitTheme()
         {
-            bool newDarkTheme = MyMainForm.IsDarkTheme();
+            bool newDarkTheme = DarkModeHelper.IsDarkTheme;
             bool changed = darkTheme != newDarkTheme;
             darkTheme = newDarkTheme;
 
-            if (changed)
+            if (changed && IsHandleCreated)
             {
-                DwmSetWindowAttribute(Handle, 20, new[] { darkTheme ? 1 : 0 }, 4);
-                Adjust();
+                try
+                {
+                    DwmSetWindowAttribute(Handle, 20, new[] { darkTheme ? 1 : 0 }, 4);
+                }
+                catch
+                {
+                    // API调用失败，忽略错误
+                }
+                
+                // 在UI线程上调整颜色
+                if (InvokeRequired)
+                {
+                    Invoke(new Action(Adjust));
+                }
+                else
+                {
+                    Adjust();
+                }
                 Invalidate();
             }
 
@@ -59,35 +78,58 @@ namespace BluePointLilac.Controls
 
         protected void ApplyDarkModeToDataGridView(DataGridView dgv)
         {
+            // 确保在UI线程上执行
+            if (dgv.InvokeRequired)
+            {
+                dgv.Invoke(new Action(() => ApplyDarkModeToDataGridView(dgv)));
+                return;
+            }
+            
             // Background color
-            dgv.BackgroundColor = MyMainForm.FormBack;
-            dgv.DefaultCellStyle.BackColor = MyMainForm.FormBack;
-            dgv.DefaultCellStyle.ForeColor = MyMainForm.FormFore;
+            dgv.BackgroundColor = DarkModeHelper.FormBack;
+            dgv.DefaultCellStyle.BackColor = DarkModeHelper.FormBack;
+            dgv.DefaultCellStyle.ForeColor = DarkModeHelper.FormFore;
 
             // Grid color
             dgv.GridColor = Color.DimGray;
 
             // Header style
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = MyMainForm.FormBack;
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = MyMainForm.FormFore;
-            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = MyMainForm.MainColor;
-            dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = MyMainForm.FormFore;
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = DarkModeHelper.FormBack;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = DarkModeHelper.FormFore;
+            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = DarkModeHelper.MainColor;
+            dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = DarkModeHelper.FormFore;
             dgv.EnableHeadersVisualStyles = false;  // Ensure custom header styles apply
 
             // Row styles
-            dgv.RowsDefaultCellStyle.BackColor = MyMainForm.FormBack;
-            dgv.RowsDefaultCellStyle.ForeColor = MyMainForm.FormFore;
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = MyMainForm.FormBack;
+            dgv.RowsDefaultCellStyle.BackColor = DarkModeHelper.FormBack;
+            dgv.RowsDefaultCellStyle.ForeColor = DarkModeHelper.FormFore;
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = DarkModeHelper.FormBack;
 
             // Selection color
-            dgv.DefaultCellStyle.SelectionBackColor = MyMainForm.MainColor;
-            dgv.DefaultCellStyle.SelectionForeColor = MyMainForm.FormFore;
+            dgv.DefaultCellStyle.SelectionBackColor = DarkModeHelper.MainColor;
+            dgv.DefaultCellStyle.SelectionForeColor = DarkModeHelper.FormFore;
         }
 
         private void Adjust()
         {
             BackColor = FormBack;
             ForeColor = FormFore;
+        }
+        
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            // 应用深色模式到窗体
+            DarkModeHelper.ApplyDarkModeToForm(this);
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // 清理资源
+            }
+            base.Dispose(disposing);
         }
     }
 }

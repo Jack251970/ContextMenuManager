@@ -1,17 +1,17 @@
-﻿using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Serialization;
 using static ContextMenuManager.Controls.ShellList;
-using static ContextMenuManager.Controls.ShellNewList;
+using System.Xml;
+using System.Drawing;
 using static ContextMenuManager.Methods.BackupList;
+using System.Xml.Serialization;
+using static ContextMenuManager.Controls.ShellNewList;
+using BluePointLilac.Controls;
 
 namespace ContextMenuManager.Methods
 {
@@ -131,7 +131,7 @@ namespace ContextMenuManager.Methods
         public string[] GetBackupRestoreScenesText(List<Scenes> scenes)
         {
             List<string> scenesTextList = new List<string>();
-            foreach (Scenes scene in scenes)
+            foreach(Scenes scene in scenes)
             {
                 scenesTextList.Add(BackupScenesText[(int)scene]);
             }
@@ -248,7 +248,7 @@ namespace ContextMenuManager.Methods
         // 按照目前处理场景逐个备份或恢复
         private void BackupRestoreItems(LoadingDialogInterface dialogInterface)
         {
-            foreach (Scenes scene in currentScenes)
+            foreach(Scenes scene in currentScenes)
             {
                 currentScene = scene;
                 // 加载某个Scene的恢复列表
@@ -374,7 +374,7 @@ namespace ContextMenuManager.Methods
                     }
                 }
             }
-            if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) ||
+            if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) || 
                 (restoreMode == RestoreMode.EnableNotOnList && !currentItemData))
             {
                 restoreList.Add(new RestoreChangedItem(currentScene, itemName, (!currentItemData).ToString()));
@@ -625,16 +625,6 @@ namespace ContextMenuManager.Methods
                     GetBackupStoreItems();
                     return;
             }
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine($@"BackupItems: {currentScene}");
-                }
-            }
-            int i = 0;
-#endif
             // 获取ShellItem与ShellExItem类的备份项目
             GetShellListItems(scenePath);
             switch (currentScene)
@@ -646,17 +636,6 @@ namespace ContextMenuManager.Methods
                     string itemName = item.Text;
                     bool ifItemInMenu = item.ItemVisible;
                     BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
-#if DEBUG
-                    i++;
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine("\tBackupAddedItems");
-                            sw.WriteLine("\t\t" + $@"{i}. {valueName} {itemName} {ifItemInMenu} {regPath}");
-                        }
-                    }
-#endif
                     break;
                 case Scenes.Computer:
                     item = new VisibleRegRuleItem(VisibleRegRuleItem.NetworkDrive);
@@ -665,17 +644,6 @@ namespace ContextMenuManager.Methods
                     itemName = item.Text;
                     ifItemInMenu = item.ItemVisible;
                     BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
-#if DEBUG
-                    i++;
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine("\tBackupAddedItems");
-                            sw.WriteLine("\t\t" + $@"{i}. {valueName} {itemName} {ifItemInMenu} {regPath}");
-                        }
-                    }
-#endif
                     break;
                 case Scenes.RecycleBin:
                     item = new VisibleRegRuleItem(VisibleRegRuleItem.RecycleBinProperties);
@@ -684,28 +652,8 @@ namespace ContextMenuManager.Methods
                     itemName = item.Text;
                     ifItemInMenu = item.ItemVisible;
                     BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
-#if DEBUG
-                    i++;
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine("\tBackupAddedItems");
-                            sw.WriteLine("\t\t" + $@"{i}. {valueName} {itemName} {ifItemInMenu} {regPath}");
-                        }
-                    }
-#endif
                     break;
                 case Scenes.Library:
-#if DEBUG
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine("\tBackupAddedItems");
-                        }
-                    }
-#endif
                     string[] AddedScenePathes = new string[] { MENUPATH_LIBRARY_BACKGROUND, MENUPATH_LIBRARY_USER };
                     RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
                     for (int j = 0; j < AddedScenePathes.Length; j++)
@@ -748,16 +696,6 @@ namespace ContextMenuManager.Methods
 
         private void GetBackupShellItems(string shellPath)
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\tGetBackupShellItems");
-                }
-            }
-            int i = 0;
-#endif
             using (RegistryKey shellKey = RegistryEx.GetRegistryKey(shellPath))
             {
                 if (shellKey == null) return;
@@ -777,32 +715,12 @@ namespace ContextMenuManager.Methods
                     {
                         BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellItem, ifItemInMenu, currentScene);
                     }
-#if DEBUG
-                    i++;
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine("\t\t" + $@"{i}. {keyName} {itemName} {ifItemInMenu} {regPath}");
-                        }
-                    }
-#endif
                 }
             }
         }
 
         private void GetBackupShellExItems(string shellExPath)
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\tGetBackupShellExItems");
-                }
-            }
-            int i = 0;
-#endif
             List<string> names = new List<string>();
             using (RegistryKey shellExKey = RegistryEx.GetRegistryKey(shellExPath))
             {
@@ -814,15 +732,6 @@ namespace ContextMenuManager.Methods
                 if (isDragDrop)
                 {
                     groupItem = GetDragDropGroupItem(shellExPath);
-#if DEBUG
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine($@"\t\t!!!!!!{shellExPath}(FoldGroupItem)");
-                        }
-                    }
-#endif
                 }
                 foreach (string path in dic.Keys)
                 {
@@ -848,18 +757,8 @@ namespace ContextMenuManager.Methods
                         {
                             BackupRestoreItem(item, itemName, keyName, BackupItemType.ShellExItem, ifItemInMenu, currentScene);
                         }
-
+                        
                         names.Add(keyName);
-#if DEBUG
-                        i++;
-                        if (AppConfig.EnableLog)
-                        {
-                            using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                            {
-                                sw.WriteLine("\t\t" + $@"{i}. {keyName} {itemName} {ifItemInMenu} {regPath}");
-                            }
-                        }
-#endif
                     }
                 }
             }
@@ -867,16 +766,6 @@ namespace ContextMenuManager.Methods
 
         private void GetBackupStoreItems()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine($@"BackupItems: {currentScene}");
-                }
-            }
-            int i = 0;
-#endif
             using (RegistryKey shellKey = RegistryEx.GetRegistryKey(ShellItem.CommandStorePath))
             {
                 foreach (string itemName in shellKey.GetSubKeyNames())
@@ -886,33 +775,12 @@ namespace ContextMenuManager.Methods
                     string regPath = item.RegPath;
                     bool ifItemInMenu = item.ItemVisible;
                     BackupRestoreItem(item, itemName, itemName, BackupItemType.StoreShellItem, ifItemInMenu, currentScene);
-#if DEBUG
-                    i++;
-                    if (AppConfig.EnableLog)
-                    {
-                        using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                        {
-                            sw.WriteLine("\tBackupStoreItems");
-                            sw.WriteLine("\t\t" + $@"{i}. {itemName} {itemName} {ifItemInMenu} {regPath}");
-                        }
-                    }
-#endif
                 }
             }
         }
 
         private void GetBackupUwpModeItem()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\tGetBackupUwpModeItem");
-                }
-            }
-            int i = 0;
-#endif
             List<Guid> guidList = new List<Guid>();
             foreach (XmlDocument doc in XmlDicHelper.UwpModeItemsDic)
             {
@@ -935,16 +803,6 @@ namespace ContextMenuManager.Methods
                                 string itemName = keyName;  // 右键菜单名称
                                 bool ifItemInMenu = uwpItem.ItemVisible;
                                 BackupRestoreItem(uwpItem, itemName, keyName, BackupItemType.UwpModelItem, ifItemInMenu, currentScene);
-#if DEBUG
-                                i++;
-                                if (AppConfig.EnableLog)
-                                {
-                                    using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                                    {
-                                        sw.WriteLine("\t\t" + $@"{i}. {keyName}({uwpName}) {itemName} {ifItemInMenu} {guid}");
-                                    }
-                                }
-#endif
                             }
                         }
                     }
@@ -983,41 +841,13 @@ namespace ContextMenuManager.Methods
 
         private void GetShellNewListBackupItems()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine($@"BackupShellNewItems:");
-                }
-            }
-            int i = 0;
-#endif
             if (ShellNewLockItem.IsLocked)
             {
-#if DEBUG
-                if (AppConfig.EnableLog)
-                {
-                    using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                    {
-                        sw.WriteLine("\tBackupLockItems");
-                    }
-                }
-#endif
                 string[] extensions = (string[])Registry.GetValue(ShellNewPath, "Classes", null);
                 GetShellNewBackupItems(extensions.ToList());
             }
             else
             {
-#if DEBUG
-                if (AppConfig.EnableLog)
-                {
-                    using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                    {
-                        sw.WriteLine("\tBackupUnlockItems");
-                    }
-                }
-#endif
                 List<string> extensions = new List<string> { "Folder" };//文件夹
                 using (RegistryKey root = Registry.ClassesRoot)
                 {
@@ -1030,9 +860,6 @@ namespace ContextMenuManager.Methods
 
         private void GetShellNewBackupItems(List<string> extensions)
         {
-#if DEBUG
-            int i = 0;
-#endif
             foreach (string extension in ShellNewItem.UnableSortExtensions)
             {
                 if (extensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
@@ -1073,16 +900,6 @@ namespace ContextMenuManager.Methods
                                         string itemName = item.Text;
                                         bool ifItemInMenu = item.ItemVisible;
                                         BackupRestoreItem(item, itemName, openMode, BackupItemType.ShellNewItem, ifItemInMenu, currentScene);
-#if DEBUG
-                                        i++;
-                                        if (AppConfig.EnableLog)
-                                        {
-                                            using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                                            {
-                                                sw.WriteLine("\t\t" + $@"{i}. {openMode} {itemName} {ifItemInMenu} {regPath}");
-                                            }
-                                        }
-#endif
                                         break;
                                     }
                                 }
@@ -1097,17 +914,6 @@ namespace ContextMenuManager.Methods
 
         private void GetSendToListItems()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("BackupSendToItems");
-                    sw.WriteLine("\tGetSendToItems");
-                }
-            }
-            int i = 0;
-#endif
             string filePath, itemFileName, itemName;
             bool ifItemInMenu;
             foreach (string path in Directory.GetFileSystemEntries(SendToList.SendToPath))
@@ -1119,17 +925,6 @@ namespace ContextMenuManager.Methods
                 itemName = sendToItem.Text;
                 ifItemInMenu = sendToItem.ItemVisible;
                 BackupRestoreItem(sendToItem, itemName, itemFileName, BackupItemType.SendToItem, ifItemInMenu, currentScene);
-#if DEBUG
-                i = 0;
-                i++;
-                if (AppConfig.EnableLog)
-                {
-                    using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                    {
-                        sw.WriteLine("\t\t" + $@"{i}. {itemFileName} {itemName} {ifItemInMenu} {filePath}");
-                    }
-                }
-#endif
             }
             VisibleRegRuleItem item = new VisibleRegRuleItem(VisibleRegRuleItem.SendToDrive);
             string regPath = item.RegPath;
@@ -1137,51 +932,18 @@ namespace ContextMenuManager.Methods
             itemName = item.Text;
             ifItemInMenu = item.ItemVisible;
             BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
-#if DEBUG
-            i = 0;
-            i++;
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\tBackupAddedItems");
-                    sw.WriteLine("\t\t" + $@"{i}. {valueName} {itemName} {ifItemInMenu} {regPath}");
-                }
-            }
-#endif
             item = new VisibleRegRuleItem(VisibleRegRuleItem.DeferBuildSendTo);
             regPath = item.RegPath;
             valueName = item.ValueName;
             itemName = item.Text;
             ifItemInMenu = item.ItemVisible;
             BackupRestoreItem(item, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
-#if DEBUG
-            i++;
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("\t\t" + $@"{i}. {valueName} {itemName} {ifItemInMenu} {regPath}");
-                }
-            }
-#endif
         }
 
         /*******************************OpenWithList.cs************************************/
 
         private void GetOpenWithListItems()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("BackupOpenWithItems");
-                    sw.WriteLine("\tGetOpenWithItems");
-                }
-            }
-            int i = 0;
-#endif
             using (RegistryKey root = Registry.ClassesRoot)
             using (RegistryKey appKey = root.OpenSubKey("Applications"))
             {
@@ -1213,17 +975,6 @@ namespace ContextMenuManager.Methods
                                 string itemName = item.Text;
                                 bool ifItemInMenu = item.ItemVisible;
                                 BackupRestoreItem(item, itemName, itemFileName, BackupItemType.OpenWithItem, ifItemInMenu, currentScene);
-#if DEBUG
-                                i++;
-                                if (AppConfig.EnableLog)
-                                {
-                                    using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                                    {
-                                        sw.WriteLine("\tBackupAddedItems");
-                                        sw.WriteLine("\t\t" + $@"{i}. {itemFileName} {itemName} {ifItemInMenu} {regPath}");
-                                    }
-                                }
-#endif
                             }
                         }
                     }
@@ -1238,17 +989,6 @@ namespace ContextMenuManager.Methods
                 string itemName = storeItem.Text;
                 bool ifItemInMenu = storeItem.ItemVisible;
                 BackupRestoreItem(storeItem, itemName, valueName, BackupItemType.VisibleRegRuleItem, ifItemInMenu, currentScene);
-#if DEBUG
-                i = 1;
-                if (AppConfig.EnableLog)
-                {
-                    using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                    {
-                        sw.WriteLine("\tBackupAddedItems");
-                        sw.WriteLine("\t\t" + $@"{i}. {valueName} {itemName} {ifItemInMenu} {regPath}");
-                    }
-                }
-#endif
             }
         }
 
@@ -1256,17 +996,6 @@ namespace ContextMenuManager.Methods
 
         private void GetWinXListItems()
         {
-#if DEBUG
-            if (AppConfig.EnableLog)
-            {
-                using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                {
-                    sw.WriteLine("BackupWinXItems");
-                    sw.WriteLine("\tGetWinXItems");
-                }
-            }
-            int i = 0;
-#endif
             if (WinOsVersion.Current >= WinOsVersion.Win8)
             {
                 AppConfig.BackupWinX();
@@ -1307,16 +1036,6 @@ namespace ContextMenuManager.Methods
                         string itemName = item.Text;
                         bool ifItemInMenu = item.ItemVisible;
                         BackupRestoreItem(item, itemName, fileName, BackupItemType.WinXItem, ifItemInMenu, currentScene);
-#if DEBUG
-                        i++;
-                        if (AppConfig.EnableLog)
-                        {
-                            using (StreamWriter sw = new StreamWriter(AppConfig.DebugLogPath, true))
-                            {
-                                sw.WriteLine("\t\t" + $@"{i}. {fileName} {itemName} {ifItemInMenu} {filePath}");
-                            }
-                        }
-#endif
                     }
                     groupItem.Dispose();
                 }
@@ -1393,8 +1112,7 @@ namespace ContextMenuManager.Methods
                             if (string.IsNullOrEmpty(regPath)) regPath = groupItem.GroupPath;
                             else if (regPath.StartsWith("\\")) regPath = groupItem.GroupPath + regPath;
                             return regPath;
-                        }
-                        ;
+                        };
 
                         // 遍历groupItem内所有Item节点
                         foreach (XmlElement itemXE in groupXN.SelectNodes("Item"))
@@ -1739,7 +1457,7 @@ namespace ContextMenuManager.Methods
     public sealed class BackupList
     {
         // 元数据缓存区
-        public static MetaData metaData = new MetaData();
+        public static MetaData metaData = new MetaData();  
 
         // 备份列表/恢复列表缓存区
         private static List<BackupItem> backupRestoreList = new List<BackupItem>();
@@ -1748,7 +1466,7 @@ namespace ContextMenuManager.Methods
         public static List<BackupItem> sceneRestoreList = new List<BackupItem>();
 
         // 创建一个XmlSerializer实例并设置根节点
-        private static readonly XmlSerializer backupDataSerializer = new XmlSerializer(typeof(BackupData),
+        private static readonly XmlSerializer backupDataSerializer = new XmlSerializer(typeof(BackupData), 
             new XmlRootAttribute("ContextMenuManager"));
         // 自定义命名空间
         private static readonly XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();

@@ -1,5 +1,4 @@
 ﻿using BluePointLilac.Methods;
-using Microsoft.Win32;
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -9,15 +8,12 @@ namespace BluePointLilac.Controls
 {
     public class MyMainForm : Form
     {
-        // <summary>程序主题色</summary>
-        public static Color MainColor = Color.FromArgb(255, 143, 31);
-
         public MyMainForm()
         {
             SuspendLayout();
             Text = Application.ProductName;
-            ForeColor = FormFore;
-            BackColor = FormBack;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
             StartPosition = FormStartPosition.CenterScreen;
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Controls.AddRange(new Control[] { MainBody, SideBar, StatusBar, ToolBar });
@@ -27,6 +23,13 @@ namespace BluePointLilac.Controls
             MainBody.Dock = DockStyle.Left;
             StatusBar.CanMoveForm();
             ToolBar.CanMoveForm();
+            
+            // 初始化主题
+            DarkModeHelper.Initialize();
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
+            DarkModeHelper.ApplyDarkModeToForm(this);
+            Adjust();
+            
             ResumeLayout();
         }
 
@@ -58,10 +61,10 @@ namespace BluePointLilac.Controls
             const int SC_SIZE = 0xF000;
             const int HT_CAPTION = 0x2;
             bool suspend = false;//临时挂起MainBody
-            switch (m.Msg)
+            switch(m.Msg)
             {
                 case WM_SYSCOMMAND:
-                    switch (m.WParam.ToInt32())
+                    switch(m.WParam.ToInt32())
                     {
                         //解决控件过多移动窗体时延迟问题
                         case SC_MOVE:
@@ -76,7 +79,7 @@ namespace BluePointLilac.Controls
                     }
                     break;
                 case WM_NCLBUTTONDBLCLK:
-                    switch (m.WParam.ToInt32())
+                    switch(m.WParam.ToInt32())
                     {
                         //双击标题栏最大化和还原窗口
                         case HT_CAPTION:
@@ -84,7 +87,7 @@ namespace BluePointLilac.Controls
                     }
                     break;
             }
-            if (suspend)
+            if(suspend)
             {
                 SuspendLayout();
                 MainBody.SuspendLayout();
@@ -98,27 +101,6 @@ namespace BluePointLilac.Controls
             else base.WndProc(ref m);
         }
 
-        #region Dark Theme
-
-        /*
-         * Edited from: https://github.com/seerge/g-helper
-         */
-
-        public static Color ButtonMain;
-        public static Color ButtonSecond;
-        public static Color titleArea;
-
-        public static Color FormBack;
-        public static Color FormFore;
-        public static Color FormBorder;
-
-        [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
-        public static extern bool CheckSystemDarkModeStatus();
-
-        [DllImport("DwmApi")] //System.Runtime.InteropServices
-        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, int[] attrValue, int attrSize);
-
-        public bool darkTheme = false;
         protected override CreateParams CreateParams
         {
             get
@@ -130,126 +112,28 @@ namespace BluePointLilac.Controls
             }
         }
 
-        public static void InitColors()
+        private void OnThemeChanged(object sender, EventArgs e)
         {
-            InitColors(IsDarkTheme());
-        }
-
-        private static void InitColors(bool darkTheme)
-        {
-            if (darkTheme)
-            {
-                titleArea = Color.FromArgb(255, 32, 32, 32);
-
-                ButtonMain = Color.FromArgb(255, 55, 55, 55);
-                ButtonSecond = Color.FromArgb(255, 38, 38, 38);
-
-                FormBack = Color.FromArgb(255, 28, 28, 28);
-                FormFore = Color.FromArgb(255, 240, 240, 240);
-                FormBorder = Color.FromArgb(255, 50, 50, 50);
-            }
-            else
-            {
-                titleArea = Color.FromArgb(255, 243, 243, 243);
-
-                ButtonMain = SystemColors.ControlLightLight;
-                ButtonSecond = SystemColors.ControlLight;
-
-                FormBack = SystemColors.Control;
-                FormFore = SystemColors.ControlText;
-                FormBorder = Color.LightGray;
-            }
-        }
-
-        public static bool IsDarkTheme()
-        {
-            using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-            {
-                var registryValueObject = key?.GetValue("AppsUseLightTheme");
-
-                if (registryValueObject == null) return false;
-                return (int)registryValueObject <= 0;
-            }
-        }
-
-        public bool InitTheme(bool firstTime = false)
-        {
-            bool newDarkTheme = IsDarkTheme();
-            bool changed = darkTheme != newDarkTheme;
-            darkTheme = newDarkTheme;
-
-            InitColors(darkTheme);
-
-            if (firstTime || changed)
-            {
-                DwmSetWindowAttribute(Handle, 20, new[] { darkTheme ? 1 : 0 }, 4);
-                Adjust();
-                Invalidate();
-            }
-
-            return changed;
+            DarkModeHelper.ApplyDarkModeToForm(this);
+            Adjust();
+            Invalidate();
         }
 
         private void Adjust()
         {
-            BackColor = FormBack;
-            ForeColor = FormFore;
+            BackColor = DarkModeHelper.FormBack;
+            ForeColor = DarkModeHelper.FormFore;
 
-            AdjustControls(Controls);
+            DarkModeHelper.AdjustControlColors(this);
         }
 
-        private void AdjustControls(Control.ControlCollection controls)
+        protected override void Dispose(bool disposing)
         {
-            foreach (Control control in controls)
+            if (disposing)
             {
-                AdjustControls(control.Controls);
-
-                if (control is MyListBox listBox)
-                {
-                    listBox.BackColor = FormBack;
-                    listBox.ForeColor = FormFore;
-                }
-
-                if (control is MyListItem listItem)
-                {
-                    listItem.BackColor = FormBack;
-                    listItem.ForeColor = FormFore;
-                }
-
-                if (control is MyToolBar toolBar)
-                {
-                    toolBar.BackColor = titleArea;
-                    toolBar.ForeColor = FormFore;
-                }
-
-                if (control is MyToolBarButton toolBarButton)
-                {
-                    toolBarButton.ForeColor = FormFore;
-                }
-
-                if (control is MySideBar sideBar)
-                {
-                    sideBar.BackColor = ButtonSecond;// More darker than buttonMain
-                    sideBar.ForeColor = FormFore;
-                }
-
-                if (control is MyStatusBar statusBar)
-                {
-                    statusBar.BackColor = ButtonMain;
-                    statusBar.ForeColor = FormFore;
-                }
-
-                if (control is RComboBox combo)
-                {
-                    combo.BackColor = ButtonMain;
-                    combo.ForeColor = FormFore;
-                    combo.BorderColor = ButtonMain;
-                    combo.ButtonColor = ButtonMain;
-                    combo.ArrowColor = FormFore;
-                }
+                DarkModeHelper.StopListening();
             }
+            base.Dispose(disposing);
         }
-
-        #endregion
     }
 }

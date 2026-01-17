@@ -6,6 +6,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
@@ -20,76 +21,47 @@ namespace BluePointLilac.Controls
         private Point _offset;
         private ContentAlignment _ownerAlignment;
         private bool _startAutomatically;
+        private NewProgressBar progressBar;
+        private Panel panel1;
 
         internal LoadingDialog(string title, Action<LoadingDialogInterface> action)
         {
             InitializeComponent();
-
             Text = title;
-
-            ForeColor = MyMainForm.FormFore;
-            BackColor = MyMainForm.FormBack;
-
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
             UseWaitCursor = true;
 
             _controller = new LoadingDialogInterface(this);
-
-            _workThread = new Thread(() =>
-            {
-                _controller.WaitTillDialogIsReady();
-                try
-                {
-                    action(_controller);
-                }
-                catch (Exception ex)
-                {
-                    Error = ex;
-                }
-
-                _controller.CloseDialog();
-            })
-            { Name = "LoadingDialogThread - " + title };
+            _workThread = new Thread(() => ExecuteAction(action)) { Name = "LoadingDialogThread - " + title };
+            
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
         protected override CreateParams CreateParams
         {
             get
             {
-                const int csDropshadow = 0x20000;
                 var cp = base.CreateParams;
-                cp.ClassStyle |= csDropshadow;
+                cp.ClassStyle |= 0x20000; // csDropshadow
                 return cp;
             }
         }
 
         public static Form DefaultOwner { get; set; }
-
         public Exception Error { get; private set; }
-
         internal ProgressBar ProgressBar => progressBar;
-
-        protected override void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
-
-            if (Owner?.Icon != null)
-                Icon = Owner.Icon;
-        }
 
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
-
             if (Owner != null)
             {
                 Owner.Move += OwnerOnMove;
                 Owner.Resize += OwnerOnMove;
-
                 OwnerOnMove(this, e);
             }
-
-            if (_startAutomatically)
-                StartWork();
+            if (_startAutomatically) StartWork();
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -99,7 +71,6 @@ namespace BluePointLilac.Controls
                 Owner.Move -= OwnerOnMove;
                 Owner.Resize -= OwnerOnMove;
             }
-
             base.OnClosing(e);
         }
 
@@ -109,153 +80,154 @@ namespace BluePointLilac.Controls
             base.OnFormClosed(e);
         }
 
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-
-            OwnerOnMove(this, e);
-        }
-
-        private void OwnerOnMove(object sender, EventArgs eventArgs)
+        private void OwnerOnMove(object sender, EventArgs e)
         {
             if (Owner == null) return;
-
-            var newPos = new Point();
-
-            switch (_ownerAlignment)
-            {
-                case ContentAlignment.MiddleLeft:
-                case ContentAlignment.MiddleCenter:
-                case ContentAlignment.MiddleRight:
-                    newPos.Y = Owner.Location.Y + Owner.Size.Height / 2 - Size.Height / 2;
-                    break;
-
-                case ContentAlignment.BottomLeft:
-                case ContentAlignment.BottomCenter:
-                case ContentAlignment.BottomRight:
-                    newPos.Y = Owner.Location.Y + Owner.Size.Height - Size.Height;
-                    break;
-
-                default:
-                    break;
-            }
-            switch (_ownerAlignment)
-            {
-                case ContentAlignment.TopCenter:
-                case ContentAlignment.MiddleCenter:
-                case ContentAlignment.BottomCenter:
-                    newPos.X = Owner.Location.X + Owner.Size.Width / 2 - Size.Width / 2;
-                    break;
-                case ContentAlignment.TopRight:
-                case ContentAlignment.MiddleRight:
-                case ContentAlignment.BottomRight:
-                    newPos.X = Owner.Location.X + Owner.Size.Width - Size.Width;
-                    break;
-
-                default:
-                    break;
-            }
-
+            var newPos = CalculatePosition();
             newPos.X += _offset.X;
             newPos.Y += _offset.Y;
             Location = newPos;
         }
 
-        /// <summary>
-        ///     Start the action on a separate thread and show a progress bar. When action completes the dialog is closed.
-        /// </summary>
-        /// <param name="owner">Parent form</param>
-        /// <param name="title">Title of the window</param>
-        /// <param name="action">Action to perform while displaying the dialog</param>
-        /// <param name="offset">Offset from the alignment point</param>
-        /// <param name="ownerAlignment">Alignment point to the parent</param>
-        public static LoadingDialog Show(Form owner, string title, Action<LoadingDialogInterface> action,
-            Point offset = default(Point), ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
+        private Point CalculatePosition()
         {
-            if (owner == null) owner = DefaultOwner;
-            // Find the topmost form so clicking on forms above owner doesn't bring the loading form under the others
-            while (owner != null && owner.OwnedForms.Length > 0) owner = owner.OwnedForms[0];
+            var pos = Point.Empty;
+            var ownerAlignment = _ownerAlignment.ToString();
 
-            var loadBar = new LoadingDialog(title, action)
-            {
-                _offset = offset,
-                _ownerAlignment = ownerAlignment,
-                Owner = owner,
-                StartPosition = FormStartPosition.Manual,
-                _startAutomatically = false,
-            };
+            if (ownerAlignment.Contains("Middle"))
+                pos.Y = Owner.Location.Y + Owner.Size.Height / 2 - Size.Height / 2;
+            else if (ownerAlignment.Contains("Bottom"))
+                pos.Y = Owner.Location.Y + Owner.Size.Height - Size.Height;
 
+            if (ownerAlignment.Contains("Center"))
+                pos.X = Owner.Location.X + Owner.Size.Width / 2 - Size.Width / 2;
+            else if (ownerAlignment.Contains("Right"))
+                pos.X = Owner.Location.X + Owner.Size.Width - Size.Width;
+
+            return pos;
+        }
+
+        public static LoadingDialog Show(Form owner, string title, Action<LoadingDialogInterface> action,
+            Point offset = default, ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
+        {
+            owner = GetTopmostOwner(owner);
+            var loadBar = CreateLoadingDialog(owner, title, action, offset, ownerAlignment);
             loadBar.Show(loadBar.Owner);
             return loadBar;
         }
 
-        /// <summary>
-        ///     Start the action on a separate thread and show a progress bar.
-        /// </summary>
-        /// <param name="owner">Parent form</param>
-        /// <param name="title">Title of the window</param>
-        /// <param name="action">Action to perform while displaying the dialog</param>
-        /// <param name="offset">Offset from the alignment point</param>
-        /// <param name="ownerAlignment">Alignment point to the parent</param>
         public static Exception ShowDialog(Form owner, string title, Action<LoadingDialogInterface> action,
-            Point offset = default(Point), ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
+            Point offset = default, ContentAlignment ownerAlignment = ContentAlignment.MiddleCenter)
         {
-            using (var loadBar = new LoadingDialog(title, action)
+            using (var loadBar = CreateLoadingDialog(owner, title, action, offset, ownerAlignment))
             {
-                _offset = offset,
-                _ownerAlignment = ownerAlignment,
-                Owner = owner ?? DefaultOwner,
-                StartPosition = FormStartPosition.Manual,
-                _startAutomatically = true
-            })
-            {
+                loadBar._startAutomatically = true;
                 loadBar.ShowDialog(loadBar.Owner);
                 return loadBar.Error;
             }
         }
 
-        public void StartWork()
+        private static LoadingDialog CreateLoadingDialog(Form owner, string title,
+            Action<LoadingDialogInterface> action, Point offset, ContentAlignment alignment)
         {
-            _workThread.Start();
+            return new LoadingDialog(title, action)
+            {
+                _offset = offset,
+                _ownerAlignment = alignment,
+                Owner = owner,
+                StartPosition = FormStartPosition.Manual
+            };
         }
 
-        private void panel1_Resize(object sender, EventArgs e)
+        private static Form GetTopmostOwner(Form owner)
         {
-            Size = panel1.Size;
+            if (owner == null) owner = DefaultOwner;
+            while (owner != null && owner.OwnedForms.Length > 0)
+                owner = owner.OwnedForms[0];
+            return owner;
+        }
+
+        public void StartWork() => _workThread.Start();
+        private void panel1_Resize(object sender, EventArgs e) => Size = panel1.Size;
+
+        private void ExecuteAction(Action<LoadingDialogInterface> action)
+        {
+            _controller.WaitTillDialogIsReady();
+            try { action(_controller); }
+            catch (Exception ex) { Error = ex; }
+            _controller.CloseDialog();
+        }
+        
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            if (IsDisposed || Disposing) return;
+            ForeColor = DarkModeHelper.FormFore;
+            BackColor = DarkModeHelper.FormBack;
+            panel1.BackColor = DarkModeHelper.FormBack;
+            Invalidate();
+        }
+
+        private void InitializeComponent()
+        {
+            progressBar = new NewProgressBar();
+            panel1 = new Panel();
+            panel1.SuspendLayout();
+            SuspendLayout();
+
+            progressBar.Location = new Point(8, 10);
+            progressBar.Size = new Size(391, 25);
+            progressBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+            panel1.AutoSize = true;
+            panel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            panel1.BorderStyle = BorderStyle.FixedSingle;
+            panel1.Controls.Add(progressBar);
+            panel1.Dock = DockStyle.Fill;
+            panel1.MinimumSize = new Size(408, 45);
+            panel1.Padding = new Padding(8, 10, 8, 10);
+            panel1.Size = new Size(408, 45);
+            panel1.Resize += panel1_Resize;
+
+            AutoScaleDimensions = new SizeF(7F, 17F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(408, 45);
+            Controls.Add(panel1);
+            FormBorderStyle = FormBorderStyle.None;
+            ShowInTaskbar = false;
+            StartPosition = FormStartPosition.CenterParent;
+
+            panel1.ResumeLayout(false);
+            ResumeLayout(false);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                progressBar?.Dispose();
+                panel1?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 
     public sealed class LoadingDialogInterface
     {
-        private readonly Timer _updateTimer;
-
+        private readonly Timer _updateTimer = new Timer { Interval = 35 };
         private Action _lastProgressUpdate;
-        private Action _lastSubProgressUpdate;
 
         internal LoadingDialogInterface(LoadingDialog dialog)
         {
             Dialog = dialog;
-            _updateTimer = new Timer
-            {
-                AutoReset = true,
-                Interval = 35,
-                SynchronizingObject = Dialog
-            };
-            _updateTimer.Elapsed += UpdateTimerOnElapsed;
+            _updateTimer.SynchronizingObject = Dialog;
+            _updateTimer.Elapsed += (s, e) => 
+                Interlocked.Exchange(ref _lastProgressUpdate, null)?.Invoke();
             _updateTimer.Start();
-            dialog.Disposed += (sender, args) => _updateTimer.Dispose();
-        }
-
-        private void UpdateTimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
-        {
-            var p = Interlocked.Exchange(ref _lastProgressUpdate, null);
-            p?.Invoke();
-            p = Interlocked.Exchange(ref _lastSubProgressUpdate, null);
-            p?.Invoke();
+            dialog.Disposed += (s, e) => _updateTimer.Dispose();
         }
 
         public bool Abort { get; internal set; }
-
         private LoadingDialog Dialog { get; }
 
         public void CloseDialog()
@@ -264,114 +236,16 @@ namespace BluePointLilac.Controls
             SafeInvoke(() => { if (!Dialog.IsDisposed) Dialog.Close(); });
         }
 
-        public void SetMaximum(int value)
-        {
-            SetMaximumInt(value, Dialog.ProgressBar);
-        }
+        public void SetMaximum(int value) => SafeInvoke(() => UpdateProgressBar(pb => pb.Maximum = value));
+        public void SetMinimum(int value) => SafeInvoke(() => UpdateProgressBar(pb => pb.Minimum = value));
 
-        private void SetMaximumInt(int value, ProgressBar targetBar)
-        {
-            SafeInvoke(() =>
-            {
-                if (targetBar.Maximum == value) return;
-
-                if (value < targetBar.Minimum)
-                    targetBar.Style = ProgressBarStyle.Marquee;
-                else
-                {
-                    try
-                    {
-                        targetBar.Maximum = value;
-                    }
-                    catch
-                    {
-                        targetBar.Style = ProgressBarStyle.Marquee;
-                    }
-                }
-            });
-        }
-
-        public void SetMinimum(int value)
-        {
-            SetMinimumInt(value, Dialog.ProgressBar);
-        }
-
-        private void SetMinimumInt(int value, ProgressBar targetBar)
-        {
-            SafeInvoke(() =>
-            {
-                try
-                {
-                    targetBar.Minimum = value;
-                }
-                catch
-                {
-                    targetBar.Style = ProgressBarStyle.Marquee;
-                }
-            });
-        }
-
-        /// <summary>
-        ///     Setting progress automatically changes the style from "Unknown time" (Marquee) to a normal progressbar.
-        ///     If the value is invalid the style goes back to Marquee
-        /// </summary>
         public void SetProgress(int value, string description = null, bool forceNoAnimation = false)
         {
-            _lastProgressUpdate = () => SetProgressInt(value, description, Dialog.ProgressBar, forceNoAnimation);
+            _lastProgressUpdate = () => UpdateProgressBar(pb => ApplyProgressValue(pb, value, forceNoAnimation));
         }
 
-        private void SetProgressInt(int value, string description, ProgressBar targetBar, bool forceNoAnimation)
-        {
-            try
-            {
-                if (targetBar.Value == value)
-                    return;
+        public void SetTitle(string newTitle) => SafeInvoke(() => Dialog.Text = newTitle);
 
-                var min = targetBar.Minimum;
-                var max = targetBar.Maximum;
-                if (min >= max || min > value || value > max)
-                {
-                    targetBar.Style = ProgressBarStyle.Marquee;
-                }
-                else
-                {
-                    targetBar.Style = ProgressBarStyle.Blocks;
-
-                    if (value < min) value = min;
-                    else if (value > max) value = max;
-
-                    if (forceNoAnimation)
-                    {
-                        // Moving progress forward then back skips the animation
-                        if (value == max)
-                        {
-                            targetBar.Maximum = value + 1;
-                            targetBar.Value = value + 1;
-                            targetBar.Maximum = value;
-                        }
-                        else
-                        {
-                            targetBar.Value = value + 1;
-                        }
-                    }
-
-                    targetBar.Value = value;
-                }
-            }
-            catch
-            {
-                targetBar.Style = ProgressBarStyle.Marquee;
-            }
-        }
-
-        public void SetTitle(string newTitle)
-        {
-            SafeInvoke(() => { Dialog.Text = newTitle; });
-        }
-
-        /// <summary>
-        ///     Block current thread until dialog is visible
-        /// </summary>
         internal void WaitTillDialogIsReady()
         {
             var notReady = true;
@@ -382,32 +256,152 @@ namespace BluePointLilac.Controls
             }
         }
 
+        private void ApplyProgressValue(ProgressBar pb, int value, bool forceNoAnimation)
+        {
+            try
+            {
+                if (pb.Value == value) return;
+                if (value < pb.Minimum || value > pb.Maximum)
+                    pb.Style = ProgressBarStyle.Marquee;
+                else
+                {
+                    pb.Style = ProgressBarStyle.Blocks;
+                    if (forceNoAnimation && value < pb.Maximum)
+                        pb.Value = value + 1;
+                    pb.Value = value;
+                }
+            }
+            catch { pb.Style = ProgressBarStyle.Marquee; }
+        }
+
+        private void UpdateProgressBar(Action<ProgressBar> action)
+        {
+            var pb = Dialog.ProgressBar;
+            if (pb != null && !pb.IsDisposed) action(pb);
+        }
+
         private void SafeInvoke(Action action)
         {
-            Control obj = Dialog;
-
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
-
-            if (!obj.IsDisposed && !obj.Disposing)
+            if (Dialog.IsDisposed || Dialog.Disposing) return;
+            if (Dialog.InvokeRequired)
             {
-                if (obj.InvokeRequired)
+                try { Dialog.Invoke(action); }
+                catch { /* 忽略调用异常 */ }
+            }
+            else action();
+        }
+    }
+
+    public class NewProgressBar : ProgressBar
+    {
+        public NewProgressBar()
+        {
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
+                    ControlStyles.OptimizedDoubleBuffer, true);
+            
+            DarkModeHelper.ThemeChanged += OnThemeChanged;
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs pevent)
+        {
+            using (var brush = new SolidBrush(DarkModeHelper.FormBack))
+                pevent.Graphics.FillRectangle(brush, pevent.ClipRectangle);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            const int inset = 1;
+            const int cornerRadius = 6;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            using (var bgClearBrush = new SolidBrush(DarkModeHelper.FormBack))
+                e.Graphics.FillRectangle(bgClearBrush, ClientRectangle);
+
+            Rectangle rect = new Rectangle(0, 0, Width, Height);
+
+            using (GraphicsPath bgPath = CreateRoundedRectanglePath(rect, cornerRadius))
+            {
+                Color bgColor1, bgColor2, bgColor3;
+                
+                if (DarkModeHelper.IsDarkTheme)
                 {
-                    try
-                    {
-                        obj.Invoke(action);
-                    }
-                    catch (ObjectDisposedException) { }
-                    catch (InvalidOperationException) { }
-                    catch (InvalidAsynchronousStateException) { }
+                    bgColor1 = Color.FromArgb(80, 80, 80);
+                    bgColor2 = Color.FromArgb(60, 60, 60);
+                    bgColor3 = Color.FromArgb(80, 80, 80);
                 }
                 else
                 {
-                    action();
+                    bgColor1 = Color.FromArgb(220, 220, 220);
+                    bgColor2 = Color.FromArgb(180, 180, 180);
+                    bgColor3 = Color.FromArgb(220, 220, 220);
+                }
+
+                using (LinearGradientBrush bgBrush = new LinearGradientBrush(
+                    new Point(0, rect.Top), new Point(0, rect.Bottom), bgColor1, bgColor3))
+                {
+                    bgBrush.InterpolationColors = new ColorBlend
+                    {
+                        Colors = new[] { bgColor1, bgColor2, bgColor3 },
+                        Positions = new[] { 0f, 0.5f, 1f }
+                    };
+                    e.Graphics.FillPath(bgBrush, bgPath);
                 }
             }
+
+            int progressWidth = (int)((Width - 2 * inset) * ((double)Value / Maximum));
+
+            if (progressWidth > 0)
+            {
+                Rectangle progressRect = new Rectangle(inset, inset, progressWidth, Height - 2 * inset);
+                if (progressWidth < cornerRadius * 2)
+                    progressRect.Width = Math.Max(progressWidth, cornerRadius);
+
+                Color fgColor1 = Color.FromArgb(255, 195, 0);
+                Color fgColor2 = Color.FromArgb(255, 140, 26);
+                Color fgColor3 = Color.FromArgb(255, 195, 0);
+
+                using (LinearGradientBrush fgBrush = new LinearGradientBrush(
+                    new Point(0, progressRect.Top), new Point(0, progressRect.Bottom), fgColor1, fgColor3))
+                {
+                    fgBrush.InterpolationColors = new ColorBlend
+                    {
+                        Colors = new[] { fgColor1, fgColor2, fgColor3 },
+                        Positions = new[] { 0f, 0.5f, 1f }
+                    };
+
+                    using (GraphicsPath progressPath = CreateRoundedRectanglePath(progressRect, cornerRadius - 1))
+                        e.Graphics.FillPath(fgBrush, progressPath);
+                }
+            }
+        }
+
+        private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
+        {
+            var path = new GraphicsPath();
+            if (radius <= 0)
+            {
+                path.AddRectangle(rect);
+                return path;
+            }
+
+            radius = Math.Min(radius, Math.Min(rect.Width, rect.Height) / 2);
+            int diameter = radius * 2;
+
+            path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
+            path.AddArc(rect.Right - diameter, rect.Y, diameter, diameter, 270, 90);
+            path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - diameter, diameter, diameter, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+        
+        private void OnThemeChanged(object sender, EventArgs e) => Invalidate();
+        
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) DarkModeHelper.ThemeChanged -= OnThemeChanged;
+            base.Dispose(disposing);
         }
     }
 }

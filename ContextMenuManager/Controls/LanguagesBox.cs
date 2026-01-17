@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using ContextMenuManager.BluePointLilac.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -25,7 +26,7 @@ namespace ContextMenuManager.Controls
             VisibleChanged += (sender, e) => this.SetEnabled(Visible);
             cmbLanguages.SelectionChangeCommitted += (sender, e) => ChangeLanguage();
             btnOpenDir.MouseDown += (sender, e) => ExternalProgram.OpenDirectory(AppConfig.LangsDir);
-            lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = MyMainForm.MainColor;
+            lblThank.MouseEnter += (sender, e) => lblThank.ForeColor = DarkModeHelper.MainColor; // 修改这里
             lblThank.MouseLeave += (sender, e) => lblThank.ForeColor = Color.DimGray;//Fixed
             btnDownLoad.MouseDown += (sender, e) =>
             {
@@ -35,7 +36,7 @@ namespace ContextMenuManager.Controls
             };
             btnTranslate.MouseDown += (sender, e) =>
             {
-                using (TranslateDialog dlg = new TranslateDialog())
+                using(TranslateDialog dlg = new TranslateDialog())
                 {
                     dlg.ShowDialog();
                 }
@@ -66,7 +67,7 @@ namespace ContextMenuManager.Controls
         readonly Label lblHeader = new Label
         {
             Text = AppString.Other.Translators + "\r\n" + new string('-', 96),
-            ForeColor = MyMainForm.MainColor,
+            ForeColor = DarkModeHelper.MainColor, // 修改这里
             Dock = DockStyle.Top,
             AutoSize = true
         };
@@ -97,13 +98,13 @@ namespace ContextMenuManager.Controls
             languages.Add("default");
             pnlTranslators.SuspendLayout();
             pnlTranslators.Controls.Remove(lblHeader);
-            foreach (Control ctr in pnlTranslators.Controls) ctr.Dispose();
+            foreach(Control ctr in pnlTranslators.Controls) ctr.Dispose();
             pnlTranslators.Controls.Clear();
             pnlTranslators.Controls.Add(lblHeader);
-            if (Directory.Exists(AppConfig.LangsDir))
+            if(Directory.Exists(AppConfig.LangsDir))
             {
                 Dictionary<Label, Control[]> dic = new Dictionary<Label, Control[]>();
-                foreach (string fileName in Directory.GetFiles(AppConfig.LangsDir, "*.ini"))
+                foreach(string fileName in Directory.GetFiles(AppConfig.LangsDir, "*.ini"))
                 {
                     IniWriter writer = new IniWriter(fileName);
                     string language = writer.GetValue("General", "Language");
@@ -111,19 +112,19 @@ namespace ContextMenuManager.Controls
                     string translatorUrl = writer.GetValue("General", "TranslatorUrl");
 
                     string langName = Path.GetFileNameWithoutExtension(fileName);
-                    if (string.IsNullOrEmpty(language)) language = langName;
+                    if(string.IsNullOrEmpty(language)) language = langName;
                     string[] translators = translator.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
                     string[] urls = translatorUrl.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
 
                     Label lblLanguage = new Label
                     {
-                        ForeColor = MyMainForm.FormFore,
+                        ForeColor = DarkModeHelper.FormFore, // 修改这里
                         Text = language,
                         AutoSize = true,
                         Font = Font
                     };
                     Label[] ctrTranslators = new Label[translators.Length];
-                    for (int i = 0; i < translators.Length; i++)
+                    for(int i = 0; i < translators.Length; i++)
                     {
                         ctrTranslators[i] = new Label
                         {
@@ -132,13 +133,13 @@ namespace ContextMenuManager.Controls
                             Text = translators[i],
                             ForeColor = Color.DimGray,//Fixed
                         };
-                        if (urls.Length > i)
+                        if(urls.Length > i)
                         {
                             string url = urls[i].Trim();
-                            if (url != "null")
+                            if(url != "null")
                             {
                                 toolTip.SetToolTip(ctrTranslators[i], url);
-                                ctrTranslators[i].ForeColor = MyMainForm.FormFore;
+                                ctrTranslators[i].ForeColor = DarkModeHelper.FormFore; // 修改这里
                                 ctrTranslators[i].Font = new Font(ctrTranslators[i].Font, FontStyle.Underline);
                                 ctrTranslators[i].Click += (sender, e) => ExternalProgram.OpenWebUrl(url);
                             }
@@ -152,11 +153,11 @@ namespace ContextMenuManager.Controls
                 dic.Keys.ToList().ForEach(lbl => left = Math.Max(left, lbl.Width));
                 left += 250.DpiZoom();
                 int top = lblHeader.Bottom + 10.DpiZoom();
-                foreach (var item in dic)
+                foreach(var item in dic)
                 {
                     item.Key.Top = top;
                     pnlTranslators.Controls.Add(item.Key);
-                    foreach (var ctr in item.Value)
+                    foreach(var ctr in item.Value)
                     {
                         ctr.Location = new Point(left, top);
                         pnlTranslators.Controls.Add(ctr);
@@ -171,22 +172,22 @@ namespace ContextMenuManager.Controls
         private void ChangeLanguage()
         {
             int index = GetSelectIndex();
-            if (cmbLanguages.SelectedIndex == index) return;
+            if(cmbLanguages.SelectedIndex == index) return;
             string language = languages[cmbLanguages.SelectedIndex];
             string msg = "";
-            if (cmbLanguages.SelectedIndex != 0)
+            if(cmbLanguages.SelectedIndex != 0)
             {
                 string langPath = $@"{AppConfig.LangsDir}\{language}.ini";
                 msg = new IniWriter(langPath).GetValue("Message", "RestartApp");
             }
-            if (msg == "") msg = AppString.Message.RestartApp;
-            if (AppMessageBox.Show(msg, MessageBoxButtons.OKCancel) != DialogResult.OK)
+            if(msg == "") msg = AppString.Message.RestartApp;
+            if(AppMessageBox.Show(msg, MessageBoxButtons.OKCancel) != DialogResult.OK)
             {
                 cmbLanguages.SelectedIndex = index;
             }
             else
             {
-                if (language == CultureInfo.CurrentUICulture.Name) language = "";
+                if(language == CultureInfo.CurrentUICulture.Name) language = "";
                 AppConfig.Language = language;
                 SingleInstance.Restart();
             }
@@ -195,50 +196,50 @@ namespace ContextMenuManager.Controls
         private int GetSelectIndex()
         {
             int index = languages.FindIndex(language => language.Equals(AppConfig.Language, StringComparison.OrdinalIgnoreCase));
-            if (index == -1) index = 0;
+            if(index == -1) index = 0;
             return index;
         }
 
-        public void ShowLanguageDialog()
+        public async void ShowLanguageDialog()
         {
-            using (UAWebClient client = new UAWebClient())
+            using(UAWebClient client = new UAWebClient())
             {
                 string apiUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsApi : AppConfig.GiteeLangsApi;
-                XmlDocument doc = client.GetWebJsonToXml(apiUrl);
-                if (doc == null)
+                XmlDocument doc = await client.GetWebJsonToXmlAsync(apiUrl);
+                if(doc == null)
                 {
                     AppMessageBox.Show(AppString.Message.WebDataReadFailed);
                     return;
                 }
                 XmlNodeList list = doc.FirstChild.ChildNodes;
                 string[] langs = new string[list.Count];
-                for (int i = 0; i < list.Count; i++)
+                for(int i = 0; i < list.Count; i++)
                 {
                     XmlNode nameXN = list.Item(i).SelectSingleNode("name");
                     langs[i] = Path.GetFileNameWithoutExtension(nameXN.InnerText);
                 }
-                if (langs.Length == 0)
+                if(langs.Length == 0)
                 {
                     AppMessageBox.Show(AppString.Message.WebDataReadFailed);
                     return;
                 }
-                using (SelectDialog dlg = new SelectDialog())
+                using(SelectDialog dlg = new SelectDialog())
                 {
                     dlg.Items = langs;
                     dlg.Title = AppString.Dialog.DownloadLanguages;
                     string lang = CultureInfo.CurrentUICulture.Name;
-                    if (dlg.Items.Contains(lang)) dlg.Selected = lang;
+                    if(dlg.Items.Contains(lang)) dlg.Selected = lang;
                     else dlg.SelectedIndex = 0;
-                    if (dlg.ShowDialog() == DialogResult.OK)
+                    if(dlg.ShowDialog() == DialogResult.OK)
                     {
                         string fileName = $"{dlg.Selected}.ini";
                         string filePath = $@"{AppConfig.LangsDir}\{fileName}";
                         string dirUrl = AppConfig.RequestUseGithub ? AppConfig.GithubLangsRawDir : AppConfig.GiteeLangsRawDir;
                         string fileUrl = $"{dirUrl}/{fileName}";
-                        bool flag = client.WebStringToFile(filePath, fileUrl);
-                        if (!flag)
+                        bool flag = await client.WebStringToFileAsync(filePath, fileUrl);
+                        if(!flag)
                         {
-                            if (AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n ● " + fileName + "\r\n"
+                            if(AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n ● " + fileName + "\r\n"
                                 + AppString.Message.OpenWebUrl, MessageBoxButtons.YesNo) == DialogResult.Yes)
                             {
                                 ExternalProgram.OpenWebUrl(fileUrl);
@@ -248,7 +249,7 @@ namespace ContextMenuManager.Controls
                         {
                             LoadLanguages();
                             string language = new IniWriter(filePath).GetValue("General", "Language");
-                            if (language == "") language = dlg.Selected;
+                            if(language == "") language = dlg.Selected;
                             cmbLanguages.Text = language;
                             ChangeLanguage();
                         }
@@ -263,7 +264,7 @@ namespace ContextMenuManager.Controls
 
             protected override bool RunDialog(IntPtr hwndOwner)
             {
-                using (TranslateForm frm = new TranslateForm())
+                using(TranslateForm frm = new TranslateForm())
                 {
                     frm.TopMost = true;
                     return frm.ShowDialog() == DialogResult.OK;
@@ -353,10 +354,10 @@ namespace ContextMenuManager.Controls
 
                 static TranslateForm()
                 {
-                    foreach (string section in AppString.DefLangReader.Sections)
+                    foreach(string section in AppString.DefLangReader.Sections)
                     {
                         var dic = new Dictionary<string, string>();
-                        foreach (string key in AppString.DefLangReader.GetSectionKeys(section))
+                        foreach(string key in AppString.DefLangReader.GetSectionKeys(section))
                         {
                             dic.Add(key, string.Empty);
                         }
@@ -436,7 +437,7 @@ namespace ContextMenuManager.Controls
                     };
                     cmbSections.SelectedIndex = 0;
 
-                    txtOld.TextChanged += (sender, e) => { if (txtNew.Text == string.Empty) txtNew.Text = txtOld.Text; };
+                    txtOld.TextChanged += (sender, e) => { if(txtNew.Text == string.Empty) txtNew.Text = txtOld.Text; };
                     txtNew.TextChanged += (sender, e) => EditingDic[Section][Key] = txtNew.Text.Replace("\n", "\\n").Replace("\r", "\\r");
                     btnBrowse.Click += (sender, e) => SelectFile();
                     btnSave.Click += (sender, e) => Save();
@@ -444,11 +445,11 @@ namespace ContextMenuManager.Controls
 
                 private void SelectFile()
                 {
-                    using (OpenFileDialog dlg = new OpenFileDialog())
+                    using(OpenFileDialog dlg = new OpenFileDialog())
                     {
                         dlg.InitialDirectory = AppConfig.LangsDir;
                         dlg.Filter = $"{AppString.SideBar.AppLanguage}|*.ini";
-                        if (dlg.ShowDialog() != DialogResult.OK) return;
+                        if(dlg.ShowDialog() != DialogResult.OK) return;
                         ReferentialWirter.FilePath = dlg.FileName;
                         txtOld.Text = ReferentialWirter.GetValue(Section, Key).Replace("\\r", "\r").Replace("\\n", "\n");
                     }
@@ -456,21 +457,21 @@ namespace ContextMenuManager.Controls
 
                 private void Save()
                 {
-                    using (SaveFileDialog dlg = new SaveFileDialog())
+                    using(SaveFileDialog dlg = new SaveFileDialog())
                     {
                         string language = EditingDic["General"]["Language"];
                         int index = language.IndexOf(' ');
-                        if (index > 0) language = language.Substring(0, index);
+                        if(index > 0) language = language.Substring(0, index);
                         dlg.FileName = $"{language}.ini";
                         dlg.InitialDirectory = AppConfig.LangsDir;
                         dlg.Filter = $"{AppString.SideBar.AppLanguage}|*.ini";
-                        if (dlg.ShowDialog() != DialogResult.OK) return;
+                        if(dlg.ShowDialog() != DialogResult.OK) return;
 
                         string contents = string.Empty;
-                        foreach (string section in EditingDic.Keys)
+                        foreach(string section in EditingDic.Keys)
                         {
                             contents += $"[{section}]" + "\r\n";
-                            foreach (string key in EditingDic[section].Keys)
+                            foreach(string key in EditingDic[section].Keys)
                             {
                                 string value = EditingDic[section][key];
                                 contents += $"{key} = {value}" + "\r\n";

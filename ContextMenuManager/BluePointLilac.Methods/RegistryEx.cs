@@ -20,22 +20,22 @@ namespace BluePointLilac.Methods
 
         public static void CopyTo(this RegistryKey srcKey, RegistryKey dstKey)
         {
-            foreach (string name in srcKey.GetValueNames())
+            foreach(string name in srcKey.GetValueNames())
             {
                 dstKey.SetValue(name, srcKey.GetValue(name), srcKey.GetValueKind(name));
             }
-            foreach (string name in srcKey.GetSubKeyNames())
+            foreach(string name in srcKey.GetSubKeyNames())
             {
-                using (RegistryKey srcSubKey = srcKey.OpenSubKey(name))
-                using (RegistryKey dstSubKey = dstKey.CreateSubKey(name, true))
+                using(RegistryKey srcSubKey = srcKey.OpenSubKey(name))
+                using(RegistryKey dstSubKey = dstKey.CreateSubKey(name, true))
                     srcSubKey.CopyTo(dstSubKey);
             }
         }
 
         public static void CopyTo(string srcPath, string dstPath)
         {
-            using (RegistryKey srcKey = GetRegistryKey(srcPath))
-            using (RegistryKey dstKey = GetRegistryKey(dstPath, true, true))
+            using(RegistryKey srcKey = GetRegistryKey(srcPath))
+            using(RegistryKey dstKey = GetRegistryKey(dstPath, true, true))
             {
                 CopyTo(srcKey, dstKey);
             }
@@ -55,7 +55,7 @@ namespace BluePointLilac.Methods
 
         public static RegistryKey CreateSubKey(this RegistryKey key, string subKeyName, bool writable)
         {
-            using (key.CreateSubKey(subKeyName))
+            using(key.CreateSubKey(subKeyName))
                 return key.OpenSubKey(subKeyName, writable);
         }
 
@@ -91,9 +91,9 @@ namespace BluePointLilac.Methods
             {
                 GetRegistryKey(dirPath, true)?.DeleteSubKeyTree(keyName);
             }
-            catch (Exception)
+            catch(Exception)
             {
-                if (throwOnMissingKey) throw;
+                if(throwOnMissingKey) throw;
             }
         }
 
@@ -105,7 +105,7 @@ namespace BluePointLilac.Methods
         {
             string rootPath;
             int index = regPath.IndexOf('\\');
-            if (index > 0)
+            if(index > 0)
             {
                 rootPath = regPath.Substring(0, index).ToUpper();
                 subRegPath = regPath.Substring(index + 1);
@@ -115,7 +115,7 @@ namespace BluePointLilac.Methods
                 rootPath = regPath;
                 subRegPath = string.Empty;
             }
-            switch (rootPath)
+            switch(rootPath)
             {
                 case HKCR:
                 case CLASSES_ROOT:
@@ -149,9 +149,9 @@ namespace BluePointLilac.Methods
         public static RegistryKey GetRegistryKey(string regPath, bool writable = false, bool create = false)
         {
             GetRootAndSubRegPath(regPath, out RegistryKey root, out string keyPath);
-            using (root)
+            using(root)
             {
-                if (create) return root.CreateSubKey(keyPath, writable);
+                if(create) return root.CreateSubKey(keyPath, writable);
                 else
                 {
                     RegTrustedInstaller.TakeRegTreeOwnerShip(keyPath);
@@ -163,7 +163,7 @@ namespace BluePointLilac.Methods
         public static RegistryKey GetRegistryKey(string regPath, RegistryKeyPermissionCheck check, RegistryRights rights)
         {
             GetRootAndSubRegPath(regPath, out RegistryKey root, out string keyPath);
-            using (root) return root.OpenSubKey(keyPath, check, rights);
+            using(root) return root.OpenSubKey(keyPath, check, rights);
         }
     }
 }

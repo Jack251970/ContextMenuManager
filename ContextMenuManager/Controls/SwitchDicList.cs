@@ -1,5 +1,6 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
+using ContextMenuManager.BluePointLilac.Controls;
 using ContextMenuManager.Methods;
 using System;
 using System.Drawing;
@@ -51,12 +52,12 @@ namespace ContextMenuManager.Controls
             get => useUserDic == true;
             set
             {
-                if (useUserDic == value) return;
+                if(useUserDic == value) return;
                 bool flag = useUserDic == null;
                 useUserDic = value;
                 Image = UseUserDic ? AppImage.User : AppImage.Web;
                 cmbDic.SelectedIndex = value ? 1 : 0;
-                if (!flag) UseDicChanged?.Invoke();
+                if(!flag) UseDicChanged?.Invoke();
             }
         }
 
