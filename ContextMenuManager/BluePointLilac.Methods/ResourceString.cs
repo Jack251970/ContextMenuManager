@@ -25,7 +25,27 @@ namespace BluePointLilac.Methods
             return outBuff.ToString();
         }
 
-        public static readonly string OK = GetDirectString("@shell32.dll,-9752");
-        public static readonly string Cancel = GetDirectString("@shell32.dll,-9751");
+        /// <summary>获取格式为"@[filename],-[strID]"或"@{[packageName]?ms-resource://[resPath]}"的直接字符串，如果失败则返回fallback值</summary>
+        /// <param name="resStr">要转换的字符串</param>
+        /// <param name="fallback">当资源字符串解析失败时返回的备用值</param>
+        /// <returns>成功时返回解析的字符串，失败时返回fallback值</returns>
+        private static string GetDirectStringWithFallback(string resStr, string fallback)
+        {
+            var result = GetDirectString(resStr);
+            return string.IsNullOrEmpty(result) ? fallback : result;
+        }
+
+        // OK和Cancel按钮文本，使用AppString作为Fallback将在InputDialog中处理
+        public static string OK = GetDirectString("@shell32.dll,-9752");
+        public static string Cancel = GetDirectString("@shell32.dll,-9751");
+
+        /// <summary>设置OK和Cancel的fallback值，当系统资源不可用时使用</summary>
+        /// <param name="okText">OK按钮的fallback文本</param>
+        /// <param name="cancelText">Cancel按钮的fallback文本</param>
+        public static void SetButtonTextFallbacks(string okText, string cancelText)
+        {
+            if (string.IsNullOrEmpty(OK)) OK = okText;
+            if (string.IsNullOrEmpty(Cancel)) Cancel = cancelText;
+        }
     }
 }

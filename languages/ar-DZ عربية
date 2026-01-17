@@ -298,6 +298,9 @@ UnfoldAll = فتح الكل
 
 [Dialog]
 
+OK = موافق
+
+Cancel = إلغاء
 
 Browse = استعراض
 
