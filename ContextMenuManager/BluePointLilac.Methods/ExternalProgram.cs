@@ -168,23 +168,22 @@ namespace BluePointLilac.Methods
                 // 终止所有 explorer.exe 进程
                 foreach (var process in explorerProcesses)
                 {
-                    try
+                    using (process)
                     {
-                        process.Kill();
-                        // 等待进程完全退出，最多等待5秒
-                        process.WaitForExit(5000);
-                    }
-                    catch (Win32Exception)
-                    {
-                        // 进程已退出或无法访问，继续处理下一个
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // 进程已退出，继续处理下一个
-                    }
-                    finally
-                    {
-                        process.Dispose();
+                        try
+                        {
+                            process.Kill();
+                            // 等待进程完全退出，最多等待5秒
+                            process.WaitForExit(5000);
+                        }
+                        catch (Win32Exception)
+                        {
+                            // 进程已退出或无法访问，继续处理下一个
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // 进程已退出，继续处理下一个
+                        }
                     }
                 }
                 
@@ -192,14 +191,12 @@ namespace BluePointLilac.Methods
                 Thread.Sleep(500);
                 
                 // 启动新的 explorer.exe 进程
-                using (Process.Start(new ProcessStartInfo
+                var newExplorer = Process.Start(new ProcessStartInfo
                 {
                     FileName = "explorer.exe",
                     UseShellExecute = true
-                }))
-                {
-                    // 进程已启动，立即释放资源
-                }
+                });
+                newExplorer?.Dispose();
             }
             catch (Exception)
             {
@@ -219,14 +216,12 @@ namespace BluePointLilac.Methods
                         kill?.WaitForExit();
                     }
                     Thread.Sleep(500);
-                    using (Process.Start(new ProcessStartInfo
+                    var newExplorer = Process.Start(new ProcessStartInfo
                     {
                         FileName = "explorer.exe",
                         UseShellExecute = true
-                    }))
-                    {
-                        // 进程已启动，立即释放资源
-                    }
+                    });
+                    newExplorer?.Dispose();
                 }
                 catch (Exception)
                 {
