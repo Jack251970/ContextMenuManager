@@ -160,22 +160,80 @@ namespace BluePointLilac.Methods
         /// <summary>重启Explorer</summary>
         public static void RestartExplorer()
         {
-            using (var kill = Process.Start(new ProcessStartInfo
+            try
             {
-                FileName = "taskkill.exe",
-                Arguments = "-f -im explorer.exe",
-                WindowStyle = ProcessWindowStyle.Hidden,
-                CreateNoWindow = true,
-                UseShellExecute = false
-            }))
-            {
-                kill?.WaitForExit();
+                // 获取所有 explorer.exe 进程
+                var explorerProcesses = Process.GetProcessesByName("explorer");
+                
+                // 终止所有 explorer.exe 进程
+                foreach (var process in explorerProcesses)
+                {
+                    using (process)
+                    {
+                        try
+                        {
+                            process.Kill();
+                            // 等待进程完全退出，最多等待5秒
+                            process.WaitForExit(5000);
+                        }
+                        catch (Win32Exception)
+                        {
+                            // 进程已退出或无法访问，继续处理下一个
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // 进程已退出，继续处理下一个
+                        }
+                    }
+                }
+                
+                // 等待一小段时间确保所有进程已完全退出
+                Thread.Sleep(500);
+                
+                // 启动新的 explorer.exe 进程
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    UseShellExecute = true
+                })?.Dispose();
             }
-            Process.Start(new ProcessStartInfo
+            catch (Exception ex) when (
+                ex is Win32Exception || 
+                ex is InvalidOperationException || 
+                ex is UnauthorizedAccessException)
             {
-                FileName = "explorer.exe",
-                UseShellExecute = true
-            });
+                // 如果上述方法失败，回退到使用 taskkill
+                // 可能的原因：权限不足、进程保护等
+                try
+                {
+                    using (var kill = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill.exe",
+                        Arguments = "-f -im explorer.exe",
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    }))
+                    {
+                        kill?.WaitForExit();
+                    }
+                    Thread.Sleep(500);
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        UseShellExecute = true
+                    })?.Dispose();
+                }
+                catch (Exception ex1) when (
+                    ex is Win32Exception || 
+                    ex is InvalidOperationException || 
+                    ex is UnauthorizedAccessException)
+                {
+                    // 两种方法都失败，静默失败避免程序崩溃
+                    // 用户会看到 explorer 没有重启，可以手动处理
+                    // 在调试模式下可以通过调试器查看异常信息
+                }
+            }
         }
 
         /// <summary>调用默认浏览器打开指定网址</summary>
