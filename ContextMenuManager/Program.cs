@@ -28,6 +28,7 @@ namespace ContextMenuManager
 
             if (SingleInstance.IsRunning()) return;
             AppString.LoadStrings();
+            ResourceString.SetButtonTextFallbacks(AppString.Dialog.OK, AppString.Dialog.Cancel);
             Updater.PeriodicUpdate();
             XmlDicHelper.ReloadDics();
             Application.Run(new MainForm());
