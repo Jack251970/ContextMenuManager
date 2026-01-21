@@ -989,7 +989,7 @@ namespace ContextMenuManager.Controls
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"切换菜单样式失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"{AppString.Message.SwitchMenuStyleFailed}: {ex.Message}", AppString.Message.SwitchMenuStyleFailed, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 };
                 // 判断注册表中是否存在registryKeyPath项：存在则为Win10经典右键菜单，不存在则为Win11默认右键菜单
@@ -1032,7 +1032,7 @@ namespace ContextMenuManager.Controls
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"注册表操作失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"{AppString.Message.RegistryOperationFailed}: {ex.Message}", AppString.Message.RegistryOperationFailed, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         // 恢复选择
                         cmbDic.SelectedIndex = useWin11ContextMenuStyle ? 0 : 1;
                     }

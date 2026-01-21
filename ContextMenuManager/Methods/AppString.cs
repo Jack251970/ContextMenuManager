@@ -285,6 +285,8 @@ namespace ContextMenuManager.Methods
             public static string DeprecatedBackupVersion { get; set; }
             public static string NotChooseAnyBackup { get; set; }
             public static string NotChooseAnyRestore { get; set; }
+            public static string SwitchMenuStyleFailed { get; set; }
+            public static string RegistryOperationFailed { get; set; }
         }
 
         /// <summary>提示文本</summary>
