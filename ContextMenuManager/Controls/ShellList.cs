@@ -982,8 +982,15 @@ namespace ContextMenuManager.Controls
                 cmbDic.Items.AddRange(new[] { AppString.Menu.Win11DefaultContextMenuStyle, AppString.Menu.Win10ClassicContextMenuStyle });
                 cmbDic.SelectionChangeCommitted += (sender, e) =>
                 {
-                    Focus();
-                    UseWin11ContextMenuStyle = cmbDic.SelectedIndex == 0;
+                    try
+                    {
+                        Focus();
+                        UseWin11ContextMenuStyle = cmbDic.SelectedIndex == 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"切换菜单样式失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 };
                 // 判断注册表中是否存在registryKeyPath项：存在则为Win10经典右键菜单，不存在则为Win11默认右键菜单
                 var registryKey = Registry.CurrentUser.OpenSubKey(registryKeyPath);
@@ -1000,24 +1007,35 @@ namespace ContextMenuManager.Controls
                     if (useWin11ContextMenuStyle == value) return;
                     cmbDic.SelectedIndex = value ? 0 : 1;
                     useWin11ContextMenuStyle = value;
-                    if (value)
+                    try
                     {
-                        // 切换Win11默认右键菜单样式
-                        // 删除注册表项目：HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}
-                        var registryKey = Registry.CurrentUser.OpenSubKey(registryKeyPath, true);
-                        if (registryKey != null)
+                        if (value)
                         {
-                            Registry.CurrentUser.DeleteSubKeyTree(registryKeyPath);
+                            // 切换Win11默认右键菜单样式
+                            // 删除注册表项目：HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}
+                            var registryKey = Registry.CurrentUser.OpenSubKey(registryKeyPath, true);
+                            if (registryKey != null)
+                            {
+                                registryKey.Close();
+                                Registry.CurrentUser.DeleteSubKeyTree(registryKeyPath);
+                            }
                         }
+                        else
+                        {
+                            // 切换Win10经典右键菜单样式
+                            // 添加注册表项目：HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32
+                            var registryKey = Registry.CurrentUser.CreateSubKey(registrySubKeyPath);
+                            registryKey?.SetValue(null, "", RegistryValueKind.String);
+                            registryKey?.Close();
+                        }
+                        ExplorerRestarter.Show();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        // 切换Win10经典右键菜单样式
-                        // 添加注册表项目：HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32
-                        var registryKey = Registry.CurrentUser.CreateSubKey(registrySubKeyPath);
-                        registryKey?.SetValue(null, "", RegistryValueKind.String);
+                        MessageBox.Show($"注册表操作失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        // 恢复选择
+                        cmbDic.SelectedIndex = useWin11ContextMenuStyle ? 0 : 1;
                     }
-                    ExplorerRestarter.Show();
                 }
             }
 

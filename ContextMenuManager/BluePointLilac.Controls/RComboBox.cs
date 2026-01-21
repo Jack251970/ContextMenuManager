@@ -297,22 +297,42 @@ namespace ContextMenuManager.BluePointLilac.Controls
             }
             DropDownHeight = totalHeight + 2 * SystemInformation.BorderSize.Height;
 
-            if (Parent.FindForm() is Form form)
+            if (Parent?.FindForm() is Form form && !form.IsDisposed)
             {
-                form.BeginInvoke(() =>
+                try
                 {
-                    var cbi = new COMBOBOXINFO();
-                    cbi.cbSize = Marshal.SizeOf(cbi);
-                    GetComboBoxInfo(Handle, ref cbi);
-                    dropDownHwnd = cbi.hwndList;
-                    var r = new RECT();
-                    GetWindowRect(cbi.hwndList, ref r);
-                    var h = CreateRoundRectRgn(0, 0, r.Right - r.Left, r.Bottom - r.Top, BorderRadius.DpiZoom(), BorderRadius.DpiZoom());
-                    if (SetWindowRgn(cbi.hwndList, h, true) == 0)
+                    form.BeginInvoke(() =>
                     {
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                    }
-                });
+                        try
+                        {
+                            if (IsDisposed || !IsHandleCreated) return;
+                            
+                            var cbi = new COMBOBOXINFO();
+                            cbi.cbSize = Marshal.SizeOf(cbi);
+                            if (!GetComboBoxInfo(Handle, ref cbi)) return;
+                            
+                            dropDownHwnd = cbi.hwndList;
+                            if (dropDownHwnd == IntPtr.Zero) return;
+                            
+                            var r = new RECT();
+                            if (!GetWindowRect(cbi.hwndList, ref r)) return;
+                            
+                            var h = CreateRoundRectRgn(0, 0, r.Right - r.Left, r.Bottom - r.Top, BorderRadius.DpiZoom(), BorderRadius.DpiZoom());
+                            if (h != IntPtr.Zero)
+                            {
+                                SetWindowRgn(cbi.hwndList, h, true);
+                            }
+                        }
+                        catch
+                        {
+                            // Silently ignore errors in dropdown styling
+                        }
+                    });
+                }
+                catch
+                {
+                    // Silently ignore errors if BeginInvoke fails
+                }
             }
         }
 
