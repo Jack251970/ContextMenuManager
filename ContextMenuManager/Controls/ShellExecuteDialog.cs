@@ -29,14 +29,37 @@ namespace ContextMenuManager.Controls
 
         public static string GetCommand(string fileName, string arguments, string verb, int windowStyle, string directory = null)
         {
-            arguments = arguments.Replace("\"", "\"\"");
-            if (directory == null)
+            // Escape single quotes and double quotes for PowerShell
+            var psFileName = fileName.Replace("'", "''");
+            var psArguments = arguments.Replace("'", "''");
+            
+            if (directory == null || string.IsNullOrEmpty(directory))
             {
                 ObjectPath.GetFullFilePath(fileName, out var filePath);
-                directory = Path.GetDirectoryName(filePath);
+                directory = Path.GetDirectoryName(filePath) ?? "";
             }
-            return "mshta vbscript:createobject(\"shell.application\").shellexecute" +
-                $"(\"{fileName}\",\"{arguments}\",\"{directory}\",\"{verb}\",{windowStyle})(close)";
+            var psDirectory = directory.Replace("'", "''");
+            
+            // Map windowStyle to PowerShell WindowStyle
+            // 0=Hidden, 1=Normal, 2=Minimized, 3=Maximized, 4+=Normal
+            string psWindowStyle = windowStyle switch
+            {
+                0 => "Hidden",
+                2 => "Minimized",
+                3 => "Maximized",
+                _ => "Normal"
+            };
+            
+            // Use PowerShell Start-Process instead of VBScript
+            // This approach is compatible with Windows 11 where VBScript is deprecated
+            var command = $"powershell -WindowStyle Hidden -NoProfile -Command \"" +
+                $"Start-Process -FilePath '{psFileName}' " +
+                $"-ArgumentList '{psArguments}' " +
+                $"-WorkingDirectory '{psDirectory}' " +
+                $"-Verb {verb} " +
+                $"-WindowStyle {psWindowStyle}\"";
+            
+            return command;
         }
 
         private sealed class ShellExecuteForm : RForm

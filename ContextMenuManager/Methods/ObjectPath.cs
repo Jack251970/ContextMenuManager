@@ -13,6 +13,7 @@ namespace ContextMenuManager.Methods
         public enum PathType { File, Directory, Registry }
         private const string RegAppPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
         private const string ShellExecuteCommand = "mshta vbscript:createobject(\"shell.application\").shellexecute(\"";
+        private const string PowerShellStartProcessCommand = "powershell -WindowStyle Hidden -NoProfile -Command \"Start-Process -FilePath '";
 
         private static readonly char[] IllegalChars = { '/', '*', '?', '\"', '<', '>', '|' };
         private static readonly List<string> IgnoreCommandParts = new() { "", "%1", "%v" };
@@ -56,7 +57,24 @@ namespace ContextMenuManager.Methods
             {
                 string filePath = null;
                 var partCmd = Environment.ExpandEnvironmentVariables(command).Replace(@"\\", @"\");
-                if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
+                
+                // Handle new PowerShell Start-Process format
+                if (partCmd.StartsWith(PowerShellStartProcessCommand, StringComparison.OrdinalIgnoreCase))
+                {
+                    partCmd = partCmd[PowerShellStartProcessCommand.Length..];
+                    var endIndex = partCmd.IndexOf("'");
+                    if (endIndex > 0)
+                    {
+                        var fileName = partCmd[..endIndex].Replace("''", "'");
+                        if (GetFullFilePath(fileName, out filePath))
+                        {
+                            FilePathDic.Add(command, filePath);
+                            return filePath;
+                        }
+                    }
+                }
+                // Handle old VBScript format for backward compatibility
+                else if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
                 {
                     partCmd = partCmd[ShellExecuteCommand.Length..];
                     var arr = partCmd.Split(new[] { "\",\"" }, StringSplitOptions.None);
