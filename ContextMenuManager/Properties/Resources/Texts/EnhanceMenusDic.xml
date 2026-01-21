@@ -801,7 +801,7 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
           <REG_SZ MUIVerb='@shell32.dll,-30329' Icon='imageres.dll,-5302'/>
         </Value>
         <SubKey>
-          <Command Default='mshta vbscript:clipboarddata.setdata("text","%1")(close)'/>
+          <Command Default='powershell -WindowStyle Hidden -NoProfile -Command "Set-Clipboard -Value (Get-Item \"%1\").FullName"'/>
         </SubKey>
       </Item>
       <Item KeyName='Windows.CopyAsPath'>
@@ -1011,42 +1011,14 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
                 </Value>
                 <SubKey>
                   <Command>
-                    <FileName>wscript.exe</FileName>
+                    <FileName>powershell.exe</FileName>
                     <Arguments>
                       <CreateFile
-                        FileName='HyperVMode.vbs'
-                        Content='
-                        Dim sap, wsh
-                        Set sap = CreateObject("Shell.Application")
-                        sap.ShellExecute "bcdedit", "/set hypervisorlaunchtype auto", "" ,"runas", 0
-                        msg = "你当前切换的模式为 Hyper-V，" &amp; VbCrlf
-                        msg = msg &amp; "该模式可使用 Windows SandBox 和 Hyper-V，" &amp; VbCrlf
-                        msg = msg &amp; "不可使用 VirtualBox 和 VMware 等虚拟机程序，" &amp; VbCrlf
-                        msg = msg &amp; "是否立即重启计算机应用该模式？" &amp; VbCrlf
-                        msg = msg &amp; "你也可稍后自行重启，请保存好工作！"
-                        If Msgbox(msg, VbYesNo + VbInformation, "虚拟模式") = VbYes Then
-                            Set wsh = CreateObject("WScript.Shell")
-                            wsh.Run("shutdown -r -f -t 00")
-                            Set wsh = Nothing
-                        End If
-                        Set sap = Nothing'/>
+                        FileName='HyperVMode.ps1'
+                        Content='Start-Process bcdedit -ArgumentList "/set hypervisorlaunchtype auto" -Verb RunAs -WindowStyle Hidden;$msg = "你当前切换的模式为 Hyper-V，`n该模式可使用 Windows SandBox 和 Hyper-V，`n不可使用 VirtualBox 和 VMware 等虚拟机程序，`n是否立即重启计算机应用该模式？`n你也可稍后自行重启，请保存好工作！";$result = [System.Windows.Forms.MessageBox]::Show($msg, "虚拟模式", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Information);if($result -eq "Yes"){shutdown -r -f -t 00}'/>
                       <CreateFile
-                        FileName='HyperVMode.vbs'
-                        Content='
-                        Dim sap, wsh
-                        Set sap = CreateObject("Shell.Application")
-                        sap.ShellExecute "bcdedit", "/set hypervisorlaunchtype auto", "" ,"runas", 0
-                        msg = "You are currently switching mode to Hyper-V," &amp; VbCrlf
-                        msg = msg &amp; "This mode is available using Windows SandBox and Hyper-V," &amp; VbCrlf
-                        msg = msg &amp; "But Vm programs such as VirtualBox and VMware cannot be used," &amp; VbCrlf
-                        msg = msg &amp; "Do you want to restart the computer immediately to apply the mode?" &amp; VbCrlf
-                        msg = msg &amp; "You can also restart yourself later, please save your work!"
-                        If Msgbox(msg, VbYesNo + VbInformation, "Virtual Mode") = VbYes Then
-                            Set wsh = CreateObject("WScript.Shell")
-                            wsh.Run("shutdown -r -f -t 00")
-                            Set wsh = Nothing
-                        End If
-                        Set sap = Nothing'>
+                        FileName='HyperVMode.ps1'
+                        Content='Start-Process bcdedit -ArgumentList "/set hypervisorlaunchtype auto" -Verb RunAs -WindowStyle Hidden;$msg = "You are currently switching mode to Hyper-V,`nThis mode is available using Windows SandBox and Hyper-V,`nBut Vm programs such as VirtualBox and VMware cannot be used,`nDo you want to restart the computer immediately to apply the mode?`nYou can also restart yourself later, please save your work!";Add-Type -AssemblyName System.Windows.Forms;$result = [System.Windows.Forms.MessageBox]::Show($msg, "Virtual Mode", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Information);if($result -eq "Yes"){shutdown -r -f -t 00}'>
                         <Culture>en-US</Culture>
                       </CreateFile>
                     </Arguments>
@@ -1059,42 +1031,14 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
                 </Value>
                 <SubKey>
                   <Command>
-                    <FileName>wscript.exe</FileName>
+                    <FileName>powershell.exe</FileName>
                     <Arguments>
                       <CreateFile
-                        FileName='VirtualBoxMode.vbs'
-                        Content='
-                        Dim sap, wsh
-                        Set sap = CreateObject("Shell.Application")
-                        sap.ShellExecute "bcdedit", "/set hypervisorlaunchtype off", "", "runas", 0
-                        msg = "你当前切换的模式为 VirtualBox，" &amp; VbCrlf
-                        msg = msg &amp; "该模式可使用 VirtualBox 和 VMware 等虚拟机程序，" &amp; VbCrlf
-                        msg = msg &amp; "不可使用 Windows SandBox 和 Hyper-V，" &amp; VbCrlf
-                        msg = msg &amp; "是否立即重启计算机应用该模式？" &amp; VbCrlf
-                        msg = msg &amp; "你也可稍后自行重启，请保存好工作！"
-                        If Msgbox(msg, VbYesNo + VbInformation, "虚拟模式") = VbYes Then
-                            Set wsh = CreateObject("WScript.Shell")
-                            wsh.Run("shutdown -r -f -t 00")
-                            Set wsh = Nothing
-                        End If
-                        Set sap = Nothing'/>
+                        FileName='VirtualBoxMode.ps1'
+                        Content='Start-Process bcdedit -ArgumentList "/set hypervisorlaunchtype off" -Verb RunAs -WindowStyle Hidden;$msg = "你当前切换的模式为 VirtualBox，`n该模式可使用 VirtualBox 和 VMware 等虚拟机程序，`n不可使用 Windows SandBox 和 Hyper-V，`n是否立即重启计算机应用该模式？`n你也可稍后自行重启，请保存好工作！";Add-Type -AssemblyName System.Windows.Forms;$result = [System.Windows.Forms.MessageBox]::Show($msg, "虚拟模式", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Information);if($result -eq "Yes"){shutdown -r -f -t 00}'/>
                       <CreateFile
-                        FileName='VirtualBoxMode.vbs'
-                        Content='
-                        Dim sap, wsh
-                        Set sap = CreateObject("Shell.Application")
-                        sap.ShellExecute "bcdedit", "/set hypervisorlaunchtype off", "", "runas", 0
-                        msg = "You are currently switching mode to VirtualBox，" &amp; VbCrlf
-                        msg = msg &amp; "This mode is available using VM programs such as VirtualBox and VMware," &amp; VbCrlf
-                        msg = msg &amp; "But Windows SandBox and Hyper-V are not available," &amp; VbCrlf
-                        msg = msg &amp; "Do you want to restart the computer immediately to apply the mode?" &amp; VbCrlf
-                        msg = msg &amp; "You can also restart yourself later, please save your work!"
-                        If Msgbox(msg, VbYesNo + VbInformation, "Virtual Mode") = VbYes Then
-                            Set wsh = CreateObject("WScript.Shell")
-                            wsh.Run("shutdown -r -f -t 00")
-                            Set wsh = Nothing
-                        End If
-                        Set sap = Nothing'>
+                        FileName='VirtualBoxMode.ps1'
+                        Content='Start-Process bcdedit -ArgumentList "/set hypervisorlaunchtype off" -Verb RunAs -WindowStyle Hidden;$msg = "You are currently switching mode to VirtualBox，`nThis mode is available using VM programs such as VirtualBox and VMware,`nBut Windows SandBox and Hyper-V are not available,`nDo you want to restart the computer immediately to apply the mode?`nYou can also restart yourself later, please save your work!";Add-Type -AssemblyName System.Windows.Forms;$result = [System.Windows.Forms.MessageBox]::Show($msg, "Virtual Mode", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Information);if($result -eq "Yes"){shutdown -r -f -t 00}'>
                         <Culture>en-US</Culture>
                       </CreateFile>
                     </Arguments>
