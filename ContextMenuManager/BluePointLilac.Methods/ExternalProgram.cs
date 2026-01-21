@@ -224,7 +224,7 @@ namespace BluePointLilac.Methods
                         UseShellExecute = true
                     })?.Dispose();
                 }
-                catch (Exception ex) when (
+                catch (Exception ex1) when (
                     ex is Win32Exception || 
                     ex is InvalidOperationException || 
                     ex is UnauthorizedAccessException)
