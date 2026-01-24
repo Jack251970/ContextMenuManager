@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using System;
 using System.Collections.Generic;
@@ -171,7 +171,21 @@ namespace ContextMenuManager.Methods
                 return;
             }
             if (language == "") language = CultureInfo.CurrentUICulture.Name;
+            
+#if DEBUG
+            // 在开发环境中使用项目根目录下的languages目录
+            string devLangsDir = $@"{Application.StartupPath}\..\languages";
+            LanguageIniPath = $@"{devLangsDir}\{language}.ini";
+            if (!File.Exists(LanguageIniPath))
+            {
+                // 如果开发目录中的语言文件不存在，回退到Config\Languages目录
+                LanguageIniPath = $@"{LangsDir}\{language}.ini";
+            }
+#else
+            // 在发布环境中使用Config\Languages目录
             LanguageIniPath = $@"{LangsDir}\{language}.ini";
+#endif
+            
             if (!File.Exists(LanguageIniPath))
             {
                 LanguageIniPath = "";

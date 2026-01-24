@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,7 +31,10 @@ namespace BluePointLilac.Methods
             if (sb.ToString().IsNullOrWhiteSpace()) return;
             var lines = sb.ToString().Split(new[] { "\r\n", "\n" },
                 StringSplitOptions.RemoveEmptyEntries).ToList();//拆分为行
-            lines.ForEach(line => line.Trim());
+            for (int i = 0; i < lines.Count; i++)
+            {
+                lines[i] = lines[i].Trim();
+            }
             ReadLines(lines);
         }
 
@@ -69,9 +72,10 @@ namespace BluePointLilac.Methods
             for (var i = 0; i < indexs.Count - 1; i++)
             {
                 var section = lines[indexs[i]];
-                var m = section.IndexOf(']') - 1;
-                if (m < 0) continue;
-                section = section.Substring(1, m);
+                var startIndex = section.IndexOf('[') + 1;
+                var endIndex = section.IndexOf(']');
+                if (endIndex <= startIndex) continue;
+                section = section.Substring(startIndex, endIndex - startIndex).Trim();// 修剪section名称
                 if (RootDic.ContainsKey(section)) continue;
                 var keyValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 RootDic.Add(section, keyValues);
@@ -79,8 +83,9 @@ namespace BluePointLilac.Methods
                 for (var j = indexs[i] + 1; j < indexs[i + 1]; j++)
                 {
                     var k = lines[j].IndexOf('=');
-                    var key = lines[j][..k].TrimEnd();
-                    var value = lines[j][(k + 1)..].TrimStart();
+                    if (k <= 0) continue;
+                    var key = lines[j][..k].Trim();// 修剪key名称
+                    var value = lines[j][(k + 1)..].Trim();// 修剪value值
                     if (keyValues.ContainsKey(key)) continue;
                     keyValues.Add(key, value);
                 }
