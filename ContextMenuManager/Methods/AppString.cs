@@ -5,7 +5,19 @@ namespace ContextMenuManager.Methods
 {
     internal static class AppString
     {
-        private static readonly IniReader UserLangReader = new(AppConfig.LanguageIniPath);
+        private static IniReader _userLangReader;
+        private static IniReader UserLangReader
+        {
+            get
+            {
+                if (_userLangReader == null)
+                {
+                    // 延迟初始化，确保AppConfig.LanguageIniPath已经被正确设置
+                    _userLangReader = new IniReader(AppConfig.LanguageIniPath);
+                }
+                return _userLangReader;
+            }
+        }
         public static readonly IniReader DefLangReader = new(new StringBuilder(Properties.Resources.AppLanguageDic));
 
         private static string GetValue(string section, string key)
@@ -18,6 +30,8 @@ namespace ContextMenuManager.Methods
         /// <summary>加载语言</summary>
         public static void LoadStrings()
         {
+            // 重置UserLangReader，确保使用最新的LanguageIniPath
+            _userLangReader = new IniReader(AppConfig.LanguageIniPath);
             foreach (var type in typeof(AppString).GetNestedTypes())
             {
                 foreach (var pi in type.GetProperties())
@@ -309,6 +323,16 @@ namespace ContextMenuManager.Methods
             public static string CreateGroup { get; set; }
             public static string DropOrSelectObject { get; set; }
             public static string ImmediatelyCheck { get; set; }
+        }
+
+        /// <summary>关于页面</summary>
+        public static class About
+        {
+            public static string Description { get; set; }
+            public static string CheckUpdate { get; set; }
+            public static string GitHub { get; set; }
+            public static string Gitee { get; set; }
+            public static string License { get; set; }
         }
 
         /// <summary>其他文本</summary>

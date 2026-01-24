@@ -90,7 +90,7 @@ namespace ContextMenuManager
         private readonly AppSettingBox appSettingBox = new();
         private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
-        private readonly ReadOnlyRichTextBox aboutMeBox = new();
+        private readonly AboutAppBox aboutMeBox = new();
         private readonly DonateBox donateBox = new();
         private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
@@ -457,8 +457,7 @@ namespace ContextMenuManager
                     dictionariesBox.LoadText(); dictionariesBox.Visible = true;
                     break;
                 case 4:
-                    if (aboutMeBox.TextLength == 0) aboutMeBox.LoadIni(AppString.Other.AboutApp);
-                    aboutMeBox.Visible = true;
+                    aboutMeBox.LoadAboutInfo(); aboutMeBox.Visible = true;
                     break;
                 case 5:
                     donateBox.Visible = true;
