@@ -49,7 +49,7 @@ namespace ContextMenuManager.Controls
             lblGitHub.TextAlign = ContentAlignment.MiddleCenter;
             lblGitHub.ForeColor = Color.Orange;
             lblGitHub.Cursor = Cursors.Hand;
-            lblGitHub.Size = new Size(400, 20);
+            lblGitHub.Size = new Size(400, 30);
             lblGitHub.Visible = true;
             lblGitHub.MouseDown += (sender, e) => ExternalProgram.OpenWebUrl("https://github.com/Jack251970/ContextMenuManager");
             
@@ -58,19 +58,19 @@ namespace ContextMenuManager.Controls
             lblGitee.TextAlign = ContentAlignment.MiddleCenter;
             lblGitee.ForeColor = Color.Orange;
             lblGitee.Cursor = Cursors.Hand;
-            lblGitee.Size = new Size(400, 20);
+            lblGitee.Size = new Size(400, 30);
             lblGitee.Visible = true;
             lblGitee.MouseDown += (sender, e) => ExternalProgram.OpenWebUrl("https://gitee.com/Jack251970/ContextMenuManager");
             
             // 设置许可证标签
             lblLicense.Text = $"{AppString.About.License}: GPL License"; // 使用多语言文本
             lblLicense.TextAlign = ContentAlignment.MiddleCenter;
-            lblLicense.Size = new Size(400, 20);
+            lblLicense.Size = new Size(400, 30);
             lblLicense.Visible = true;
             
             // 设置检查更新按钮
             btnCheckUpdate.Text = AppString.About.CheckUpdate; // 使用多语言文本
-            btnCheckUpdate.Size = new Size(120, 30);
+            btnCheckUpdate.Size = new Size(120, 40);
             btnCheckUpdate.BackColor = Color.Orange;
             btnCheckUpdate.ForeColor = Color.White;
             btnCheckUpdate.FlatStyle = FlatStyle.Flat;
