@@ -290,6 +290,9 @@ namespace ContextMenuManager.BluePointLilac.Controls
         private void RComboBox_DropDown(object sender, EventArgs e)
         {
             originalSelectedIndex = SelectedIndex;
+            animatedIndex = -1;
+            previousAnimatedIndex = -1;
+            hoverProgress = 0f;
             var totalHeight = 0;
             for (var i = 0; i < Items.Count; i++)
             {
