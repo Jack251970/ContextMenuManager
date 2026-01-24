@@ -340,7 +340,12 @@ namespace ContextMenuManager.BluePointLilac.Controls
             var textColor = DropDownForeColor;
 
             var backColor = BackColor;
-            if (e.Index == animatedIndex)
+            if (isActuallySelected)
+            {
+                backColor = DropDownSelectedColor;
+                textColor = DropDownSelectedForeColor;
+            }
+            else if (e.Index == animatedIndex)
             {
                 backColor = ColorLerp(BackColor, DropDownHoverColor, hoverProgress);
                 textColor = ColorLerp(DropDownForeColor, DropDownHoverForeColor, hoverProgress);
@@ -349,11 +354,6 @@ namespace ContextMenuManager.BluePointLilac.Controls
             {
                 backColor = ColorLerp(DropDownHoverColor, BackColor, hoverProgress);
                 textColor = ColorLerp(DropDownHoverForeColor, DropDownForeColor, hoverProgress);
-            }
-            else if (isActuallySelected)
-            {
-                backColor = DropDownSelectedColor;
-                textColor = DropDownSelectedForeColor;
             }
 
             using (var backBrush = new SolidBrush(backColor))
