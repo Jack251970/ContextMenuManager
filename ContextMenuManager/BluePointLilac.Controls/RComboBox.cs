@@ -181,6 +181,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
             MouseEnter += (s, e) => UpdateState();
             MouseLeave += (s, e) => { mouseOverDropDown = false; UpdateState(); };
             MouseMove += (s, e) => UpdateDropDownHoverState(e.Location);
+            MouseDown += RComboBox_MouseDown;
 
             SelectedIndexChanged += (s, e) => { if (AutoSize) AdjustWidth(); };
             TextChanged += (s, e) => { if (AutoSize) AdjustWidth(); };
@@ -193,6 +194,21 @@ namespace ContextMenuManager.BluePointLilac.Controls
 
             animTimer.Tick += AnimTimer_Tick;
             animTimer.Start();
+        }
+
+        // 处理鼠标按下事件以打开下拉列表。
+        private void RComboBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && !DroppedDown)
+            {
+                // 确保控件获得焦点
+                if (!Focused)
+                {
+                    Focus();
+                }
+                // 打开下拉列表
+                DroppedDown = true;
+            }
         }
 
         // 动画计时器的 Tick 事件处理程序，用于更新边框和下拉项的动画效果。
