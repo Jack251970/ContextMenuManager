@@ -289,13 +289,35 @@ namespace ContextMenuManager.BluePointLilac.Controls
             if (Parent.FindForm() is Form form)
                 form.BeginInvoke(() =>
                 {
-                    var cbi = new COMBOBOXINFO { cbSize = Marshal.SizeOf<COMBOBOXINFO>() };
-                    GetComboBoxInfo(Handle, ref cbi);
-                    dropDownHwnd = cbi.hwndList;
-                    var r = new RECT();
-                    GetWindowRect(cbi.hwndList, ref r);
-                    var h = CreateRoundRectRgn(0, 0, r.Right - r.Left, r.Bottom - r.Top, BorderRadius.DpiZoom(), BorderRadius.DpiZoom());
-                    if (SetWindowRgn(cbi.hwndList, h, true) == 0) throw new Win32Exception(Marshal.GetLastWin32Error());
+                    try
+                    {
+                        // 验证控件句柄是否有效
+                        if (IsDisposed || !IsHandleCreated) return;
+
+                        var cbi = new COMBOBOXINFO { cbSize = Marshal.SizeOf<COMBOBOXINFO>() };
+                        if (!GetComboBoxInfo(Handle, ref cbi)) return;
+                        
+                        // 验证下拉窗口句柄是否有效
+                        if (cbi.hwndList == IntPtr.Zero) return;
+                        
+                        dropDownHwnd = cbi.hwndList;
+                        var r = new RECT();
+                        if (!GetWindowRect(cbi.hwndList, ref r)) return;
+                        
+                        var h = CreateRoundRectRgn(0, 0, r.Right - r.Left, r.Bottom - r.Top, BorderRadius.DpiZoom(), BorderRadius.DpiZoom());
+                        if (h == IntPtr.Zero) return;
+                        
+                        // SetWindowRgn 在成功时会接管 region 句柄的所有权，失败时需要手动删除
+                        if (SetWindowRgn(cbi.hwndList, h, true) == 0)
+                        {
+                            DeleteObject(h);
+                        }
+                    }
+                    catch
+                    {
+                        // 静默捕获异常，防止 ExecutionEngineException 导致程序崩溃
+                        // 如果设置圆角失败，下拉列表将使用默认的矩形样式
+                    }
                 });
         }
 
@@ -559,5 +581,10 @@ namespace ContextMenuManager.BluePointLilac.Controls
         // 将窗口的窗口区域设置为特定区域。
         [LibraryImport("user32.dll")]
         internal static partial int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bRedraw);
+
+        // 删除 GDI 对象，释放系统资源。
+        [LibraryImport("gdi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool DeleteObject(IntPtr hObject);
     }
 }
