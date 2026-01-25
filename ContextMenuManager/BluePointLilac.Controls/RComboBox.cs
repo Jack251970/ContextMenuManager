@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
@@ -182,19 +182,13 @@ namespace ContextMenuManager.BluePointLilac.Controls
             MouseLeave += (s, e) => { mouseOverDropDown = false; UpdateState(); };
             MouseMove += (s, e) => UpdateDropDownHoverState(e.Location);
 
-            SelectedIndexChanged += (s, e) =>
-            {
-                if (AutoSize) AdjustWidth();
-            };
+            SelectedIndexChanged += (s, e) => { if (AutoSize) AdjustWidth(); };
             TextChanged += (s, e) => { if (AutoSize) AdjustWidth(); };
 
             DropDown += RComboBox_DropDown;
-            DropDownClosed += (s, e) =>
-            {
-                originalSelectedIndex = -1;
+            DropDownClosed += (s, e) => {
+                originalSelectedIndex = animatedIndex = previousAnimatedIndex = -1;
                 dropDownHwnd = IntPtr.Zero;
-                animatedIndex = -1;
-                previousAnimatedIndex = -1;
             };
 
             animTimer.Tick += AnimTimer_Tick;
@@ -290,30 +284,19 @@ namespace ContextMenuManager.BluePointLilac.Controls
         private void RComboBox_DropDown(object sender, EventArgs e)
         {
             originalSelectedIndex = SelectedIndex;
-            var totalHeight = 0;
-            for (var i = 0; i < Items.Count; i++)
-            {
-                totalHeight += DropDownItemHeight.DpiZoom();
-            }
-            DropDownHeight = totalHeight + 2 * SystemInformation.BorderSize.Height;
+            DropDownHeight = Items.Count * DropDownItemHeight.DpiZoom() + 2 * SystemInformation.BorderSize.Height;
 
             if (Parent.FindForm() is Form form)
-            {
                 form.BeginInvoke(() =>
                 {
-                    var cbi = new COMBOBOXINFO();
-                    cbi.cbSize = Marshal.SizeOf(cbi);
+                    var cbi = new COMBOBOXINFO { cbSize = Marshal.SizeOf<COMBOBOXINFO>() };
                     GetComboBoxInfo(Handle, ref cbi);
                     dropDownHwnd = cbi.hwndList;
                     var r = new RECT();
                     GetWindowRect(cbi.hwndList, ref r);
                     var h = CreateRoundRectRgn(0, 0, r.Right - r.Left, r.Bottom - r.Top, BorderRadius.DpiZoom(), BorderRadius.DpiZoom());
-                    if (SetWindowRgn(cbi.hwndList, h, true) == 0)
-                    {
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                    }
+                    if (SetWindowRgn(cbi.hwndList, h, true) == 0) throw new Win32Exception(Marshal.GetLastWin32Error());
                 });
-            }
         }
 
         // 自定义绘制下拉列表中的每个项。
@@ -323,15 +306,8 @@ namespace ContextMenuManager.BluePointLilac.Controls
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
             var bounds = e.Bounds;
-            bool isActuallySelected;
-            if (DroppedDown)
-            {
-                isActuallySelected = e.Index == originalSelectedIndex;
-            }
-            else
-            {
-                isActuallySelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-            }
+            bool isActuallySelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected ||
+                                      (DroppedDown && animatedIndex == -1 && e.Index == originalSelectedIndex);
 
             var textFont = DropDownFont ?? Font;
             var textColor = DropDownForeColor;
@@ -411,20 +387,9 @@ namespace ContextMenuManager.BluePointLilac.Controls
 
 
 
-        // 在两种颜色之间进行线性插值。
-        // c1: 起始颜色。
-        // c2: 结束颜色。
-        // t: 插值因子，范围从 0.0 到 1.0。
-        // returns: 插值后的颜色。
-        private static Color ColorLerp(Color c1, Color c2, float t)
-        {
-            return Color.FromArgb(
-                (int)(c1.A + (c2.A - c1.A) * t),
-                (int)(c1.R + (c2.R - c1.R) * t),
-                (int)(c1.G + (c2.G - c1.G) * t),
-                (int)(c1.B + (c2.B - c1.B) * t)
-            );
-        }
+        private static Color ColorLerp(Color c1, Color c2, float t) => Color.FromArgb(
+            (int)(c1.A + (c2.A - c1.A) * t), (int)(c1.R + (c2.R - c1.R) * t),
+            (int)(c1.G + (c2.G - c1.G) * t), (int)(c1.B + (c2.B - c1.B) * t));
 
         // 当系统主题（深色/浅色模式）更改时，更新控件的颜色。
         public void UpdateColors()
@@ -448,50 +413,27 @@ namespace ContextMenuManager.BluePointLilac.Controls
         // 根据控件的焦点和鼠标悬停状态更新边框的外观。
         private void UpdateState()
         {
-            if (focused)
-            {
-                targetBorder = FocusColor;
-                targetWidth = 2f;
-            }
-            else if (mouseOverDropDown || ClientRectangle.Contains(PointToClient(MousePosition)))
-            {
-                targetBorder = HoverColor;
-                targetWidth = 2f;
-            }
-            else
-            {
-                targetBorder = DarkModeHelper.ComboBoxBorder;
-                targetWidth = 1.2f;
-            }
+            bool hover = mouseOverDropDown || ClientRectangle.Contains(PointToClient(MousePosition));
+            targetBorder = focused ? FocusColor : (hover ? HoverColor : DarkModeHelper.ComboBoxBorder);
+            targetWidth = focused || hover ? 2f : 1.2f;
             Invalidate();
         }
 
         // 更新下拉按钮的悬停状态，并相应地更改光标。
-        // location: 当前鼠标在控件内的坐标。
         private void UpdateDropDownHoverState(Point location)
         {
-            var dropDownRect = GetDropDownButtonRect();
-            var wasHovered = mouseOverDropDown;
-            mouseOverDropDown = dropDownRect.Contains(location);
-            if (wasHovered != mouseOverDropDown)
-            {
-                Cursor = mouseOverDropDown ? Cursors.Hand : Cursors.Default;
-                UpdateState();
-            }
+            bool hover = GetDropDownButtonRect().Contains(location);
+            if (mouseOverDropDown == hover) return;
+            mouseOverDropDown = hover;
+            Cursor = hover ? Cursors.Hand : Cursors.Default;
+            UpdateState();
         }
 
         // 获取下拉按钮的矩形区域。
-        // returns: 表示下拉按钮区域的矩形。
         private Rectangle GetDropDownButtonRect()
         {
-            var clientRect = ClientRectangle;
-            var dropDownButtonWidth = SystemInformation.HorizontalScrollBarArrowWidth + 8.DpiZoom();
-            var dropDownRect = new Rectangle(
-                clientRect.Right - dropDownButtonWidth,
-                clientRect.Top,
-                dropDownButtonWidth,
-                clientRect.Height);
-            return dropDownRect;
+            int w = SystemInformation.HorizontalScrollBarArrowWidth + 8.DpiZoom();
+            return new Rectangle(ClientRectangle.Right - w, ClientRectangle.Top, w, ClientRectangle.Height);
         }
 
         // 根据当前选择的项或文本内容调整控件的宽度。
@@ -529,10 +471,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
         }
 
         // 处理主题更改事件，更新控件颜色。
-        private void OnThemeChanged(object sender, EventArgs e)
-        {
-            UpdateColors();
-        }
+        private void OnThemeChanged(object sender, EventArgs e) => UpdateColors();
 
         // 释放资源。
         protected override void Dispose(bool disposing)
@@ -575,41 +514,23 @@ namespace ContextMenuManager.BluePointLilac.Controls
                 TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
 
             // 绘制箭头
-            var dropDownRect = GetDropDownButtonRect();
-            var currentArrowColor = mouseOverDropDown || focused ? FocusColor : ArrowColor;
-
-            var middle = new Point(
-                dropDownRect.Left + dropDownRect.Width / 2,
-                dropDownRect.Top + dropDownRect.Height / 2
-            );
-
-            var arrowSize = 6.DpiZoom();
-            var arrowPoints = new Point[]
-            {
-                new(middle.X - arrowSize, middle.Y - arrowSize / 2),
-                new(middle.X + arrowSize, middle.Y - arrowSize / 2),
-                new(middle.X, middle.Y + arrowSize / 2)
-            };
-
-            using var brush2 = new SolidBrush(currentArrowColor);
-            e.Graphics.FillPolygon(brush2, arrowPoints);
+            var btnRect = GetDropDownButtonRect();
+            var center = new Point(btnRect.Left + btnRect.Width / 2, btnRect.Top + btnRect.Height / 2);
+            int s = 6.DpiZoom();
+            using var arrowBrush = new SolidBrush(mouseOverDropDown || focused ? FocusColor : ArrowColor);
+            e.Graphics.FillPolygon(arrowBrush, new Point[] {
+                new(center.X - s, center.Y - s / 2),
+                new(center.X + s, center.Y - s / 2),
+                new(center.X, center.Y + s / 2)
+            });
         }
 
         // 在 UI 线程上安全地执行操作。
-        // action: 要执行的操作。
         private void SafeInvoke(Action action)
         {
             if (IsHandleCreated)
-            {
-                if (InvokeRequired)
-                {
-                    Invoke(action);
-                }
-                else
-                {
-                    action();
-                }
-            }
+                if (InvokeRequired) Invoke(action);
+                else action();
         }
     }
 
