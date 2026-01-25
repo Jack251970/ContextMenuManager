@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
@@ -323,15 +323,7 @@ namespace ContextMenuManager.BluePointLilac.Controls
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
             var bounds = e.Bounds;
-            bool isActuallySelected;
-            if (DroppedDown)
-            {
-                isActuallySelected = e.Index == originalSelectedIndex;
-            }
-            else
-            {
-                isActuallySelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-            }
+            bool isActuallySelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
 
             var textFont = DropDownFont ?? Font;
             var textColor = DropDownForeColor;
