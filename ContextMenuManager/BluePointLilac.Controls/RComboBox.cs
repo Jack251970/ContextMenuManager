@@ -324,6 +324,10 @@ namespace ContextMenuManager.BluePointLilac.Controls
 
             var bounds = e.Bounds;
             bool isActuallySelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            if (!isActuallySelected && DroppedDown && animatedIndex == -1 && e.Index == originalSelectedIndex)
+            {
+                isActuallySelected = true;
+            }
 
             var textFont = DropDownFont ?? Font;
             var textColor = DropDownForeColor;
