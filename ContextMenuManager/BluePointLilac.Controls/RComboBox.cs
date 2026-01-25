@@ -313,9 +313,9 @@ namespace ContextMenuManager.BluePointLilac.Controls
                             DeleteObject(h);
                         }
                     }
-                    catch
+                    catch (Exception ex) when (ex is Win32Exception or ObjectDisposedException or InvalidOperationException)
                     {
-                        // 静默捕获异常，防止 ExecutionEngineException 导致程序崩溃
+                        // 静默捕获预期的异常，防止 ExecutionEngineException 导致程序崩溃
                         // 如果设置圆角失败，下拉列表将使用默认的矩形样式
                     }
                 });
