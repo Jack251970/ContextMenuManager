@@ -201,6 +201,12 @@ namespace ContextMenuManager.BluePointLilac.Controls
         {
             if (e.Button == MouseButtons.Left && !DroppedDown)
             {
+                // 确保控件获得焦点
+                if (!Focused)
+                {
+                    Focus();
+                }
+                // 打开下拉列表
                 DroppedDown = true;
             }
         }
