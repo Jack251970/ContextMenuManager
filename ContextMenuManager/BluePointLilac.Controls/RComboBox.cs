@@ -241,10 +241,13 @@ namespace ContextMenuManager.BluePointLilac.Controls
                 {
                     var borderHeight = SystemInformation.BorderSize.Height;
                     var relativeY = p.Y - dropDownRect.Top - borderHeight;
-                    hoverIndex = relativeY / DropDownItemHeight.DpiZoom();
-                    if (hoverIndex < 0 || hoverIndex >= Items.Count || hoverIndex == originalSelectedIndex)
+                    if (relativeY >= 0)
                     {
-                        hoverIndex = -1;
+                        hoverIndex = relativeY / DropDownItemHeight.DpiZoom();
+                        if (hoverIndex < 0 || hoverIndex >= Items.Count || hoverIndex == originalSelectedIndex)
+                        {
+                            hoverIndex = -1;
+                        }
                     }
                 }
 
