@@ -70,7 +70,7 @@ namespace ContextMenuManager.Controls
             
             // 设置检查更新按钮
             btnCheckUpdate.Text = AppString.About.CheckUpdate; // 使用多语言文本
-            btnCheckUpdate.Size = new Size(120, 40);
+            btnCheckUpdate.Size = new Size(210, 40);
             btnCheckUpdate.BackColor = Color.Orange;
             btnCheckUpdate.ForeColor = Color.White;
             btnCheckUpdate.FlatStyle = FlatStyle.Flat;
