@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,8 @@ namespace ContextMenuManager.Methods
         public enum PathType { File, Directory, Registry }
         private const string RegAppPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
         private const string ShellExecuteCommand = "mshta vbscript:createobject(\"shell.application\").shellexecute(\"";
+        private const string PowerShellCommandPrefix = "powershell -WindowStyle Hidden -Command \"Start-Process";
+
 
         private static readonly char[] IllegalChars = { '/', '*', '?', '\"', '<', '>', '|' };
         private static readonly List<string> IgnoreCommandParts = new() { "", "%1", "%v" };
@@ -73,6 +75,24 @@ namespace ContextMenuManager.Methods
                             var arguments = arr[1];
                             filePath = ExtractFilePath(arguments);
                             if (filePath != null) return filePath;
+                        }
+                    }
+                }
+                else if (partCmd.StartsWith(PowerShellCommandPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    int idx = partCmd.IndexOf("-FilePath '", StringComparison.OrdinalIgnoreCase);
+                    if (idx != -1)
+                    {
+                        int start = idx + 11;
+                        int end = partCmd.IndexOf("'", start);
+                        if (end != -1)
+                        {
+                            var fileName = partCmd.Substring(start, end - start).Replace("''", "'");
+                            if (GetFullFilePath(fileName, out filePath))
+                            {
+                                FilePathDic.Add(command, filePath);
+                                return filePath;
+                            }
                         }
                     }
                 }

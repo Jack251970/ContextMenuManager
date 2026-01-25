@@ -29,14 +29,37 @@ namespace ContextMenuManager.Controls
 
         public static string GetCommand(string fileName, string arguments, string verb, int windowStyle, string directory = null)
         {
-            arguments = arguments.Replace("\"", "\"\"");
             if (directory == null)
             {
                 ObjectPath.GetFullFilePath(fileName, out var filePath);
                 directory = Path.GetDirectoryName(filePath);
             }
-            return "mshta vbscript:createobject(\"shell.application\").shellexecute" +
-                $"(\"{fileName}\",\"{arguments}\",\"{directory}\",\"{verb}\",{windowStyle})(close)";
+
+            if (Environment.OSVersion.Version.Major >= 10)
+            {
+                string winStyleStr;
+                switch (windowStyle)
+                {
+                    case 0: winStyleStr = "Hidden"; break;
+                    case 1: winStyleStr = "Normal"; break;
+                    case 2: winStyleStr = "Minimized"; break;
+                    case 3: winStyleStr = "Maximized"; break;
+                    default: winStyleStr = "Normal"; break;
+                }
+
+                string psFileName = "'" + fileName.Replace("'", "''") + "'";
+                string psDir = string.IsNullOrEmpty(directory) ? "$null" : "'" + directory.Replace("'", "''") + "'";
+                string psVerb = "'" + verb.Replace("'", "''") + "'";
+                string psArgs = "\\\"" + arguments.Replace("\"", "`\\\"") + "\\\"";
+
+                return $"powershell -WindowStyle Hidden -Command \"Start-Process -FilePath {psFileName} -ArgumentList {psArgs} -WorkingDirectory {psDir} -Verb {psVerb} -WindowStyle {winStyleStr}\"";
+            }
+            else
+            {
+                arguments = arguments.Replace("\"", "\"\"");
+                return "mshta vbscript:createobject(\"shell.application\").shellexecute" +
+                    $"(\"{fileName}\",\"{arguments}\",\"{directory}\",\"{verb}\",{windowStyle})(close)";
+            }
         }
 
         private sealed class ShellExecuteForm : RForm
