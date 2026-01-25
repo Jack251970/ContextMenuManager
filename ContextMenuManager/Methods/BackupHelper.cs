@@ -195,6 +195,26 @@ namespace ContextMenuManager.Methods
         private BackupMode backupMode;      // 目前备份模式
         private RestoreMode restoreMode;    // 目前恢复模式
 
+        private RegistryKey GetRegistryKeySafe(string regPath)
+        {
+            if (backup)
+            {
+                try
+                {
+                    RegistryEx.GetRootAndSubRegPath(regPath, out var root, out var keyPath);
+                    return root.OpenSubKey(keyPath, false);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return RegistryEx.GetRegistryKey(regPath);
+            }
+        }
+
         // 删除弃用版本的备份
         private void CheckDeprecatedBackup()
         {
@@ -349,29 +369,26 @@ namespace ContextMenuManager.Methods
 
         private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, bool currentItemData)
         {
-            foreach (var item in sceneRestoreList)
+            var item = GetItem(currentScene, keyName, itemType);
+            if (item != null)
             {
-                // 成功匹配到后的处理方式：KeyName和ItemType匹配后检查ItemVisible
-                if (item.KeyName == keyName && item.ItemType == itemType)
+                var itemData = false;
+                try
                 {
-                    var itemData = false;
-                    try
-                    {
-                        itemData = Convert.ToBoolean(item.ItemData);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                    if (itemData != currentItemData)
-                    {
-                        restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    itemData = Convert.ToBoolean(item.ItemData);
+                }
+                catch
+                {
+                    return false;
+                }
+                if (itemData != currentItemData)
+                {
+                    restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
             if ((restoreMode == RestoreMode.DisableNotOnList && currentItemData) ||
@@ -410,32 +427,29 @@ namespace ContextMenuManager.Methods
 
         private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, int currentItemData, out int restoreItemData)
         {
-            foreach (var item in sceneRestoreList)
+            var item = GetItem(currentScene, keyName, itemType);
+            if (item != null)
             {
-                // 成功匹配到后的处理方式：KeyName和ItemType匹配后检查itemData
-                if (item.KeyName == keyName && item.ItemType == itemType)
+                int itemData;
+                try
                 {
-                    int itemData;
-                    try
-                    {
-                        itemData = Convert.ToInt32(item.ItemData);
-                    }
-                    catch
-                    {
-                        restoreItemData = 0;
-                        return false;
-                    }
-                    if (itemData != currentItemData)
-                    {
-                        restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
-                        restoreItemData = itemData;
-                        return true;
-                    }
-                    else
-                    {
-                        restoreItemData = 0;
-                        return false;
-                    }
+                    itemData = Convert.ToInt32(item.ItemData);
+                }
+                catch
+                {
+                    restoreItemData = 0;
+                    return false;
+                }
+                if (itemData != currentItemData)
+                {
+                    restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
+                    restoreItemData = itemData;
+                    return true;
+                }
+                else
+                {
+                    restoreItemData = 0;
+                    return false;
                 }
             }
             restoreItemData = 0;
@@ -469,23 +483,20 @@ namespace ContextMenuManager.Methods
 
         private bool CheckItemNeedChange(string itemName, string keyName, BackupItemType itemType, string currentItemData, out string restoreItemData)
         {
-            foreach (var item in sceneRestoreList)
+            var item = GetItem(currentScene, keyName, itemType);
+            if (item != null)
             {
-                // 成功匹配到后的处理方式：KeyName和ItemType匹配后检查itemData
-                if (item.KeyName == keyName && item.ItemType == itemType)
+                var itemData = item.ItemData;
+                if (itemData != currentItemData)
                 {
-                    var itemData = item.ItemData;
-                    if (itemData != currentItemData)
-                    {
-                        restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
-                        restoreItemData = itemData;
-                        return true;
-                    }
-                    else
-                    {
-                        restoreItemData = "";
-                        return false;
-                    }
+                    restoreList.Add(new RestoreChangedItem(currentScene, itemName, itemData.ToString()));
+                    restoreItemData = itemData;
+                    return true;
+                }
+                else
+                {
+                    restoreItemData = "";
+                    return false;
                 }
             }
             restoreItemData = "";
@@ -653,7 +664,7 @@ namespace ContextMenuManager.Methods
                     break;
                 case Scenes.Library:
                     var AddedScenePathes = new string[] { MENUPATH_LIBRARY_BACKGROUND, MENUPATH_LIBRARY_USER };
-                    RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
+                    if (!backup) RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
                     for (var j = 0; j < AddedScenePathes.Length; j++)
                     {
                         scenePath = AddedScenePathes[j];
@@ -687,16 +698,16 @@ namespace ContextMenuManager.Methods
         private void GetBackupItems(string scenePath)
         {
             if (scenePath == null) return;
-            RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
+            if (!backup) RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
             GetBackupShellItems(GetShellPath(scenePath));
             GetBackupShellExItems(GetShellExPath(scenePath));
         }
 
         private void GetBackupShellItems(string shellPath)
         {
-            using var shellKey = RegistryEx.GetRegistryKey(shellPath);
+            using var shellKey = GetRegistryKeySafe(shellPath);
             if (shellKey == null) return;
-            RegTrustedInstaller.TakeRegTreeOwnerShip(shellKey.Name);
+            if (!backup) RegTrustedInstaller.TakeRegTreeOwnerShip(shellKey.Name);
             foreach (var keyName in shellKey.GetSubKeyNames())
             {
                 var regPath = $@"{shellPath}\{keyName}";
@@ -718,10 +729,10 @@ namespace ContextMenuManager.Methods
         private void GetBackupShellExItems(string shellExPath)
         {
             var names = new List<string>();
-            using var shellExKey = RegistryEx.GetRegistryKey(shellExPath);
+            using var shellExKey = GetRegistryKeySafe(shellExPath);
             if (shellExKey == null) return;
             var isDragDrop = currentScene == Scenes.DragDrop;
-            RegTrustedInstaller.TakeRegTreeOwnerShip(shellExKey.Name);
+            if (!backup) RegTrustedInstaller.TakeRegTreeOwnerShip(shellExKey.Name);
             var dic = ShellExItem.GetPathAndGuids(shellExPath, isDragDrop);
             FoldGroupItem groupItem = null;
             if (isDragDrop)
@@ -760,7 +771,7 @@ namespace ContextMenuManager.Methods
 
         private void GetBackupStoreItems()
         {
-            using var shellKey = RegistryEx.GetRegistryKey(ShellItem.CommandStorePath);
+            using var shellKey = GetRegistryKeySafe(ShellItem.CommandStorePath);
             foreach (var itemName in shellKey.GetSubKeyNames())
             {
                 if (AppConfig.HideSysStoreItems && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)) continue;
@@ -1025,7 +1036,7 @@ namespace ContextMenuManager.Methods
         private void GetIEItems()
         {
             var names = new List<string>();
-            using var ieKey = RegistryEx.GetRegistryKey(IEList.IEPath);
+            using var ieKey = GetRegistryKeySafe(IEList.IEPath);
             if (ieKey == null) return;
             foreach (var part in IEItem.MeParts)
             {
@@ -1435,6 +1446,9 @@ namespace ContextMenuManager.Methods
         // 备份列表/恢复列表缓存区
         private static List<BackupItem> backupRestoreList = new();
 
+        // 备份查找表
+        private static readonly Dictionary<string, BackupItem> backupLookup = new();
+
         // 单场景恢复列表暂存区
         public static List<BackupItem> sceneRestoreList = new();
 
@@ -1454,15 +1468,29 @@ namespace ContextMenuManager.Methods
             namespaces.Add(string.Empty, string.Empty);
         }
 
+        private static string GetLookupKey(Scenes scene, string keyName, BackupItemType type)
+        {
+            return $"{scene}|{keyName}|{type}";
+        }
+
+        public static BackupItem GetItem(Scenes scene, string keyName, BackupItemType type)
+        {
+            var key = GetLookupKey(scene, keyName, type);
+            return backupLookup.TryGetValue(key, out var item) ? item : null;
+        }
+
         public static void AddItem(string keyName, BackupItemType backupItemType, string itemData, Scenes scene)
         {
-            backupRestoreList.Add(new BackupItem
+            var item = new BackupItem
             {
                 KeyName = keyName,
                 ItemType = backupItemType,
                 ItemData = itemData,
                 BackupScene = scene,
-            });
+            };
+            backupRestoreList.Add(item);
+            var key = GetLookupKey(scene, keyName, backupItemType);
+            if (!backupLookup.ContainsKey(key)) backupLookup.Add(key, item);
         }
 
         public static void AddItem(string keyName, BackupItemType backupItemType, bool itemData, Scenes scene)
@@ -1483,6 +1511,7 @@ namespace ContextMenuManager.Methods
         public static void ClearBackupList()
         {
             backupRestoreList.Clear();
+            backupLookup.Clear();
         }
 
         public static void SaveBackupList(string filePath)
@@ -1517,6 +1546,12 @@ namespace ContextMenuManager.Methods
 
             // 获取BackupList对象
             backupRestoreList = myData.BackupList;
+            backupLookup.Clear();
+            foreach (var item in backupRestoreList)
+            {
+                var key = GetLookupKey(item.BackupScene, item.KeyName, item.ItemType);
+                if (!backupLookup.ContainsKey(key)) backupLookup.Add(key, item);
+            }
         }
 
         public static void LoadTempRestoreList(Scenes scene)
