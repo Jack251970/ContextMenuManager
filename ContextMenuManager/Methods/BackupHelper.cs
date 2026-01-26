@@ -1470,7 +1470,9 @@ namespace ContextMenuManager.Methods
 
         private static string GetLookupKey(Scenes scene, string keyName, BackupItemType type)
         {
-            return $"{scene}|{keyName}|{type}";
+            var normalizedKeyName = keyName ?? string.Empty;
+            var encodedKeyName = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(normalizedKeyName));
+            return $"{scene}|{encodedKeyName}|{type}";
         }
 
         public static BackupItem GetItem(Scenes scene, string keyName, BackupItemType type)
