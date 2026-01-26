@@ -50,7 +50,7 @@ namespace ContextMenuManager.Controls
                 string psFileName = "'" + fileName.Replace("'", "''") + "'";
                 string psDir = string.IsNullOrEmpty(directory) ? "$null" : "'" + directory.Replace("'", "''") + "'";
                 string psVerb = "'" + verb.Replace("'", "''") + "'";
-                string psArgs = "\\\"" + arguments.Replace("\"", "`\\\"") + "\\\"";
+                string psArgs = "'" + arguments.Replace("'", "''") + "'";
 
                 return $"powershell -WindowStyle Hidden -Command \"Start-Process -FilePath {psFileName} -ArgumentList {psArgs} -WorkingDirectory {psDir} -Verb {psVerb} -WindowStyle {winStyleStr}\"";
             }
