@@ -1488,9 +1488,22 @@ namespace ContextMenuManager.Methods
                 ItemData = itemData,
                 BackupScene = scene,
             };
-            backupRestoreList.Add(item);
             var key = GetLookupKey(scene, keyName, backupItemType);
-            if (!backupLookup.ContainsKey(key)) backupLookup.Add(key, item);
+            if (backupLookup.TryGetValue(key, out var existingItem))
+            {
+                // Replace the existing item in both the list and the lookup to keep them consistent.
+                int index = backupRestoreList.IndexOf(existingItem);
+                if (index >= 0)
+                {
+                    backupRestoreList[index] = item;
+                }
+                backupLookup[key] = item;
+            }
+            else
+            {
+                backupRestoreList.Add(item);
+                backupLookup.Add(key, item);
+            }
         }
 
         public static void AddItem(string keyName, BackupItemType backupItemType, bool itemData, Scenes scene)
