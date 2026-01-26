@@ -772,6 +772,7 @@ namespace ContextMenuManager.Methods
         private void GetBackupStoreItems()
         {
             using var shellKey = GetRegistryKeySafe(ShellItem.CommandStorePath);
+            if (shellKey == null) return;
             foreach (var itemName in shellKey.GetSubKeyNames())
             {
                 if (AppConfig.HideSysStoreItems && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)) continue;
