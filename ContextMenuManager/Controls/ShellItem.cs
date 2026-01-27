@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
@@ -36,6 +36,15 @@ namespace ContextMenuManager.Controls
         {
             InitializeComponents();
             RegPath = regPath;
+        }
+
+        public ShellItem(string regPath, string text, Image image, bool isMultiItem)
+        {
+            InitializeComponents();
+            this.regPath = regPath;
+            this.Text = text;
+            this.Image = image;
+            BtnSubItems.Visible = isMultiItem;
         }
 
         private string regPath;

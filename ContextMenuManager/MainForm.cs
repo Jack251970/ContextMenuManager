@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
@@ -57,6 +57,15 @@ namespace ContextMenuManager
             AddContextMenus();
             ResizeSideBar();
             JumpItem(0, 0);
+
+            shellList.ItemsLoaded += (sender, e) =>
+            {
+                if (currentListControl == shellList)
+                {
+                    SaveOriginalListItems();
+                    if (!string.IsNullOrEmpty(searchBox.Text)) FilterItems(searchBox.Text);
+                }
+            };
         }
 
         private readonly MyToolBarButton[] ToolBarButtons =

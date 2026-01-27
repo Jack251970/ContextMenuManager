@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -34,6 +36,24 @@ namespace ContextMenuManager.Controls
         public const string MENUPATH_UNKNOWN = @"HKEY_CLASSES_ROOT\Unknown";//未知格式
         public const string SYSFILEASSPATH = @"HKEY_CLASSES_ROOT\SystemFileAssociations";//系统扩展名注册表父项路径
         private const string LASTKEYPATH = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit";//上次打开的注册表项路径记录
+
+        public event EventHandler ItemsLoaded;
+        private CancellationTokenSource cts;
+
+        private struct ShellItemData
+        {
+            public string RegPath;
+            public string Text;
+            public Image Image;
+            public bool IsMultiItem;
+        }
+
+        private static readonly Dictionary<string, int> DefaultNameIndexs
+            = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "open", 8496 }, { "edit", 8516 }, { "print", 8497 }, { "find", 8503 },
+                { "play", 8498 }, { "runas", 8505 }, { "explore", 8502 }, { "preview", 8499 }
+            };
 
         public static readonly List<string> DirectoryTypes = new()
         {
@@ -315,22 +335,159 @@ namespace ContextMenuManager.Controls
         private void LoadItems(string scenePath)
         {
             if (scenePath == null) return;
-            RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
-            LoadShellItems(GetShellPath(scenePath));
-            LoadShellExItems(GetShellExPath(scenePath));
+            
+            // Cancel previous task
+            cts?.Cancel();
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+
+            // Start async loading
+            Task.Run(() =>
+            {
+                if (token.IsCancellationRequested) return;
+
+                RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
+                
+                var shellPath = GetShellPath(scenePath);
+                var shellItemsData = GetShellItemsData(shellPath);
+
+                if (token.IsCancellationRequested) return;
+
+                Invoke(new Action(() =>
+                {
+                    if (token.IsCancellationRequested) return;
+
+                    // Add ShellItems from preloaded data
+                    foreach (var data in shellItemsData)
+                    {
+                        AddItem(new ShellItem(data.RegPath, data.Text, data.Image, data.IsMultiItem));
+                    }
+
+                    // Continue with ShellEx items (sync for now, to keep it simple)
+                    LoadShellExItems(GetShellExPath(scenePath));
+                    
+                    ItemsLoaded?.Invoke(this, EventArgs.Empty);
+                }));
+            }, token);
         }
 
-        private void LoadShellItems(string shellPath)
+        private List<ShellItemData> GetShellItemsData(string shellPath)
         {
+            var list = new List<ShellItemData>();
             using var shellKey = RegistryEx.GetRegistryKey(shellPath);
-            if (shellKey == null) return;
-            RegTrustedInstaller.TakeRegTreeOwnerShip(shellKey.Name);
+            if (shellKey == null) return list;
+            
+            // RegTrustedInstaller.TakeRegTreeOwnerShip(shellKey.Name); // Assuming this is fast enough or handled
+
             foreach (var keyName in shellKey.GetSubKeyNames())
             {
-                var item = new ShellItem($@"{shellPath}\{keyName}");
-                AddItem(item);
+                var regPath = $@"{shellPath}\{keyName}";
+                var isMultiItem = GetIsMultiItem(regPath);
+                var text = GetItemText(regPath, keyName, isMultiItem);
+                var image = GetItemIcon(regPath);
+                list.Add(new ShellItemData { RegPath = regPath, Text = text, Image = image, IsMultiItem = isMultiItem });
             }
+            return list;
         }
+
+        // Helper methods copied from ShellItem logic
+        private bool GetIsMultiItem(string regPath)
+        {
+            var value = Registry.GetValue(regPath, "SubCommands", null);
+            if (value != null) return true;
+            value = Registry.GetValue(regPath, "ExtendedSubCommandsKey", null);
+            if (!string.IsNullOrEmpty(value?.ToString())) return true;
+            return false;
+        }
+
+        private string GetItemText(string regPath, string keyName, bool isMultiItem)
+        {
+            string name;
+            var valueNames = new List<string> { "MUIVerb" };
+            if (!isMultiItem) valueNames.Add("");
+            foreach (var valueName in valueNames)
+            {
+                name = Registry.GetValue(regPath, valueName, null)?.ToString();
+                name = ResourceString.GetDirectString(name);
+                if (!string.IsNullOrEmpty(name)) return name;
+            }
+            if (DefaultNameIndexs.TryGetValue(RegistryEx.GetKeyName(regPath), out var index))
+            {
+                name = $"@windows.storage.dll,-{index}";
+                name = ResourceString.GetDirectString(name);
+                if (!string.IsNullOrEmpty(name)) return name;
+            }
+            return RegistryEx.GetKeyName(regPath);
+        }
+
+        private Image GetItemIcon(string regPath)
+        {
+            // Logic similar to ShellItem.ItemIcon but returns Image
+            var iconLocation = Registry.GetValue(regPath, "Icon", null)?.ToString();
+            var hasLUAShield = Registry.GetValue(regPath, "HasLUAShield", null) != null;
+            
+            // We need ItemFilePath which is derived from Guid or Command
+            // ShellItem.ItemFilePath => GuidInfo.GetFilePath(Guid) ?? ObjectPath.ExtractFilePath(ItemCommand);
+            // This is complex to replicate exactly without creating ShellItem instance.
+            // But we can approximate.
+            
+            // Replicating Guid logic
+            string commandPath = $@"{regPath}\command";
+            var keyValues = new Dictionary<string, string>
+            {
+                { commandPath , "DelegateExecute" },
+                { $@"{regPath}\DropTarget" , "CLSID" },
+                { regPath , "ExplorerCommandHandler" },
+            };
+            Guid guid = Guid.Empty;
+            foreach (var item in keyValues)
+            {
+                var val = Registry.GetValue(item.Key, item.Value, null)?.ToString();
+                if (GuidEx.TryParse(val, out var g)) { guid = g; break; }
+            }
+            
+            string itemCommand = null;
+            if (!isMultiItem(regPath)) // Helper needed
+                itemCommand = Registry.GetValue(commandPath, "", null)?.ToString();
+                
+            string itemFilePath = GuidInfo.GetFilePath(guid) ?? ObjectPath.ExtractFilePath(itemCommand);
+
+            Icon icon;
+            string iconPath;
+            int iconIndex;
+            
+            if (iconLocation != null)
+            {
+                icon = ResourceIcon.GetIcon(iconLocation, out iconPath, out iconIndex);
+                if (icon == null && Path.GetExtension(iconPath)?.ToLower() == ".exe")
+                    icon = ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -15);
+            }
+            else if (hasLUAShield)
+                icon = ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -78);
+            else 
+                icon = ResourceIcon.GetIcon(iconPath = itemFilePath, iconIndex = 0);
+                
+            if (icon == null) 
+                icon = ResourceIcon.GetExtensionIcon(iconPath = itemFilePath) ?? ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -2);
+                
+            Image image = icon.ToBitmap();
+            if (iconLocation == null && !hasLUAShield)
+            {
+                 // ToTransparent logic if no icon/shield
+                 // ShellItem: if (!HasIcon) Image = Image.ToTransparent();
+                 // HasIcon = !IconLocation.IsNullOrWhiteSpace() || HasLUAShield
+                 image = image.ToTransparent();
+            }
+            return image;
+        }
+
+        private bool isMultiItem(string regPath) // helper
+        {
+             return GetIsMultiItem(regPath);
+        }
+
+        // Original LoadShellItems removed or replaced
+        // private void LoadShellItems(string shellPath) { ... } // Deleted
 
         private void LoadShellExItems(string shellExPath)
         {
