@@ -479,7 +479,7 @@ namespace ContextMenuManager.Controls
             return image;
         }
 
-        private bool isMultiItem(string regPath) // helper
+        private bool IsMultiItem(string regPath) // helper
         {
              return GetIsMultiItem(regPath);
         }
