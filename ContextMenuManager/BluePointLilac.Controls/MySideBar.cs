@@ -123,7 +123,11 @@ namespace BluePointLilac.Controls
         public void SmoothScrollTo(int idx) { if (idx >= 0 && idx < ItemNames?.Length) SelectedIndex = idx; }
         public int GetItemWidth(string str) => TextRenderer.MeasureText(str, Font).Width + 2 * HorizontalSpace;
         public void BeginUpdate() => SuspendLayout();
-        public void EndUpdate() { ResumeLayout(true); UpdateBackground(); }
+        public void EndUpdate()
+        {
+            ResumeLayout(true);
+            UpdateBackground();
+        }
 
         private void UpdateBackground()
         {
