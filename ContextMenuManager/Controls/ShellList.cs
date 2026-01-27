@@ -454,22 +454,20 @@ namespace ContextMenuManager.Controls
 
             Icon icon;
             string iconPath;
-            int iconIndex;
-            
+
             if (iconLocation != null)
             {
-                icon = ResourceIcon.GetIcon(iconLocation, out iconPath, out iconIndex);
+                icon = ResourceIcon.GetIcon(iconLocation, out iconPath, out _);
                 if (icon == null && Path.GetExtension(iconPath)?.ToLower() == ".exe")
-                    icon = ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -15);
+                    icon = ResourceIcon.GetIcon("imageres.dll", -15);
             }
             else if (hasLUAShield)
-                icon = ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -78);
-            else 
-                icon = ResourceIcon.GetIcon(iconPath = itemFilePath, iconIndex = 0);
-                
-            if (icon == null) 
-                icon = ResourceIcon.GetExtensionIcon(itemFilePath) ?? ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -2);
-                
+                icon = ResourceIcon.GetIcon("imageres.dll", -78);
+            else
+                icon = ResourceIcon.GetIcon(itemFilePath, 0);
+
+            if (icon == null)
+                icon = ResourceIcon.GetExtensionIcon(itemFilePath) ?? ResourceIcon.GetIcon("imageres.dll", -2);
             Image image = icon.ToBitmap();
             if (iconLocation == null && !hasLUAShield)
             {
