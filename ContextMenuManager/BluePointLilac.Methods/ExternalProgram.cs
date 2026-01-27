@@ -37,7 +37,7 @@ namespace BluePointLilac.Methods
                 process.WaitForInputIdle();
                 
                 // 等待主窗口句柄可用，最多等待5秒
-                int retries = 50;
+                int retries = MAX_WINDOW_WAIT_RETRIES;
                 while (retries-- > 0)
                 {
                     process.Refresh();
@@ -55,7 +55,7 @@ namespace BluePointLilac.Methods
             // 等待树视图和列表视图控件就绪，最多等待5秒
             IntPtr hTree = IntPtr.Zero;
             IntPtr hList = IntPtr.Zero;
-            int retries2 = 50;
+            int retries2 = MAX_CHILD_WINDOW_WAIT_RETRIES;
             while (retries2-- > 0)
             {
                 hTree = FindWindowEx(hMain, IntPtr.Zero, "SysTreeView32", null);
@@ -318,6 +318,8 @@ namespace BluePointLilac.Methods
         private const int WM_CHAR = 0x102;
         private const int VK_HOME = 0x24;
         private const int VK_RIGHT = 0x27;
+        private const int MAX_WINDOW_WAIT_RETRIES = 50; // 等待主窗口最多5秒 (50 * 100ms)
+        private const int MAX_CHILD_WINDOW_WAIT_RETRIES = 50; // 等待子窗口最多5秒 (50 * 100ms)
 
         [DllImport("user32.dll")]
         private static extern bool ShowWindowAsync(IntPtr hWnd, int cmdShow);
