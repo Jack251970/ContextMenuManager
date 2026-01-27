@@ -468,7 +468,7 @@ namespace ContextMenuManager.Controls
                 icon = ResourceIcon.GetIcon(iconPath = itemFilePath, iconIndex = 0);
                 
             if (icon == null) 
-                icon = ResourceIcon.GetExtensionIcon(iconPath = itemFilePath) ?? ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -2);
+                icon = ResourceIcon.GetExtensionIcon(itemFilePath) ?? ResourceIcon.GetIcon(iconPath = "imageres.dll", iconIndex = -2);
                 
             Image image = icon.ToBitmap();
             if (iconLocation == null && !hasLUAShield)
