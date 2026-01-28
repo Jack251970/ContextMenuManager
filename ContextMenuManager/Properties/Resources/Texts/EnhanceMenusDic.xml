@@ -964,6 +964,33 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
   </Group>
 
   <Group>
+    <Text Value='lnk文件'/>
+    <Text Value='lnk File'>
+      <Culture>en-US</Culture>
+    </Text>
+    <Icon>imageres.dll,-154</Icon>
+    <RegPath>HKEY_CLASSES_ROOT\lnkfile</RegPath>
+    <Shell>
+      <Item KeyName='Windows.PermanentDelete'>
+        <!-- This entry is ONLY for Windows 10 (< 10.0.22000) -->
+        <!-- Windows 11 doesn't need this workaround as AllFilesystemObjects works correctly there -->
+        <OSVersion Compare="&gt;=">6.2</OSVersion>
+        <OSVersion Compare="&lt;">10.0.22000</OSVersion>
+        <Tip Value='修复Win10下永久删除快捷方式时&#x000A;出现"没有注册接口"错误的问题'/>
+        <Tip Value='Fix "Interface not registered" error&#x000A;when permanently deleting shortcuts on Win10'>
+          <Culture>en-US</Culture>
+        </Tip>
+        <Value>
+          <!--永久删除-->
+          <!-- Uses same handler as AllFilesystemObjects but specifically for lnkfile class -->
+          <REG_SZ MUIVerb='@shell32.dll,-37394' Icon='shell32.dll,-240' Position='bottom' CommandStateSync=''
+                  ExplorerCommandHandler='{E9571AB2-AD92-4ec6-8924-4E5AD33790F5}'/>
+        </Value>
+      </Item>
+    </Shell>
+  </Group>
+
+  <Group>
     <Text Value='此电脑'/>
     <Text Value='This PC'>
       <Culture>en-US</Culture>
