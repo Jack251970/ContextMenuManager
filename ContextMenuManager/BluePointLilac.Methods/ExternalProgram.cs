@@ -23,86 +23,92 @@ namespace BluePointLilac.Methods
             //再使用Process.Start("regedit.exe", "-m")打开注册表编辑器
             //优点：代码少、不会有Bug。缺点：不能定位具体键，没有逐步展开效果
             if (regPath == null) return;
-            Process process;
-            var hMain = FindWindow("RegEdit_RegEdit", null);
-            if (hMain != IntPtr.Zero && !moreOpen)
+            Process process = null;
+            try
             {
-                GetWindowThreadProcessId(hMain, out var id);
-                process = Process.GetProcessById(id);
-            }
-            else
-            {
-                //注册表编辑器窗口多开
-                process = Process.Start("regedit.exe", "-m");
-                process.WaitForInputIdle();
-                
-                // 等待主窗口句柄可用，最多等待5秒
-                int retries = MAX_WINDOW_WAIT_RETRIES;
-                while (retries-- > 0)
+                var hMain = FindWindow("RegEdit_RegEdit", null);
+                if (hMain != IntPtr.Zero && !moreOpen)
                 {
-                    process.Refresh();
-                    hMain = process.MainWindowHandle;
-                    if (hMain != IntPtr.Zero) break;
-                    Thread.Sleep(100);
-                }
-                
-                if (hMain == IntPtr.Zero) return;
-            }
-
-            ShowWindowAsync(hMain, SW_SHOWNORMAL);
-            SetForegroundWindow(hMain);
-            
-            // 等待树视图和列表视图控件就绪，最多等待5秒
-            IntPtr hTree = IntPtr.Zero;
-            IntPtr hList = IntPtr.Zero;
-            int retries2 = MAX_CHILD_WINDOW_WAIT_RETRIES;
-            while (retries2-- > 0)
-            {
-                hTree = FindWindowEx(hMain, IntPtr.Zero, "SysTreeView32", null);
-                hList = FindWindowEx(hMain, IntPtr.Zero, "SysListView32", null);
-                if (hTree != IntPtr.Zero && hList != IntPtr.Zero) break;
-                Thread.Sleep(100);
-            }
-            
-            if (hTree == IntPtr.Zero || hList == IntPtr.Zero) return;
-
-            SetForegroundWindow(hTree);
-            SetFocus(hTree);
-            process.WaitForInputIdle();
-            SendMessage(hTree, WM_KEYDOWN, VK_HOME, null);
-            Thread.Sleep(100);
-            process.WaitForInputIdle();
-            SendMessage(hTree, WM_KEYDOWN, VK_RIGHT, null);
-            foreach (char chr in Encoding.Default.GetBytes(regPath))
-            {
-                process.WaitForInputIdle();
-                if (chr == '\\')
-                {
-                    Thread.Sleep(100);
-                    SendMessage(hTree, WM_KEYDOWN, VK_RIGHT, null);
+                    GetWindowThreadProcessId(hMain, out var id);
+                    process = Process.GetProcessById(id);
                 }
                 else
                 {
-                    SendMessage(hTree, WM_CHAR, Convert.ToInt16(chr), null);
+                    //注册表编辑器窗口多开
+                    process = Process.Start("regedit.exe", "-m");
+                    process.WaitForInputIdle();
+
+                    // 等待主窗口句柄可用，最多等待5秒
+                    int retries = MAX_WINDOW_WAIT_RETRIES;
+                    while (retries-- > 0)
+                    {
+                        process.Refresh();
+                        hMain = process.MainWindowHandle;
+                        if (hMain != IntPtr.Zero) break;
+                        Thread.Sleep(100);
+                    }
+
+                    if (hMain == IntPtr.Zero) return;
+                }
+
+                ShowWindowAsync(hMain, SW_SHOWNORMAL);
+                SetForegroundWindow(hMain);
+
+                // 等待树视图和列表视图控件就绪，最多等待5秒
+                IntPtr hTree = IntPtr.Zero;
+                IntPtr hList = IntPtr.Zero;
+                int retries2 = MAX_CHILD_WINDOW_WAIT_RETRIES;
+                while (retries2-- > 0)
+                {
+                    hTree = FindWindowEx(hMain, IntPtr.Zero, "SysTreeView32", null);
+                    hList = FindWindowEx(hMain, IntPtr.Zero, "SysListView32", null);
+                    if (hTree != IntPtr.Zero && hList != IntPtr.Zero) break;
+                    Thread.Sleep(100);
+                }
+
+                if (hTree == IntPtr.Zero || hList == IntPtr.Zero) return;
+
+                SetForegroundWindow(hTree);
+                SetFocus(hTree);
+                process.WaitForInputIdle();
+                SendMessage(hTree, WM_KEYDOWN, VK_HOME, null);
+                Thread.Sleep(100);
+                process.WaitForInputIdle();
+                SendMessage(hTree, WM_KEYDOWN, VK_RIGHT, null);
+                foreach (char chr in Encoding.Default.GetBytes(regPath))
+                {
+                    process.WaitForInputIdle();
+                    if (chr == '\\')
+                    {
+                        Thread.Sleep(100);
+                        SendMessage(hTree, WM_KEYDOWN, VK_RIGHT, null);
+                    }
+                    else
+                    {
+                        SendMessage(hTree, WM_CHAR, Convert.ToInt16(chr), null);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(valueName)) return;
+                using (var key = RegistryEx.GetRegistryKey(regPath))
+                {
+                    if (key?.GetValue(valueName) == null) return;
+                }
+                Thread.Sleep(100);
+                SetForegroundWindow(hList);
+                SetFocus(hList);
+                process.WaitForInputIdle();
+                SendMessage(hList, WM_KEYDOWN, VK_HOME, null);
+                foreach (char chr in Encoding.Default.GetBytes(valueName))
+                {
+                    process.WaitForInputIdle();
+                    SendMessage(hList, WM_CHAR, Convert.ToInt16(chr), null);
                 }
             }
-
-            if (string.IsNullOrEmpty(valueName)) return;
-            using (var key = RegistryEx.GetRegistryKey(regPath))
+            finally
             {
-                if (key?.GetValue(valueName) == null) return;
+                process?.Dispose();
             }
-            Thread.Sleep(100);
-            SetForegroundWindow(hList);
-            SetFocus(hList);
-            process.WaitForInputIdle();
-            SendMessage(hList, WM_KEYDOWN, VK_HOME, null);
-            foreach (char chr in Encoding.Default.GetBytes(valueName))
-            {
-                process.WaitForInputIdle();
-                SendMessage(hList, WM_CHAR, Convert.ToInt16(chr), null);
-            }
-            process.Dispose();
         }
 
         /// <summary>在Explorer中选中指定文件或文件夹</summary>
