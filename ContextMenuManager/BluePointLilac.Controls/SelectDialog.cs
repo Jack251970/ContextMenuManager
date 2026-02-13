@@ -127,8 +127,7 @@ namespace BluePointLilac.Controls
                 var a = 20.DpiZoom();
                 cmbItems.Left = a;
                 cmbItems.Top = btnOK.Top = btnCancel.Top = a;
-                // Initial layout will be adjusted after items are added
-                AdjustLayout();
+                // Layout will be adjusted when items are added via the Items property setter
             }
 
             private void AdjustLayout()
