@@ -69,6 +69,8 @@ namespace BluePointLilac.Controls
                 {
                     cmbItems.Items.Clear();
                     cmbItems.Items.AddRange(value);
+                    // Recalculate layout after items are added to accommodate auto-sized combobox
+                    AdjustLayout();
                 }
             }
 
@@ -124,8 +126,15 @@ namespace BluePointLilac.Controls
                 Controls.AddRange(new Control[] { cmbItems, btnOK, btnCancel });
                 var a = 20.DpiZoom();
                 cmbItems.Left = a;
-                cmbItems.Width = 85.DpiZoom();
                 cmbItems.Top = btnOK.Top = btnCancel.Top = a;
+                // Initial layout will be adjusted after items are added
+                AdjustLayout();
+            }
+
+            private void AdjustLayout()
+            {
+                var a = 20.DpiZoom();
+                // Position buttons after combobox (which may have auto-adjusted its width)
                 btnOK.Left = cmbItems.Right + a;
                 btnCancel.Left = btnOK.Right + a;
                 ClientSize = new Size(btnCancel.Right + a, btnCancel.Bottom + a);
