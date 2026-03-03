@@ -99,7 +99,7 @@ namespace ContextMenuManager.Methods
                                             KeyName = keyName,
                                             DefaultValue = defaultValue,
                                             MaxValue = maxValue,
-                                            MinValue = maxValue
+                                            MinValue = minValue
                                         };
                                         ruleItem = new NumberIniRuleItem(rule, info);
                                         var itemName = ruleItem.Text;
