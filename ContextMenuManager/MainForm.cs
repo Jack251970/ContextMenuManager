@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Controls;
+using BluePointLilac.Controls;
 using BluePointLilac.Methods;
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
@@ -173,7 +173,7 @@ namespace ContextMenuManager
             aboutActions[1] = () => { languagesBox.LoadLanguages(); languagesBox.Visible = true; };
             aboutActions[2] = () => { backupListBox.LoadItems(); backupListBox.Visible = true; };
             aboutActions[3] = () => { dictionariesBox.LoadText(); dictionariesBox.Visible = true; };
-            aboutActions[4] = () => { aboutMeBox.LoadAboutInfo(); aboutMeBox.Visible = true; };
+            aboutActions[4] = () => { aboutMeBox.LoadIni(AppString.Other.AboutApp); aboutMeBox.Visible = true; };
             aboutActions[5] = () => donateBox.Visible = true;
 
             HoveredToShowItemPath();
