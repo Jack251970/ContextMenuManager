@@ -41,7 +41,7 @@ namespace ContextMenuManager
         private readonly AppSettingBox appSettingBox = new();
         private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
-        private readonly AboutAppBox aboutMeBox = new();
+        private readonly ReadOnlyRichTextBox aboutMeBox = new();
         private readonly DonateBox donateBox = new();
         private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
@@ -377,6 +377,28 @@ namespace ContextMenuManager
 
         private void SwitchAboutItem()
         {
+            switch (SideBar.SelectedIndex)
+            {
+                case 0:
+                    appSettingBox.LoadItems(); appSettingBox.Visible = true;
+                    break;
+                case 1:
+                    languagesBox.LoadLanguages(); languagesBox.Visible = true;
+                    break;
+                case 2:
+                    backupListBox.LoadItems(); backupListBox.Visible = true;
+                    break;
+                case 3:
+                    dictionariesBox.LoadText(); dictionariesBox.Visible = true;
+                    break;
+                case 4:
+                    if (aboutMeBox.TextLength == 0) aboutMeBox.LoadIni(AppString.Other.AboutApp);
+                    aboutMeBox.Visible = true;
+                    break;
+                case 5:
+                    donateBox.Visible = true;
+                    break;
+            }
             currentListControl = null;
             if (SideBar.SelectedIndex is >= 0 and <= 5)
                 aboutActions[SideBar.SelectedIndex]();
