@@ -9,9 +9,8 @@ namespace BluePointLilac.Controls
 {
     public sealed class MyToolBar : Panel
     {
-        // 提高不透明度值，使白色背景更加明显
-        public const float SelctedOpacity = 0.8F;
-        public const float HoveredOpacity = 0.4F;
+        public const float SelctedOpacity = 1.0F;
+        public const float HoveredOpacity = 0.6F;
         public const float UnSelctedOpacity = 0;
 
         private readonly FlowLayoutPanel buttonContainer;
@@ -25,7 +24,6 @@ namespace BluePointLilac.Controls
             BackColor = DarkModeHelper.TitleArea;
             ForeColor = DarkModeHelper.FormFore;
 
-            // 创建按钮容器（左侧）
             buttonContainer = new FlowLayoutPanel
             {
                 Dock = DockStyle.Left,
@@ -36,7 +34,6 @@ namespace BluePointLilac.Controls
                 BackColor = Color.Transparent
             };
 
-            // 创建搜索框容器（右侧）
             searchBoxContainer = new Panel
             {
                 Dock = DockStyle.Right,
@@ -48,7 +45,6 @@ namespace BluePointLilac.Controls
             Controls.Add(buttonContainer);
             Controls.Add(searchBoxContainer);
 
-            // 监听主题变化
             DarkModeHelper.ThemeChanged += OnThemeChanged;
         }
 
@@ -61,16 +57,18 @@ namespace BluePointLilac.Controls
                 if (selectedButton == value) return;
                 if (selectedButton != null)
                 {
-                    selectedButton.Opacity = UnSelctedOpacity; // 动画过渡到未选中状态
+                    selectedButton.Opacity = UnSelctedOpacity;
                     selectedButton.Cursor = Cursors.Hand;
-                    selectedButton.UpdateTextColor(); // 更新文字颜色
+                    selectedButton.UpdateTextColor();
+                    selectedButton.IsSelected = false;
                 }
                 selectedButton = value;
                 if (selectedButton != null)
                 {
-                    selectedButton.Opacity = SelctedOpacity; // 动画过渡到选中状态
+                    selectedButton.Opacity = SelctedOpacity;
                     selectedButton.Cursor = Cursors.Default;
-                    selectedButton.UpdateTextColor(); // 更新文字颜色
+                    selectedButton.UpdateTextColor();
+                    selectedButton.IsSelected = true;
                 }
                 SelectedButtonChanged?.Invoke(this, null);
             }
@@ -85,7 +83,6 @@ namespace BluePointLilac.Controls
                    null : (MyToolBarButton)buttonContainer.Controls[value];
         }
 
-        // 添加一个方法来获取所有按钮（用于兼容旧代码）
         public Control.ControlCollection ButtonControls => buttonContainer.Controls;
 
         public void AddButton(MyToolBarButton button)
@@ -104,8 +101,9 @@ namespace BluePointLilac.Controls
             {
                 if (button != SelectedButton)
                 {
-                    button.Opacity = HoveredOpacity; // 动画过渡到悬停状态
-                    button.UpdateTextColor(); // 更新文字颜色
+                    button.Opacity = HoveredOpacity;
+                    button.UpdateTextColor();
+                    button.IsHovered = true;
                 }
             };
 
@@ -113,8 +111,9 @@ namespace BluePointLilac.Controls
             {
                 if (button != SelectedButton)
                 {
-                    button.Opacity = UnSelctedOpacity; // 动画过渡到未选中状态
-                    button.UpdateTextColor(); // 更新文字颜色
+                    button.Opacity = UnSelctedOpacity;
+                    button.UpdateTextColor();
+                    button.IsHovered = false;
                 }
             };
 
@@ -128,13 +127,10 @@ namespace BluePointLilac.Controls
             Array.ForEach(buttons, button => { button.Width = maxWidth; AddButton(button); });
         }
 
-        // 添加搜索框到工具栏右侧
         public void AddSearchBox(SearchBox searchBox)
         {
-            // 清除现有搜索框
             searchBoxContainer.Controls.Clear();
 
-            // 设置搜索框
             searchBox.Parent = searchBoxContainer;
             searchBox.Width = searchBoxContainer.Width - 40.DpiZoom();
             searchBox.Height = 36.DpiZoom();
@@ -146,13 +142,11 @@ namespace BluePointLilac.Controls
         {
             base.OnResize(e);
 
-            // 调整搜索框容器的宽度
             if (searchBoxContainer != null)
             {
                 searchBoxContainer.Width = 240.DpiZoom();
                 searchBoxContainer.Height = Height;
 
-                // 确保搜索框在容器中垂直居中
                 var searchBox = searchBoxContainer.Controls.OfType<SearchBox>().FirstOrDefault();
                 if (searchBox != null)
                 {
@@ -167,30 +161,28 @@ namespace BluePointLilac.Controls
             base.OnPaintBackground(e);
 
             var rect = ClientRectangle;
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            // 使用DarkModeHelper中的颜色
             var color1 = DarkModeHelper.ToolBarGradientTop;
             var color2 = DarkModeHelper.ToolBarGradientMiddle;
             var color3 = DarkModeHelper.ToolBarGradientBottom;
 
-            // 创建三色渐变
-            using var brush = new LinearGradientBrush(
-                rect, Color.Empty, Color.Empty, LinearGradientMode.Vertical);
-            // 使用ColorBlend创建三色渐变
+            using var brush = new LinearGradientBrush(rect, Color.Empty, Color.Empty, LinearGradientMode.Vertical);
             var colorBlend = new ColorBlend(3);
             colorBlend.Colors = new Color[] { color1, color2, color3 };
             colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
             brush.InterpolationColors = colorBlend;
 
-            e.Graphics.FillRectangle(brush, rect);
+            g.FillRectangle(brush, rect);
+
+            using var borderPen = new Pen(DarkModeHelper.IsDarkTheme ?
+                Color.FromArgb(60, 60, 60) : Color.FromArgb(220, 220, 220), 1);
+            g.DrawLine(borderPen, 0, rect.Bottom - 1, rect.Right, rect.Bottom - 1);
         }
 
-        // 重写Controls属性以保持向后兼容（注意：这可能会影响一些代码）
-        public new Control.ControlCollection Controls =>
-            // 返回包含所有子控件的集合
-            base.Controls;
+        public new Control.ControlCollection Controls => base.Controls;
 
-        // 主题变化事件处理
         private void OnThemeChanged(object sender, EventArgs e)
         {
             BackColor = DarkModeHelper.TitleArea;
@@ -212,9 +204,43 @@ namespace BluePointLilac.Controls
     {
         private float targetOpacity;
         private float currentOpacity;
+        private float currentScale = 1.0f;
+        private float targetScale = 1.0f;
         private readonly Timer animationTimer = new() { Interval = 16 };
-        private const float AnimationSpeed = 0.15f;
-        private readonly int borderRadius = 10; // 圆角半径
+        private const float AnimationSpeed = 0.12f;
+        private const float ScaleAnimationSpeed = 0.15f;
+        private readonly int borderRadius = 12;
+
+        private bool isSelected = false;
+        private bool isHovered = false;
+
+        public bool IsSelected
+        {
+            get => isSelected;
+            set
+            {
+                if (isSelected != value)
+                {
+                    isSelected = value;
+                    targetScale = value ? 1.02f : 1.0f;
+                    if (!animationTimer.Enabled) animationTimer.Start();
+                }
+            }
+        }
+
+        public bool IsHovered
+        {
+            get => isHovered;
+            set
+            {
+                if (isHovered != value && !isSelected)
+                {
+                    isHovered = value;
+                    targetScale = value ? 1.01f : 1.0f;
+                    if (!animationTimer.Enabled) animationTimer.Start();
+                }
+            }
+        }
 
         public MyToolBarButton(Image image, string text)
         {
@@ -225,16 +251,16 @@ namespace BluePointLilac.Controls
             Cursor = Cursors.Hand;
             Size = new Size(72, 72).DpiZoom();
 
-            // 启用透明背景
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             SetStyle(ControlStyles.Opaque, false);
+            SetStyle(ControlStyles.ResizeRedraw, true);
 
             animationTimer.Tick += (s, e) => UpdateAnimation();
 
             Controls.AddRange(new Control[] { picImage, lblText });
             lblText.Resize += (sender, e) => OnResize(null);
-            picImage.Top = 6.DpiZoom();
-            lblText.Top = 52.DpiZoom();
+            picImage.Top = 8.DpiZoom();
+            lblText.Top = 50.DpiZoom();
             lblText.SetEnabled(false);
             Image = image;
             Text = text;
@@ -244,7 +270,7 @@ namespace BluePointLilac.Controls
         private readonly PictureBox picImage = new()
         {
             SizeMode = PictureBoxSizeMode.StretchImage,
-            Size = new Size(40, 40).DpiZoom(),
+            Size = new Size(36, 36).DpiZoom(),
             BackColor = Color.Transparent,
             Enabled = false
         };
@@ -253,7 +279,7 @@ namespace BluePointLilac.Controls
         {
             ForeColor = DarkModeHelper.FormFore,
             BackColor = Color.Transparent,
-            Font = SystemFonts.MenuFont,
+            Font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point),
             AutoSize = true,
             Anchor = AnchorStyles.Left | AnchorStyles.Right
         };
@@ -271,7 +297,7 @@ namespace BluePointLilac.Controls
         }
 
         public bool CanBeSelected = true;
-        private readonly float opacity;
+
         public float Opacity
         {
             get => currentOpacity;
@@ -284,40 +310,61 @@ namespace BluePointLilac.Controls
             }
         }
 
-        // 重写OnPaint方法以实现圆角效果
         protected override void OnPaint(PaintEventArgs e)
         {
-            // 调用基类绘制以确保子控件正确显示
             base.OnPaint(e);
 
-            // 创建圆角矩形路径
-            using var path = DarkModeHelper.CreateRoundedRectanglePath(ClientRectangle, borderRadius);
-            // 根据当前模式选择颜色
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
             var isDarkMode = DarkModeHelper.IsDarkTheme;
+            var mainColor = DarkModeHelper.MainColor;
 
-            // 深色模式使用白色，浅色模式使用黑色
-            var baseColor = isDarkMode ? Color.White : Color.Black;
+            var padding = 4;
+            var drawRect = new Rectangle(
+                padding,
+                padding,
+                Width - padding * 2,
+                Height - padding * 2);
 
-            // 减少两种模式的不透明度
-            var opacityFactor = isDarkMode ? 0.4f : 0.6f; // 深色模式减少更多（0.4），浅色模式减少较少（0.6）
-            var alpha = (int)(currentOpacity * 255 * opacityFactor);
-            alpha = Math.Max(0, Math.Min(255, alpha)); // 确保alpha值在有效范围内
+            using var path = DarkModeHelper.CreateRoundedRectanglePath(drawRect, borderRadius);
 
-            var fillColor = Color.FromArgb(alpha, baseColor);
+            if (currentOpacity > 0.01f)
+            {
+                var baseColor = isDarkMode ? Color.White : mainColor;
+                var opacityFactor = isDarkMode ? 0.35f : 0.5f;
+                var alpha = (int)(currentOpacity * 255 * opacityFactor);
+                alpha = Math.Max(0, Math.Min(255, alpha));
+                var fillColor = Color.FromArgb(alpha, baseColor);
 
-            // 使用计算出的颜色填充圆角矩形
-            using var brush = new SolidBrush(fillColor);
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.FillPath(brush, path);
+                using var brush = new SolidBrush(fillColor);
+                g.FillPath(brush, path);
+
+                if (isSelected && currentOpacity > 0.5f)
+                {
+                    var glowAlpha = (int)(currentOpacity * 60);
+                    var glowColor = Color.FromArgb(glowAlpha, mainColor);
+                    using var glowPath = DarkModeHelper.CreateRoundedRectanglePath(
+                        new Rectangle(drawRect.X - 2, drawRect.Y - 2, drawRect.Width + 4, drawRect.Height + 4),
+                        borderRadius + 2);
+                    using var glowPen = new Pen(glowColor, 2);
+                    g.DrawPath(glowPen, glowPath);
+                }
+
+                var borderColor = isSelected ?
+                    Color.FromArgb(180, mainColor) :
+                    Color.FromArgb(100, isDarkMode ? Color.White : mainColor);
+                using var borderPen = new Pen(borderColor, 1);
+                g.DrawPath(borderPen, path);
+            }
         }
 
-        // 更新文字颜色的方法
         public void UpdateTextColor()
         {
             var isDarkMode = DarkModeHelper.IsDarkTheme;
 
-            // 浅色模式下，当按钮被选中或悬停时，文字颜色改为白色
-            if (!isDarkMode && currentOpacity > 0.1f)
+            if (!isDarkMode && currentOpacity > 0.3f)
             {
                 lblText.ForeColor = Color.White;
             }
@@ -329,21 +376,39 @@ namespace BluePointLilac.Controls
 
         private void UpdateAnimation()
         {
-            currentOpacity += (targetOpacity - currentOpacity) * AnimationSpeed;
-            var difference = Math.Abs(currentOpacity - targetOpacity);
+            var needsUpdate = false;
 
-            if (difference < 0.01f)
+            var opacityDiff = targetOpacity - currentOpacity;
+            if (Math.Abs(opacityDiff) > 0.001f)
+            {
+                currentOpacity += opacityDiff * AnimationSpeed;
+                needsUpdate = true;
+            }
+            else
             {
                 currentOpacity = targetOpacity;
-                animationTimer.Stop();
             }
 
-            // 更新文字颜色
+            var scaleDiff = targetScale - currentScale;
+            if (Math.Abs(scaleDiff) > 0.001f)
+            {
+                currentScale += scaleDiff * ScaleAnimationSpeed;
+                needsUpdate = true;
+            }
+            else
+            {
+                currentScale = targetScale;
+            }
+
             UpdateTextColor();
 
-            // 强制重绘
-            this.Invalidate();
-            this.Update();
+            Invalidate();
+            Update();
+
+            if (!needsUpdate)
+            {
+                animationTimer.Stop();
+            }
         }
 
         protected override void OnResize(EventArgs e)
@@ -351,16 +416,15 @@ namespace BluePointLilac.Controls
             base.OnResize(e);
             lblText.Left = (Width - lblText.Width) / 2;
             picImage.Left = (Width - picImage.Width) / 2;
-            this.Invalidate(); // 重绘以确保圆角正确显示
+            Invalidate();
         }
 
-        // 确保透明背景正确渲染
         protected override CreateParams CreateParams
         {
             get
             {
                 var cp = base.CreateParams;
-                cp.ExStyle |= 0x20; // 添加 WS_EX_TRANSPARENT 样式
+                cp.ExStyle |= 0x20;
                 return cp;
             }
         }
