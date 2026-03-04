@@ -29,7 +29,7 @@ namespace ContextMenuManager.Controls
 
         public static string GetCommand(string fileName, string arguments, string verb, int windowStyle, string directory = null)
         {
-            if (directory == null)
+            if (string.IsNullOrWhiteSpace(directory))
             {
                 ObjectPath.GetFullFilePath(fileName, out var filePath);
                 directory = Path.GetDirectoryName(filePath);
@@ -48,11 +48,16 @@ namespace ContextMenuManager.Controls
                 }
 
                 string psFileName = "'" + fileName.Replace("'", "''") + "'";
-                string psDir = string.IsNullOrEmpty(directory) ? "$null" : "'" + directory.Replace("'", "''") + "'";
                 string psVerb = "'" + verb.Replace("'", "''") + "'";
                 string psArgs = "'" + arguments.Replace("'", "''") + "'";
 
-                return $"powershell -WindowStyle Hidden -Command \"Start-Process -FilePath {psFileName} -ArgumentList {psArgs} -WorkingDirectory {psDir} -Verb {psVerb} -WindowStyle {winStyleStr}\"";
+                string psDirPart = "";
+                if (!string.IsNullOrWhiteSpace(directory))
+                {
+                    psDirPart = $"-WorkingDirectory '{directory.Replace("'", "''")}'";
+                }
+
+                return $"powershell -WindowStyle Hidden -Command \"Start-Process -FilePath {psFileName} -ArgumentList {psArgs} {psDirPart} -Verb {psVerb} -WindowStyle {winStyleStr}\"";
             }
             else
             {

@@ -50,17 +50,118 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
       <Item KeyName='GetHash'>
         <OSVersion Compare="&gt;=">6.3</OSVersion>
         <Value>
-          <REG_SZ MUIVerb='获取哈希值' Icon='imageres.dll,-5372'/>
+          <REG_SZ MUIVerb='获取哈希值' Icon='imageres.dll,-5372' SubCommands=''/>
           <REG_SZ MUIVerb='Get Hash'>
             <Culture>en-US</Culture>
           </REG_SZ>
         </Value>
         <SubKey>
-          <Command>
-            <ShellExecute Verb='open' WindowStyle='3'/>
-            <FileName>powershell.exe</FileName>
-            <Arguments>-noexit write-host '"%1"';$args = 'md5', 'sha1', 'sha256', 'sha384', 'sha512', 'mactripledes', 'ripemd160'; foreach($arg in $args){get-filehash '"%1"' -algorithm $arg | select-object algorithm, hash | format-table -wrap}</Arguments>
-          </Command>
+          <Shell>
+            <SubKey>
+              <Item0>
+                <Value>
+                  <REG_SZ MUIVerb='MD5' Icon='imageres.dll,-5372'/>
+                  <REG_SZ MUIVerb='MD5'>
+                    <Culture>en-US</Culture>
+                  </REG_SZ>
+                </Value>
+                <SubKey>
+                  <Command>
+                    <ShellExecute Verb='open' WindowStyle='1'/>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      -NoExit -Command "$Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(512, 50); $h = Get-FileHash '%1' -Algorithm MD5; Write-Host 'File: %1' -ForegroundColor Cyan; Write-Host 'MD5     : ' -NoNewline; Write-Host $h.Hash -ForegroundColor Yellow"
+                    </Arguments>
+                  </Command>
+                </SubKey>
+              </Item0>
+              <Item1>
+                <Value>
+                  <REG_SZ MUIVerb='SHA1' Icon='imageres.dll,-5372'/>
+                  <REG_SZ MUIVerb='SHA1'>
+                    <Culture>en-US</Culture>
+                  </REG_SZ>
+                </Value>
+                <SubKey>
+                  <Command>
+                    <ShellExecute Verb='open' WindowStyle='1'/>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      -NoExit -Command "$Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(512, 50); $h = Get-FileHash '%1' -Algorithm SHA1; Write-Host 'File: %1' -ForegroundColor Cyan; Write-Host 'SHA1    : ' -NoNewline; Write-Host $h.Hash -ForegroundColor Yellow"
+                    </Arguments>
+                  </Command>
+                </SubKey>
+              </Item1>
+              <Item2>
+                <Value>
+                  <REG_SZ MUIVerb='SHA256' Icon='imageres.dll,-5372'/>
+                  <REG_SZ MUIVerb='SHA256'>
+                    <Culture>en-US</Culture>
+                  </REG_SZ>
+                </Value>
+                <SubKey>
+                  <Command>
+                    <ShellExecute Verb='open' WindowStyle='1'/>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      -NoExit -Command "$Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(512, 50); $h = Get-FileHash '%1' -Algorithm SHA256; Write-Host 'File: %1' -ForegroundColor Cyan; Write-Host 'SHA256  : ' -NoNewline; Write-Host $h.Hash -ForegroundColor Yellow"
+                    </Arguments>
+                  </Command>
+                </SubKey>
+              </Item2>
+              <Item3>
+                <Value>
+                  <REG_SZ MUIVerb='SHA384' Icon='imageres.dll,-5372'/>
+                  <REG_SZ MUIVerb='SHA384'>
+                    <Culture>en-US</Culture>
+                  </REG_SZ>
+                </Value>
+                <SubKey>
+                  <Command>
+                    <ShellExecute Verb='open' WindowStyle='1'/>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      -NoExit -Command "$Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(512, 50); $h = Get-FileHash '%1' -Algorithm SHA384; Write-Host 'File: %1' -ForegroundColor Cyan; Write-Host 'SHA384  : ' -NoNewline; Write-Host $h.Hash -ForegroundColor Yellow"
+                    </Arguments>
+                  </Command>
+                </SubKey>
+              </Item3>
+              <Item4>
+                <Value>
+                  <REG_SZ MUIVerb='SHA512' Icon='imageres.dll,-5372'/>
+                  <REG_SZ MUIVerb='SHA512'>
+                    <Culture>en-US</Culture>
+                  </REG_SZ>
+                </Value>
+                <SubKey>
+                  <Command>
+                    <ShellExecute Verb='open' WindowStyle='1'/>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      -NoExit -Command "$Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(512, 50); $h = Get-FileHash '%1' -Algorithm SHA512; Write-Host 'File: %1' -ForegroundColor Cyan; Write-Host 'SHA512  : ' -NoNewline; Write-Host $h.Hash -ForegroundColor Yellow"
+                    </Arguments>
+                  </Command>
+                </SubKey>
+              </Item4>
+              <Item5>
+                <Value>
+                  <REG_SZ MUIVerb='全部算法' Icon='imageres.dll,-5372'/>
+                  <REG_SZ MUIVerb='All Algorithms'>
+                    <Culture>en-US</Culture>
+                  </REG_SZ>
+                </Value>
+                <SubKey>
+                  <Command>
+                    <ShellExecute Verb='open' WindowStyle='1'/>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      -NoExit -Command "$Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(512, 50); Write-Host 'File: %1' -ForegroundColor Cyan; Write-Host ('-' * 64); 'MD5','SHA1','SHA256','SHA384','SHA512' | ForEach-Object { $h = Get-FileHash '%1' -Algorithm $_; Write-Host ('{0,-8}: ' -f $h.Algorithm) -NoNewline; Write-Host $h.Hash -ForegroundColor Yellow }; Write-Host ('-' * 64)"
+                    </Arguments>
+                  </Command>
+                </SubKey>
+              </Item5>
+            </SubKey>
+          </Shell>
         </SubKey>
       </Item>
     </Shell>
@@ -1223,30 +1324,34 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
               <Item0>
                 <Value>
                   <REG_SZ MUIVerb='禁止入站' Icon='imageres.dll,-105'/>
-                  <REG_SZ MUIVerb='Not Allow In'>
+                  <REG_SZ MUIVerb='Block In'>
                     <Culture>en-US</Culture>
                   </REG_SZ>
                 </Value>
                 <SubKey>
                   <Command>
                     <ShellExecute Verb='runas' WindowStyle='0'/>
-                    <FileName>cmd.exe</FileName>
-                    <Arguments>/R (netsh advfirewall firewall delete rule name="_%1" dir=in program="%1" &amp; netsh advfirewall firewall add rule name="_%1" dir=in program="%1" action=block)</Arguments>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      Get-NetFirewallRule -DisplayName '_%1' | Where-Object { ($_ | Get-NetFirewallApplicationFilter).Program -eq '%1' -and $_.Direction -eq 'Inbound' } | Remove-NetFirewallRule; New-NetFirewallRule -DisplayName '_%1' -Program '%1' -Direction Inbound -Action Block
+                    </Arguments>
                   </Command>
                 </SubKey>
               </Item0>
               <Item1>
                 <Value>
                   <REG_SZ MUIVerb='禁止出站' Icon='imageres.dll,-105'/>
-                  <REG_SZ MUIVerb='Not Allow Out'>
+                  <REG_SZ MUIVerb='Block Out'>
                     <Culture>en-US</Culture>
                   </REG_SZ>
                 </Value>
                 <SubKey>
                   <Command>
                     <ShellExecute Verb='runas' WindowStyle='0'/>
-                    <FileName>cmd.exe</FileName>
-                    <Arguments>/R (netsh advfirewall firewall delete rule name="_%1" dir=out program="%1" &amp; netsh advfirewall firewall add rule name="_%1" dir=out program="%1" action=block)</Arguments>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      Get-NetFirewallRule -DisplayName '_%1' | Where-Object { ($_ | Get-NetFirewallApplicationFilter).Program -eq '%1' -and $_.Direction -eq 'Outbound' } | Remove-NetFirewallRule; New-NetFirewallRule -DisplayName '_%1' -Program '%1' -Direction Outbound -Action Block
+                    </Arguments>
                   </Command>
                 </SubKey>
               </Item1>
@@ -1260,8 +1365,10 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
                 <SubKey>
                   <Command>
                     <ShellExecute Verb='runas' WindowStyle='0'/>
-                    <FileName>cmd.exe</FileName>
-                    <Arguments>/R (netsh advfirewall firewall delete rule name="_%1" dir=in program="%1" &amp; netsh advfirewall firewall add rule name="_%1" dir=in program="%1" action=allow)</Arguments>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      Get-NetFirewallRule -DisplayName '_%1' | Where-Object { ($_ | Get-NetFirewallApplicationFilter).Program -eq '%1' -and $_.Direction -eq 'Inbound' } | Remove-NetFirewallRule; New-NetFirewallRule -DisplayName '_%1' -Program '%1' -Direction Inbound -Action Allow
+                    </Arguments>
                   </Command>
                 </SubKey>
               </Item2>
@@ -1275,8 +1382,10 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
                 <SubKey>
                   <Command>
                     <ShellExecute Verb='runas' WindowStyle='0'/>
-                    <FileName>cmd.exe</FileName>
-                    <Arguments>/R (netsh advfirewall firewall delete rule name="_%1" dir=out program="%1" &amp; netsh advfirewall firewall add rule name="_%1" dir=out program="%1" action=allow)</Arguments>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      Get-NetFirewallRule -DisplayName '_%1' | Where-Object { ($_ | Get-NetFirewallApplicationFilter).Program -eq '%1' -and $_.Direction -eq 'Outbound' } | Remove-NetFirewallRule; New-NetFirewallRule -DisplayName '_%1' -Program '%1' -Direction Outbound -Action Allow
+                    </Arguments>
                   </Command>
                 </SubKey>
               </Item3>
@@ -1290,8 +1399,10 @@ Tip属性为鼠标悬浮在开关上时的提示信息，从每个Item节点开�
                 <SubKey>
                   <Command>
                     <ShellExecute Verb='runas' WindowStyle='0'/>
-                    <FileName>cmd.exe</FileName>
-                    <Arguments>/R (netsh advfirewall firewall delete rule name="_%1" program="%1")</Arguments>
+                    <FileName>powershell.exe</FileName>
+                    <Arguments>
+                      Get-NetFirewallRule -DisplayName '_%1' | Where-Object { ($_ | Get-NetFirewallApplicationFilter).Program -eq '%1' } | Remove-NetFirewallRule
+                    </Arguments>
                   </Command>
                 </SubKey>
               </Item4>
