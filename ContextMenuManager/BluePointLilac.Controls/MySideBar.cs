@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -19,9 +19,9 @@ namespace BluePointLilac.Controls
         private bool isAnimating = false;
         private Font ownedFont;
 
-        public Color SelectedGradientColor1 { get; set; } = Color.FromArgb(255, 195, 0);
-        public Color SelectedGradientColor2 { get; set; } = Color.FromArgb(255, 141, 26);
-        public Color SelectedGradientColor3 { get; set; } = Color.FromArgb(255, 195, 0);
+        public Color SelectedGradientColor1 { get; set; } = Color.FromArgb(255, 255, 160, 60);
+        public Color SelectedGradientColor2 { get; set; } = Color.FromArgb(255, 255, 120, 40);
+        public Color SelectedGradientColor3 { get; set; } = Color.FromArgb(255, 255, 160, 60);
         public Color BackgroundGradientColor1 { get; set; } = Color.FromArgb(240, 240, 240);
         public Color BackgroundGradientColor2 { get; set; } = Color.FromArgb(220, 220, 220);
         public Color BackgroundGradientColor3 { get; set; } = Color.FromArgb(200, 200, 200);
@@ -30,13 +30,16 @@ namespace BluePointLilac.Controls
         public int ItemHeight { get => itemHeight; set => itemHeight = Math.Max(1, value); }
         public int TopSpace { get; set; } = 4.DpiZoom();
         public int HorizontalSpace { get; set; } = 20.DpiZoom();
+        public int ItemMargin { get; set; } = 4.DpiZoom();
+        public int CornerRadius { get; set; } = 6.DpiZoom();
         public bool IsFixedWidth { get; set; } = true;
 
         public Color SeparatorColor { get; set; }
         public Color SelectedBackColor { get; set; } = Color.Transparent;
         public Color HoveredBackColor { get; set; }
-        public Color SelectedForeColor { get; set; } = Color.Black;
+        public Color SelectedForeColor { get; set; } = Color.White;
         public Color HoveredForeColor { get; set; }
+        public Color RightBorderColor { get; set; }
 
         public event EventHandler SelectIndexChanged;
         public event EventHandler HoverIndexChanged;
@@ -115,6 +118,7 @@ namespace BluePointLilac.Controls
         {
             BackColor = DarkModeHelper.SideBarBackground; ForeColor = DarkModeHelper.FormFore;
             HoveredBackColor = DarkModeHelper.SideBarHovered; SeparatorColor = DarkModeHelper.SideBarSeparator;
+            RightBorderColor = DarkModeHelper.SideBarSeparator;
             BackgroundGradientColor1 = DarkModeHelper.ToolBarGradientTop;
             BackgroundGradientColor2 = DarkModeHelper.ToolBarGradientMiddle;
             BackgroundGradientColor3 = DarkModeHelper.ToolBarGradientBottom;
@@ -230,7 +234,9 @@ namespace BluePointLilac.Controls
         private void DrawSeparator(Graphics g, Pen pen, int index)
         {
             float y = TopSpace + (index + 0.5f) * ItemHeight;
-            g.DrawLine(pen, HorizontalSpace, y, Width - HorizontalSpace, y);
+            int margin = ItemMargin + 8.DpiZoom();
+            using var brush = new SolidBrush(SeparatorColor);
+            g.FillRectangle(brush, margin, y - 1, Width - 2 * margin, 2);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -238,19 +244,36 @@ namespace BluePointLilac.Controls
             base.OnPaint(e);
             if (ItemNames == null) return;
             float vSpace = (ItemHeight - TextRenderer.MeasureText(" ", Font).Height) * 0.5f;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
             void DrawItem(int idx, Color back, Color fore, float y)
             {
                 if (idx < 0 || idx >= ItemNames.Length || string.IsNullOrEmpty(ItemNames[idx])) return;
-                var r = new RectangleF(0, y, Width, ItemHeight);
+                var itemRect = new RectangleF(ItemMargin, y + 2, Width - 2 * ItemMargin, ItemHeight - 4);
+                if (itemRect.Width <= 0 || itemRect.Height <= 0) return;
+
+                using var path = GetRoundedRectPath(itemRect, CornerRadius);
                 if (back == Color.Transparent)
                 {
-                    using var b = new LinearGradientBrush(r, Color.Empty, Color.Empty, 0f) { InterpolationColors = new ColorBlend { Colors = new[] { SelectedGradientColor1, SelectedGradientColor2, SelectedGradientColor3 }, Positions = new[] { 0f, 0.5f, 1f } } };
-                    e.Graphics.FillRectangle(b, r);
+                    using var b = new LinearGradientBrush(itemRect, Color.Empty, Color.Empty, 90f)
+                    {
+                        InterpolationColors = new ColorBlend
+                        {
+                            Colors = new[] { SelectedGradientColor1, SelectedGradientColor2, SelectedGradientColor3 },
+                            Positions = new[] { 0f, 0.5f, 1f }
+                        }
+                    };
+                    e.Graphics.FillPath(b, path);
                 }
-                else { using var b = new SolidBrush(back); e.Graphics.FillRectangle(b, r); }
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias; e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                else
+                {
+                    using var b = new SolidBrush(back);
+                    e.Graphics.FillPath(b, path);
+                }
                 using var fb = new SolidBrush(fore == Color.Empty ? ForeColor : fore);
-                e.Graphics.DrawString(ItemNames[idx], Font, fb, HorizontalSpace, y + vSpace);
+                var textRect = new RectangleF(ItemMargin + HorizontalSpace - ItemMargin, y + 2 + vSpace, Width - 2 * HorizontalSpace, ItemHeight - 4 - 2 * vSpace);
+                e.Graphics.DrawString(ItemNames[idx], Font, fb, HorizontalSpace, y + 2 + vSpace);
             }
 
             if (hoverIndex >= 0 && hoverIndex != selectIndex)
@@ -259,7 +282,21 @@ namespace BluePointLilac.Controls
                 DrawItem(hoverIndex, HoveredBackColor, HoveredForeColor, hoverY);
             }
             if (selectIndex >= 0) DrawItem(selectIndex, Color.Transparent, SelectedForeColor, curSelTop);
-            using (var p = new Pen(SeparatorColor)) e.Graphics.DrawLine(p, Width - 1, 0, Width - 1, Height);
+            using var p = new Pen(RightBorderColor);
+            e.Graphics.DrawLine(p, Width - 1, 0, Width - 1, Height);
+        }
+
+        private GraphicsPath GetRoundedRectPath(RectangleF rect, int radius)
+        {
+            var path = new GraphicsPath();
+            if (radius <= 0) { path.AddRectangle(rect); return path; }
+            float r = radius;
+            path.AddArc(rect.X, rect.Y, r * 2, r * 2, 180, 90);
+            path.AddArc(rect.Right - r * 2, rect.Y, r * 2, r * 2, 270, 90);
+            path.AddArc(rect.Right - r * 2, rect.Bottom - r * 2, r * 2, r * 2, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - r * 2, r * 2, r * 2, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         protected override void OnMouseMove(MouseEventArgs e)

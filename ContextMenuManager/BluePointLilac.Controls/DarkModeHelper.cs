@@ -143,12 +143,12 @@ namespace BluePointLilac.Controls
             FormBorder = Color.FromArgb(255, 50, 50, 50);
             ButtonMain = Color.FromArgb(255, 55, 55, 55);
             ButtonSecond = Color.FromArgb(255, 38, 38, 38);
-            SideBarBackground = Color.FromArgb(255, 26, 26, 26);
-            SideBarSeparator = Color.FromArgb(255, 64, 64, 64);
-            SideBarHovered = Color.FromArgb(255, 51, 51, 51);
-            ToolBarGradientTop = Color.FromArgb(255, 128, 128, 128);
-            ToolBarGradientMiddle = Color.FromArgb(255, 56, 56, 56);
-            ToolBarGradientBottom = Color.FromArgb(255, 128, 128, 128);
+            SideBarBackground = Color.FromArgb(255, 30, 30, 30);
+            SideBarSeparator = Color.FromArgb(255, 60, 60, 60);
+            SideBarHovered = Color.FromArgb(255, 50, 50, 52);
+            ToolBarGradientTop = Color.FromArgb(255, 45, 45, 45);
+            ToolBarGradientMiddle = Color.FromArgb(255, 35, 35, 35);
+            ToolBarGradientBottom = Color.FromArgb(255, 45, 45, 45);
             StatusBarGradientTop = Color.FromArgb(255, 128, 128, 128);
             StatusBarGradientMiddle = Color.FromArgb(255, 56, 56, 56);
             StatusBarGradientBottom = Color.FromArgb(255, 128, 128, 128);
@@ -165,18 +165,18 @@ namespace BluePointLilac.Controls
 
         private static void SetLightModeColors()
         {
-            TitleArea = Color.FromArgb(255, 243, 243, 243);
-            FormBack = SystemColors.Control;
+            TitleArea = Color.FromArgb(255, 248, 248, 248);
+            FormBack = Color.FromArgb(255, 245, 245, 245);
             FormFore = SystemColors.ControlText;
-            FormBorder = Color.LightGray;
+            FormBorder = Color.FromArgb(255, 220, 220, 220);
             ButtonMain = SystemColors.ControlLightLight;
             ButtonSecond = SystemColors.ControlLight;
-            SideBarBackground = SystemColors.Control;
-            SideBarSeparator = Color.FromArgb(255, 200, 200, 200);
-            SideBarHovered = Color.FromArgb(255, 230, 230, 230);
-            ToolBarGradientTop = Color.FromArgb(255, 255, 255, 255);
-            ToolBarGradientMiddle = Color.FromArgb(255, 230, 230, 230);
-            ToolBarGradientBottom = Color.FromArgb(255, 255, 255, 255);
+            SideBarBackground = Color.FromArgb(255, 250, 250, 250);
+            SideBarSeparator = Color.FromArgb(255, 230, 230, 230);
+            SideBarHovered = Color.FromArgb(255, 240, 240, 242);
+            ToolBarGradientTop = Color.FromArgb(255, 252, 252, 252);
+            ToolBarGradientMiddle = Color.FromArgb(255, 245, 245, 245);
+            ToolBarGradientBottom = Color.FromArgb(255, 252, 252, 252);
             StatusBarGradientTop = Color.FromArgb(255, 255, 255, 255);
             StatusBarGradientMiddle = Color.FromArgb(255, 230, 230, 230);
             StatusBarGradientBottom = Color.FromArgb(255, 255, 255, 255);
