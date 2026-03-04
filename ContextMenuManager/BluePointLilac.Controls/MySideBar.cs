@@ -105,6 +105,7 @@ namespace BluePointLilac.Controls
             DoubleBuffered = true;
             ownedFont = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.Size + 1F);
             Font = ownedFont;
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             InitializeColors();
             SizeChanged += (s, e) => UpdateBackground();
             animTimer.Tick += AnimationTimer_Tick;
@@ -114,10 +115,15 @@ namespace BluePointLilac.Controls
 
         private void OnThemeChanged(object sender, EventArgs e) { InitializeColors(); UpdateBackground(); }
 
+        public void UpdateThemeColors() { InitializeColors(); UpdateBackground(); Invalidate(); }
+
         private void InitializeColors()
         {
-            BackColor = DarkModeHelper.SideBarBackground; ForeColor = DarkModeHelper.FormFore;
-            HoveredBackColor = DarkModeHelper.SideBarHovered; SeparatorColor = DarkModeHelper.SideBarSeparator;
+            BackColor = DarkModeHelper.IsDwmCompositionEnabled ? Color.Transparent : DarkModeHelper.SideBarBackground;
+            ForeColor = Color.White;
+            HoveredBackColor = DarkModeHelper.SideBarHovered;
+            HoveredForeColor = Color.White;
+            SeparatorColor = DarkModeHelper.SideBarSeparator;
             RightBorderColor = DarkModeHelper.SideBarSeparator;
             BackgroundGradientColor1 = DarkModeHelper.ToolBarGradientTop;
             BackgroundGradientColor2 = DarkModeHelper.ToolBarGradientMiddle;
@@ -192,6 +198,14 @@ namespace BluePointLilac.Controls
         private void UpdateBackground()
         {
             if (ItemNames == null) return;
+
+            if (DarkModeHelper.IsDwmCompositionEnabled)
+            {
+                BackgroundImage?.Dispose();
+                BackgroundImage = null;
+                return;
+            }
+
             int w = Math.Max(1, Width), h = ItemNames.Length == 0 ? Math.Max(1, Height) : Math.Max(Height, Math.Max(0, ItemHeight) * ItemNames.Length);
             try
             {
@@ -205,11 +219,21 @@ namespace BluePointLilac.Controls
 
         private void DrawBackgroundGradient(Graphics g, int w, int h)
         {
+            if (DarkModeHelper.IsDwmCompositionEnabled)
+            {
+                g.Clear(Color.Transparent);
+                return;
+            }
+
+            var color1 = BackgroundGradientColor1;
+            var color2 = BackgroundGradientColor2;
+            var color3 = BackgroundGradientColor3;
+
             using var b = new LinearGradientBrush(new Rectangle(0, 0, w, h), Color.Empty, Color.Empty, 0f)
             {
                 InterpolationColors = new ColorBlend
                 {
-                    Colors = new[] { BackgroundGradientColor1, BackgroundGradientColor2, BackgroundGradientColor3 },
+                    Colors = new[] { color1, color2, color3 },
                     Positions = new[] { 0f, 0.5f, 1f }
                 }
             };
@@ -239,13 +263,44 @@ namespace BluePointLilac.Controls
             g.FillRectangle(brush, margin, y - 1, Width - 2 * margin, 2);
         }
 
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            if (DarkModeHelper.IsDwmCompositionEnabled)
+            {
+                e.Graphics.Clear(Color.Transparent);
+            }
+            else
+            {
+                base.OnPaintBackground(e);
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
             if (ItemNames == null) return;
             float vSpace = (ItemHeight - TextRenderer.MeasureText(" ", Font).Height) * 0.5f;
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+            if (DarkModeHelper.IsDwmCompositionEnabled)
+            {
+                // DWM模式下强制使用白色文字
+                using var textBrush = new SolidBrush(Color.White);
+                for (int i = 0; i < ItemNames.Length; i++)
+                {
+                    float y = TopSpace + i * ItemHeight;
+                    if (ItemNames[i] == null)
+                    {
+                        int margin = ItemMargin + 8.DpiZoom();
+                        using var brush = new SolidBrush(SeparatorColor);
+                        e.Graphics.FillRectangle(brush, margin, y + ItemHeight / 2 - 1, Width - 2 * margin, 2);
+                    }
+                    else if (ItemNames[i].Length > 0)
+                    {
+                        e.Graphics.DrawString(ItemNames[i], Font, textBrush, HorizontalSpace, y + vSpace);
+                    }
+                }
+            }
 
             void DrawItem(int idx, Color back, Color fore, float y)
             {
@@ -271,7 +326,8 @@ namespace BluePointLilac.Controls
                     using var b = new SolidBrush(back);
                     e.Graphics.FillPath(b, path);
                 }
-                using var fb = new SolidBrush(fore == Color.Empty ? ForeColor : fore);
+                // DWM模式下强制使用白色文字
+                using var fb = new SolidBrush(DarkModeHelper.IsDwmCompositionEnabled ? Color.White : (fore == Color.Empty ? ForeColor : fore));
                 var textRect = new RectangleF(ItemMargin + HorizontalSpace - ItemMargin, y + 2 + vSpace, Width - 2 * HorizontalSpace, ItemHeight - 4 - 2 * vSpace);
                 e.Graphics.DrawString(ItemNames[idx], Font, fb, HorizontalSpace, y + 2 + vSpace);
             }

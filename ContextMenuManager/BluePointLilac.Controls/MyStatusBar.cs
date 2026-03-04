@@ -26,6 +26,8 @@ namespace BluePointLilac.Controls
             Dock = DockStyle.Bottom;
             Font = SystemFonts.StatusFont;
 
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+
             // 初始化系统主题
             CheckSystemTheme();
 
@@ -40,17 +42,32 @@ namespace BluePointLilac.Controls
             Refresh();
         }
 
+        public void UpdateThemeColors()
+        {
+            CheckSystemTheme();
+            Refresh();
+        }
+
         // 检查系统主题
         private void CheckSystemTheme()
         {
             // 使用DarkModeHelper统一管理主题
             isDarkMode = DarkModeHelper.IsDarkTheme;
 
-            if (isDarkMode)
+            if (DarkModeHelper.IsDwmCompositionEnabled)
+            {
+                // DWM启用时使用透明背景和白色文字
+                BackColor = Color.Transparent;
+                ForeColor = Color.White;
+                topColor = Color.Transparent;
+                middleColor = Color.Transparent;
+                bottomColor = Color.Transparent;
+            }
+            else if (isDarkMode)
             {
                 // 深色模式颜色方案 - 使用渐变色
                 BackColor = Color.FromArgb(40, 40, 40); // 备用背景色
-                ForeColor = Color.LightGray;
+                ForeColor = Color.White;
 
                 // 使用DarkModeHelper中的颜色
                 topColor = DarkModeHelper.StatusBarGradientTop;
@@ -61,7 +78,7 @@ namespace BluePointLilac.Controls
             {
                 // 浅色模式颜色方案
                 BackColor = DarkModeHelper.ButtonMain;
-                ForeColor = DarkModeHelper.FormFore;
+                ForeColor = Color.White;
 
                 // 使用DarkModeHelper中的颜色
                 topColor = DarkModeHelper.StatusBarGradientTop;
@@ -95,22 +112,37 @@ namespace BluePointLilac.Controls
             set { bottomColor = value; Refresh(); }
         }
 
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            if (DarkModeHelper.IsDwmCompositionEnabled)
+            {
+                e.Graphics.Clear(Color.Transparent);
+            }
+            else
+            {
+                base.OnPaintBackground(e);
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
-            // 绘制渐变色背景
-            using (var brush = new LinearGradientBrush(
-                ClientRectangle,
-                Color.Empty,
-                Color.Empty,
-                LinearGradientMode.Vertical))
+            if (!DarkModeHelper.IsDwmCompositionEnabled)
             {
-                // 设置渐变色
-                var colorBlend = new ColorBlend(3);
-                colorBlend.Colors = new Color[] { TopColor, MiddleColor, BottomColor };
-                colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
-                brush.InterpolationColors = colorBlend;
+                // 绘制渐变色背景
+                using (var brush = new LinearGradientBrush(
+                    ClientRectangle,
+                    Color.Empty,
+                    Color.Empty,
+                    LinearGradientMode.Vertical))
+                {
+                    // 设置渐变色
+                    var colorBlend = new ColorBlend(3);
+                    colorBlend.Colors = new Color[] { TopColor, MiddleColor, BottomColor };
+                    colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
+                    brush.InterpolationColors = colorBlend;
 
-                e.Graphics.FillRectangle(brush, ClientRectangle);
+                    e.Graphics.FillRectangle(brush, ClientRectangle);
+                }
             }
 
             // 绘制文本（带有省略号处理）

@@ -21,8 +21,10 @@ namespace BluePointLilac.Controls
             Height = 80.DpiZoom();
             Dock = DockStyle.Top;
             DoubleBuffered = true;
-            BackColor = DarkModeHelper.TitleArea;
+            BackColor = DarkModeHelper.IsDwmCompositionEnabled ? Color.Transparent : DarkModeHelper.TitleArea;
             ForeColor = DarkModeHelper.FormFore;
+
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 
             buttonContainer = new FlowLayoutPanel
             {
@@ -158,23 +160,28 @@ namespace BluePointLilac.Controls
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
-            base.OnPaintBackground(e);
-
             var rect = ClientRectangle;
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            var color1 = DarkModeHelper.ToolBarGradientTop;
-            var color2 = DarkModeHelper.ToolBarGradientMiddle;
-            var color3 = DarkModeHelper.ToolBarGradientBottom;
+            if (DarkModeHelper.IsDwmCompositionEnabled)
+            {
+                g.Clear(Color.Transparent);
+            }
+            else
+            {
+                base.OnPaintBackground(e);
+                var color1 = DarkModeHelper.ToolBarGradientTop;
+                var color2 = DarkModeHelper.ToolBarGradientMiddle;
+                var color3 = DarkModeHelper.ToolBarGradientBottom;
 
-            using var brush = new LinearGradientBrush(rect, Color.Empty, Color.Empty, LinearGradientMode.Vertical);
-            var colorBlend = new ColorBlend(3);
-            colorBlend.Colors = new Color[] { color1, color2, color3 };
-            colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
-            brush.InterpolationColors = colorBlend;
-
-            g.FillRectangle(brush, rect);
+                using var brush = new LinearGradientBrush(rect, Color.Empty, Color.Empty, LinearGradientMode.Vertical);
+                var colorBlend = new ColorBlend(3);
+                colorBlend.Colors = new Color[] { color1, color2, color3 };
+                colorBlend.Positions = new float[] { 0f, 0.5f, 1f };
+                brush.InterpolationColors = colorBlend;
+                g.FillRectangle(brush, rect);
+            }
 
             using var borderPen = new Pen(DarkModeHelper.IsDarkTheme ?
                 Color.FromArgb(60, 60, 60) : Color.FromArgb(220, 220, 220), 1);
@@ -185,7 +192,7 @@ namespace BluePointLilac.Controls
 
         private void OnThemeChanged(object sender, EventArgs e)
         {
-            BackColor = DarkModeHelper.TitleArea;
+            BackColor = DarkModeHelper.IsDwmCompositionEnabled ? Color.Transparent : DarkModeHelper.TitleArea;
             ForeColor = DarkModeHelper.FormFore;
             Invalidate();
         }
@@ -246,7 +253,7 @@ namespace BluePointLilac.Controls
         {
             SuspendLayout();
             DoubleBuffered = true;
-            ForeColor = DarkModeHelper.FormFore;
+            ForeColor = DarkModeHelper.IsDwmCompositionEnabled ? Color.White : DarkModeHelper.FormFore;
             BackColor = Color.Transparent;
             Cursor = Cursors.Hand;
             Size = new Size(72, 72).DpiZoom();
@@ -277,7 +284,7 @@ namespace BluePointLilac.Controls
 
         private readonly Label lblText = new()
         {
-            ForeColor = DarkModeHelper.FormFore,
+            ForeColor = Color.White,
             BackColor = Color.Transparent,
             Font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.SizeInPoints, FontStyle.Regular, GraphicsUnit.Point),
             AutoSize = true,
@@ -362,15 +369,22 @@ namespace BluePointLilac.Controls
 
         public void UpdateTextColor()
         {
-            var isDarkMode = DarkModeHelper.IsDarkTheme;
-
-            if (!isDarkMode && currentOpacity > 0.3f)
+            if (DarkModeHelper.IsDwmCompositionEnabled)
             {
                 lblText.ForeColor = Color.White;
             }
             else
             {
-                lblText.ForeColor = DarkModeHelper.FormFore;
+                var isDarkMode = DarkModeHelper.IsDarkTheme;
+
+                if (!isDarkMode && currentOpacity > 0.3f)
+                {
+                    lblText.ForeColor = Color.White;
+                }
+                else
+                {
+                    lblText.ForeColor = DarkModeHelper.FormFore;
+                }
             }
         }
 

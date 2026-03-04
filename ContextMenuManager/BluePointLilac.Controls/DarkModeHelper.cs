@@ -17,9 +17,84 @@ namespace BluePointLilac.Controls
         [DllImport("DwmApi")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, int[] attrValue, int attrSize);
 
+        [DllImport("DwmApi")]
+        private static extern int DwmIsCompositionEnabled(out bool pfEnabled);
+
+        [DllImport("DwmApi")]
+        private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS pMarInset);
+
+        [DllImport("DwmApi")]
+        private static extern int DwmGetColorizationColor(out uint pcrColorization, out bool pfOpaqueBlend);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MARGINS
+        {
+            public int cxLeftWidth;
+            public int cxRightWidth;
+            public int cyTopHeight;
+            public int cyBottomHeight;
+        }
+
         public static event EventHandler ThemeChanged;
         private static SynchronizationContext uiContext;
         public static Color MainColor = Color.FromArgb(255, 143, 31);
+
+        public static bool IsDwmCompositionEnabled
+        {
+            get
+            {
+                try
+                {
+                    DwmIsCompositionEnabled(out bool enabled);
+                    return enabled;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        public static Color GetDwmColorizationColor()
+        {
+            try
+            {
+                if (!IsDwmCompositionEnabled) return Color.Empty;
+                DwmGetColorizationColor(out uint color, out _);
+                byte a = (byte)((color >> 24) & 0xFF);
+                byte b = (byte)((color >> 16) & 0xFF);
+                byte g = (byte)((color >> 8) & 0xFF);
+                byte r = (byte)(color & 0xFF);
+                return Color.FromArgb(a, r, g, b);
+            }
+            catch
+            {
+                return Color.Empty;
+            }
+        }
+
+        public static void ExtendFrameIntoClientArea(IntPtr hwnd, int left, int right, int top, int bottom)
+        {
+            if (!IsDwmCompositionEnabled) return;
+            try
+            {
+                var margins = new MARGINS
+                {
+                    cxLeftWidth = left,
+                    cxRightWidth = right,
+                    cyTopHeight = top,
+                    cyBottomHeight = bottom
+                };
+                DwmExtendFrameIntoClientArea(hwnd, ref margins);
+            }
+            catch { }
+        }
+
+        public static void ExtendFrameIntoClientArea(IntPtr hwnd, bool extendAll)
+        {
+            if (extendAll)
+                ExtendFrameIntoClientArea(hwnd, -1, -1, -1, -1);
+        }
 
         // 颜色属性
         public static Color TitleArea { get; private set; }

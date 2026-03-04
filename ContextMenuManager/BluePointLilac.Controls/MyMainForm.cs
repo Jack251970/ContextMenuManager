@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+using BluePointLilac.Methods;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -27,9 +27,36 @@ namespace BluePointLilac.Controls
             DarkModeHelper.Initialize();
             DarkModeHelper.ThemeChanged += OnThemeChanged;
             DarkModeHelper.ApplyDarkModeToForm(this);
+            ApplyDwmEffect();
+            
+            // 更新控件颜色（因为控件在DarkModeHelper.Initialize之前创建）
+            SideBar.UpdateThemeColors();
+            StatusBar.UpdateThemeColors();
+            
             Adjust();
 
             ResumeLayout();
+        }
+
+        private void ApplyDwmEffect()
+        {
+            if (!DarkModeHelper.IsDwmCompositionEnabled) return;
+            if (!IsHandleCreated) return;
+
+            try
+            {
+                // 扩展玻璃效果到工具栏、侧边栏和状态栏区域
+                // 侧边栏宽度减去8像素，减小扩展范围
+                DarkModeHelper.ExtendFrameIntoClientArea(Handle, 
+                    Math.Max(0, SideBar.Width - 8), 0, ToolBar.Height, StatusBar.Height);
+            }
+            catch { }
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            ApplyDwmEffect();
         }
 
         public readonly MyToolBar ToolBar = new();
@@ -114,6 +141,7 @@ namespace BluePointLilac.Controls
         private void OnThemeChanged(object sender, EventArgs e)
         {
             DarkModeHelper.ApplyDarkModeToForm(this);
+            ApplyDwmEffect();
             Adjust();
             Invalidate();
         }
