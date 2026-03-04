@@ -121,15 +121,14 @@ namespace ContextMenuManager.Methods
             }
 
             // 获取MetaData对象
-            metaData = myData.MetaData;
+            metaData = myData.MetaData ?? new MetaData();
 
             // 清理backupRestoreList变量
             backupRestoreList.Clear();
-            backupRestoreList = null;
+            backupLookup.Clear();
 
             // 获取BackupList对象
-            backupRestoreList = myData.BackupList;
-            backupLookup.Clear();
+            backupRestoreList = myData.BackupList ?? new List<BackupItem>();
             foreach (var item in backupRestoreList)
             {
                 var key = GetLookupKey(item.BackupScene, item.KeyName, item.ItemType);
@@ -159,11 +158,8 @@ namespace ContextMenuManager.Methods
             // 寻找第一个<MetaData>节点
             reader.ReadToFollowing("MetaData");
 
-            // 清理metaData变量
-            metaData = null;
-
             // 反序列化<MetaData>节点为MetaData对象
-            metaData = (MetaData)metaDataSerializer.Deserialize(reader);
+            metaData = (MetaData)metaDataSerializer.Deserialize(reader) ?? new MetaData();
         }
     }
 }
