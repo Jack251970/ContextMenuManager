@@ -71,9 +71,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\DetailedEditDialog.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="Controls\DictionariesBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\RComboBox.cs">
       <SubType>Component</SubType>
     </Compile>

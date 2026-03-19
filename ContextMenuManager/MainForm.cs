@@ -70,8 +70,7 @@ namespace ContextMenuManager
         private Control[] MainControls => new Control[]
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
-            enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            dictionariesBox
+            enhanceMenusList, detailedEditList, guidBlockedList, iEList
         };
 
         private readonly ShellList shellList = new();
@@ -85,7 +84,6 @@ namespace ContextMenuManager
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
 
-        private readonly DictionariesBox dictionariesBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
 
         // 主页
@@ -292,8 +290,6 @@ namespace ContextMenuManager
                     SwitchTypeItem(); break;
                 case 2:
                     SwitchOtherRuleItem(); break;
-                case 4:
-                    SwitchAboutItem(); break;
             }
             lastItemIndex[ToolBar.SelectedIndex] = SideBar.SelectedIndex;
             SuspendMainBodyWhenMove = MainControls.ToList().Any(ctr => ctr.Controls.Count > 50);
@@ -430,17 +426,6 @@ namespace ContextMenuManager
                     SaveOriginalListItems();
                     break;
             }
-        }
-
-        private void SwitchAboutItem()
-        {
-            switch (SideBar.SelectedIndex)
-            {
-                case 3:
-                    dictionariesBox.LoadText(); dictionariesBox.Visible = true;
-                    break;
-            }
-            currentListControl = null;
         }
 
         // 保存原始列表项

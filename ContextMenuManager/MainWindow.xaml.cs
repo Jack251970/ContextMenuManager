@@ -27,12 +27,12 @@ namespace ContextMenuManager
         private readonly DetailedEditList detailedEditList = new();
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
-        private readonly DictionariesBox dictionariesBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
 
         private readonly AppSettingView appSettingView = new();
         private readonly LanguagesView languagesView = new();
         private readonly BackupView backupView = new();
+        private readonly DictionariesView dictionariesView = new();
         private readonly AboutAppView aboutAppView = new();
         private readonly DonateView donateView = new();
 
@@ -108,7 +108,6 @@ namespace ContextMenuManager
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            dictionariesBox
         };
 
         // Navigation building
@@ -291,7 +290,10 @@ namespace ContextMenuManager
                     backupView.LoadItems();
                     ShowWpfControl(backupView);
                     break;
-                case "about_dict": dictionariesBox.LoadText(); ShowControl(dictionariesBox); break;
+                case "about_dict":
+                    dictionariesView.LoadText();
+                    ShowWpfControl(dictionariesView);
+                    break;
                 case "about_app":
                     aboutAppView.RefreshContent();
                     ShowWpfControl(aboutAppView);
