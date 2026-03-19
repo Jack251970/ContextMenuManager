@@ -71,8 +71,7 @@ namespace ContextMenuManager
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            appSettingBox, languagesBox, dictionariesBox, aboutMeBox,
-            backupListBox
+            languagesBox, dictionariesBox, backupListBox
         };
 
         private readonly ShellList shellList = new();
@@ -86,10 +85,8 @@ namespace ContextMenuManager
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
 
-        private readonly AppSettingBox appSettingBox = new();
         private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
-        private readonly AboutAppBox aboutMeBox = new();
         private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
 
@@ -326,7 +323,7 @@ namespace ContextMenuManager
         {
             foreach (Control ctr in MainBody.Controls)
             {
-                if (ctr is MyList list && list != appSettingBox)
+                if (ctr is MyList list)
                 {
                     list.HoveredItemChanged += (sender, e) =>
                     {
@@ -441,9 +438,6 @@ namespace ContextMenuManager
         {
             switch (SideBar.SelectedIndex)
             {
-                case 0:
-                    appSettingBox.LoadItems(); appSettingBox.Visible = true;
-                    break;
                 case 1:
                     languagesBox.LoadLanguages(); languagesBox.Visible = true;
                     break;
@@ -452,9 +446,6 @@ namespace ContextMenuManager
                     break;
                 case 3:
                     dictionariesBox.LoadText(); dictionariesBox.Visible = true;
-                    break;
-                case 4:
-                    aboutMeBox.LoadAboutInfo(); aboutMeBox.Visible = true;
                     break;
             }
             currentListControl = null;

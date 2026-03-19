@@ -194,9 +194,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\NewItem.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="Controls\AppSettingBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\GuidBlockedItem.cs">
       <SubType>Component</SubType>
     </Compile>
