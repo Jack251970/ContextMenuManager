@@ -21,7 +21,6 @@ namespace ContextMenuManager
             StartPosition = FormStartPosition.CenterScreen;
             Size = AppConfig.MainFormSize;
             Text = AppString.General.AppName;
-            Controls.Add(explorerRestarter);
             ToolBar.AddButtons(ToolBarButtons);
 
             // 创建并添加搜索框到工具栏
@@ -84,7 +83,6 @@ namespace ContextMenuManager
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
 
-        private readonly ExplorerRestarter explorerRestarter = new();
 
         // 主页
         private static readonly string[] GeneralItems =
@@ -679,11 +677,11 @@ namespace ContextMenuManager
 
         private void CloseMainForm()
         {
-            if (explorerRestarter.Visible && AppMessageBox.Show(explorerRestarter.Text,
+            if (ExplorerRestarter.PendingRestart && AppMessageBox.Show(ExplorerRestarter.PendingMessage,
                 MessageBoxButtons.OKCancel) == DialogResult.OK) ExternalProgram.RestartExplorer();
             Opacity = 0;
             WindowState = FormWindowState.Normal;
-            explorerRestarter.Visible = false;
+            ExplorerRestarter.Hide();
             AppConfig.MainFormSize = Size;
         }
     }

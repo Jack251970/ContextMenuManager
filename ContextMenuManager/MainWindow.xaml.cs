@@ -27,8 +27,6 @@ namespace ContextMenuManager
         private readonly DetailedEditList detailedEditList = new();
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
-        private readonly ExplorerRestarter explorerRestarter = new();
-
         private readonly AppSettingView appSettingView = new();
         private readonly LanguagesView languagesView = new();
         private readonly BackupView backupView = new();
@@ -78,11 +76,6 @@ namespace ContextMenuManager
                 ctrl.Visible = false;
                 contentPanel.Controls.Add(ctrl);
             }
-
-            // ExplorerRestarter sits at the top of the panel
-            explorerRestarter.Dock = WinForms.DockStyle.Top;
-            explorerRestarter.Visible = false;
-            contentPanel.Controls.Add(explorerRestarter);
 
             // Host the WinForms panel inside WPF
             ContentHost.Child = contentPanel;
@@ -224,10 +217,7 @@ namespace ContextMenuManager
 
             foreach (WinForms.Control ctrl in contentPanel.Controls)
             {
-                if (ctrl != explorerRestarter)
-                {
-                    ctrl.Visible = false;
-                }
+                ctrl.Visible = false;
             }
 
             if (currentListControl is MyList myList)
@@ -538,16 +528,17 @@ namespace ContextMenuManager
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (explorerRestarter.Visible)
+            if (ExplorerRestarterBanner.IsPendingRestart)
             {
                 var result = System.Windows.MessageBox.Show(
-                    explorerRestarter.Text,
+                    ExplorerRestarterBanner.MessageText,
                     AppString.General.AppName,
                     MessageBoxButton.OKCancel,
                     WpfMessageBoxImage.Question);
                 if (result == MessageBoxResult.OK)
                 {
                     ExternalProgram.RestartExplorer();
+                    ExplorerRestarter.Hide();
                 }
             }
 
