@@ -289,14 +289,6 @@ namespace ContextMenuManager.Views
             }
         }
 
-        private void TranslatorLink_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is TextBlock { Tag: string url } && !string.IsNullOrWhiteSpace(url))
-            {
-                ExternalProgram.OpenWebUrl(url);
-            }
-        }
-
         private sealed class LanguageOption
         {
             public LanguageOption(string code, string displayName)

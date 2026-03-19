@@ -4,15 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="Transparent">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="PageForegroundBrush" Color="#F3F3F3" />
-        <SolidColorBrush x:Key="PageMutedBrush" Color="#B8B8B8" />
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1B1B1B" />
-        <SolidColorBrush x:Key="CardBorderBrush" Color="#303030" />
-        <SolidColorBrush x:Key="AccentBrush" Color="#F29D38" />
-
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Padding" Value="18" />
@@ -30,13 +24,11 @@
             <StackPanel Grid.Row="0" Margin="0,0,0,20">
                 <TextBlock
                     x:Name="PageTitleText"
-                    Foreground="{StaticResource PageForegroundBrush}"
                     FontSize="22"
                     FontWeight="SemiBold" />
                 <TextBlock
                     x:Name="PageDescriptionText"
                     Margin="0,8,0,0"
-                    Foreground="{StaticResource PageMutedBrush}"
                     FontSize="13"
                     TextWrapping="Wrap" />
             </StackPanel>
@@ -51,13 +43,11 @@
                     <StackPanel Margin="0,0,20,0">
                         <TextBlock
                             x:Name="SummaryLabel"
-                            Foreground="{StaticResource PageForegroundBrush}"
                             FontSize="15"
                             FontWeight="SemiBold" />
                         <TextBlock
                             x:Name="SummaryHintText"
                             Margin="0,4,0,0"
-                            Foreground="{StaticResource PageMutedBrush}"
                             FontSize="12"
                             TextWrapping="Wrap" />
                     </StackPanel>
@@ -81,7 +71,10 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Row="2" Margin="0,20,0,0" Style="{StaticResource CardStyle}">
+            <Border
+                Grid.Row="2"
+                Margin="0,20,0,0"
+                Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -90,7 +83,6 @@
 
                     <TextBlock
                         x:Name="BackupsHeaderText"
-                        Foreground="{StaticResource AccentBrush}"
                         FontSize="18"
                         FontWeight="SemiBold" />
 
@@ -105,9 +97,18 @@
                         IsReadOnly="True"
                         ItemsSource="{Binding BackupEntries, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Width="*" Binding="{Binding DisplayText}" Header="Backup" />
-                            <DataGridTextColumn Width="180" Binding="{Binding DeviceName}" Header="Device" />
-                            <DataGridTextColumn Width="180" Binding="{Binding CreateTimeText}" Header="Created" />
+                            <DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding DisplayText}"
+                                Header="Backup" />
+                            <DataGridTextColumn
+                                Width="180"
+                                Binding="{Binding DeviceName}"
+                                Header="Device" />
+                            <DataGridTextColumn
+                                Width="180"
+                                Binding="{Binding CreateTimeText}"
+                                Header="Created" />
                             <DataGridTemplateColumn Width="210" Header="Actions">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

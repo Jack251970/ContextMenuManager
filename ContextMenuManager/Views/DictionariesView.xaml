@@ -4,15 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="Transparent">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="PageForegroundBrush" Color="#F3F3F3" />
-        <SolidColorBrush x:Key="PageMutedBrush" Color="#B8B8B8" />
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1B1B1B" />
-        <SolidColorBrush x:Key="CardBorderBrush" Color="#303030" />
-        <SolidColorBrush x:Key="AccentBrush" Color="#F29D38" />
-
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Padding" Value="18" />
@@ -29,13 +23,11 @@
         <StackPanel Grid.Row="0" Margin="0,0,0,20">
             <TextBlock
                 x:Name="PageTitleText"
-                Foreground="{StaticResource PageForegroundBrush}"
                 FontSize="22"
                 FontWeight="SemiBold" />
             <TextBlock
                 x:Name="PageDescriptionText"
                 Margin="0,8,0,0"
-                Foreground="{StaticResource PageMutedBrush}"
                 FontSize="13"
                 TextWrapping="Wrap" />
         </StackPanel>
@@ -50,13 +42,11 @@
                 <StackPanel Margin="0,0,20,0">
                     <TextBlock
                         x:Name="CurrentTabLabel"
-                        Foreground="{StaticResource PageForegroundBrush}"
                         FontSize="15"
                         FontWeight="SemiBold" />
                     <TextBlock
                         x:Name="CurrentTabHintText"
                         Margin="0,4,0,0"
-                        Foreground="{StaticResource PageMutedBrush}"
                         FontSize="12"
                         TextWrapping="Wrap" />
                 </StackPanel>
@@ -80,17 +70,20 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="2" Margin="0,20,0,0" Style="{StaticResource CardStyle}">
+        <Border
+            Grid.Row="2"
+            Margin="0,20,0,0"
+            Style="{StaticResource CardStyle}">
             <TabControl x:Name="DictionaryTabControl" SelectionChanged="DictionaryTabControl_OnSelectionChanged">
                 <TabItem x:Name="DescriptionTab">
                     <Grid Margin="12">
                         <TextBox
                             x:Name="DescriptionTextBox"
                             AcceptsReturn="True"
+                            HorizontalScrollBarVisibility="Auto"
                             IsReadOnly="True"
                             TextWrapping="Wrap"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto" />
+                            VerticalScrollBarVisibility="Auto" />
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="AppLanguageTab">
@@ -98,11 +91,11 @@
                         <TextBox
                             x:Name="AppLanguageTextBox"
                             AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
                             IsReadOnly="True"
                             TextWrapping="NoWrap"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"
-                            FontFamily="Consolas" />
+                            VerticalScrollBarVisibility="Auto" />
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="GuidInfoTab">
@@ -110,11 +103,11 @@
                         <TextBox
                             x:Name="GuidInfoTextBox"
                             AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
                             IsReadOnly="True"
                             TextWrapping="NoWrap"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"
-                            FontFamily="Consolas" />
+                            VerticalScrollBarVisibility="Auto" />
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="DetailedEditTab">
@@ -122,11 +115,11 @@
                         <TextBox
                             x:Name="DetailedEditTextBox"
                             AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
                             IsReadOnly="True"
                             TextWrapping="NoWrap"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"
-                            FontFamily="Consolas" />
+                            VerticalScrollBarVisibility="Auto" />
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="EnhanceMenusTab">
@@ -134,11 +127,11 @@
                         <TextBox
                             x:Name="EnhanceMenusTextBox"
                             AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
                             IsReadOnly="True"
                             TextWrapping="NoWrap"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"
-                            FontFamily="Consolas" />
+                            VerticalScrollBarVisibility="Auto" />
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="UwpModeTab">
@@ -146,11 +139,11 @@
                         <TextBox
                             x:Name="UwpModeTextBox"
                             AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
                             IsReadOnly="True"
                             TextWrapping="NoWrap"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"
-                            FontFamily="Consolas" />
+                            VerticalScrollBarVisibility="Auto" />
                     </Grid>
                 </TabItem>
             </TabControl>
