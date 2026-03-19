@@ -8,6 +8,7 @@ namespace ContextMenuManager
     {
         public App()
         {
+            InitializeComponent();
             ShadowAssist.UseBitmapCache = false;
         }
 
