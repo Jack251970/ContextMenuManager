@@ -51,8 +51,11 @@
                     ui:ControlHelper.PlaceholderText="Search..."
                     TextChanged="SearchBox_TextChanged" />
 
-                <!--  WinForms content controls hosted via WindowsFormsHost  -->
-                <WindowsFormsHost x:Name="ContentHost" Grid.Row="1" />
+                <Grid Grid.Row="1">
+                    <ContentControl x:Name="WpfContentHost" Visibility="Collapsed" />
+                    <!--  WinForms content controls hosted via WindowsFormsHost  -->
+                    <WindowsFormsHost x:Name="ContentHost" />
+                </Grid>
             </Grid>
         </ui:NavigationView>
 

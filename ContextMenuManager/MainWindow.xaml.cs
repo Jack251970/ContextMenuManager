@@ -1,5 +1,6 @@
-﻿using ContextMenuManager.Controls;
+using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
+using ContextMenuManager.Views;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
@@ -26,13 +27,14 @@ namespace ContextMenuManager
         private readonly DetailedEditList detailedEditList = new();
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
-        private readonly AppSettingBox appSettingBox = new();
         private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
-        private readonly AboutAppBox aboutMeBox = new();
         private readonly DonateBox donateBox = new();
         private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
+
+        private readonly AppSettingView appSettingView = new();
+        private readonly AboutAppView aboutAppView = new();
 
         // WinForms container panel (single child for WindowsFormsHost)
         private readonly WinForms.Panel contentPanel = new();
@@ -51,7 +53,8 @@ namespace ContextMenuManager
             Title = AppString.General.AppName ?? "ContextMenuManager";
             RefreshButton.Content = AppString.ToolBar.Refresh ?? "Refresh";
             SearchBox.SetValue(iNKORE.UI.WPF.Modern.Controls.Helpers.ControlHelper.PlaceholderTextProperty,
-                AppString.General.Search ?? "Search…");
+                AppString.General.Search ?? "Search...");
+            appSettingView.OwnerWindow = this;
 
             // Restore saved window size
             var savedSize = AppConfig.MainFormSize;
@@ -103,28 +106,26 @@ namespace ContextMenuManager
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            appSettingBox, languagesBox, dictionariesBox, aboutMeBox,
-            donateBox, backupListBox
+            languagesBox, dictionariesBox, donateBox, backupListBox
         };
 
-        // ─── Navigation building ─────────────────────────────────────────────
+        // Navigation building
 
         private void BuildNavigation()
         {
-            // Home section
             var homeItem = MakeSectionItem(AppString.ToolBar.Home ?? "Home", "\uE80F");
             AddSubItems(homeItem, new[]
             {
-                (AppString.SideBar.File ?? "File",                "shell_file"),
-                (AppString.SideBar.Folder ?? "Folder",            "shell_folder"),
-                (AppString.SideBar.Directory ?? "Directory",      "shell_directory"),
-                (AppString.SideBar.Background ?? "Background",    "shell_background"),
-                (AppString.SideBar.Desktop ?? "Desktop",          "shell_desktop"),
-                (AppString.SideBar.Drive ?? "Drive",              "shell_drive"),
-                (AppString.SideBar.AllObjects ?? "All Objects",   "shell_allobjects"),
-                (AppString.SideBar.Computer ?? "Computer",        "shell_computer"),
-                (AppString.SideBar.RecycleBin ?? "Recycle Bin",   "shell_recyclebin"),
-                (AppString.SideBar.Library ?? "Library",          "shell_library"),
+                (AppString.SideBar.File ?? "File", "shell_file"),
+                (AppString.SideBar.Folder ?? "Folder", "shell_folder"),
+                (AppString.SideBar.Directory ?? "Directory", "shell_directory"),
+                (AppString.SideBar.Background ?? "Background", "shell_background"),
+                (AppString.SideBar.Desktop ?? "Desktop", "shell_desktop"),
+                (AppString.SideBar.Drive ?? "Drive", "shell_drive"),
+                (AppString.SideBar.AllObjects ?? "All Objects", "shell_allobjects"),
+                (AppString.SideBar.Computer ?? "Computer", "shell_computer"),
+                (AppString.SideBar.RecycleBin ?? "Recycle Bin", "shell_recyclebin"),
+                (AppString.SideBar.Library ?? "Library", "shell_library"),
             });
             homeItem.MenuItems.Add(new NavigationViewItemSeparator());
             homeItem.MenuItems.Add(MakeItem(AppString.SideBar.New ?? "New", "shell_new"));
@@ -134,51 +135,48 @@ namespace ContextMenuManager
             homeItem.MenuItems.Add(MakeItem(AppString.SideBar.WinX ?? "WinX", "shell_winx"));
             homeItem.IsExpanded = true;
 
-            // Type section
             var typeItem = MakeSectionItem(AppString.ToolBar.Type ?? "Type", "\uE8A9");
             AddSubItems(typeItem, new[]
             {
-                (AppString.SideBar.LnkFile ?? "Lnk File",               "type_lnk"),
-                (AppString.SideBar.UwpLnk ?? "UWP Lnk",                 "type_uwplnk"),
-                (AppString.SideBar.ExeFile ?? "Exe File",                "type_exe"),
-                (AppString.SideBar.UnknownType ?? "Unknown Type",        "type_unknown"),
+                (AppString.SideBar.LnkFile ?? "Lnk File", "type_lnk"),
+                (AppString.SideBar.UwpLnk ?? "UWP Lnk", "type_uwplnk"),
+                (AppString.SideBar.ExeFile ?? "Exe File", "type_exe"),
+                (AppString.SideBar.UnknownType ?? "Unknown Type", "type_unknown"),
             });
             typeItem.MenuItems.Add(new NavigationViewItemSeparator());
             AddSubItems(typeItem, new[]
             {
                 (AppString.SideBar.CustomExtension ?? "Custom Extension", "type_custom"),
-                (AppString.SideBar.PerceivedType ?? "Perceived Type",     "type_perceived"),
-                (AppString.SideBar.DirectoryType ?? "Directory Type",     "type_directory"),
+                (AppString.SideBar.PerceivedType ?? "Perceived Type", "type_perceived"),
+                (AppString.SideBar.DirectoryType ?? "Directory Type", "type_directory"),
             });
             typeItem.MenuItems.Add(new NavigationViewItemSeparator());
             typeItem.MenuItems.Add(MakeItem(AppString.SideBar.MenuAnalysis ?? "Menu Analysis", "type_menuanalysis"));
 
-            // Rule section
             var ruleItem = MakeSectionItem(AppString.ToolBar.Rule ?? "Rule", "\uE90F");
             AddSubItems(ruleItem, new[]
             {
-                (AppString.SideBar.EnhanceMenu ?? "Enhance Menu",   "rule_enhance"),
+                (AppString.SideBar.EnhanceMenu ?? "Enhance Menu", "rule_enhance"),
                 (AppString.SideBar.DetailedEdit ?? "Detailed Edit", "rule_detailed"),
             });
             ruleItem.MenuItems.Add(new NavigationViewItemSeparator());
             AddSubItems(ruleItem, new[]
             {
-                (AppString.SideBar.DragDrop ?? "Drag Drop",                "rule_dragdrop"),
+                (AppString.SideBar.DragDrop ?? "Drag Drop", "rule_dragdrop"),
                 (AppString.SideBar.PublicReferences ?? "Public References", "rule_public"),
-                (AppString.SideBar.IEMenu ?? "IE Menu",                    "rule_ie"),
+                (AppString.SideBar.IEMenu ?? "IE Menu", "rule_ie"),
             });
             ruleItem.MenuItems.Add(new NavigationViewItemSeparator());
             AddSubItems(ruleItem, new[]
             {
-                (AppString.SideBar.GuidBlocked ?? "GUID Blocked",       "rule_guid"),
-                (AppString.SideBar.CustomRegPath ?? "Custom Reg Path",  "rule_customreg"),
+                (AppString.SideBar.GuidBlocked ?? "GUID Blocked", "rule_guid"),
+                (AppString.SideBar.CustomRegPath ?? "Custom Reg Path", "rule_customreg"),
             });
 
             NavView.MenuItems.Add(homeItem);
             NavView.MenuItems.Add(typeItem);
             NavView.MenuItems.Add(ruleItem);
 
-            // Footer items (About/Settings section)
             NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppSetting ?? "Settings", "about_settings"));
             NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppLanguage ?? "Language", "about_language"));
             NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.BackupRestore ?? "Backup", "about_backup"));
@@ -196,10 +194,12 @@ namespace ContextMenuManager
         private static void AddSubItems(NavigationViewItem parent, (string content, string tag)[] items)
         {
             foreach (var (content, tag) in items)
+            {
                 parent.MenuItems.Add(MakeItem(content, tag));
+            }
         }
 
-        // ─── Navigation / content switching ──────────────────────────────────
+        // Navigation / content switching
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -214,24 +214,29 @@ namespace ContextMenuManager
 
         private void NavigateTo(string tag)
         {
-            if (tag == null) return;
+            if (tag == null)
+            {
+                return;
+            }
+
             currentTag = tag;
 
-            // Hide all content controls
             foreach (WinForms.Control ctrl in contentPanel.Controls)
             {
                 if (ctrl != explorerRestarter)
+                {
                     ctrl.Visible = false;
+                }
             }
 
-            // Release items from previous list
             if (currentListControl is MyList myList)
+            {
                 myList.ClearItems();
+            }
             currentListControl = null;
 
             switch (tag)
             {
-                // Home – Shell scenes
                 case "shell_file": LoadShell(Scenes.File); break;
                 case "shell_folder": LoadShell(Scenes.Folder); break;
                 case "shell_directory": LoadShell(Scenes.Directory); break;
@@ -247,7 +252,6 @@ namespace ContextMenuManager
                 case "shell_openwith": openWithList.LoadItems(); ShowControl(openWithList); break;
                 case "shell_winx": winXList.LoadItems(); ShowControl(winXList); break;
 
-                // Type – file-type Shell scenes
                 case "type_lnk": LoadShell(Scenes.LnkFile); break;
                 case "type_uwplnk": LoadShell(Scenes.UwpLnk); break;
                 case "type_exe": LoadShell(Scenes.ExeFile); break;
@@ -257,7 +261,6 @@ namespace ContextMenuManager
                 case "type_directory": LoadShell(Scenes.DirectoryType); break;
                 case "type_menuanalysis": LoadShell(Scenes.MenuAnalysis); break;
 
-                // Rule
                 case "rule_enhance":
                     enhanceMenusList.ScenePath = null;
                     enhanceMenusList.LoadItems();
@@ -274,12 +277,17 @@ namespace ContextMenuManager
                 case "rule_guid": guidBlockedList.LoadItems(); ShowControl(guidBlockedList); break;
                 case "rule_customreg": LoadShell(Scenes.CustomRegPath); break;
 
-                // About / settings
-                case "about_settings": appSettingBox.LoadItems(); ShowControl(appSettingBox); break;
+                case "about_settings":
+                    appSettingView.RefreshFromConfig();
+                    ShowWpfControl(appSettingView);
+                    break;
                 case "about_language": languagesBox.LoadLanguages(); ShowControl(languagesBox); break;
                 case "about_backup": backupListBox.LoadItems(); ShowControl(backupListBox); break;
                 case "about_dict": dictionariesBox.LoadText(); ShowControl(dictionariesBox); break;
-                case "about_app": aboutMeBox.LoadAboutInfo(); ShowControl(aboutMeBox); break;
+                case "about_app":
+                    aboutAppView.RefreshContent();
+                    ShowWpfControl(aboutAppView);
+                    break;
                 case "about_donate": ShowControl(donateBox); break;
             }
         }
@@ -377,11 +385,31 @@ namespace ContextMenuManager
 
         private void ShowControl(WinForms.Control ctrl)
         {
+            WpfContentHost.Content = null;
+            WpfContentHost.Visibility = Visibility.Collapsed;
+            ContentHost.Visibility = Visibility.Visible;
             ctrl.Visible = true;
             currentListControl = ctrl;
+            SetSearchEnabled(ctrl is MyList);
         }
 
-        // ─── Refresh ─────────────────────────────────────────────────────────
+        private void ShowWpfControl(System.Windows.Controls.Control ctrl)
+        {
+            ContentHost.Visibility = Visibility.Collapsed;
+            WpfContentHost.Content = ctrl;
+            WpfContentHost.Visibility = Visibility.Visible;
+            currentListControl = null;
+            SetSearchEnabled(false);
+            UpdateStatusText(string.Empty);
+        }
+
+        private void SetSearchEnabled(bool enabled)
+        {
+            SearchBox.Text = string.Empty;
+            SearchBox.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // Refresh
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
@@ -394,7 +422,7 @@ namespace ContextMenuManager
             WinForms.Cursor.Current = WinForms.Cursors.Default;
         }
 
-        // ─── Search ──────────────────────────────────────────────────────────
+        // Search
 
         private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
@@ -414,11 +442,12 @@ namespace ContextMenuManager
 
             if (currentListControl is MyList myList)
             {
-                // Save originals on first filter
                 if (originalListItems.Count == 0)
                 {
                     foreach (WinForms.Control ctrl in myList.Controls)
+                    {
                         originalListItems.Add(ctrl);
+                    }
                 }
 
                 FilterListItems(myList, searchText);
@@ -431,7 +460,9 @@ namespace ContextMenuManager
             {
                 myList.Controls.Clear();
                 foreach (var item in originalListItems)
+                {
                     myList.Controls.Add(item);
+                }
                 originalListItems.Clear();
             }
         }
@@ -442,10 +473,13 @@ namespace ContextMenuManager
 
             foreach (WinForms.Control control in listControl.Controls)
             {
-                if (control is not MyListItem item) continue;
+                if (control is not MyListItem item)
+                {
+                    continue;
+                }
 
                 var matches = item.Text?.ToLower().Contains(searchText) == true
-                           || item.SubText?.ToLower().Contains(searchText) == true;
+                    || item.SubText?.ToLower().Contains(searchText) == true;
 
                 if (!matches)
                 {
@@ -462,12 +496,17 @@ namespace ContextMenuManager
                     }
                 }
 
-                if (matches) itemsToShow.Add(item);
+                if (matches)
+                {
+                    itemsToShow.Add(item);
+                }
             }
 
             listControl.Controls.Clear();
             foreach (var item in itemsToShow)
+            {
                 listControl.Controls.Add(item);
+            }
 
             var statusMsg = itemsToShow.Count == 0
                 ? $"{AppString.General.NoResultsFor ?? "No results for"} \"{searchText}\""
@@ -475,14 +514,14 @@ namespace ContextMenuManager
             UpdateStatusText(statusMsg);
         }
 
-        // ─── Status bar helper ────────────────────────────────────────────────
+        // Status bar helper
 
         private void UpdateStatusText(string text)
         {
             StatusText.Text = text;
         }
 
-        // ─── Window events ────────────────────────────────────────────────────
+        // Window events
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
@@ -494,20 +533,28 @@ namespace ContextMenuManager
                     MessageBoxButton.OKCancel,
                     WpfMessageBoxImage.Question);
                 if (result == MessageBoxResult.OK)
+                {
                     ExternalProgram.RestartExplorer();
+                }
             }
 
-            // Persist window size
             AppConfig.MainFormSize = new DrawingSize((int)Width, (int)Height);
             Opacity = 0;
         }
 
-        // ─── First-run helper ─────────────────────────────────────────────────
+        // First-run helper
 
         private void FirstRunDownloadLanguage()
         {
-            if (!AppConfig.IsFirstRun) return;
-            if (System.Globalization.CultureInfo.CurrentUICulture.Name == "zh-CN") return;
+            if (!AppConfig.IsFirstRun)
+            {
+                return;
+            }
+
+            if (System.Globalization.CultureInfo.CurrentUICulture.Name == "zh-CN")
+            {
+                return;
+            }
 
             var result = System.Windows.MessageBox.Show(
                 "It is detected that you may be running this program for the first time,\n" +
