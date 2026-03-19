@@ -59,15 +59,10 @@ namespace ContextMenuManager.Controls
 
     public class MyList : FlowLayoutPanel
     {
-        public MyListBox Owner
+        public Panel Owner
         {
-            get => (MyListBox)Parent;
+            get => (Panel)Parent;
             set => Parent = value;
-        }
-
-        public MyList(MyListBox owner) : this()
-        {
-            Owner = owner;
         }
 
         public MyList()
