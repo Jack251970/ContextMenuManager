@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace ContextMenuManager
 {
+    [Obsolete("We are moving to WPF. Use MainWindow instead.")]
     internal sealed class MainForm : MyMainForm
     {
         private readonly SearchBox searchBox; // 添加搜索框成员变量

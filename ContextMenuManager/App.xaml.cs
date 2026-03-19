@@ -1,0 +1,20 @@
+﻿using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern.Common;
+using System.Windows;
+
+namespace ContextMenuManager
+{
+    public partial class App : Application
+    {
+        public App()
+        {
+            ShadowAssist.UseBitmapCache = false;
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
+        }
+    }
+}

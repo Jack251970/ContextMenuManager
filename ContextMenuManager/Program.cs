@@ -31,7 +31,10 @@ namespace ContextMenuManager
             ResourceString.SetButtonTextFallbacks(AppString.Dialog.OK, AppString.Dialog.Cancel);
             Updater.PeriodicUpdate();
             XmlDicHelper.ReloadDics();
-            Application.Run(new MainForm());
+
+            // 启动WPF应用
+            var app = new App();
+            app.Run(new MainWindow());
         }
     }
 }
