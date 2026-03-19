@@ -125,7 +125,7 @@ namespace ContextMenuManager.Views
 
         private DictionaryEntry GetCurrentEntry()
         {
-            return entries[DictionaryTabControl.SelectedIndex];
+            return entries.TryGetValue(DictionaryTabControl.SelectedIndex, out var entry) ? entry : entries[0];
         }
 
         private sealed class DictionaryEntry
