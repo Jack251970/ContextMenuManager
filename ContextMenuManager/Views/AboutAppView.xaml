@@ -4,72 +4,107 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="Transparent">
     <UserControl.Resources>
+        <SolidColorBrush x:Key="PageForegroundBrush" Color="#F3F3F3" />
+        <SolidColorBrush x:Key="PageMutedBrush" Color="#C2C2C2" />
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1B1B1B" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#303030" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#F29D38" />
+
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="#1F1F1F" />
-            <Setter Property="BorderBrush" Value="#343434" />
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="CornerRadius" Value="18" />
             <Setter Property="Padding" Value="24" />
+        </Style>
+
+        <Style x:Key="LinkTextStyle" TargetType="TextBlock">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
     </UserControl.Resources>
 
-    <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <Grid Margin="24">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                <StackPanel HorizontalAlignment="Center">
+                    <Border
+                        Width="116"
+                        Height="116"
+                        Background="#262626"
+                        BorderBrush="#393939"
+                        BorderThickness="1"
+                        CornerRadius="58"
+                        Padding="16">
+                        <Image
+                            x:Name="LogoImage"
+                            Stretch="Uniform" />
+                    </Border>
+
                     <TextBlock
                         x:Name="AppNameText"
-                        FontSize="28"
-                        FontWeight="SemiBold" />
+                        Margin="0,18,0,0"
+                        Foreground="{StaticResource AccentBrush}"
+                        FontSize="30"
+                        FontWeight="Bold"
+                        TextAlignment="Center" />
+
                     <TextBlock
                         x:Name="DescriptionText"
-                        Margin="0,10,0,0"
-                        Foreground="#C9C9C9"
+                        Margin="0,12,0,0"
+                        MaxWidth="620"
+                        Foreground="{StaticResource PageMutedBrush}"
+                        FontSize="15"
+                        TextAlignment="Center"
                         TextWrapping="Wrap" />
                 </StackPanel>
+            </Border>
 
-                <Border Grid.Row="1" Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock
-                            x:Name="ProjectLinksHeader"
-                            FontSize="18"
-                            FontWeight="SemiBold" />
-                        <TextBlock
-                            x:Name="GitHubLinkText"
-                            Margin="0,16,0,0"
-                            Cursor="Hand"
-                            Foreground="#F5A623"
-                            MouseLeftButtonUp="GitHubLinkText_OnMouseLeftButtonUp"
-                            TextWrapping="Wrap" />
-                        <TextBlock
-                            x:Name="GiteeLinkText"
-                            Margin="0,10,0,0"
-                            Cursor="Hand"
-                            Foreground="#F5A623"
-                            MouseLeftButtonUp="GiteeLinkText_OnMouseLeftButtonUp"
-                            TextWrapping="Wrap" />
-                        <TextBlock
-                            x:Name="LicenseText"
-                            Margin="0,16,0,0"
-                            Foreground="#D9D9D9"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
+            <Border Grid.Row="1" Margin="0,20,0,0" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock
+                        x:Name="ProjectLinksHeader"
+                        Foreground="{StaticResource PageForegroundBrush}"
+                        FontSize="20"
+                        FontWeight="SemiBold" />
 
-                <StackPanel Grid.Row="2" Margin="0,20,0,0" Orientation="Horizontal">
-                    <Button
-                        x:Name="CheckUpdateButton"
-                        MinWidth="180"
-                        Padding="16,8"
-                        Click="CheckUpdateButton_OnClick" />
+                    <TextBlock
+                        x:Name="GitHubLinkText"
+                        Margin="0,18,0,0"
+                        MouseLeftButtonUp="GitHubLinkText_OnMouseLeftButtonUp"
+                        Style="{StaticResource LinkTextStyle}" />
+
+                    <TextBlock
+                        x:Name="GiteeLinkText"
+                        Margin="0,10,0,0"
+                        MouseLeftButtonUp="GiteeLinkText_OnMouseLeftButtonUp"
+                        Style="{StaticResource LinkTextStyle}" />
+
+                    <Separator Margin="0,18,0,18" />
+
+                    <TextBlock
+                        x:Name="LicenseText"
+                        Foreground="{StaticResource PageMutedBrush}"
+                        FontSize="14"
+                        TextWrapping="Wrap" />
                 </StackPanel>
-            </Grid>
-        </ScrollViewer>
-    </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="2" Margin="0,20,0,0" HorizontalAlignment="Center">
+                <Button
+                    x:Name="CheckUpdateButton"
+                    MinWidth="210"
+                    Padding="18,9"
+                    Click="CheckUpdateButton_OnClick" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

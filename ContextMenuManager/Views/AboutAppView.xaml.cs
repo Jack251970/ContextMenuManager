@@ -1,6 +1,10 @@
 using ContextMenuManager.Methods;
+using System;
+using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 
 namespace ContextMenuManager.Views
 {
@@ -12,6 +16,7 @@ namespace ContextMenuManager.Views
         public AboutAppView()
         {
             InitializeComponent();
+            LogoImage.Source = ToBitmapSource(Properties.Resources.Logo);
             RefreshContent();
         }
 
@@ -19,7 +24,7 @@ namespace ContextMenuManager.Views
         {
             AppNameText.Text = AppString.General.AppName;
             DescriptionText.Text = AppString.About.Description;
-            ProjectLinksHeader.Text = AppString.SideBar.AboutApp ?? "Project";
+            ProjectLinksHeader.Text = AppString.SideBar.AboutApp ?? "About";
             GitHubLinkText.Text = $"{AppString.About.GitHub ?? "GitHub"}: {GitHubUrl}";
             GiteeLinkText.Text = $"{AppString.About.Gitee ?? "Gitee"}: {GiteeUrl}";
             LicenseText.Text = $"{AppString.About.License ?? "License"}: GPL License";
@@ -40,5 +45,26 @@ namespace ContextMenuManager.Views
         {
             ExternalProgram.OpenWebUrl(GiteeUrl);
         }
+
+        private static BitmapSource ToBitmapSource(System.Drawing.Bitmap bitmap)
+        {
+            var hBitmap = bitmap.GetHbitmap();
+            try
+            {
+                return Imaging.CreateBitmapSourceFromHBitmap(
+                    hBitmap,
+                    IntPtr.Zero,
+                    System.Windows.Int32Rect.Empty,
+                    BitmapSizeOptions.FromEmptyOptions());
+            }
+            finally
+            {
+                DeleteObject(hBitmap);
+            }
+        }
+
+        [DllImport("gdi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DeleteObject(IntPtr hObject);
     }
 }
