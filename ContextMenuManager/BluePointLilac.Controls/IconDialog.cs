@@ -5,6 +5,12 @@ using System.Windows.Forms;
 
 namespace BluePointLilac.Controls
 {
+    /// <summary>
+    /// Represents a dialog box that allows the user to select an icon from a file.
+    /// </summary>
+    /// <remarks>Use the IconDialog class to prompt users to choose an icon from a file, such as an executable
+    /// or DLL. The selected icon's path and index are available through the IconPath and IconIndex properties. This
+    /// class is sealed and cannot be inherited.</remarks>
     public sealed class IconDialog : CommonDialog
     {
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, EntryPoint = "#62", SetLastError = true)]
