@@ -2,7 +2,6 @@ using ContextMenuManager.Methods;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
@@ -25,8 +24,10 @@ namespace ContextMenuManager.Views
             AppNameText.Text = AppString.General.AppName;
             DescriptionText.Text = AppString.About.Description;
             ProjectLinksHeader.Text = AppString.SideBar.AboutApp ?? "About";
-            GitHubLinkText.Text = $"{AppString.About.GitHub ?? "GitHub"}: {GitHubUrl}";
-            GiteeLinkText.Text = $"{AppString.About.Gitee ?? "Gitee"}: {GiteeUrl}";
+            GitHubLinkText.Content = $"{AppString.About.GitHub ?? "GitHub"}: {GitHubUrl}";
+            GitHubLinkText.NavigateUri = new Uri(GitHubUrl);
+            GiteeLinkText.Content = $"{AppString.About.Gitee ?? "Gitee"}: {GiteeUrl}";
+            GiteeLinkText.NavigateUri = new Uri(GiteeUrl);
             LicenseText.Text = $"{AppString.About.License ?? "License"}: GPL License";
             CheckUpdateButton.Content = AppString.About.CheckUpdate ?? "Check Update";
         }
@@ -34,16 +35,6 @@ namespace ContextMenuManager.Views
         private void CheckUpdateButton_OnClick(object sender, System.Windows.RoutedEventArgs e)
         {
             Updater.Update(true);
-        }
-
-        private void GitHubLinkText_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            ExternalProgram.OpenWebUrl(GitHubUrl);
-        }
-
-        private void GiteeLinkText_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            ExternalProgram.OpenWebUrl(GiteeUrl);
         }
 
         private static BitmapSource ToBitmapSource(System.Drawing.Bitmap bitmap)
