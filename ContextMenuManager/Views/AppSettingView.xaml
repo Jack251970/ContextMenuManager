@@ -32,8 +32,16 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="ConfigPathLabel" Style="{StaticResource LabelStyle}" />
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ComboBox x:Name="ConfigDirComboBox" Style="{StaticResource ValueComboStyle}" SelectionChanged="ConfigDirComboBox_OnSelectionChanged" />
-                        <Button Margin="12,0,0,0" Padding="14,6" Click="OpenConfigDirButton_OnClick">Open</Button>
+                        <ComboBox
+                            x:Name="ConfigDirComboBox"
+                            SelectionChanged="ConfigDirComboBox_OnSelectionChanged"
+                            Style="{StaticResource ValueComboStyle}" />
+                        <Button
+                            Margin="12,0,0,0"
+                            Padding="14,6"
+                            Click="OpenConfigDirButton_OnClick">
+                            Open
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -46,8 +54,16 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="UpdateFrequencyLabel" Style="{StaticResource LabelStyle}" />
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ComboBox x:Name="UpdateComboBox" Style="{StaticResource ValueComboStyle}" SelectionChanged="UpdateComboBox_OnSelectionChanged" />
-                        <Button Margin="12,0,0,0" Padding="14,6" Click="CheckUpdateButton_OnClick">Check</Button>
+                        <ComboBox
+                            x:Name="UpdateComboBox"
+                            SelectionChanged="UpdateComboBox_OnSelectionChanged"
+                            Style="{StaticResource ValueComboStyle}" />
+                        <Button
+                            Margin="12,0,0,0"
+                            Padding="14,6"
+                            Click="CheckUpdateButton_OnClick">
+                            Check
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -59,7 +75,11 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="RepoLabel" Style="{StaticResource LabelStyle}" />
-                    <ComboBox x:Name="RepoComboBox" Grid.Column="1" Style="{StaticResource ValueComboStyle}" SelectionChanged="RepoComboBox_OnSelectionChanged" />
+                    <ComboBox
+                        x:Name="RepoComboBox"
+                        Grid.Column="1"
+                        SelectionChanged="RepoComboBox_OnSelectionChanged"
+                        Style="{StaticResource ValueComboStyle}" />
                 </Grid>
             </Border>
 
@@ -70,7 +90,11 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="EngineLabel" Style="{StaticResource LabelStyle}" />
-                    <ComboBox x:Name="EngineComboBox" Grid.Column="1" Style="{StaticResource ValueComboStyle}" SelectionChanged="EngineComboBox_OnSelectionChanged" />
+                    <ComboBox
+                        x:Name="EngineComboBox"
+                        Grid.Column="1"
+                        SelectionChanged="EngineComboBox_OnSelectionChanged"
+                        Style="{StaticResource ValueComboStyle}" />
                 </Grid>
             </Border>
 
@@ -82,8 +106,17 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="AutoBackupLabel" Style="{StaticResource LabelStyle}" />
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <CheckBox x:Name="AutoBackupCheckBox" VerticalAlignment="Center" Checked="AutoBackupCheckBox_OnChanged" Unchecked="AutoBackupCheckBox_OnChanged" />
-                        <Button Margin="12,0,0,0" Padding="14,6" Click="OpenBackupDirButton_OnClick">Open</Button>
+                        <CheckBox
+                            x:Name="AutoBackupCheckBox"
+                            VerticalAlignment="Center"
+                            Checked="AutoBackupCheckBox_OnChanged"
+                            Unchecked="AutoBackupCheckBox_OnChanged" />
+                        <Button
+                            Margin="12,0,0,0"
+                            Padding="14,6"
+                            Click="OpenBackupDirButton_OnClick">
+                            Open
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -95,7 +128,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="TopMostLabel" Style="{StaticResource LabelStyle}" />
-                    <CheckBox x:Name="TopMostCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="TopMostCheckBox_OnChanged" Unchecked="TopMostCheckBox_OnChanged" />
+                    <CheckBox
+                        x:Name="TopMostCheckBox"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Checked="TopMostCheckBox_OnChanged"
+                        Unchecked="TopMostCheckBox_OnChanged" />
                 </Grid>
             </Border>
 
@@ -106,7 +144,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="ProtectOpenItemLabel" Style="{StaticResource LabelStyle}" />
-                    <CheckBox x:Name="ProtectOpenItemCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="ProtectOpenItemCheckBox_OnChanged" Unchecked="ProtectOpenItemCheckBox_OnChanged" />
+                    <CheckBox
+                        x:Name="ProtectOpenItemCheckBox"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Checked="ProtectOpenItemCheckBox_OnChanged"
+                        Unchecked="ProtectOpenItemCheckBox_OnChanged" />
                 </Grid>
             </Border>
 
@@ -117,7 +160,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="ShowFilePathLabel" Style="{StaticResource LabelStyle}" />
-                    <CheckBox x:Name="ShowFilePathCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="ShowFilePathCheckBox_OnChanged" Unchecked="ShowFilePathCheckBox_OnChanged" />
+                    <CheckBox
+                        x:Name="ShowFilePathCheckBox"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Checked="ShowFilePathCheckBox_OnChanged"
+                        Unchecked="ShowFilePathCheckBox_OnChanged" />
                 </Grid>
             </Border>
 
@@ -128,7 +176,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="OpenMoreRegeditLabel" Style="{StaticResource LabelStyle}" />
-                    <CheckBox x:Name="OpenMoreRegeditCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="OpenMoreRegeditCheckBox_OnChanged" Unchecked="OpenMoreRegeditCheckBox_OnChanged" />
+                    <CheckBox
+                        x:Name="OpenMoreRegeditCheckBox"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Checked="OpenMoreRegeditCheckBox_OnChanged"
+                        Unchecked="OpenMoreRegeditCheckBox_OnChanged" />
                 </Grid>
             </Border>
 
@@ -139,7 +192,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="OpenMoreExplorerLabel" Style="{StaticResource LabelStyle}" />
-                    <CheckBox x:Name="OpenMoreExplorerCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="OpenMoreExplorerCheckBox_OnChanged" Unchecked="OpenMoreExplorerCheckBox_OnChanged" />
+                    <CheckBox
+                        x:Name="OpenMoreExplorerCheckBox"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Checked="OpenMoreExplorerCheckBox_OnChanged"
+                        Unchecked="OpenMoreExplorerCheckBox_OnChanged" />
                 </Grid>
             </Border>
 
@@ -150,7 +208,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="HideDisabledItemsLabel" Style="{StaticResource LabelStyle}" />
-                    <CheckBox x:Name="HideDisabledItemsCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="HideDisabledItemsCheckBox_OnChanged" Unchecked="HideDisabledItemsCheckBox_OnChanged" />
+                    <CheckBox
+                        x:Name="HideDisabledItemsCheckBox"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Checked="HideDisabledItemsCheckBox_OnChanged"
+                        Unchecked="HideDisabledItemsCheckBox_OnChanged" />
                 </Grid>
             </Border>
 
@@ -161,7 +224,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="HideSysStoreItemsLabel" Style="{StaticResource LabelStyle}" />
-                    <CheckBox x:Name="HideSysStoreItemsCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="HideSysStoreItemsCheckBox_OnChanged" Unchecked="HideSysStoreItemsCheckBox_OnChanged" />
+                    <CheckBox
+                        x:Name="HideSysStoreItemsCheckBox"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Checked="HideSysStoreItemsCheckBox_OnChanged"
+                        Unchecked="HideSysStoreItemsCheckBox_OnChanged" />
                 </Grid>
             </Border>
         </StackPanel>

@@ -29,12 +29,12 @@ namespace ContextMenuManager
         private readonly IEList iEList = new();
         private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
-        private readonly DonateBox donateBox = new();
         private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
 
         private readonly AppSettingView appSettingView = new();
         private readonly AboutAppView aboutAppView = new();
+        private readonly DonateView donateView = new();
 
         // WinForms container panel (single child for WindowsFormsHost)
         private readonly WinForms.Panel contentPanel = new();
@@ -106,7 +106,7 @@ namespace ContextMenuManager
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            languagesBox, dictionariesBox, donateBox, backupListBox
+            languagesBox, dictionariesBox, backupListBox
         };
 
         // Navigation building
@@ -288,7 +288,10 @@ namespace ContextMenuManager
                     aboutAppView.RefreshContent();
                     ShowWpfControl(aboutAppView);
                     break;
-                case "about_donate": ShowControl(donateBox); break;
+                case "about_donate":
+                    donateView.RefreshContent();
+                    ShowWpfControl(donateView);
+                    break;
             }
         }
 

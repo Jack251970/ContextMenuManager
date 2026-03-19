@@ -72,7 +72,7 @@ namespace ContextMenuManager
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
             appSettingBox, languagesBox, dictionariesBox, aboutMeBox,
-            donateBox, backupListBox
+            backupListBox
         };
 
         private readonly ShellList shellList = new();
@@ -90,7 +90,6 @@ namespace ContextMenuManager
         private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
         private readonly AboutAppBox aboutMeBox = new();
-        private readonly DonateBox donateBox = new();
         private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
 
@@ -196,7 +195,6 @@ namespace ContextMenuManager
             AppString.SideBar.BackupRestore,
             AppString.SideBar.Dictionaries,
             AppString.SideBar.AboutApp,
-            AppString.SideBar.Donate,
         };
 
         private static readonly string[] SettingItems =
@@ -457,9 +455,6 @@ namespace ContextMenuManager
                     break;
                 case 4:
                     aboutMeBox.LoadAboutInfo(); aboutMeBox.Visible = true;
-                    break;
-                case 5:
-                    donateBox.Visible = true;
                     break;
             }
             currentListControl = null;

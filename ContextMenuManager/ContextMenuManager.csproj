@@ -83,9 +83,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\RestoreListDialog.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="Controls\DonateBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\EnhanceMenusDialog.cs">
       <SubType>Component</SubType>
     </Compile>
