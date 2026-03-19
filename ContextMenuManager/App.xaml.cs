@@ -1,5 +1,4 @@
-﻿using iNKORE.UI.WPF.Modern;
-using iNKORE.UI.WPF.Modern.Common;
+﻿using iNKORE.UI.WPF.Modern.Common;
 using System.Windows;
 
 namespace ContextMenuManager
@@ -15,7 +14,6 @@ namespace ContextMenuManager
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
         }
     }
 }
