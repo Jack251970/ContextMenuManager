@@ -16,16 +16,11 @@ namespace ContextMenuManager.Controls
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            var mainForm = (MainForm)Control.FromHandle(hwndOwner);
-            if (mainForm != null)
-            {
-                using var frm = new RestoreListForm();
-                frm.ShowDonateList(RestoreData);
-                frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
-                frm.Top = mainForm.Top + 150.DpiZoom();
-                frm.TopMost = true;
-                frm.ShowDialog();
-            }
+            using var frm = new RestoreListForm();
+            frm.ShowDonateList(RestoreData);
+            OwnerWindowHelper.PositionFormNearOwner(frm, hwndOwner, 150.DpiZoom());
+            frm.TopMost = true;
+            frm.ShowDialog();
             return true;
         }
 

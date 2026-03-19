@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
@@ -62,6 +62,8 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.3.0" />
   </ItemGroup>
+	
+	<!-- WinForm Controls -->
   <ItemGroup>
     <Compile Update="BluePointLilac.Controls\BackupDialog.cs">
       <SubType>Component</SubType>
@@ -282,6 +284,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\ShellItem.cs">
       <SubType>Component</SubType>
     </Compile>
+		
     <Content Include="Properties\Resources\Images\CheckUpdate.png" />
     <Content Include="Properties\Resources\Images\DownLoad.png" />
     <Content Include="Properties\Resources\Images\Enhance.png" />

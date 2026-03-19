@@ -128,9 +128,7 @@ namespace ContextMenuManager.Controls
             {
                 using var frm = new DonateListForm();
                 frm.ShowDonateList(DanateData);
-                var mainForm = (MainForm)FromHandle(hwndOwner);
-                frm.Left = mainForm.Left + (mainForm.Width + mainForm.SideBar.Width - frm.Width) / 2;
-                frm.Top = mainForm.Top + 150.DpiZoom();
+                OwnerWindowHelper.PositionFormNearOwner(frm, hwndOwner, 150.DpiZoom());
                 frm.TopMost = true;
                 frm.ShowDialog();
                 return true;

@@ -4,6 +4,7 @@ using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using DrawingSize = System.Drawing.Size;
 using WinForms = System.Windows.Forms;
@@ -13,6 +14,8 @@ namespace ContextMenuManager
 {
     public partial class MainWindow : Window
     {
+        internal static MainWindow Instance { get; private set; }
+
         // WinForms content controls hosted in the WindowsFormsHost
         private readonly ShellList shellList = new();
         private readonly ShellNewList shellNewList = new();
@@ -43,6 +46,7 @@ namespace ContextMenuManager
         public MainWindow()
         {
             InitializeComponent();
+            Instance = this;
 
             Title = AppString.General.AppName ?? "ContextMenuManager";
             RefreshButton.Content = AppString.ToolBar.Refresh ?? "Refresh";
@@ -86,6 +90,13 @@ namespace ContextMenuManager
 
             // First-run language download prompt
             Loaded += (_, _) => FirstRunDownloadLanguage();
+            Closed += (_, _) =>
+            {
+                if (ReferenceEquals(Instance, this))
+                {
+                    Instance = null;
+                }
+            };
         }
 
         private WinForms.Control[] AllContentControls() => new WinForms.Control[]
@@ -270,6 +281,90 @@ namespace ContextMenuManager
                 case "about_dict": dictionariesBox.LoadText(); ShowControl(dictionariesBox); break;
                 case "about_app": aboutMeBox.LoadAboutInfo(); ShowControl(aboutMeBox); break;
                 case "about_donate": ShowControl(donateBox); break;
+            }
+        }
+
+        internal void JumpToScene(Scenes scene)
+        {
+            var tag = scene switch
+            {
+                Scenes.File => "shell_file",
+                Scenes.Folder => "shell_folder",
+                Scenes.Directory => "shell_directory",
+                Scenes.Background => "shell_background",
+                Scenes.Desktop => "shell_desktop",
+                Scenes.Drive => "shell_drive",
+                Scenes.AllObjects => "shell_allobjects",
+                Scenes.Computer => "shell_computer",
+                Scenes.RecycleBin => "shell_recyclebin",
+                Scenes.Library => "shell_library",
+                Scenes.LnkFile => "type_lnk",
+                Scenes.UwpLnk => "type_uwplnk",
+                Scenes.ExeFile => "type_exe",
+                Scenes.UnknownType => "type_unknown",
+                Scenes.CustomExtension => "type_custom",
+                Scenes.PerceivedType => "type_perceived",
+                Scenes.DirectoryType => "type_directory",
+                Scenes.MenuAnalysis => "type_menuanalysis",
+                Scenes.DragDrop => "rule_dragdrop",
+                Scenes.PublicReferences => "rule_public",
+                Scenes.CustomRegPath => "rule_customreg",
+                _ => null
+            };
+
+            if (tag == null)
+            {
+                return;
+            }
+
+            SelectNavigationItem(tag);
+        }
+
+        internal void RefreshCurrentView()
+        {
+            NavigateTo(currentTag);
+        }
+
+        private void SelectNavigationItem(string tag)
+        {
+            foreach (var item in EnumerateNavigationItems())
+            {
+                if (string.Equals(item.Tag as string, tag, StringComparison.Ordinal))
+                {
+                    NavView.SelectedItem = item;
+                    return;
+                }
+            }
+
+            NavigateTo(tag);
+        }
+
+        private IEnumerable<NavigationViewItem> EnumerateNavigationItems()
+        {
+            foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
+            {
+                foreach (var nested in EnumerateNavigationItems(item))
+                {
+                    yield return nested;
+                }
+            }
+
+            foreach (var item in NavView.FooterMenuItems.OfType<NavigationViewItem>())
+            {
+                yield return item;
+            }
+        }
+
+        private static IEnumerable<NavigationViewItem> EnumerateNavigationItems(NavigationViewItem item)
+        {
+            yield return item;
+
+            foreach (var nested in item.MenuItems.OfType<NavigationViewItem>())
+            {
+                foreach (var child in EnumerateNavigationItems(nested))
+                {
+                    yield return child;
+                }
             }
         }
 
