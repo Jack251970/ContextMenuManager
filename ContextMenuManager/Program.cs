@@ -31,7 +31,9 @@ namespace ContextMenuManager
             ResourceString.SetButtonTextFallbacks(AppString.Dialog.OK, AppString.Dialog.Cancel);
             Updater.PeriodicUpdate();
             XmlDicHelper.ReloadDics();
-            Application.Run(new MainForm());
+            // Launch WPF application (iNKORE.UI.WPF.Modern shell with WinForms content)
+            var app = new App();
+            app.Run(new MainWindow());
         }
     }
 }
