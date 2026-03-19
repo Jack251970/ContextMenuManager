@@ -5,8 +5,8 @@
     Background="Transparent">
     <UserControl.Resources>
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="#1F1F1F" />
-            <Setter Property="BorderBrush" Value="#343434" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="14" />
             <Setter Property="Padding" Value="20" />
@@ -28,6 +28,7 @@
                         x:Name="QrImage"
                         Width="420"
                         Height="420"
+                        Cursor="Hand"
                         MouseLeftButtonUp="QrImage_OnMouseLeftButtonUp"
                         RenderOptions.BitmapScalingMode="HighQuality"
                         Stretch="Uniform" />
