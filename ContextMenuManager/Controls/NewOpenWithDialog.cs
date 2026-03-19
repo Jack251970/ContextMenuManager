@@ -1,5 +1,4 @@
 ﻿using ContextMenuManager.Methods;
-using ContextMenuManager.Methods;
 using System;
 using System.Diagnostics;
 using System.IO;

@@ -1,6 +1,4 @@
 using ContextMenuManager.Controls;
-using ContextMenuManager.Methods;
-using ContextMenuManager.Controls;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,3 @@
-using ContextMenuManager.Methods;
 using System.Text;
 
 namespace ContextMenuManager.Methods

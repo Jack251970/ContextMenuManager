@@ -1,7 +1,5 @@
-using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
 using ContextMenuManager.BluePointLilac.Controls;
-using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;

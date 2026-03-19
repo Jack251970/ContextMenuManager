@@ -1,5 +1,4 @@
-﻿using ContextMenuManager.Controls;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
 using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls.Interfaces

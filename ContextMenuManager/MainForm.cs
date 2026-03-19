@@ -1,7 +1,5 @@
 ﻿using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
-using ContextMenuManager.Controls;
-using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

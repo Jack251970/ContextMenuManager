@@ -1,6 +1,4 @@
-﻿using ContextMenuManager.Controls;
-using ContextMenuManager.Methods;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
 using System.Drawing;
 using System.Windows.Forms;
 

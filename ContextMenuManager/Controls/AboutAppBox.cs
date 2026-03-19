@@ -1,10 +1,7 @@
-using ContextMenuManager.Controls;
-using ContextMenuManager.Methods;
 using ContextMenuManager.Methods;
 using ContextMenuManager.Properties;
 using System;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls

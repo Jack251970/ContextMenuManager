@@ -1,4 +1,3 @@
-using ContextMenuManager.Methods;
 using ContextMenuManager.Properties;
 using System.Drawing;
 
