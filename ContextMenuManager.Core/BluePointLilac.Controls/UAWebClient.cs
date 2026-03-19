@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public sealed class UAWebClient : IDisposable
     {

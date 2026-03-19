@@ -1,9 +1,9 @@
-﻿using BluePointLilac.Controls;
+﻿using ContextMenuManager.Controls;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     /// <summary>在窗体居中显示的MessageBox</summary>
     public static class MessageBoxEx

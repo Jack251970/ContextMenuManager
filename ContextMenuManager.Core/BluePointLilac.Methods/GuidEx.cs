@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     //为兼容.Net Framework 3.5，无法引用Microsoft.CSharp.dll（中的Guid.TryParse）写了这个扩展方法
     public static class GuidEx

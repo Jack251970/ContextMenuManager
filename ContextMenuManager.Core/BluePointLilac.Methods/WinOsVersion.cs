@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     // 判断Windows系统版本
     // https://docs.microsoft.com/windows/release-health/release-information

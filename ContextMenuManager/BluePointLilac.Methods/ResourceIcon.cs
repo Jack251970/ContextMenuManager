@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public static class ResourceIcon
     {

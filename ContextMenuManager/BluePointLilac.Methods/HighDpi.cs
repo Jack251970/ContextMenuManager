@@ -4,7 +4,7 @@ using System.Windows.Forms;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     /// <summary>处理不同DPI缩放比下的像素绘制和字体显示问题</summary>
     /// <remarks>使用此类需要添加引用 PresentationFramework

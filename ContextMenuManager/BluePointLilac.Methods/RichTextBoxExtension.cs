@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public static class RichTextBoxExtension
     {

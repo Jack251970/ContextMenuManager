@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     /// 代码用途：管理员UAC进程窗口拖放文件
     /// 代码来源1：https://zhuanlan.zhihu.com/p/48735364

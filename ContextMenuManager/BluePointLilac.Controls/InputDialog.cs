@@ -1,4 +1,4 @@
-using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
@@ -8,7 +8,7 @@ using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 using WpfTextBox = System.Windows.Controls.TextBox;
 using WpfTextWrapping = System.Windows.TextWrapping;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public sealed class InputDialog : CommonDialog
     {

@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public class PictureButton : PictureBox
     {

@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     /// 获取TrustedInstaller权限注册表项的所有权
     /// 代码作者：JPBlanc（原作者）、蓝点lilac（转载、修改）

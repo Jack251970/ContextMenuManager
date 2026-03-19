@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     /// <summary>限制水平、竖直方向调整大小的窗体</summary>
     public class ResizeLimitedForm : RForm

@@ -1,4 +1,4 @@
-using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
@@ -14,7 +14,7 @@ using WpfScrollViewer = System.Windows.Controls.ScrollViewer;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
 using WpfTextBlock = System.Windows.Controls.TextBlock;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public class BackupDialog : CommonDialog
     {

@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     /// <summary>
     /// Edited from: https://github.com/seerge/g-helper

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     /// <summary>
     /// Represents a dialog box that allows the user to select an icon from a file.

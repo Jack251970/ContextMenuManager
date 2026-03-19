@@ -1,11 +1,11 @@
-using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Windows.Forms;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public class SelectDialog : CommonDialog
     {

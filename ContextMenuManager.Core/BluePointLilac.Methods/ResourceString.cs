@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public static class ResourceString
     {

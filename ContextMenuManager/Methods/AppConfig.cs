@@ -1,4 +1,4 @@
-using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Controls;
 using System;
 using System.Collections.Generic;

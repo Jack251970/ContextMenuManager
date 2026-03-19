@@ -1,11 +1,11 @@
-using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public sealed class MyStatusBar : Panel
     {

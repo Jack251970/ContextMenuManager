@@ -1,4 +1,4 @@
-using BluePointLilac.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using WpfProgressBar = System.Windows.Controls.ProgressBar;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     internal sealed class DownloadDialog : CommonDialog
     {

@@ -2,7 +2,7 @@
 using System;
 using System.Security.AccessControl;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public static class RegistryEx
     {

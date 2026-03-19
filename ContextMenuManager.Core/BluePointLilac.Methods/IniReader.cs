@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public sealed class IniReader
     {

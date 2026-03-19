@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using DrawingContentAlignment = System.Drawing.ContentAlignment;
 using WpfProgressBar = System.Windows.Controls.ProgressBar;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public sealed class LoadingDialog
     {

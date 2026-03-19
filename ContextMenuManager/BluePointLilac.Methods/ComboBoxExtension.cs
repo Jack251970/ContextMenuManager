@@ -2,7 +2,7 @@ using ContextMenuManager.BluePointLilac.Controls;
 using System;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     internal static class ComboBoxExtension
     {

@@ -6,7 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public class ShellLink : IDisposable
     {

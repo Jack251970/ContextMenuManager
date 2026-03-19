@@ -1,10 +1,10 @@
-﻿using BluePointLilac.Methods;
+﻿using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
     public class MyListBox : Panel
     {
