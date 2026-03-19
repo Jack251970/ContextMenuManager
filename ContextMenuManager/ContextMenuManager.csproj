@@ -98,9 +98,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="BluePointLilac.Controls\ReadOnlyTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="BluePointLilac.Controls\MyToolBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="BluePointLilac.Controls\UAWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -249,12 +246,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="BluePointLilac.Controls\MyListBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\MySideBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\MyStatusBar.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\ShellSubMenuDialog.cs">

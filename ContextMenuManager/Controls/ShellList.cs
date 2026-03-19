@@ -780,11 +780,12 @@ namespace ContextMenuManager.Controls
                             CurrentPerceivedType = PerceivedType; break;
                     }
 
-                    if (FindForm() is MainForm mainForm)
+                    // TODO: Check this?
+                    /*if (FindForm() is MainForm mainForm)
                     {
                         mainForm.JumpItem(index1, index2);
                         return;
-                    }
+                    }*/
 
                     MainWindow.Instance?.JumpToScene(scene);
                 }
@@ -874,14 +875,13 @@ namespace ContextMenuManager.Controls
                 File.Delete(tempPath2);
                 if (!str1.Equals(str2))
                 {
-                    if (FindForm() is MainForm mainForm)
+                    // TODO: Check this?
+                    /*if (FindForm() is MainForm mainForm)
                     {
                         mainForm.JumpItem(mainForm.ToolBar.SelectedIndex, mainForm.SideBar.SelectedIndex);
-                    }
-                    else
-                    {
-                        MainWindow.Instance?.RefreshCurrentView();
-                    }
+                    }*/
+
+                    MainWindow.Instance?.RefreshCurrentView();
                 }
             };
         }
