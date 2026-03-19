@@ -15,7 +15,7 @@ namespace ContextMenuManager
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
+            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
         }
     }
 }

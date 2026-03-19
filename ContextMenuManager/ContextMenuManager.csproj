@@ -68,9 +68,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="BluePointLilac.Controls\BackupDialog.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="Controls\BackupListBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\DetailedEditDialog.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -90,9 +87,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\Interfaces\ITsiRestoreItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\LanguagesBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\RestoreItem.cs">

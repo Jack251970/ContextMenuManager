@@ -71,7 +71,7 @@ namespace ContextMenuManager
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            languagesBox, dictionariesBox, backupListBox
+            dictionariesBox
         };
 
         private readonly ShellList shellList = new();
@@ -85,9 +85,7 @@ namespace ContextMenuManager
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
 
-        private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
-        private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
 
         // 主页
@@ -438,12 +436,6 @@ namespace ContextMenuManager
         {
             switch (SideBar.SelectedIndex)
             {
-                case 1:
-                    languagesBox.LoadLanguages(); languagesBox.Visible = true;
-                    break;
-                case 2:
-                    backupListBox.LoadItems(); backupListBox.Visible = true;
-                    break;
                 case 3:
                     dictionariesBox.LoadText(); dictionariesBox.Visible = true;
                     break;
@@ -694,7 +686,8 @@ namespace ContextMenuManager
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     JumpItem(4, 1);
-                    languagesBox.ShowLanguageDialog();
+                    // TODO
+                    //languagesBox.ShowLanguageDialog();
                 }
             }
         }

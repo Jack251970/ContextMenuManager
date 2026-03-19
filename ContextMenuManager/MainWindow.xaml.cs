@@ -27,12 +27,12 @@ namespace ContextMenuManager
         private readonly DetailedEditList detailedEditList = new();
         private readonly GuidBlockedList guidBlockedList = new();
         private readonly IEList iEList = new();
-        private readonly LanguagesBox languagesBox = new();
         private readonly DictionariesBox dictionariesBox = new();
-        private readonly BackupListBox backupListBox = new();
         private readonly ExplorerRestarter explorerRestarter = new();
 
         private readonly AppSettingView appSettingView = new();
+        private readonly LanguagesView languagesView = new();
+        private readonly BackupView backupView = new();
         private readonly AboutAppView aboutAppView = new();
         private readonly DonateView donateView = new();
 
@@ -55,6 +55,8 @@ namespace ContextMenuManager
             SearchBox.SetValue(iNKORE.UI.WPF.Modern.Controls.Helpers.ControlHelper.PlaceholderTextProperty,
                 AppString.General.Search ?? "Search...");
             appSettingView.OwnerWindow = this;
+            languagesView.OwnerWindow = this;
+            backupView.OwnerWindow = this;
 
             // Restore saved window size
             var savedSize = AppConfig.MainFormSize;
@@ -106,7 +108,7 @@ namespace ContextMenuManager
         {
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-            languagesBox, dictionariesBox, backupListBox
+            dictionariesBox
         };
 
         // Navigation building
@@ -281,8 +283,14 @@ namespace ContextMenuManager
                     appSettingView.RefreshFromConfig();
                     ShowWpfControl(appSettingView);
                     break;
-                case "about_language": languagesBox.LoadLanguages(); ShowControl(languagesBox); break;
-                case "about_backup": backupListBox.LoadItems(); ShowControl(backupListBox); break;
+                case "about_language":
+                    languagesView.LoadLanguages();
+                    ShowWpfControl(languagesView);
+                    break;
+                case "about_backup":
+                    backupView.LoadItems();
+                    ShowWpfControl(backupView);
+                    break;
                 case "about_dict": dictionariesBox.LoadText(); ShowControl(dictionariesBox); break;
                 case "about_app":
                     aboutAppView.RefreshContent();
@@ -570,7 +578,7 @@ namespace ContextMenuManager
             if (result == MessageBoxResult.Yes)
             {
                 NavigateTo("about_language");
-                languagesBox.ShowLanguageDialog();
+                languagesView.ShowLanguageDialog();
             }
         }
     }
