@@ -83,7 +83,9 @@ namespace ContextMenuManager.Controls
 
         public static bool IsDarkThemeEnabled()
         {
-            try
+            // TODO: Test
+            return false;
+            /*try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(
                     @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
@@ -94,7 +96,7 @@ namespace ContextMenuManager.Controls
             {
                 try { return CheckSystemDarkModeStatus(); }
                 catch { return false; }
-            }
+            }*/
         }
 
         public static bool UpdateTheme()
