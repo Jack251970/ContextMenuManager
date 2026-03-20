@@ -55,8 +55,8 @@ namespace ContextMenuManager.Controls
             {
                 if (chkSE.IsChecked == true)
                 {
-                    using var dlg = new ShellExecuteDialog();
-                    if (dlg.ShowDialog() == DialogResult.OK)
+                    var dlg = new ShellExecuteDialog();
+                    if (dlg.ShowDialog())
                     {
                         seVerb = dlg.Verb;
                         seWindowStyle = dlg.WindowStyle;
