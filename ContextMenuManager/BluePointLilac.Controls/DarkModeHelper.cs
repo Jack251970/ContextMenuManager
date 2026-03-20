@@ -1,10 +1,8 @@
-using ContextMenuManager.BluePointLilac.Controls;
 using Microsoft.Win32;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
@@ -245,13 +243,6 @@ namespace ContextMenuManager.Controls
                 {
                     control.BackColor = ButtonMain;
                     control.ForeColor = FormFore;
-                }
-                else if (control is RComboBox combo)
-                {
-                    if (combo.InvokeRequired)
-                        combo.Invoke(new Action(() => combo.UpdateColors()));
-                    else
-                        combo.UpdateColors();
                 }
             }
             catch { /* 忽略错误 */ }

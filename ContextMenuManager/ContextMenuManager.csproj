@@ -65,9 +65,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
 	
 	<!-- WinForm Controls -->
   <ItemGroup>
-    <Compile Update="Controls\RComboBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\Interfaces\IBtnDeleteItem.cs">
       <SubType>Component</SubType>
     </Compile>

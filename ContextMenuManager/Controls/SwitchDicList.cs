@@ -1,5 +1,4 @@
 using ContextMenuManager.Methods;
-using ContextMenuManager.BluePointLilac.Controls;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -34,7 +33,16 @@ namespace ContextMenuManager.Controls
         {
             Text = AppString.Other.SwitchDictionaries;
             AddCtr(cmbDic);
-            cmbDic.AutosizeDropDownWidth();
+            cmbDic.DropDown += (sender, e) =>
+            {
+                var maxWidth = 0;
+                foreach (var item in cmbDic.Items)
+                {
+                    maxWidth = Math.Max(maxWidth, TextRenderer.MeasureText(item.ToString(), cmbDic.Font).Width);
+                }
+                maxWidth = Math.Max(maxWidth, cmbDic.Width);
+                cmbDic.DropDownWidth = maxWidth;
+            };
             cmbDic.Font = new Font(Font.FontFamily, Font.Size + 1F);
             cmbDic.Items.AddRange(new[] { AppString.Other.WebDictionaries, AppString.Other.UserDictionaries });
             cmbDic.SelectionChangeCommitted += (sender, e) =>
@@ -61,7 +69,7 @@ namespace ContextMenuManager.Controls
 
         public Action UseDicChanged;
 
-        private readonly RComboBox cmbDic = new()
+        private readonly ComboBox cmbDic = new()
         {
             DropDownStyle = ComboBoxStyle.DropDownList,
             Width = 120.DpiZoom()
