@@ -254,9 +254,9 @@ namespace BluePointLilac.Methods
                     })?.Dispose();
                 }
                 catch (Exception ex1) when (
-                    ex is Win32Exception || 
-                    ex is InvalidOperationException || 
-                    ex is UnauthorizedAccessException)
+                    ex1 is Win32Exception ||
+                    ex1 is InvalidOperationException ||
+                    ex1 is UnauthorizedAccessException)
                 {
                     // 两种方法都失败，静默失败避免程序崩溃
                     // 用户会看到 explorer 没有重启，可以手动处理
