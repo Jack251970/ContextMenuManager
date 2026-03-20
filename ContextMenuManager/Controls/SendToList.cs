@@ -30,9 +30,9 @@ namespace ContextMenuManager.Controls
             InsertItem(newItem, 0);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new NewLnkFileDialog();
+                var dlg = new NewLnkFileDialog();
                 dlg.FileFilter = $"{AppString.Dialog.Program}|*.exe;*.bat;*.cmd;*.vbs;*.vbe;*.js;*.jse;*.wsf";
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 var lnkPath = $@"{SendToPath}\{ObjectPath.RemoveIllegalChars(dlg.ItemText)}.lnk";
                 lnkPath = ObjectPath.GetNewPathWithIndex(lnkPath, ObjectPath.PathType.File);
                 using (var shellLink = new ShellLink(lnkPath))

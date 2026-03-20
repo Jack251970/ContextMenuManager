@@ -1,61 +1,98 @@
 ﻿using ContextMenuManager.Methods;
-using System;
+using iNKORE.UI.WPF.Modern.Controls;
+using Microsoft.Win32;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
+using WpfButton = System.Windows.Controls.Button;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
+using WpfTextBox = System.Windows.Controls.TextBox;
+using WpfOrientation = System.Windows.Controls.Orientation;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class NewIEDialog : CommonDialog
+    internal sealed class NewIEDialog
     {
         public string RegPath { get; private set; }
-        public override void Reset() { }
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog() => RunDialog(null);
+
+        public bool RunDialog(MainWindow owner)
         {
-            using var frm = new NewIEForm();
-            frm.TopMost = true;
-            var flag = frm.ShowDialog() == DialogResult.OK;
-            if (flag) RegPath = frm.RegPath;
-            return flag;
+            var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
+            dialog.PrimaryButtonText = ResourceString.OK;
+            dialog.CloseButtonText = ResourceString.Cancel;
+
+            var txtText = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+            var txtFilePath = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+            var txtArguments = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+
+            var btnBrowse = new WpfButton
+            {
+                Content = AppString.Dialog.Browse,
+                Margin = new Thickness(0, 0, 0, 12),
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+
+            btnBrowse.Click += (sender, e) =>
+            {
+                var dlg = new OpenFileDialog();
+                if (dlg.ShowDialog() == true)
+                {
+                    txtFilePath.Text = dlg.FileName;
+                    txtText.Text = Path.GetFileNameWithoutExtension(dlg.FileName);
+                }
+            };
+
+            dialog.Content = new WpfStackPanel
+            {
+                Children =
+                {
+                    new WpfTextBlock { Text = AppString.Dialog.ItemText, Margin = new Thickness(0, 0, 0, 4) },
+                    txtText,
+                    new WpfTextBlock { Text = AppString.Dialog.ItemCommand, Margin = new Thickness(0, 0, 0, 4) },
+                    txtFilePath,
+                    btnBrowse,
+                    new WpfTextBlock { Text = AppString.Dialog.CommandArguments, Margin = new Thickness(0, 0, 0, 4) },
+                    txtArguments
+                }
+            };
+
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            if (result != ContentDialogResult.Primary)
+            {
+                return false;
+            }
+
+            var itemText = txtText.Text;
+            var itemFilePath = txtFilePath.Text;
+            var arguments = txtArguments.Text;
+
+            if (itemText.IsNullOrWhiteSpace())
+            {
+                AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
+                return false;
+            }
+
+            var itemCommand = GetItemCommand(itemFilePath, arguments);
+            if (itemCommand.IsNullOrWhiteSpace())
+            {
+                AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
+                return false;
+            }
+
+            RegPath = $@"{IEList.IEPath}\{IEItem.MeParts[0]}\{itemText.Replace("\\", "")}";
+            Microsoft.Win32.Registry.SetValue(RegPath, "", itemCommand);
+            return true;
         }
 
-        private sealed class NewIEForm : NewItemForm
+        private static string GetItemCommand(string filePath, string arguments)
         {
-            public string RegPath { get; set; }
-
-            protected override void InitializeComponents()
-            {
-                base.InitializeComponents();
-                btnOK.Click += (sender, e) =>
-                {
-                    if (ItemText.IsNullOrWhiteSpace())
-                    {
-                        AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
-                        return;
-                    }
-                    if (ItemCommand.IsNullOrWhiteSpace())
-                    {
-                        AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
-                        return;
-                    }
-                    AddNewItem();
-                    DialogResult = DialogResult.OK;
-                };
-
-                btnBrowse.Click += (sender, e) =>
-                {
-                    using var dlg = new OpenFileDialog();
-                    if (dlg.ShowDialog() != DialogResult.OK) return;
-                    ItemFilePath = dlg.FileName;
-                    ItemText = Path.GetFileNameWithoutExtension(dlg.FileName);
-                };
-            }
-
-            private void AddNewItem()
-            {
-                RegPath = $@"{IEList.IEPath}\{IEItem.MeParts[0]}\{ItemText.Replace("\\", "")}";
-                Microsoft.Win32.Registry.SetValue(RegPath, "", ItemCommand);
-            }
+            if (arguments.IsNullOrWhiteSpace()) return filePath;
+            if (filePath.IsNullOrWhiteSpace()) return arguments;
+            if (filePath.Contains(" ")) filePath = $"\"{filePath}\"";
+            if (!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
+            return $"{filePath} {arguments}";
         }
     }
 }

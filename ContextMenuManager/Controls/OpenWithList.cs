@@ -57,8 +57,8 @@ namespace ContextMenuManager.Controls
             InsertItem(newItem, 0);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new NewOpenWithDialog();
-                if (dlg.ShowDialog() == DialogResult.OK)
+                var dlg = new NewOpenWithDialog();
+                if (dlg.ShowDialog() == true)
                     InsertItem(new OpenWithItem(dlg.RegPath), 2);
             };
         }

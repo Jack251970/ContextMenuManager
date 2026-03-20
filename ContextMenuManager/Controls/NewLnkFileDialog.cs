@@ -1,130 +1,168 @@
-﻿using ContextMenuManager.Methods;
-using System;
+using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
+using Microsoft.Win32;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
+using WpfButton = System.Windows.Controls.Button;
+using WpfRadioButton = System.Windows.Controls.RadioButton;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
+using WpfTextBox = System.Windows.Controls.TextBox;
+using WpfOrientation = System.Windows.Controls.Orientation;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class NewLnkFileDialog : CommonDialog
+    internal sealed partial class NewLnkFileDialog
     {
         public string ItemText { get; set; }
         public string ItemFilePath { get; set; }
         public string Arguments { get; set; }
         public string FileFilter { get; set; }
-        public override void Reset() { }
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog() => RunDialog(null);
+
+        public bool RunDialog(MainWindow owner)
         {
-            using var frm = new NewLnkForm();
-            frm.FileFilter = FileFilter;
-            frm.TopMost = true;
-            var flag = frm.ShowDialog() == DialogResult.OK;
-            if (flag)
+            var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
+            dialog.PrimaryButtonText = ResourceString.OK;
+            dialog.CloseButtonText = ResourceString.Cancel;
+
+            var txtText = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+            var txtFilePath = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+            var txtArguments = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+
+            var rdoFile = new WpfRadioButton
             {
-                ItemText = frm.ItemText;
-                ItemFilePath = frm.ItemFilePath;
-                Arguments = frm.Arguments;
+                Content = AppString.SideBar.File,
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 12, 0)
+            };
+            var rdoFolder = new WpfRadioButton
+            {
+                Content = AppString.SideBar.Folder,
+                Margin = new Thickness(0, 0, 12, 0)
+            };
+
+            var btnBrowse = new WpfButton
+            {
+                Content = AppString.Dialog.Browse,
+                Margin = new Thickness(0, 0, 0, 12),
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+
+            btnBrowse.Click += (sender, e) =>
+            {
+                if (rdoFile.IsChecked == true)
+                {
+                    BrowseFile(txtFilePath, txtArguments, txtText);
+                }
+                else
+                {
+                    BrowseFolder(txtFilePath, txtText);
+                }
+            };
+
+            txtFilePath.TextChanged += (sender, e) =>
+            {
+                var filePath = txtFilePath.Text;
+                if (Path.GetExtension(filePath).ToLower() == ".lnk")
+                {
+                    using var shortcut = new ShellLink(filePath);
+                    if (File.Exists(shortcut.TargetPath))
+                    {
+                        txtFilePath.Text = shortcut.TargetPath;
+                    }
+                }
+            };
+
+            dialog.Content = new WpfStackPanel
+            {
+                Children =
+                {
+                    new WpfTextBlock { Text = AppString.Dialog.ItemText, Margin = new Thickness(0, 0, 0, 4) },
+                    txtText,
+                    new WpfTextBlock { Text = AppString.Dialog.ItemCommand, Margin = new Thickness(0, 0, 0, 4) },
+                    txtFilePath,
+                    btnBrowse,
+                    new WpfTextBlock { Text = AppString.Dialog.CommandArguments, Margin = new Thickness(0, 0, 0, 4) },
+                    txtArguments,
+                    new WpfStackPanel
+                    {
+                        Orientation = WpfOrientation.Horizontal,
+                        Margin = new Thickness(0, 8, 0, 0),
+                        Children = { rdoFile, rdoFolder }
+                    }
+                }
+            };
+
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            if (result != ContentDialogResult.Primary)
+            {
+                return false;
             }
-            return flag;
+
+            ItemText = txtText.Text;
+            ItemFilePath = txtFilePath.Text;
+            Arguments = txtArguments.Text;
+
+            if (ItemText.IsNullOrWhiteSpace())
+            {
+                AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
+                return false;
+            }
+            if (ItemFilePath.IsNullOrWhiteSpace())
+            {
+                AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
+                return false;
+            }
+            if (rdoFile.IsChecked == true && !ObjectPath.GetFullFilePath(ItemFilePath, out _))
+            {
+                AppMessageBox.Show(AppString.Message.FileNotExists);
+                return false;
+            }
+            if (rdoFolder.IsChecked == true && !Directory.Exists(ItemFilePath))
+            {
+                AppMessageBox.Show(AppString.Message.FolderNotExists);
+                return false;
+            }
+
+            return true;
         }
 
-        private sealed class NewLnkForm : NewItemForm
+        private void BrowseFile(WpfTextBox txtFilePath, WpfTextBox txtArguments, WpfTextBox txtText)
         {
-            public string FileFilter { get; set; }
-
-            private readonly RadioButton rdoFile = new()
+            var dlg = new OpenFileDialog();
+            dlg.Filter = FileFilter;
+            dlg.DereferenceLinks = false;
+            if (dlg.ShowDialog() == true)
             {
-                Text = AppString.SideBar.File,
-                AutoSize = true,
-                Checked = true
-            };
-            private readonly RadioButton rdoFolder = new()
-            {
-                Text = AppString.SideBar.Folder,
-                AutoSize = true
-            };
+                var filePath = dlg.FileName;
+                var arguments = "";
+                txtFilePath.Text = filePath;
+                txtText.Text = Path.GetFileNameWithoutExtension(filePath);
 
-            protected override void InitializeComponents()
-            {
-                base.InitializeComponents();
-                Controls.AddRange(new Control[] { rdoFile, rdoFolder });
-                rdoFile.Top = rdoFolder.Top = btnOK.Top + (btnOK.Height - rdoFile.Height) / 2;
-                rdoFile.Left = lblCommand.Left;
-                rdoFolder.Left = rdoFile.Right + 20.DpiZoom();
-
-                btnBrowse.Click += (sender, e) =>
+                var extension = Path.GetExtension(filePath).ToLower();
+                if (extension == ".lnk")
                 {
-                    if (rdoFile.Checked) BrowseFile();
-                    else BrowseFolder();
-                };
-
-                btnOK.Click += (sender, e) =>
-                {
-                    if (ItemText.IsNullOrWhiteSpace())
+                    using var shortcut = new ShellLink(filePath);
+                    if (File.Exists(shortcut.TargetPath))
                     {
-                        AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
+                        txtFilePath.Text = shortcut.TargetPath;
+                        txtArguments.Text = shortcut.Arguments;
                     }
-                    else if (ItemFilePath.IsNullOrWhiteSpace())
-                    {
-                        AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
-                    }
-                    else if (rdoFile.Checked && !ObjectPath.GetFullFilePath(ItemFilePath, out _))
-                    {
-                        AppMessageBox.Show(AppString.Message.FileNotExists);
-                    }
-                    else if (rdoFolder.Checked && !Directory.Exists(ItemFilePath))
-                    {
-                        AppMessageBox.Show(AppString.Message.FolderNotExists);
-                    }
-                    else DialogResult = DialogResult.OK;
-                };
-
-                txtFilePath.TextChanged += (sender, e) =>
-                {
-                    if (Path.GetExtension(ItemFilePath).ToLower() == ".lnk")
-                    {
-                        using var shortcut = new ShellLink(ItemFilePath);
-                        if (File.Exists(shortcut.TargetPath))
-                        {
-                            ItemFilePath = shortcut.TargetPath;
-                        }
-                    }
-                };
-            }
-
-            private void BrowseFile()
-            {
-                using var dlg = new OpenFileDialog();
-                dlg.Filter = FileFilter;
-                //取消获取lnk目标路径，可选中UWP快捷方式
-                dlg.DereferenceLinks = false;
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
-                    ItemFilePath = dlg.FileName;
-                    var extension = Path.GetExtension(dlg.FileName).ToLower();
-                    if (extension == ".lnk")
-                    {
-                        using var shortcut = new ShellLink(dlg.FileName);
-                        if (File.Exists(shortcut.TargetPath))
-                        {
-                            ItemFilePath = shortcut.TargetPath;
-                            Arguments = shortcut.Arguments;
-                        }
-                    }
-                    ItemText = Path.GetFileNameWithoutExtension(dlg.FileName);
                 }
             }
+        }
 
-            private void BrowseFolder()
+        private void BrowseFolder(WpfTextBox txtFilePath, WpfTextBox txtText)
+        {
+            var dlg = new System.Windows.Forms.FolderBrowserDialog();
+            if (Directory.Exists(txtFilePath.Text))
+                dlg.SelectedPath = txtFilePath.Text;
+            if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                using var dlg = new FolderBrowserDialog();
-                if (Directory.Exists(ItemFilePath)) dlg.SelectedPath = ItemFilePath;
-                else dlg.SelectedPath = Application.StartupPath;
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
-                    ItemFilePath = dlg.SelectedPath;
-                    ItemText = Path.GetFileNameWithoutExtension(dlg.SelectedPath);
-                }
+                txtFilePath.Text = dlg.SelectedPath;
+                txtText.Text = Path.GetFileName(dlg.SelectedPath);
             }
         }
     }

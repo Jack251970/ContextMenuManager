@@ -44,8 +44,8 @@ namespace ContextMenuManager.Controls
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new NewIEDialog();
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                var dlg = new NewIEDialog();
+                if (dlg.ShowDialog() != true) return;
                 InsertItem(new IEItem(dlg.RegPath), 1);
             };
         }

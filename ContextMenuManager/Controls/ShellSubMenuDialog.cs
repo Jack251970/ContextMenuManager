@@ -1,21 +1,22 @@
 ﻿using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class ShellSubMenuDialog : CommonDialog
+    internal sealed partial class ShellSubMenuDialog
     {
-        public Icon Icon { get; set; }
+        public System.Drawing.Icon Icon { get; set; }
         public string Text { get; set; }
-        /// <summary>子菜单的父菜单的注册表路径</summary>
         public string ParentPath { get; set; }
-        public override void Reset() { }
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog() => RunDialog(null);
+
+        public bool RunDialog(MainWindow owner)
         {
             var isPublic = true;
             var value = Microsoft.Win32.Registry.GetValue(ParentPath, "SubCommands", null)?.ToString();
@@ -35,29 +36,46 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            using var frm = new SubItemsForm();
-            frm.Text = Text;
-            frm.Icon = Icon;
-            frm.TopMost = true;
-
+            var dialogTitle = Text;
             if (isPublic)
             {
-                frm.Text += $"({AppString.Dialog.Public})";
+                dialogTitle += $"({AppString.Dialog.Public})";
                 var list = new PulicMultiItemsList();
-                frm.AddList(list);
                 list.ParentPath = ParentPath;
                 list.LoadItems();
+                return ShowListDialog(dialogTitle, list, owner);
             }
             else
             {
-                frm.Text += $"({AppString.Dialog.Private})";
+                dialogTitle += $"({AppString.Dialog.Private})";
                 var list = new PrivateMultiItemsList();
-                frm.AddList(list);
                 list.ParentPath = ParentPath;
                 list.LoadItems();
+                return ShowListDialog(dialogTitle, list, owner);
             }
+        }
 
-            frm.ShowDialog();
+        private bool ShowListDialog(string title, MyList list, MainWindow owner)
+        {
+            var dialog = ContentDialogHost.CreateDialog(title, owner);
+            dialog.CloseButtonText = ResourceString.OK;
+            dialog.FullSizeDesired = true;
+
+            var host = new WindowsFormsHost
+            {
+                Child = new Panel
+                {
+                    Controls = { list },
+                    Dock = DockStyle.Fill,
+                    Height = 400,
+                    Width = 600
+                },
+                Height = 400,
+                Width = 600
+            };
+
+            dialog.Content = host;
+            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }
 
@@ -110,12 +128,12 @@ namespace ContextMenuManager.Controls
             private void AddReference()
             {
                 if (!SubShellTypeItem.CanAddMore(this)) return;
-                using var dlg = new ShellStoreDialog();
+                var dlg = new ShellStoreDialog();
                 dlg.IsReference = true;
                 dlg.ShellPath = ShellItem.CommandStorePath;
                 dlg.Filter = new Func<string, bool>(itemName => !(AppConfig.HideSysStoreItems
                     && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)));
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 foreach (var keyName in dlg.SelectedKeyNames)
                 {
                     if (!SubShellTypeItem.CanAddMore(this)) return;
@@ -321,11 +339,11 @@ namespace ContextMenuManager.Controls
             private void AddFromParentMenu()
             {
                 if (!SubShellTypeItem.CanAddMore(this)) return;
-                using var dlg = new ShellStoreDialog();
+                var dlg = new ShellStoreDialog();
                 dlg.IsReference = false;
                 dlg.ShellPath = ParentShellPath;
                 dlg.Filter = new Func<string, bool>(itemName => !itemName.Equals(ParentKeyName, StringComparison.OrdinalIgnoreCase));
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 foreach (var keyName in dlg.SelectedKeyNames)
                 {
                     if (!SubShellTypeItem.CanAddMore(this)) return;

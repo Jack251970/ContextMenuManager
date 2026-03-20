@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms;
+using System.Windows.Interop;
 
 namespace ContextMenuManager.Controls
 {
-    /// <summary>
-    /// Represents a dialog box that allows the user to select an icon from a file.
-    /// </summary>
-    /// <remarks>Use the IconDialog class to prompt users to choose an icon from a file, such as an executable
-    /// or DLL. The selected icon's path and index are available through the IconPath and IconIndex properties. This
-    /// class is sealed and cannot be inherited.</remarks>
-    public sealed class IconDialog : CommonDialog
+    public sealed class IconDialog
     {
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, EntryPoint = "#62", SetLastError = true)]
         private static extern bool PickIconDlg(IntPtr hWnd, StringBuilder pszFileName, int cchFileNameMax, ref int pnIconIndex);
@@ -21,10 +15,17 @@ namespace ContextMenuManager.Controls
         public int IconIndex { get => iconIndex; set => iconIndex = value; }
         public string IconPath { get; set; }
 
-        public override void Reset() { }
+        public bool ShowDialog() => RunDialog(null);
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool RunDialog(MainWindow owner)
         {
+            var hwndOwner = IntPtr.Zero;
+            if (owner != null)
+            {
+                var helper = new WindowInteropHelper(owner);
+                hwndOwner = helper.Handle;
+            }
+
             var sb = new StringBuilder(IconPath, MAXLENGTH);
             var flag = PickIconDlg(hwndOwner, sb, MAXLENGTH, ref iconIndex);
             IconPath = flag ? sb.ToString() : null;

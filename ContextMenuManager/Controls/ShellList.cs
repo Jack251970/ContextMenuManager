@@ -842,12 +842,12 @@ namespace ContextMenuManager.Controls
 
             btnAddExisting.MouseDown += (sender, e) =>
             {
-                using var dlg = new ShellStoreDialog();
+                var dlg = new ShellStoreDialog();
                 dlg.IsReference = false;
                 dlg.ShellPath = ShellItem.CommandStorePath;
                 dlg.Filter = new Func<string, bool>(itemName => !(AppConfig.HideSysStoreItems
                     && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)));
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 foreach (var keyName in dlg.SelectedKeyNames)
                 {
                     var srcPath = $@"{dlg.ShellPath}\{keyName}";
@@ -863,11 +863,11 @@ namespace ContextMenuManager.Controls
                 var tempPath1 = Path.GetTempFileName();
                 var tempPath2 = Path.GetTempFileName();
                 ExternalProgram.ExportRegistry(scenePath, tempPath1);
-                using (var dlg = new EnhanceMenusDialog())
+                var dlg = new EnhanceMenusDialog
                 {
-                    dlg.ScenePath = scenePath;
-                    dlg.ShowDialog();
-                }
+                    ScenePath = scenePath
+                };
+                dlg.ShowDialog();
                 ExternalProgram.ExportRegistry(scenePath, tempPath2);
                 var str1 = File.ReadAllText(tempPath1);
                 var str2 = File.ReadAllText(tempPath2);

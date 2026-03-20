@@ -1,28 +1,43 @@
 ﻿using ContextMenuManager.Methods;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
+using iNKORE.UI.WPF.Modern.Controls;
+using System.Windows.Forms.Integration;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class EnhanceMenusDialog : CommonDialog
+    internal sealed class EnhanceMenusDialog
     {
         public string ScenePath { get; set; }
 
-        public override void Reset() { }
+        public bool ShowDialog() => RunDialog(null);
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool RunDialog(MainWindow owner)
         {
-            using var frm = new SubItemsForm();
-            using var list = new EnhanceMenuList();
-            frm.Text = AppString.SideBar.EnhanceMenu;
-            frm.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            frm.TopMost = true;
-            frm.AddList(list);
-            list.ScenePath = ScenePath;
-            list.UseUserDic = XmlDicHelper.EnhanceMenuPathDic[ScenePath];
+            var dialog = ContentDialogHost.CreateDialog(AppString.SideBar.EnhanceMenu, owner);
+            dialog.CloseButtonText = ResourceString.OK;
+            dialog.FullSizeDesired = true;
+
+            var list = new EnhanceMenuList
+            {
+                ScenePath = ScenePath,
+                UseUserDic = XmlDicHelper.EnhanceMenuPathDic[ScenePath],
+                Dock = System.Windows.Forms.DockStyle.Fill
+            };
             list.LoadItems();
-            frm.ShowDialog();
+
+            var host = new WindowsFormsHost
+            {
+                Child = new System.Windows.Forms.Panel
+                {
+                    Controls = { list },
+                    Height = 400,
+                    Width = 600
+                },
+                Height = 400,
+                Width = 600
+            };
+
+            dialog.Content = host;
+            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }
     }

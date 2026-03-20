@@ -263,10 +263,10 @@ namespace ContextMenuManager.Controls.Interfaces
 
                 private void SelectIcon()
                 {
-                    using var dlg = new IconDialog();
+                    var dlg = new IconDialog();
                     dlg.IconPath = ItemIconPath;
                     dlg.IconIndex = ItemIconIndex;
-                    if (dlg.ShowDialog() != DialogResult.OK) return;
+                    if (dlg.ShowDialog() != true) return;
                     using var icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex);
                     Image image = icon?.ToBitmap();
                     if (image == null) return;
@@ -293,7 +293,7 @@ namespace ContextMenuManager.Controls.Interfaces
             };
             MouseDown += (sender, e) =>
             {
-                using var dlg = new DetailedEditDialog();
+                var dlg = new DetailedEditDialog();
                 dlg.GroupGuid = item.Guid;
                 dlg.ShowDialog();
             };

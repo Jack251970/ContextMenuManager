@@ -200,7 +200,7 @@ namespace ContextMenuManager.Controls
             btnCreateDir.MouseDown += (sender, e) => CreateNewGroup();
             newItem.AddNewItem += () =>
             {
-                using var dlg1 = new NewLnkFileDialog();
+                var dlg1 = new NewLnkFileDialog();
                 void AddNewLnkFile(string dirName, string itemText, string targetPath, string arguments, bool isWinX)
                 {
                     var dirPath = $@"{(isWinX ? WinXPath : DefaultWinXPath)}\{dirName}";
@@ -243,10 +243,12 @@ namespace ContextMenuManager.Controls
                     WinXHasher.HashLnk(lnkPath);
                 }
 
-                if (dlg1.ShowDialog() != DialogResult.OK) return;
-                var dlg2 = new SelectDialog();
-                dlg2.Title = AppString.Dialog.SelectGroup;
-                dlg2.Items = GetGroupNames();
+                if (dlg1.ShowDialog() != true) return;
+                var dlg2 = new SelectDialog
+                {
+                    Title = AppString.Dialog.SelectGroup,
+                    Items = GetGroupNames()
+                };
                 if (dlg2.ShowDialog() != true) return;
 
                 AddNewLnkFile(dlg2.Selected, dlg1.ItemText, dlg1.ItemFilePath, dlg1.Arguments, true);

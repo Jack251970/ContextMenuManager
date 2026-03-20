@@ -1,28 +1,46 @@
 ﻿using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
-using System.Windows.Forms;
+using System.Windows.Forms.Integration;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class DetailedEditDialog : CommonDialog
+    internal sealed class DetailedEditDialog
     {
         public Guid GroupGuid { get; set; }
 
-        public override void Reset() { }
+        public bool ShowDialog() => RunDialog(null);
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool RunDialog(MainWindow owner)
         {
-            using var frm = new SubItemsForm();
-            using var list = new DetailedEditList();
-            var location = GuidInfo.GetIconLocation(GroupGuid);
-            frm.Icon = ResourceIcon.GetIcon(location.IconPath, location.IconIndex);
-            frm.Text = AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid));
-            frm.TopMost = true;
-            frm.AddList(list);
-            list.GroupGuid = GroupGuid;
-            list.UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid];
+            var dialog = ContentDialogHost.CreateDialog(
+                AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid)), 
+                owner);
+            dialog.CloseButtonText = ResourceString.OK;
+            dialog.FullSizeDesired = true;
+
+            var list = new DetailedEditList
+            {
+                GroupGuid = GroupGuid,
+                UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid],
+                Dock = System.Windows.Forms.DockStyle.Fill
+            };
             list.LoadItems();
-            frm.ShowDialog();
+
+            var host = new WindowsFormsHost
+            {
+                Child = new System.Windows.Forms.Panel
+                {
+                    Controls = { list },
+                    Height = 400,
+                    Width = 600
+                },
+                Height = 400,
+                Width = 600
+            };
+
+            dialog.Content = host;
+            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }
     }

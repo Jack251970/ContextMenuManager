@@ -65,16 +65,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
 	
 	<!-- WinForm Controls -->
   <ItemGroup>
-    <Compile Update="Controls\DetailedEditDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\RComboBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\RestoreListDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\EnhanceMenusDialog.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\Interfaces\IBtnDeleteItem.cs">
@@ -125,16 +116,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\Interfaces\ITsiRegExportItem.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="Controls\NewIEDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\NewLnkFileDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellExecuteDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellStoreDialog.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\FoldSubItem.cs">
@@ -174,12 +156,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\GuidBlockedList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\NewOpenWithDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\NewShellDialog.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\OpenWithList.cs">
@@ -224,16 +200,10 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\WinXList.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="BluePointLilac.Controls\IconDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="BluePointLilac.Controls\MyCheckBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="BluePointLilac.Controls\MyListBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellSubMenuDialog.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="BluePointLilac.Controls\PictureButton.cs">

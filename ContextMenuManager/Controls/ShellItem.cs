@@ -517,7 +517,7 @@ namespace ContextMenuManager.Controls
                 AppMessageBox.Show(AppString.Message.VistaUnsupportedMulti);
                 return;
             }
-            using var dlg = new ShellSubMenuDialog();
+            var dlg = new ShellSubMenuDialog();
             dlg.Text = AppString.Dialog.EditSubItems.Replace("%s", Text);
             dlg.Icon = ResourceIcon.GetIcon(IconPath, IconIndex);
             dlg.ParentPath = RegPath;

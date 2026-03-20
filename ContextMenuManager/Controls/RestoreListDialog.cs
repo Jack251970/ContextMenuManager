@@ -1,114 +1,105 @@
 ﻿using ContextMenuManager.Methods;
-using System;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using WpfDataGrid = System.Windows.Controls.DataGrid;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class RestoreListDialog : CommonDialog
+    internal sealed class RestoreListDialog
     {
         public List<RestoreChangedItem> RestoreData { get; set; }
 
-        public override void Reset() { }
+        public bool ShowDialog() => RunDialog(null);
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool RunDialog(MainWindow owner)
         {
-            using var frm = new RestoreListForm();
-            frm.ShowDonateList(RestoreData);
-            OwnerWindowHelper.PositionFormNearOwner(frm, hwndOwner, 150.DpiZoom());
-            frm.TopMost = true;
-            frm.ShowDialog();
-            return true;
-        }
+            var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.RestoreDetails, owner);
+            dialog.CloseButtonText = ResourceString.OK;
+            dialog.FullSizeDesired = true;
 
-        private sealed class RestoreListForm : RForm
-        {
-            public RestoreListForm()
+            var restoreCount = RestoreData?.Count ?? 0;
+            var lblRestore = new WpfTextBlock
             {
-                Font = SystemFonts.DialogFont;
-                Text = AppString.Dialog.RestoreDetails;
-                SizeGripStyle = SizeGripStyle.Hide;
-                StartPosition = FormStartPosition.Manual;
-                Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-                MinimizeBox = MaximizeBox = ShowInTaskbar = false;
-                ClientSize = new Size(520, 350).DpiZoom();
-                MinimumSize = Size;
-                dgvRestore.ColumnHeadersDefaultCellStyle.Alignment
-                    = dgvRestore.RowsDefaultCellStyle.Alignment
-                    = DataGridViewContentAlignment.BottomCenter;
-                Controls.AddRange(new Control[] { lblRestore, dgvRestore });
-                lblRestore.Resize += (sender, e) => OnResize(null);
-                this.AddEscapeButton();
-                InitTheme();
-                ApplyDarkModeToDataGridView(dgvRestore);
-            }
-
-            private readonly DataGridView dgvRestore = new()
-            {
-                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                BackgroundColor = SystemColors.Control,
-                BorderStyle = BorderStyle.None,
-                AllowUserToResizeRows = false,
-                AllowUserToAddRows = false,
-                RowHeadersVisible = false,
-                MultiSelect = false,
-                ReadOnly = true
+                Text = AppString.Message.RestoreSucceeded.Replace("%s", restoreCount.ToString()),
+                Margin = new Thickness(0, 0, 0, 12),
+                TextWrapping = TextWrapping.Wrap
             };
 
-            private readonly Label lblRestore = new()
+            var dataGrid = new WpfDataGrid
             {
-                Width = 480.DpiZoom()
+                AutoGenerateColumns = false,
+                IsReadOnly = true,
+                SelectionMode = DataGridSelectionMode.Single,
+                HeadersVisibility = DataGridHeadersVisibility.Column,
+                GridLinesVisibility = DataGridGridLinesVisibility.None,
+                CanUserResizeRows = false,
+                CanUserAddRows = false,
+                Height = 340
             };
 
-            protected override void OnResize(EventArgs e)
+            dataGrid.Columns.Add(new DataGridTextColumn
             {
-                base.OnResize(e);
-                var a = 20.DpiZoom();
-                lblRestore.Location = new Point(a, a);
-                lblRestore.Width = ClientSize.Width;
-                dgvRestore.Location = new Point(a, lblRestore.Bottom + a);
-                dgvRestore.Width = ClientSize.Width - 2 * a;
-                dgvRestore.Height = ClientSize.Height - 3 * a - lblRestore.Height;
-            }
+                Header = AppString.Dialog.ItemLocation,
+                Binding = new System.Windows.Data.Binding("Location"),
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star)
+            });
 
-            public void ShowDonateList(List<RestoreChangedItem> restoreList)
+            dataGrid.Columns.Add(new DataGridTextColumn
             {
-                var heads = new[] { AppString.Dialog.ItemLocation, AppString.Dialog.RestoredValue };
-                dgvRestore.ColumnCount = heads.Length;
-                dgvRestore.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                var restoreCount = restoreList.Count;
-                for (var n = 0; n < heads.Length; n++)
+                Header = AppString.Dialog.RestoredValue,
+                Binding = new System.Windows.Data.Binding("Value"),
+                Width = DataGridLength.Auto
+            });
+
+            var items = new List<RestoreDisplayItem>();
+            if (RestoreData != null)
+            {
+                foreach (var item in RestoreData)
                 {
-                    dgvRestore.Columns[n].HeaderText = heads[n];
-                }
-                for (var n = 0; n < restoreCount; n++)
-                {
-                    var item = restoreList[n];
                     var scene = item.BackupScene;
                     var sceneText = BackupHelper.BackupScenesText[(int)scene];
-                    string[] values;
                     var changedValue = item.ItemData;
                     if (changedValue == false.ToString()) changedValue = AppString.Dialog.Disabled;
                     if (changedValue == true.ToString()) changedValue = AppString.Dialog.Enabled;
-                    if (Array.IndexOf(BackupHelper.TypeBackupScenesText, sceneText) != -1)
+
+                    string location;
+                    if (BackupHelper.TypeBackupScenesText.Contains(sceneText))
                     {
-                        values = new[] { AppString.ToolBar.Type + " -> " + sceneText + " -> " + item.KeyName, changedValue };
+                        location = $"{AppString.ToolBar.Type} -> {sceneText} -> {item.KeyName}";
                     }
-                    else if (Array.IndexOf(BackupHelper.RuleBackupScenesText, sceneText) != -1)
+                    else if (BackupHelper.RuleBackupScenesText.Contains(sceneText))
                     {
-                        values = new[] { AppString.ToolBar.Rule + " -> " + sceneText + " -> " + item.KeyName, changedValue };
+                        location = $"{AppString.ToolBar.Rule} -> {sceneText} -> {item.KeyName}";
                     }
                     else
                     {
-                        values = new[] { AppString.ToolBar.Home + " -> " + sceneText + " -> " + item.KeyName, changedValue };
+                        location = $"{AppString.ToolBar.Home} -> {sceneText} -> {item.KeyName}";
                     }
-                    dgvRestore.Rows.Add(values);
+
+                    items.Add(new RestoreDisplayItem { Location = location, Value = changedValue });
                 }
-                lblRestore.Text = AppString.Message.RestoreSucceeded.Replace("%s", restoreCount.ToString()); ;
             }
+
+            dataGrid.ItemsSource = items;
+
+            dialog.Content = new WpfStackPanel
+            {
+                Children = { lblRestore, dataGrid }
+            };
+
+            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            return true;
+        }
+
+        private class RestoreDisplayItem
+        {
+            public string Location { get; set; }
+            public string Value { get; set; }
         }
     }
 }

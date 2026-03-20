@@ -1,30 +1,53 @@
 ﻿using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class ShellStoreDialog : CommonDialog
+    internal sealed partial class ShellStoreDialog
     {
         public string[] SelectedKeyNames { get; private set; }
         public Func<string, bool> Filter { get; set; }
         public string ShellPath { get; set; }
         public bool IsReference { get; set; }
 
-        public override void Reset() { }
+        public bool ShowDialog() => RunDialog(null);
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool RunDialog(MainWindow owner)
         {
-            using var frm = new ShellStoreForm(ShellPath, Filter, IsReference);
-            frm.TopMost = true;
-            var flag = frm.ShowDialog() == DialogResult.OK;
-            if (flag) SelectedKeyNames = frm.SelectedKeyNames;
-            return flag;
+            var form = new ShellStoreForm(ShellPath, Filter, IsReference);
+            
+            var dialog = ContentDialogHost.CreateDialog(
+                IsReference ? AppString.Dialog.CheckReference : AppString.Dialog.CheckCopy, 
+                owner);
+            dialog.PrimaryButtonText = ResourceString.OK;
+            dialog.CloseButtonText = ResourceString.Cancel;
+            dialog.FullSizeDesired = true;
+
+            var host = new WindowsFormsHost
+            {
+                Child = form,
+                Height = 400,
+                Width = 600
+            };
+
+            dialog.Content = host;
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            
+            if (result != ContentDialogResult.Primary)
+            {
+                return false;
+            }
+
+            SelectedKeyNames = form.SelectedKeyNames;
+            return true;
         }
 
-        public sealed class ShellStoreForm : RForm
+        public sealed class ShellStoreForm : Panel
         {
             public string ShellPath { get; private set; }
             public Func<string, bool> Filter { get; private set; }
@@ -35,15 +58,7 @@ namespace ContextMenuManager.Controls
                 SuspendLayout();
                 Filter = filter;
                 ShellPath = shellPath;
-                AcceptButton = btnOK;
-                CancelButton = btnCancel;
-                Font = SystemFonts.MessageBoxFont;
-                SizeGripStyle = SizeGripStyle.Hide;
-                ShowIcon = ShowInTaskbar = false;
-                MinimizeBox = MaximizeBox = false;
-                StartPosition = FormStartPosition.CenterParent;
-                MinimumSize = Size = new Size(652, 422).DpiZoom();
-                Text = isReference ? AppString.Dialog.CheckReference : AppString.Dialog.CheckCopy;
+                MinimumSize = Size = new System.Drawing.Size(652, 422).DpiZoom();
                 btnOK.Click += (sender, e) => GetSelectedItems();
                 chkSelectAll.Click += (sender, e) =>
                 {
@@ -57,26 +72,23 @@ namespace ContextMenuManager.Controls
                 InitializeComponents();
                 LoadItems(isReference);
                 ResumeLayout();
-                InitTheme();
             }
 
             private readonly MyList list = new();
             private readonly MyListBox listBox = new();
             private readonly Panel pnlBorder = new()
             {
-                BackColor = DarkModeHelper.FormFore // 修改这里
+                BackColor = DarkModeHelper.FormFore
             };
             private readonly Button btnOK = new()
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                DialogResult = DialogResult.OK,
                 Text = ResourceString.OK,
                 AutoSize = true
             };
             private readonly Button btnCancel = new()
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                DialogResult = DialogResult.Cancel,
                 Text = ResourceString.Cancel,
                 AutoSize = true
             };
@@ -90,22 +102,20 @@ namespace ContextMenuManager.Controls
 
             private void InitializeComponents()
             {
-                Controls.AddRange(new Control[] { listBox, pnlBorder, btnOK, btnCancel, chkSelectAll });
+                Controls.AddRange([listBox, pnlBorder, chkSelectAll]);
                 var a = 20.DpiZoom();
-                listBox.Location = new Point(a, a);
-                pnlBorder.Location = new Point(a - 1, a - 1);
-                chkSelectAll.Top = btnOK.Top = btnCancel.Top = ClientSize.Height - btnCancel.Height - a;
-                btnCancel.Left = ClientSize.Width - btnCancel.Width - a;
-                btnOK.Left = btnCancel.Left - btnOK.Width - a;
+                listBox.Location = new System.Drawing.Point(a, a);
+                pnlBorder.Location = new System.Drawing.Point(a - 1, a - 1);
+                chkSelectAll.Top = Height - chkSelectAll.Height - a;
                 chkSelectAll.Left = a;
-                OnResize(null);
+                Resize += OnResize;
+                OnResize(null, null);
             }
 
-            protected override void OnResize(EventArgs e)
+            protected void OnResize(object sender, EventArgs e)
             {
-                base.OnResize(e);
-                listBox.Width = ClientSize.Width - 2 * listBox.Left;
-                listBox.Height = btnOK.Top - 2 * listBox.Top;
+                listBox.Width = Width - 2 * listBox.Left;
+                listBox.Height = Height - 3 * listBox.Top - chkSelectAll.Height;
                 pnlBorder.Width = listBox.Width + 2;
                 pnlBorder.Height = listBox.Height + 2;
             }

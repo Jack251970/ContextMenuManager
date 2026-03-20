@@ -20,10 +20,10 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             Click += (sender, e) =>
             {
-                using var dlg = new IconDialog();
+                var dlg = new IconDialog();
                 dlg.IconPath = item.IconPath;
                 dlg.IconIndex = item.IconIndex;
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 using var icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex);
                 Image image = icon?.ToBitmap();
                 if (image == null) return;
