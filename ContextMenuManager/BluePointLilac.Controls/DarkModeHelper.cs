@@ -253,14 +253,6 @@ namespace ContextMenuManager.Controls
                     else
                         combo.UpdateColors();
                 }
-                else if (control is SearchBox searchBox)
-                {
-                    searchBox.Invoke(new Action(() =>
-                    {
-                        var method = searchBox.GetType().GetMethod("UpdateThemeColors");
-                        method?.Invoke(searchBox, null);
-                    }));
-                }
             }
             catch { /* 忽略错误 */ }
         }
