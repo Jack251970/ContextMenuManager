@@ -83,9 +83,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\SwitchDicList.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="BluePointLilac.Controls\ReadOnlyTextBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="BluePointLilac.Controls\UAWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
