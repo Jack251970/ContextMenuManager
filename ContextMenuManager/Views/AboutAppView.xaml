@@ -42,14 +42,6 @@
                         FontSize="30"
                         FontWeight="Bold"
                         TextAlignment="Center" />
-
-                    <TextBlock
-                        x:Name="DescriptionText"
-                        MaxWidth="620"
-                        Margin="0,12,0,0"
-                        FontSize="15"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 

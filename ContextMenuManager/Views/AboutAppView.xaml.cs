@@ -22,7 +22,6 @@ namespace ContextMenuManager.Views
         public void RefreshContent()
         {
             AppNameText.Text = AppString.General.AppName;
-            DescriptionText.Text = AppString.About.Description;
             ProjectLinksHeader.Text = AppString.SideBar.AboutApp ?? "About";
             GitHubLinkText.Content = $"{AppString.About.GitHub ?? "GitHub"}: {GitHubUrl}";
             GitHubLinkText.NavigateUri = new Uri(GitHubUrl);

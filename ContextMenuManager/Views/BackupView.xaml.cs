@@ -70,7 +70,6 @@ namespace ContextMenuManager.Views
         private void LoadLabels()
         {
             PageTitleText.Text = AppString.SideBar.BackupRestore ?? "Backup";
-            PageDescriptionText.Text = "Create full menu backups, restore selected areas, and manage backup files.";
             SummaryLabel.Text = AppString.Dialog.BackupContent ?? "Backup";
             SummaryHintText.Text = AppConfig.MenuBackupRootDir;
             NewBackupButton.Content = AppString.Dialog.NewBackupItem ?? "New Backup";

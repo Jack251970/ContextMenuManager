@@ -94,7 +94,6 @@ namespace ContextMenuManager.Views
         private void LoadLabels()
         {
             PageTitleText.Text = AppString.SideBar.AppLanguage ?? "Language";
-            PageDescriptionText.Text = "Switch the application language, download community translations, or prepare a new translation file.";
             LanguageLabel.Text = AppString.SideBar.AppLanguage ?? "Language";
             LanguageHintText.Text = AppConfig.LangsDir;
             OpenLanguageDirButton.Content = AppString.Menu.FileLocation ?? "Open";

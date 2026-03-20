@@ -80,7 +80,6 @@ namespace ContextMenuManager.Views
         private void LoadLabels()
         {
             PageTitleText.Text = AppString.SideBar.AppSetting ?? "Settings";
-            PageDescriptionText.Text = "Manage update behavior, backup handling, and app-wide defaults.";
 
             ConfigPathLabel.Text = AppString.Other.ConfigPath;
             ConfigPathHint.Text = AppConfig.ConfigDir;

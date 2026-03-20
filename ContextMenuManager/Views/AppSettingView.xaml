@@ -63,10 +63,6 @@
 
             <StackPanel Grid.Row="0" Margin="0,0,0,20">
                 <TextBlock x:Name="PageTitleText" Style="{StaticResource SectionTitleStyle}" />
-                <TextBlock
-                    x:Name="PageDescriptionText"
-                    Margin="0,8,0,0"
-                    Style="{StaticResource SectionDescriptionStyle}" />
             </StackPanel>
 
             <Border Grid.Row="1" Style="{StaticResource CardStyle}">

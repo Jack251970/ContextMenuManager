@@ -40,7 +40,6 @@ namespace ContextMenuManager.Views
         private void LoadLabels()
         {
             PageTitleText.Text = AppString.SideBar.Dictionaries ?? "Dictionaries";
-            PageDescriptionText.Text = "Browse the built-in dictionary and template files used by the application.";
             OpenDirButton.Content = AppString.Menu.FileLocation ?? "Open";
             EditButton.Content = AppString.Menu.Edit ?? "Edit";
             SaveButton.Content = AppString.Menu.Save ?? "Save";

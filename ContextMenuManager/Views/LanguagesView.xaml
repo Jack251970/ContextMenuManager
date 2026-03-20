@@ -28,11 +28,6 @@
                     x:Name="PageTitleText"
                     FontSize="22"
                     FontWeight="SemiBold" />
-                <TextBlock
-                    x:Name="PageDescriptionText"
-                    Margin="0,8,0,0"
-                    FontSize="13"
-                    TextWrapping="Wrap" />
             </StackPanel>
 
             <Border Grid.Row="1" Style="{StaticResource CardStyle}">
