@@ -282,15 +282,9 @@ namespace ContextMenuManager.Methods
                 process.StartInfo.FileName = uri.AbsoluteUri;
                 process.Start();
             }
-            catch (UriFormatException)
+            catch (Exception)
             {
-                // 处理无效URL格式的情况
-                MessageBoxEx.Show("无效的网址格式：" + url, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Win32Exception ex)
-            {
-                // 处理打开失败的情况
-                MessageBoxEx.Show("无法打开网址：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Ignored
             }
         }
 
