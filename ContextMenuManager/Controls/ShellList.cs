@@ -820,7 +820,7 @@ namespace ContextMenuManager.Controls
                 if (subKeyNames.Count == 0) btnAddExisting.Visible = false;
             }
             if (!XmlDicHelper.EnhanceMenuPathDic.ContainsKey(scenePath)) btnEnhanceMenu.Visible = false;
-            newItem.AddCtrs(new[] { btnAddExisting, btnEnhanceMenu });
+            newItem.AddCtrs([btnAddExisting, btnEnhanceMenu]);
             AddItem(newItem);
 
             newItem.AddNewItem += () =>
@@ -830,9 +830,11 @@ namespace ContextMenuManager.Controls
                 else if (Scene == Scenes.DragDrop) isShell = false;
                 else
                 {
-                    var dlg = new SelectDialog();
-                    dlg.Items = new[] { "Shell", "ShellEx" };
-                    dlg.Title = AppString.Dialog.SelectNewItemType;
+                    var dlg = new SelectDialog
+                    {
+                        Items = ["Shell", "ShellEx"],
+                        Title = AppString.Dialog.SelectNewItemType
+                    };
                     if (dlg.ShowDialog() != true) return;
                     isShell = dlg.SelectedIndex == 0;
                 }
