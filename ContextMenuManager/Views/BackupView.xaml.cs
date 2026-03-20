@@ -102,10 +102,10 @@ namespace ContextMenuManager.Views
                 TvTitle = AppString.Dialog.BackupContent,
                 TvItems = BackupHelper.BackupScenesText,
                 CmbTitle = AppString.Dialog.BackupMode,
-                CmbItems = new[] { AppString.Dialog.BackupMode1, AppString.Dialog.BackupMode2, AppString.Dialog.BackupMode3 }
+                CmbItems = [AppString.Dialog.BackupMode1, AppString.Dialog.BackupMode2, AppString.Dialog.BackupMode3]
             };
 
-            if (dlg.ShowDialog() != WinForms.DialogResult.OK)
+            if (dlg.ShowDialog() != true)
             {
                 return;
             }
@@ -168,10 +168,10 @@ namespace ContextMenuManager.Views
                 TvTitle = AppString.Dialog.RestoreContent,
                 TvItems = helper.GetBackupRestoreScenesText(BackupList.metaData.BackupScenes),
                 CmbTitle = AppString.Dialog.RestoreMode,
-                CmbItems = new[] { AppString.Dialog.RestoreMode1, AppString.Dialog.RestoreMode2, AppString.Dialog.RestoreMode3 }
+                CmbItems = [AppString.Dialog.RestoreMode1, AppString.Dialog.RestoreMode2, AppString.Dialog.RestoreMode3]
             };
 
-            if (dlg.ShowDialog() != WinForms.DialogResult.OK)
+            if (dlg.ShowDialog() != true)
             {
                 return;
             }

@@ -264,39 +264,39 @@ namespace ContextMenuManager.Controls
                 File.Move(meFilePath, lnkPath);
             }
 
-            using (var dlg = new SelectDialog())
+            var dlg = new SelectDialog
             {
-                dlg.Title = AppString.Dialog.SelectGroup;
-                dlg.Items = WinXList.GetGroupNames();
-                dlg.Selected = FoldGroupItem.Text;
-                if (dlg.ShowDialog() != DialogResult.OK) return;
-                if (dlg.Selected == FoldGroupItem.Text) return;
+                Title = AppString.Dialog.SelectGroup,
+                Items = WinXList.GetGroupNames(),
+                Selected = FoldGroupItem.Text
+            };
+            if (dlg.ShowDialog() != true) return;
+            if (dlg.Selected == FoldGroupItem.Text) return;
 
-                ChangeFileGroup(dlg.Selected, true, out var lnkPath);
-                if (WinOsVersion.Current >= WinOsVersion.Win11)
-                {
-                    ChangeFileGroup(dlg.Selected, false, out _);
-                }
-                FilePath = lnkPath;
-                RefreshKeyPath();
-
-                var list = (WinXList)Parent;
-                list.Controls.Remove(this);
-                for (var i = 0; i < list.Controls.Count; i++)
-                {
-                    if (list.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
-                    {
-                        list.Controls.Add(this);
-                        list.SetItemIndex(this, i + 1);
-                        Visible = !groupItem.IsFold;
-                        ((WinXGroupItem)FoldGroupItem).RemoveWinXItem(this);
-                        FoldGroupItem = groupItem;
-                        groupItem.AddWinXItem(this);
-                        break;
-                    }
-                }
-                ExplorerRestarter.Show();
+            ChangeFileGroup(dlg.Selected, true, out var lnkPath);
+            if (WinOsVersion.Current >= WinOsVersion.Win11)
+            {
+                ChangeFileGroup(dlg.Selected, false, out _);
             }
+            FilePath = lnkPath;
+            RefreshKeyPath();
+
+            var list = (WinXList)Parent;
+            list.Controls.Remove(this);
+            for (var i = 0; i < list.Controls.Count; i++)
+            {
+                if (list.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
+                {
+                    list.Controls.Add(this);
+                    list.SetItemIndex(this, i + 1);
+                    Visible = !groupItem.IsFold;
+                    ((WinXGroupItem)FoldGroupItem).RemoveWinXItem(this);
+                    FoldGroupItem = groupItem;
+                    groupItem.AddWinXItem(this);
+                    break;
+                }
+            }
+            ExplorerRestarter.Show();
         }
 
         private void MoveItem(bool isUp)

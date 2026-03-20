@@ -1,10 +1,7 @@
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
-using System.Drawing;
 using System.Threading;
-using System.Windows;
-using DrawingContentAlignment = System.Drawing.ContentAlignment;
 using WpfProgressBar = System.Windows.Controls.ProgressBar;
 
 namespace ContextMenuManager.Controls

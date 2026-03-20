@@ -129,8 +129,8 @@ namespace ContextMenuManager.Controls
             AddItem(newItem);
             newItem.AddNewItem += async () =>
             {
-                using var dlg = new FileExtensionDialog();
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                var dlg = new FileExtensionDialog();
+                if (dlg.ShowDialog() != true) return;
                 var extension = dlg.Extension;
                 if (extension == ".") return;
                 var openMode = FileExtension.GetOpenMode(extension);

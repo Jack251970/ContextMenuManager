@@ -325,10 +325,10 @@ namespace ContextMenuManager.Controls
             LblValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             LblValue.MouseDown += (sender, e) =>
             {
-                using var dlg = new InputDialog();
+                var dlg = new InputDialog();
                 dlg.Title = AppString.Menu.ChangeText;
                 dlg.Text = ItemValue;
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 ItemValue = LblValue.Text = dlg.Text;
             };
             LblValue.TextChanged += (sender, e) => ItemValue = LblValue.Text;
@@ -478,10 +478,10 @@ namespace ContextMenuManager.Controls
             LblValue.Font = new Font(Font.FontFamily, Font.Size + 3F);
             LblValue.MouseDown += (sender, e) =>
             {
-                using var dlg = new InputDialog();
+                var dlg = new InputDialog();
                 dlg.Title = AppString.Menu.ChangeText;
                 dlg.Text = ItemValue;
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 ItemValue = LblValue.Text = dlg.Text;
             };
             LblValue.TextChanged += (sender, e) => ItemValue = LblValue.Text;

@@ -637,7 +637,7 @@ namespace ContextMenuManager.Controls
                     case Scenes.MenuAnalysis:
                     case Scenes.DragDrop:
                     case Scenes.CustomExtensionPerceivedType:
-                        if (dlg.ShowDialog() != DialogResult.OK) return;
+                        if (dlg.ShowDialog() != true) return;
                         break;
                 }
                 switch (Scene)
@@ -830,10 +830,10 @@ namespace ContextMenuManager.Controls
                 else if (Scene == Scenes.DragDrop) isShell = false;
                 else
                 {
-                    using var dlg = new SelectDialog();
+                    var dlg = new SelectDialog();
                     dlg.Items = new[] { "Shell", "ShellEx" };
                     dlg.Title = AppString.Dialog.SelectNewItemType;
-                    if (dlg.ShowDialog() != DialogResult.OK) return;
+                    if (dlg.ShowDialog() != true) return;
                     isShell = dlg.SelectedIndex == 0;
                 }
                 if (isShell) AddNewShellItem(scenePath);
@@ -909,18 +909,18 @@ namespace ContextMenuManager.Controls
         private void AddNewShellExItem(string scenePath)
         {
             var isDragDrop = Scene == Scenes.DragDrop;
-            using var dlg1 = new InputDialog { Title = AppString.Dialog.InputGuid };
+            var dlg1 = new InputDialog { Title = AppString.Dialog.InputGuid };
             if (GuidEx.TryParse(Clipboard.GetText(), out var guid)) dlg1.Text = guid.ToString();
-            if (dlg1.ShowDialog() != DialogResult.OK) return;
+            if (dlg1.ShowDialog() != true) return;
             if (GuidEx.TryParse(dlg1.Text, out guid))
             {
                 if (isDragDrop)
                 {
-                    using var dlg2 = new SelectDialog();
+                    var dlg2 = new SelectDialog();
                     dlg2.Title = AppString.Dialog.SelectGroup;
                     dlg2.Items = new[] { AppString.SideBar.Folder, AppString.SideBar.Directory,
                                         AppString.SideBar.Drive, AppString.SideBar.AllObjects };
-                    if (dlg2.ShowDialog() != DialogResult.OK) return;
+                    if (dlg2.ShowDialog() != true) return;
                     switch (dlg2.SelectedIndex)
                     {
                         case 0:

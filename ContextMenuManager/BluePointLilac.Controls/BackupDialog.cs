@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Forms;
 using WpfOrientation = System.Windows.Controls.Orientation;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfComboBox = System.Windows.Controls.ComboBox;
@@ -15,7 +14,7 @@ using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace ContextMenuManager.Controls
 {
-    public class BackupDialog : CommonDialog
+    public class BackupDialog
     {
         public string Title { get; set; }
         public string CmbTitle { get; set; }
@@ -26,11 +25,11 @@ namespace ContextMenuManager.Controls
         public string[] TvItems { get; set; }
         public List<string> TvSelectedItems { get; set; }
 
-        public override void Reset() { }
-
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog() => RunDialog(null);
+        
+        public bool RunDialog(MainWindow owner)
         {
-            var dialog = ContentDialogHost.CreateDialog(Title, hwndOwner);
+            var dialog = ContentDialogHost.CreateDialog(Title, owner);
             dialog.PrimaryButtonText = ResourceString.OK;
             dialog.CloseButtonText = ResourceString.Cancel;
             dialog.FullSizeDesired = true;
@@ -105,7 +104,7 @@ namespace ContextMenuManager.Controls
                 }
             };
 
-            var result = ContentDialogHost.RunBlocking(owner => dialog.ShowAsync(owner), hwndOwner);
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             if (result != ContentDialogResult.Primary)
             {
                 return false;

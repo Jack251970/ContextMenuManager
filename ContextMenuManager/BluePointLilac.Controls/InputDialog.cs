@@ -9,7 +9,7 @@ using WpfTextWrapping = System.Windows.TextWrapping;
 
 namespace ContextMenuManager.Controls
 {
-    public sealed class InputDialog : CommonDialog
+    public sealed class InputDialog
     {
         /// <summary>输入对话框标题</summary>
         public string Title { get; set; } = Application.ProductName;
@@ -17,11 +17,11 @@ namespace ContextMenuManager.Controls
         public string Text { get; set; }
         public Size Size { get; set; }
 
-        public override void Reset() { }
+        public bool ShowDialog() => RunDialog(null);
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool RunDialog(MainWindow owner)
         {
-            var dialog = ContentDialogHost.CreateDialog(Title, hwndOwner);
+            var dialog = ContentDialogHost.CreateDialog(Title, owner);
             dialog.PrimaryButtonText = ResourceString.OK;
             dialog.CloseButtonText = ResourceString.Cancel;
 
@@ -37,7 +37,7 @@ namespace ContextMenuManager.Controls
             };
 
             dialog.Content = inputBox;
-            var result = ContentDialogHost.RunBlocking(owner => dialog.ShowAsync(owner), hwndOwner);
+            var result = ContentDialogHost.RunBlocking(owner => dialog.ShowAsync(owner), owner);
             var accepted = result == ContentDialogResult.Primary;
             Text = accepted ? inputBox.Text : null;
             return accepted;

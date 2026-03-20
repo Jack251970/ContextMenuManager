@@ -1,12 +1,11 @@
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
-using System.Windows.Forms;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 
 namespace ContextMenuManager.Controls
 {
-    public class SelectDialog : CommonDialog
+    public class SelectDialog
     {
         public string Title { get; set; }
         public string Selected { get; set; }
@@ -14,11 +13,11 @@ namespace ContextMenuManager.Controls
         public string[] Items { get; set; }
         public bool CanEdit { get; set; }
 
-        public override void Reset() { }
+        public bool ShowDialog() => RunDialog(null);
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool RunDialog(MainWindow owner)
         {
-            var dialog = ContentDialogHost.CreateDialog(Title, hwndOwner);
+            var dialog = ContentDialogHost.CreateDialog(Title, owner);
             dialog.PrimaryButtonText = ResourceString.OK;
             dialog.CloseButtonText = ResourceString.Cancel;
 
@@ -40,7 +39,7 @@ namespace ContextMenuManager.Controls
             }
 
             dialog.Content = comboBox;
-            var result = ContentDialogHost.RunBlocking(owner => dialog.ShowAsync(owner), hwndOwner);
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             if (result != ContentDialogResult.Primary)
             {
                 return false;

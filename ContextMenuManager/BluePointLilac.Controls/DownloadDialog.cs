@@ -10,18 +10,19 @@ using WpfProgressBar = System.Windows.Controls.ProgressBar;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class DownloadDialog : CommonDialog
+    internal sealed class DownloadDialog
     {
         public string Text { get; set; }
         public string Url { get; set; }
         public string FilePath { get; set; }
-        public override void Reset() { }
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog() => RunDialog(null);
+
+        public bool RunDialog(MainWindow owner)
         {
             return ContentDialogHost.RunBlocking(async owner =>
             {
-                var dialog = ContentDialogHost.CreateDialog(Text, hwndOwner);
+                var dialog = ContentDialogHost.CreateDialog(Text, (MainWindow)owner);
                 dialog.CloseButtonText = ResourceString.Cancel;
                 dialog.DefaultButton = ContentDialogButton.Close;
 
@@ -46,7 +47,7 @@ namespace ContextMenuManager.Controls
                 }
                 await _;
                 return success;
-            }, hwndOwner);
+            }, owner);
         }
 
         private async Task<bool> DownloadAsync(ContentDialog dialog, WpfProgressBar progressBar, CancellationToken cancellationToken)

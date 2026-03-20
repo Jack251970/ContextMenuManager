@@ -74,11 +74,13 @@ namespace ContextMenuManager.Methods
                         if (nameXN != null && nameXN.InnerText.Contains(".exe"))
                         {
                             var urlXN = itemXN.SelectSingleNode("browser_download_url");
-                            using var dlg = new DownloadDialog();
-                            dlg.Url = urlXN?.InnerText;
-                            dlg.FilePath = $@"{AppConfig.AppDataDir}\{webVer}.exe";
-                            dlg.Text = AppString.General.AppName;
-                            if (dlg.ShowDialog() == DialogResult.OK)
+                            var dlg = new DownloadDialog
+                            {
+                                Url = urlXN?.InnerText,
+                                FilePath = $@"{AppConfig.AppDataDir}\{webVer}.exe",
+                                Text = AppString.General.AppName
+                            };
+                            if (dlg.ShowDialog() == true)
                             {
                                 AppMessageBox.Show(AppString.Message.UpdateSucceeded,
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);

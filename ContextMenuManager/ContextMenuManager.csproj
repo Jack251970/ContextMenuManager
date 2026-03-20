@@ -101,12 +101,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="BluePointLilac.Controls\UAWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="BluePointLilac.Controls\DownloadDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\FileExtensionDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\EnhanceMenusItem.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -138,9 +132,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\NewLnkFileDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\SelectDialog.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Controls\ShellExecuteDialog.cs">
@@ -237,9 +228,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="BluePointLilac.Controls\IconDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\InputDialog.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="BluePointLilac.Controls\MyCheckBox.cs">

@@ -244,10 +244,10 @@ namespace ContextMenuManager.Controls
                 }
 
                 if (dlg1.ShowDialog() != DialogResult.OK) return;
-                using var dlg2 = new SelectDialog();
+                var dlg2 = new SelectDialog();
                 dlg2.Title = AppString.Dialog.SelectGroup;
                 dlg2.Items = GetGroupNames();
-                if (dlg2.ShowDialog() != DialogResult.OK) return;
+                if (dlg2.ShowDialog() != true) return;
 
                 AddNewLnkFile(dlg2.Selected, dlg1.ItemText, dlg1.ItemFilePath, dlg1.Arguments, true);
                 if (WinOsVersion.Current >= WinOsVersion.Win11)

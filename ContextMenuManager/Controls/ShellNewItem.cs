@@ -281,12 +281,12 @@ namespace ContextMenuManager.Controls
         {
             if (AppMessageBox.Show(AppString.Message.EditInitialData,
                 MessageBoxButtons.YesNo) != DialogResult.Yes) return;
-            using var dlg = new InputDialog
+            var dlg = new InputDialog
             {
                 Title = AppString.Menu.InitialData,
                 Text = InitialData?.ToString()
             };
-            if (dlg.ShowDialog() == DialogResult.OK) InitialData = dlg.Text;
+            if (dlg.ShowDialog() == true) InitialData = dlg.Text;
         }
 
         public void SetSortabled(bool isLocked)

@@ -41,9 +41,9 @@ namespace ContextMenuManager.Controls
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new InputDialog { Title = AppString.Dialog.InputGuid };
+                var dlg = new InputDialog { Title = AppString.Dialog.InputGuid };
                 if (GuidEx.TryParse(Clipboard.GetText(), out var guid)) dlg.Text = guid.ToString();
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (dlg.ShowDialog() != true) return;
                 if (GuidEx.TryParse(dlg.Text, out guid))
                 {
                     var value = guid.ToString("B");

@@ -1,5 +1,4 @@
 using ContextMenuManager.Methods;
-using System;
 using System.Collections.Generic;
 
 namespace ContextMenuManager.Controls
@@ -38,9 +37,11 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public new bool ShowDialog() => RunDialog(null);
+
+        public new bool RunDialog(MainWindow owner)
         {
-            var flag = base.RunDialog(hwndOwner);
+            var flag = base.RunDialog(owner);
             if (flag)
             {
                 var extension = ObjectPath.RemoveIllegalChars(Extension);
