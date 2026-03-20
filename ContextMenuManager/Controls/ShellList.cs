@@ -890,10 +890,10 @@ namespace ContextMenuManager.Controls
         private void AddNewShellItem(string scenePath)
         {
             var shellPath = GetShellPath(scenePath);
-            using var dlg = new NewShellDialog();
+            var dlg = new NewShellDialog();
             dlg.ScenePath = scenePath;
             dlg.ShellPath = shellPath;
-            if (dlg.ShowDialog() != DialogResult.OK) return;
+            if (!dlg.ShowDialog()) return;
             for (var i = 0; i < Controls.Count; i++)
             {
                 if (Controls[i] is NewItem)

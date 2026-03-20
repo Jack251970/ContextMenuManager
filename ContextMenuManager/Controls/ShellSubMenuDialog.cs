@@ -118,10 +118,10 @@ namespace ContextMenuManager.Controls
             private void AddNewItem()
             {
                 if (!SubShellTypeItem.CanAddMore(this)) return;
-                using var dlg = new NewShellDialog();
+                var dlg = new NewShellDialog();
                 dlg.ScenePath = ScenePath;
                 dlg.ShellPath = ShellItem.CommandStorePath;
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (!dlg.ShowDialog()) return;
                 SubKeyNames.Add(dlg.NewItemKeyName);
                 SaveSorting();
                 AddItem(new SubShellItem(this, dlg.NewItemKeyName));
@@ -312,12 +312,12 @@ namespace ContextMenuManager.Controls
             private void AddNewItem()
             {
                 if (!SubShellTypeItem.CanAddMore(this)) return;
-                using var dlg = new NewShellDialog
+                var dlg = new NewShellDialog
                 {
                     ScenePath = ScenePath,
                     ShellPath = ShellPath
                 };
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (!dlg.ShowDialog()) return;
                 AddItem(new SubShellItem(this, dlg.NewItemRegPath));
             }
 

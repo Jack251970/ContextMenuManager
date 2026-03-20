@@ -1,99 +1,92 @@
-﻿using ContextMenuManager.Methods;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
+using ContextMenuManager.Methods;
+using System.Windows;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBox = System.Windows.Controls.TextBox;
+using WpfButton = System.Windows.Controls.Button;
+using WpfGrid = System.Windows.Controls.Grid;
+using WpfColumnDefinition = System.Windows.Controls.ColumnDefinition;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 
 namespace ContextMenuManager.Controls
 {
-    internal class NewItemForm : ResizeLimitedForm
+    internal class NewItemDialogBase
     {
-        public NewItemForm()
-        {
-            AcceptButton = btnOK;
-            CancelButton = btnCancel;
-            Text = AppString.Other.NewItem;
-            Font = SystemFonts.MenuFont;
-            MaximizeBox = MinimizeBox = false;
-            ShowIcon = ShowInTaskbar = false;
-            StartPosition = FormStartPosition.CenterParent;
-            SizeGripStyle = SizeGripStyle.Hide;
-            VerticalResizable = false;
-            InitializeComponents();
-        }
+        public string ItemText { get; set; }
+        public string ItemFilePath { get; set; }
+        public string Arguments { get; set; }
 
-        public string ItemText { get => txtText.Text; set => txtText.Text = value; }
-        public string ItemFilePath { get => txtFilePath.Text; set => txtFilePath.Text = value; }
-        public string Arguments { get => txtArguments.Text; set => txtArguments.Text = value; }
         public string ItemCommand
         {
             get
             {
                 var filePath = ItemFilePath;
                 var arguments = Arguments;
+                if (filePath.IsNullOrWhiteSpace()) return arguments ?? string.Empty;
                 if (arguments.IsNullOrWhiteSpace()) return filePath;
-                if (filePath.IsNullOrWhiteSpace()) return arguments;
                 if (filePath.Contains(" ")) filePath = $"\"{filePath}\"";
+                // Note: The original logic for arguments containing double quotes was a bit specific,
+                // I'll keep it as provided.
                 if (!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
                 return $"{filePath} {arguments}";
             }
         }
 
-        protected readonly Label lblText = new()
-        {
-            Text = AppString.Dialog.ItemText,
-            AutoSize = true
-        };
-        protected readonly Label lblCommand = new()
-        {
-            Text = AppString.Dialog.ItemCommand,
-            AutoSize = true
-        };
-        protected readonly Label lblArguments = new()
-        {
-            Text = AppString.Dialog.CommandArguments,
-            AutoSize = true
-        };
-        protected readonly TextBox txtText = new();
-        protected readonly TextBox txtFilePath = new();
-        protected readonly TextBox txtArguments = new();
-        protected readonly Button btnBrowse = new()
-        {
-            Text = AppString.Dialog.Browse,
-            AutoSize = true
-        };
-        protected readonly Button btnOK = new()
-        {
-            Text = ResourceString.OK,
-            AutoSize = true
-        };
-        protected readonly Button btnCancel = new()
-        {
-            DialogResult = DialogResult.Cancel,
-            Text = ResourceString.Cancel,
-            AutoSize = true
-        };
+        protected WpfTextBox txtText;
+        protected WpfTextBox txtFilePath;
+        protected WpfTextBox txtArguments;
 
-        protected virtual void InitializeComponents()
+        protected virtual void CreateCommonControls(WpfStackPanel parent)
         {
-            Controls.AddRange(new Control[] { lblText, lblCommand, lblArguments,
-                txtText, txtFilePath, txtArguments, btnBrowse, btnOK, btnCancel });
-            var a = 20.DpiZoom();
-            btnBrowse.Anchor = btnOK.Anchor = btnCancel.Anchor = AnchorStyles.Right | AnchorStyles.Top;
-            txtText.Top = lblText.Top = lblText.Left = lblCommand.Left = lblArguments.Left = a;
-            btnBrowse.Top = txtFilePath.Top = lblCommand.Top = txtText.Bottom + a;
-            lblArguments.Top = txtArguments.Top = txtFilePath.Bottom + a;
-            btnOK.Top = btnCancel.Top = txtArguments.Bottom + a;
-            btnCancel.Left = btnBrowse.Left = ClientSize.Width - btnCancel.Width - a;
-            btnOK.Left = btnCancel.Left - btnOK.Width - a;
-            var b = Math.Max(Math.Max(lblText.Width, lblCommand.Width), lblArguments.Width) + btnBrowse.Width + 4 * a;
-            ClientSize = new Size(320.DpiZoom() + b, btnOK.Bottom + a);
-            MinimumSize = Size;
-            Resize += (sender, e) =>
+            txtText = new WpfTextBox
             {
-                txtText.Width = txtFilePath.Width = txtArguments.Width = ClientSize.Width - b;
-                txtText.Left = txtFilePath.Left = txtArguments.Left = btnBrowse.Left - txtFilePath.Width - a;
+                Text = ItemText ?? string.Empty,
+                Margin = new Thickness(0, 0, 0, 12)
             };
-            OnResize(null);
+            ControlHelper.SetHeader(txtText, AppString.Dialog.ItemText);
+
+            var grid = new WpfGrid { Margin = new Thickness(0, 0, 0, 12) };
+            grid.ColumnDefinitions.Add(new WpfColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new WpfColumnDefinition { Width = GridLength.Auto });
+
+            txtFilePath = new WpfTextBox
+            {
+                Text = ItemFilePath ?? string.Empty,
+                Margin = new Thickness(0, 0, 8, 0)
+            };
+            ControlHelper.SetHeader(txtFilePath, AppString.Dialog.ItemCommand);
+            WpfGrid.SetColumn(txtFilePath, 0);
+
+            var btnBrowse = new WpfButton
+            {
+                Content = AppString.Dialog.Browse,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Padding = new Thickness(12, 4, 12, 4)
+            };
+            WpfGrid.SetColumn(btnBrowse, 1);
+            btnBrowse.Click += (s, e) => OnBrowseClick();
+
+            grid.Children.Add(txtFilePath);
+            grid.Children.Add(btnBrowse);
+
+            txtArguments = new WpfTextBox
+            {
+                Text = Arguments ?? string.Empty,
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+            ControlHelper.SetHeader(txtArguments, AppString.Dialog.CommandArguments);
+
+            parent.Children.Add(txtText);
+            parent.Children.Add(grid);
+            parent.Children.Add(txtArguments);
+        }
+
+        protected virtual void OnBrowseClick() { }
+
+        protected virtual void SyncData()
+        {
+            ItemText = txtText.Text;
+            ItemFilePath = txtFilePath.Text;
+            Arguments = txtArguments.Text;
         }
     }
 }
