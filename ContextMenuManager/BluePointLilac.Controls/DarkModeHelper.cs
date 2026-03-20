@@ -18,7 +18,6 @@ namespace ContextMenuManager.Controls
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, int[] attrValue, int attrSize);
 
         public static event EventHandler ThemeChanged;
-        private static SynchronizationContext uiContext;
         public static Color MainColor = Color.FromArgb(255, 143, 31);
 
         // 颜色属性
@@ -53,12 +52,6 @@ namespace ContextMenuManager.Controls
 
         public static void Initialize()
         {
-            uiContext = SynchronizationContext.Current;
-            if (uiContext == null && Application.MessageLoop)
-            {
-                uiContext = new WindowsFormsSynchronizationContext();
-            }
-
             UpdateTheme();
             StartListeningForThemeChanges();
         }
@@ -83,9 +76,7 @@ namespace ContextMenuManager.Controls
 
         public static bool IsDarkThemeEnabled()
         {
-            // TODO: Test
-            return false;
-            /*try
+            try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(
                     @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
@@ -96,7 +87,7 @@ namespace ContextMenuManager.Controls
             {
                 try { return CheckSystemDarkModeStatus(); }
                 catch { return false; }
-            }*/
+            }
         }
 
         public static bool UpdateTheme()
@@ -109,14 +100,7 @@ namespace ContextMenuManager.Controls
 
             if (changed)
             {
-                if (uiContext != null)
-                {
-                    uiContext.Post(_ => SafeInvokeThemeChanged(), null);
-                }
-                else
-                {
-                    SafeInvokeThemeChanged();
-                }
+                SafeInvokeThemeChanged();
             }
 
             return changed;
@@ -211,14 +195,7 @@ namespace ContextMenuManager.Controls
         {
             if (e.Category == UserPreferenceCategory.General)
             {
-                if (uiContext != null)
-                {
-                    uiContext.Post(_ => UpdateTheme(), null);
-                }
-                else
-                {
-                    UpdateTheme();
-                }
+                UpdateTheme();
             }
         }
 

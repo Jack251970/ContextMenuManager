@@ -24,6 +24,7 @@
         <ui:NavigationView
             x:Name="NavView"
             Grid.Row="0"
+            AlwaysShowHeader="False"
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
             OpenPaneLength="185"

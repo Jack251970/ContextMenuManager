@@ -1,6 +1,7 @@
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
 using ContextMenuManager.Views;
+using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
@@ -98,13 +99,21 @@ namespace ContextMenuManager
                     Instance = null;
                 }
             };
+
+            DarkModeHelper.ThemeChanged += DarkModeHelper_ThemeChanged;
+            ThemeManager.SetRequestedTheme(this, DarkModeHelper.IsDarkTheme ? ElementTheme.Dark : ElementTheme.Light);
         }
 
-        private WinForms.Control[] AllContentControls() => new WinForms.Control[]
+        private void DarkModeHelper_ThemeChanged(object sender, EventArgs e)
         {
+            ThemeManager.SetRequestedTheme(this, DarkModeHelper.IsDarkTheme ? ElementTheme.Dark : ElementTheme.Light);
+        }
+
+        private WinForms.Control[] AllContentControls() =>
+        [
             shellList, shellNewList, sendToList, openWithList, winXList,
             enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-        };
+        ];
 
         // Navigation building
 
