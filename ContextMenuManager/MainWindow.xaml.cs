@@ -15,6 +15,9 @@ namespace ContextMenuManager
 {
     public partial class MainWindow : Window
     {
+        // TODO
+        public static readonly string DefaultText = "Ver: Debug";/*$"Ver: {Application.ProductVersion}    {Application.CompanyName}";*/
+
         internal static MainWindow Instance { get; private set; }
 
         // WinForms content controls hosted in the WindowsFormsHost
@@ -437,7 +440,7 @@ namespace ContextMenuManager
             if (string.IsNullOrWhiteSpace(filterText))
             {
                 RestoreOriginalListItems();
-                UpdateStatusText(MyStatusBar.DefaultText);
+                UpdateStatusText(DefaultText);
                 return;
             }
 
