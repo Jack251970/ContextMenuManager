@@ -296,15 +296,16 @@ namespace ContextMenuManager.Controls
 
         private sealed class WinXSortableItem : MyListItem
         {
-            private readonly MyCheckBox chkWinXSortable = new();
+            private readonly CheckBox chkWinXSortable = new();
 
             public WinXSortableItem(WinXList list)
             {
                 Text = AppString.Other.WinXSortable;
                 Image = AppImage.Sort;
+                chkWinXSortable.Cursor = Cursors.Hand;
                 AddCtr(chkWinXSortable);
                 chkWinXSortable.Checked = AppConfig.WinXSortable;
-                chkWinXSortable.CheckChanged += () =>
+                chkWinXSortable.CheckedChanged += (sender, e) =>
                 {
                     AppConfig.WinXSortable = chkWinXSortable.Checked; list.ClearItems(); list.LoadItems();
                 };

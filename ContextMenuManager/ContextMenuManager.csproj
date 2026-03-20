@@ -200,9 +200,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <Compile Update="Controls\WinXList.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="BluePointLilac.Controls\MyCheckBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="BluePointLilac.Controls\MyListBox.cs">
       <SubType>Component</SubType>
     </Compile>
