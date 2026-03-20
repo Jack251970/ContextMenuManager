@@ -65,9 +65,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
 	
 	<!-- WinForm Controls -->
   <ItemGroup>
-    <Compile Update="BluePointLilac.Controls\BackupDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Controls\DetailedEditDialog.cs">
       <SubType>Component</SubType>
     </Compile>
