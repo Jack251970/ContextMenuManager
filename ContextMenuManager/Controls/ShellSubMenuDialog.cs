@@ -27,12 +27,14 @@ namespace ContextMenuManager.Controls
                 if (shellKey != null && shellKey.GetSubKeyNames().Length > 0) isPublic = false;
                 else
                 {
-                    var modes = new[] { ResourceString.Cancel, AppString.Dialog.Private, AppString.Dialog.Public };
+                    // TODO: Implement this!
+                    /*var modes = new[] { ResourceString.Cancel, AppString.Dialog.Private, AppString.Dialog.Public };
                     var mode = MessageBoxEx.Show(AppString.Message.SelectSubMenuMode, AppString.General.AppName,
                         modes, MessageBoxImage.Question, null, modes[1]);
                     if (mode == modes[2]) isPublic = true;
                     else if (mode == modes[1]) isPublic = false;
-                    else return false;
+                    else */
+                    return false;
                 }
             }
 
