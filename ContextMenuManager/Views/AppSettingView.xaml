@@ -34,23 +34,6 @@
             <Setter Property="Margin" Value="0,4,0,0" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-
-        <Style x:Key="SettingComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="MinWidth" Value="220" />
-            <Setter Property="HorizontalAlignment" Value="Right" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="14,7" />
-            <Setter Property="Margin" Value="12,0,0,0" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-
-        <Style x:Key="ToggleStyle" TargetType="CheckBox">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Right" />
-        </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -79,12 +62,15 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <ComboBox
                                 x:Name="ConfigDirComboBox"
-                                SelectionChanged="ConfigDirComboBox_OnSelectionChanged"
-                                Style="{StaticResource SettingComboBoxStyle}" />
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                SelectionChanged="ConfigDirComboBox_OnSelectionChanged" />
                             <Button
                                 x:Name="OpenConfigDirButton"
-                                Click="OpenConfigDirButton_OnClick"
-                                Style="{StaticResource ActionButtonStyle}" />
+                                Margin="12,0,0,0"
+                                Padding="14,7"
+                                VerticalAlignment="Center"
+                                Click="OpenConfigDirButton_OnClick" />
                         </StackPanel>
                     </Grid>
 
@@ -102,12 +88,15 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <ComboBox
                                 x:Name="UpdateComboBox"
-                                SelectionChanged="UpdateComboBox_OnSelectionChanged"
-                                Style="{StaticResource SettingComboBoxStyle}" />
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                SelectionChanged="UpdateComboBox_OnSelectionChanged" />
                             <Button
                                 x:Name="CheckUpdateButton"
-                                Click="CheckUpdateButton_OnClick"
-                                Style="{StaticResource ActionButtonStyle}" />
+                                Margin="12,0,0,0"
+                                Padding="14,7"
+                                VerticalAlignment="Center"
+                                Click="CheckUpdateButton_OnClick" />
                         </StackPanel>
                     </Grid>
 
@@ -125,8 +114,9 @@
                         <ComboBox
                             x:Name="RepoComboBox"
                             Grid.Column="1"
-                            SelectionChanged="RepoComboBox_OnSelectionChanged"
-                            Style="{StaticResource SettingComboBoxStyle}" />
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            SelectionChanged="RepoComboBox_OnSelectionChanged" />
                     </Grid>
 
                     <Separator Margin="0,0,0,16" />
@@ -143,8 +133,9 @@
                         <ComboBox
                             x:Name="EngineComboBox"
                             Grid.Column="1"
-                            SelectionChanged="EngineComboBox_OnSelectionChanged"
-                            Style="{StaticResource SettingComboBoxStyle}" />
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            SelectionChanged="EngineComboBox_OnSelectionChanged" />
                     </Grid>
                 </StackPanel>
             </Border>
@@ -166,13 +157,16 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <CheckBox
                                 x:Name="AutoBackupCheckBox"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
                                 Checked="AutoBackupCheckBox_OnChanged"
-                                Style="{StaticResource ToggleStyle}"
                                 Unchecked="AutoBackupCheckBox_OnChanged" />
                             <Button
                                 x:Name="OpenBackupDirButton"
-                                Click="OpenBackupDirButton_OnClick"
-                                Style="{StaticResource ActionButtonStyle}" />
+                                Margin="12,0,0,0"
+                                Padding="14,7"
+                                VerticalAlignment="Center"
+                                Click="OpenBackupDirButton_OnClick" />
                         </StackPanel>
                     </Grid>
 
@@ -190,8 +184,9 @@
                         <CheckBox
                             x:Name="TopMostCheckBox"
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Checked="TopMostCheckBox_OnChanged"
-                            Style="{StaticResource ToggleStyle}"
                             Unchecked="TopMostCheckBox_OnChanged" />
                     </Grid>
 
@@ -209,8 +204,9 @@
                         <CheckBox
                             x:Name="ProtectOpenItemCheckBox"
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Checked="ProtectOpenItemCheckBox_OnChanged"
-                            Style="{StaticResource ToggleStyle}"
                             Unchecked="ProtectOpenItemCheckBox_OnChanged" />
                     </Grid>
 
@@ -228,8 +224,9 @@
                         <CheckBox
                             x:Name="ShowFilePathCheckBox"
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Checked="ShowFilePathCheckBox_OnChanged"
-                            Style="{StaticResource ToggleStyle}"
                             Unchecked="ShowFilePathCheckBox_OnChanged" />
                     </Grid>
 
@@ -247,8 +244,9 @@
                         <CheckBox
                             x:Name="OpenMoreRegeditCheckBox"
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Checked="OpenMoreRegeditCheckBox_OnChanged"
-                            Style="{StaticResource ToggleStyle}"
                             Unchecked="OpenMoreRegeditCheckBox_OnChanged" />
                     </Grid>
 
@@ -266,8 +264,9 @@
                         <CheckBox
                             x:Name="OpenMoreExplorerCheckBox"
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Checked="OpenMoreExplorerCheckBox_OnChanged"
-                            Style="{StaticResource ToggleStyle}"
                             Unchecked="OpenMoreExplorerCheckBox_OnChanged" />
                     </Grid>
 
@@ -285,8 +284,9 @@
                         <CheckBox
                             x:Name="HideDisabledItemsCheckBox"
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Checked="HideDisabledItemsCheckBox_OnChanged"
-                            Style="{StaticResource ToggleStyle}"
                             Unchecked="HideDisabledItemsCheckBox_OnChanged" />
                     </Grid>
 
@@ -304,8 +304,9 @@
                         <CheckBox
                             x:Name="HideSysStoreItemsCheckBox"
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Checked="HideSysStoreItemsCheckBox_OnChanged"
-                            Style="{StaticResource ToggleStyle}"
                             Unchecked="HideSysStoreItemsCheckBox_OnChanged" />
                     </Grid>
                 </StackPanel>
