@@ -125,7 +125,7 @@ namespace ContextMenuManager.Views
             };
 
             Mouse.OverrideCursor = Cursors.Wait;
-            var error = await Task.Run(() => LoadingDialog.ShowDialog(null, AppString.SideBar.BackupRestore,
+            var error = await Task.Run(() => LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
                 dialogInterface => helper.BackupItems(backupScenes, backupMode, dialogInterface)));
             Mouse.OverrideCursor = null;
 
@@ -191,7 +191,7 @@ namespace ContextMenuManager.Views
             };
 
             Mouse.OverrideCursor = Cursors.Wait;
-            var error = await Task.Run(() => LoadingDialog.ShowDialog(null, AppString.SideBar.BackupRestore,
+            var error = await Task.Run(() => LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
                 dialogInterface => helper.RestoreItems(entry.FilePath, restoreScenes, restoreMode, dialogInterface)));
             Mouse.OverrideCursor = null;
 

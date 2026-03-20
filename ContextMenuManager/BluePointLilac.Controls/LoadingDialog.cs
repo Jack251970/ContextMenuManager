@@ -3,7 +3,7 @@ using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Drawing;
 using System.Threading;
-using System.Windows.Forms;
+using System.Windows;
 using DrawingContentAlignment = System.Drawing.ContentAlignment;
 using WpfProgressBar = System.Windows.Controls.ProgressBar;
 
@@ -17,9 +17,9 @@ namespace ContextMenuManager.Controls
         internal readonly WpfProgressBar progressBar;
         internal readonly ManualResetEventSlim readyEvent = new(false);
 
-        private LoadingDialog(string title, Action<LoadingDialogInterface> action, IntPtr hwndOwner)
+        private LoadingDialog(string title, Action<LoadingDialogInterface> action, MainWindow owner = null)
         {
-            dialog = ContentDialogHost.CreateDialog(title, hwndOwner);
+            dialog = ContentDialogHost.CreateDialog(title, owner);
             dialog.DefaultButton = ContentDialogButton.None;
             progressBar = new WpfProgressBar
             {
@@ -41,18 +41,16 @@ namespace ContextMenuManager.Controls
 
         public Exception Error { get; private set; }
 
-        public static Exception ShowDialog(Form owner, string title, Action<LoadingDialogInterface> action,
-            Point offset = default, DrawingContentAlignment ownerAlignment = DrawingContentAlignment.MiddleCenter)
+        public static Exception ShowDialog(string title, Action<LoadingDialogInterface> action, MainWindow owner = null)
         {
-            var hwndOwner = owner?.Handle ?? IntPtr.Zero;
-            var instance = new LoadingDialog(title, action, hwndOwner);
+            var instance = new LoadingDialog(title, action, owner);
             return ContentDialogHost.RunBlocking(async dialogOwner =>
             {
                 var showTask = instance.dialog.ShowAsync(dialogOwner);
                 instance.workThread.Start();
                 await showTask;
                 return instance.Error;
-            }, hwndOwner);
+            });
         }
 
         private void ExecuteAction(Action<LoadingDialogInterface> action)

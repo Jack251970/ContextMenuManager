@@ -4,32 +4,31 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace ContextMenuManager.Methods
 {
     internal static class ContentDialogHost
     {
-        public static ContentDialog CreateDialog(string title, IntPtr hwndOwner = default)
+        public static ContentDialog CreateDialog(string title, MainWindow owner = null)
         {
             return new ContentDialog
             {
                 Title = title,
-                Owner = ResolveOwner(hwndOwner),
+                Owner = ResolveOwner(owner),
                 DefaultButton = ContentDialogButton.Primary
             };
         }
 
-        public static T RunBlocking<T>(Func<Window, Task<T>> action, IntPtr hwndOwner = default)
+        public static T RunBlocking<T>(Func<Window, Task<T>> action, MainWindow owner = null)
         {
             var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
             if (!dispatcher.CheckAccess())
             {
-                return dispatcher.Invoke(() => RunBlocking(action, hwndOwner));
+                return dispatcher.Invoke(() => RunBlocking(action, owner));
             }
 
-            var task = action(ResolveOwner(hwndOwner));
+            var task = action(ResolveOwner(owner));
             if (task.IsCompleted)
             {
                 return task.GetAwaiter().GetResult();
@@ -67,7 +66,7 @@ namespace ContextMenuManager.Methods
             return result;
         }
 
-        private static Window ResolveOwner(IntPtr hwndOwner)
+        private static Window ResolveOwner(MainWindow owner)
         {
             var windows = Application.Current?.Windows.OfType<Window>().ToArray();
             if (windows == null || windows.Length == 0)
@@ -75,11 +74,11 @@ namespace ContextMenuManager.Methods
                 return null;
             }
 
-            if (hwndOwner != IntPtr.Zero)
+            if (owner != null)
             {
                 foreach (var window in windows)
                 {
-                    if (new WindowInteropHelper(window).Handle == hwndOwner)
+                    if (window == owner)
                     {
                         return window;
                     }
@@ -87,8 +86,8 @@ namespace ContextMenuManager.Methods
             }
 
             return Application.Current?.MainWindow
-                   ?? windows.FirstOrDefault(w => w.IsActive)
-                   ?? windows.FirstOrDefault();
+                ?? windows.FirstOrDefault(w => w.IsActive)
+                ?? windows.FirstOrDefault();
         }
     }
 }
