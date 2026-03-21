@@ -14,8 +14,10 @@ namespace ContextMenuManager.Controls
 
         static UAWebClient()
         {
-            client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(6);
+            client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(6)
+            };
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36 Edg/90.0.818.66");
         }
 
