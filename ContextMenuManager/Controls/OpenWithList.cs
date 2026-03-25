@@ -24,7 +24,8 @@ namespace ContextMenuManager.Controls
         {
             using var root = Registry.ClassesRoot;
             using var appKey = root.OpenSubKey("Applications");
-            foreach (var appName in appKey.GetSubKeyNames())
+            var subkeyNames = appKey.GetSubKeyNames();
+            foreach (var appName in subkeyNames)
             {
                 if (!appName.Contains('.')) continue;//需要为有扩展名的文件名
                 using var shellKey = appKey.OpenSubKey($@"{appName}\shell");
@@ -42,7 +43,7 @@ namespace ContextMenuManager.Controls
 
                 using var commandKey = shellKey.OpenSubKey($@"{keyName}\command");
                 var command = commandKey?.GetValue("")?.ToString();
-                if (ObjectPath.ExtractFilePath(command) != null)
+                if (!string.IsNullOrEmpty(ObjectPath.ExtractFilePath(command)))
                 {
                     var item = new OpenWithItem(this, commandKey.Name);
                     AddItem(item);
