@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,9 +15,8 @@ namespace ContextMenuManager.Methods
         private const string ShellExecuteCommand = "mshta vbscript:createobject(\"shell.application\").shellexecute(\"";
         private const string PowerShellCommandPrefix = "powershell -WindowStyle Hidden -Command \"Start-Process";
 
-
-        private static readonly char[] IllegalChars = { '/', '*', '?', '\"', '<', '>', '|' };
-        private static readonly List<string> IgnoreCommandParts = new() { "", "%1", "%v" };
+        private static readonly char[] IllegalChars = ['/', '*', '?', '\"', '<', '>', '|'];
+        private static readonly string[] IgnoreCommandParts = ["", "%1", "%v"];
 
         /// <summary>根据文件名获取完整的文件路径</summary>
         /// <remarks>fileName为Win+R、注册表等可直接使用的文件名</remarks>
@@ -44,15 +44,15 @@ namespace ContextMenuManager.Methods
             return false;
         }
 
+        public static readonly ConcurrentDictionary<string, string> FilePathDic = new(StringComparer.OrdinalIgnoreCase);
 
-        public static readonly Dictionary<string, string> FilePathDic = new(StringComparer.OrdinalIgnoreCase);
         /// <summary>从包含现有文件路径的命令语句中提取文件路径</summary>
         /// <param name="command">命令语句</param>
         /// <returns>成功提取返回现有文件路径，否则返回值为null</returns>
         public static string ExtractFilePath(string command)
         {
             if (string.IsNullOrWhiteSpace(command)) return string.Empty;
-            if (FilePathDic.ContainsKey(command)) return FilePathDic[command];
+            if (FilePathDic.TryGetValue(command, out var value)) return value;
             else
             {
                 string filePath = string.Empty;
@@ -60,13 +60,13 @@ namespace ContextMenuManager.Methods
                 if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
                 {
                     partCmd = partCmd[ShellExecuteCommand.Length..];
-                    var arr = partCmd.Split(new[] { "\",\"" }, StringSplitOptions.None);
+                    var arr = partCmd.Split(["\",\""], StringSplitOptions.None);
                     if (arr.Length > 0)
                     {
                         var fileName = arr[0];
                         if (GetFullFilePath(fileName, out filePath))
                         {
-                            FilePathDic.Add(command, filePath);
+                            FilePathDic.TryAdd(command, filePath);
                             return filePath;
                         }
                         if (arr.Length > 1)
@@ -83,13 +83,13 @@ namespace ContextMenuManager.Methods
                     if (idx != -1)
                     {
                         int start = idx + 11;
-                        int end = partCmd.IndexOf("'", start);
+                        int end = partCmd.IndexOf('\'', start);
                         if (end != -1)
                         {
-                            var fileName = partCmd.Substring(start, end - start).Replace("''", "'");
+                            var fileName = partCmd[start..end].Replace("''", "'");
                             if (GetFullFilePath(fileName, out filePath))
                             {
-                                FilePathDic.Add(command, filePath);
+                                FilePathDic.TryAdd(command, filePath);
                                 return filePath;
                             }
                         }
@@ -125,7 +125,7 @@ namespace ContextMenuManager.Methods
                         {
                             if (GetFullFilePath(path, out filePath))
                             {
-                                FilePathDic.Add(command, filePath);
+                                FilePathDic.TryAdd(command, filePath);
                                 return filePath;
                             }
                         }
@@ -134,7 +134,7 @@ namespace ContextMenuManager.Methods
                     }
                     while (index != -1);
                 }
-                FilePathDic.Add(command, string.Empty);
+                FilePathDic.TryAdd(command, string.Empty);
                 return string.Empty;
             }
         }
