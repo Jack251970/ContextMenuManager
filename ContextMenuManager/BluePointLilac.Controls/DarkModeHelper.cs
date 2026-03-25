@@ -38,9 +38,7 @@ namespace ContextMenuManager.Controls
 
         public static bool IsDarkThemeEnabled()
         {
-            // TODO
-            return false;
-            /*try
+            try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(
                     @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
@@ -57,7 +55,7 @@ namespace ContextMenuManager.Controls
                 {
                     return false;
                 }
-            }*/
+            }
         }
 
         public static bool UpdateTheme()
@@ -78,6 +76,8 @@ namespace ContextMenuManager.Controls
                 }
             }
 
+            EnableWin32DarkMode(IsDarkTheme);
+
             return changed;
         }
 
@@ -91,5 +91,26 @@ namespace ContextMenuManager.Controls
 
         [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
         public static extern bool CheckSystemDarkModeStatus();
+
+        [DllImport("uxtheme.dll", EntryPoint = "#135", SetLastError = true)]
+        private static extern int SetPreferredAppMode(int appMode);
+
+        public static void EnableWin32DarkMode(bool darkTheme)
+        {
+            try
+            {
+                // Undocumented API from Windows 10 1809
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                    Environment.OSVersion.Version.Build >= 17763)
+                {
+                    _ = SetPreferredAppMode(darkTheme ? 2 : 3);
+                }
+
+            }
+            catch
+            {
+                // Ignore errors on unsupported OS
+            }
+        }
     }
 }
