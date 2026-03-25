@@ -22,7 +22,7 @@ namespace ContextMenuManager.Controls
             var isPublic = true;
             var value = Microsoft.Win32.Registry.GetValue(ParentPath, "SubCommands", null)?.ToString();
             if (value == null) isPublic = false;
-            else if (value.IsNullOrWhiteSpace())
+            else if (string.IsNullOrWhiteSpace(value))
             {
                 using var shellKey = RegistryEx.GetRegistryKey($@"{ParentPath}\shell");
                 if (shellKey != null && shellKey.GetSubKeyNames().Length > 0) isPublic = false;
@@ -323,7 +323,7 @@ namespace ContextMenuManager.Controls
                 subNewItem.AddExisting += AddFromParentMenu;
 
                 var sckValue = Microsoft.Win32.Registry.GetValue(ParentPath, "ExtendedSubCommandsKey", null)?.ToString();
-                if (!sckValue.IsNullOrWhiteSpace())
+                if (!string.IsNullOrWhiteSpace(sckValue))
                 {
                     ShellPath = $@"{RegistryEx.CLASSES_ROOT}\{sckValue}\shell";
                 }

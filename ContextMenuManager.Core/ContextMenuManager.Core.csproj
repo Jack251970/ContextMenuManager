@@ -5,6 +5,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RootNamespace>ContextMenuManager</RootNamespace>
+		<Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

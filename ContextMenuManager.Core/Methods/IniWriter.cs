@@ -14,7 +14,7 @@ namespace ContextMenuManager.Methods
             FilePath = filePath;
         }
 
-        public string FilePath { get; set; }
+        public string FilePath { get; set; } = string.Empty;
 
         public bool DeleteFileWhenEmpty { get; set; }
 
@@ -26,7 +26,8 @@ namespace ContextMenuManager.Methods
             {
                 while (!reader.EndOfStream)
                 {
-                    lines.Add(reader.ReadLine().Trim());
+                    var line = reader.ReadLine();
+                    if (line != null) lines.Add(line.Trim());
                 }
             }
             return lines;
@@ -133,7 +134,7 @@ namespace ContextMenuManager.Methods
                 }
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(FilePath) ?? throw new InvalidOperationException());
             var attributes = FileAttributes.Normal;
             var encoding = Encoding.Unicode;
             if (File.Exists(FilePath))
@@ -145,7 +146,7 @@ namespace ContextMenuManager.Methods
             File.WriteAllLines(FilePath, lines.ToArray(), encoding);
             File.SetAttributes(FilePath, attributes);
 
-            if (DeleteFileWhenEmpty && lines.TrueForAll(line => line.IsNullOrWhiteSpace()))
+            if (DeleteFileWhenEmpty && lines.TrueForAll(line => string.IsNullOrWhiteSpace(line)))
             {
                 File.Delete(FilePath);
             }
@@ -153,7 +154,7 @@ namespace ContextMenuManager.Methods
 
         public void SetValue(string section, string key, object value)
         {
-            SetValue(section, key, value.ToString());
+            SetValue(section, key, value?.ToString() ?? string.Empty);
         }
 
         public void SetValue(string section, string key, string value)
@@ -163,12 +164,12 @@ namespace ContextMenuManager.Methods
 
         public void DeleteKey(string section, string key)
         {
-            SetValue(section, key, null);
+            SetValue(section, key, string.Empty);
         }
 
         public void DeleteSection(string section)
         {
-            SetValue(section, null, null);
+            SetValue(section, string.Empty, string.Empty);
         }
 
         /// <summary>一次读取只获取一个值，用此方法比IniReader.GetValue要快</summary>

@@ -149,9 +149,9 @@ namespace ContextMenuManager.Controls
             get
             {
                 var value = Registry.GetValue(RegPath, "IconPath", null)?.ToString();
-                if (!value.IsNullOrWhiteSpace()) return value;
+                if (!string.IsNullOrWhiteSpace(value)) return value;
                 value = Registry.GetValue($@"{OpenModePath}\DefaultIcon", "", null)?.ToString();
-                if (!value.IsNullOrWhiteSpace()) return value;
+                if (!string.IsNullOrWhiteSpace(value)) return value;
                 return ItemFilePath;
             }
             set => Registry.SetValue(RegPath, "IconPath", value);
@@ -187,7 +187,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "Command", null)?.ToString();
             set
             {
-                if (value.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(value))
                 {
                     if (Registry.GetValue(RegPath, "NullFile", null) != null)
                     {

@@ -109,7 +109,7 @@ namespace ContextMenuManager.Methods
         public static Icon GetIcon(string iconLocation, out string iconPath, out int iconIndex)
         {
             iconIndex = 0; iconPath = null;
-            if (iconLocation.IsNullOrWhiteSpace()) return null;
+            if (string.IsNullOrWhiteSpace(iconLocation)) return null;
             iconLocation = Environment.ExpandEnvironmentVariables(iconLocation).Replace("\"", "");
             var index = iconLocation.LastIndexOf(',');
             if (index == -1) iconPath = iconLocation;
@@ -132,7 +132,7 @@ namespace ContextMenuManager.Methods
         public static Icon GetIcon(string iconPath, int iconIndex)
         {
             Icon icon = null;
-            if (iconPath.IsNullOrWhiteSpace()) return icon;
+            if (string.IsNullOrWhiteSpace(iconPath)) return icon;
             iconPath = Environment.ExpandEnvironmentVariables(iconPath).Replace("\"", "");
 
             if (Path.GetFileName(iconPath).ToLower() == "shell32.dll")

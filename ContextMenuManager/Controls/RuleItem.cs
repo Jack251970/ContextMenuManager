@@ -463,7 +463,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 var value = IniWriter.GetValue(Rule.Section, Rule.KeyName);
-                if (value.IsNullOrWhiteSpace()) return Rule.DefaultValue;
+                if (string.IsNullOrWhiteSpace(value)) return Rule.DefaultValue;
                 var num = Convert.ToInt32(value);
                 if (num > Rule.MaxValue) return Rule.MaxValue;
                 if (num < Rule.MinValue) return Rule.MinValue;

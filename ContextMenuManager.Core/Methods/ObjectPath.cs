@@ -24,8 +24,8 @@ namespace ContextMenuManager.Methods
         /// <returns>成功提取返回true, fullPath为现有文件路径; 否则返回false, fullPath为null</returns>
         public static bool GetFullFilePath(string fileName, out string fullPath)
         {
-            fullPath = null;
-            if (fileName.IsNullOrWhiteSpace()) return false;
+            fullPath = string.Empty;
+            if (string.IsNullOrWhiteSpace(fileName)) return false;
 
             foreach (var name in new[] { fileName, $"{fileName}.exe" })
             {
@@ -37,10 +37,10 @@ namespace ContextMenuManager.Methods
                     if (File.Exists(fullPath)) return true;
                 }
 
-                fullPath = Registry.GetValue($@"{RegAppPath}\{name}", "", null)?.ToString();
+                fullPath = Registry.GetValue($@"{RegAppPath}\{name}", "", null)?.ToString() ?? string.Empty;
                 if (File.Exists(fullPath)) return true;
             }
-            fullPath = null;
+            fullPath = string.Empty;
             return false;
         }
 
@@ -51,11 +51,11 @@ namespace ContextMenuManager.Methods
         /// <returns>成功提取返回现有文件路径，否则返回值为null</returns>
         public static string ExtractFilePath(string command)
         {
-            if (command.IsNullOrWhiteSpace()) return null;
+            if (string.IsNullOrWhiteSpace(command)) return string.Empty;
             if (FilePathDic.ContainsKey(command)) return FilePathDic[command];
             else
             {
-                string filePath = null;
+                string filePath = string.Empty;
                 var partCmd = Environment.ExpandEnvironmentVariables(command).Replace(@"\\", @"\");
                 if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
                 {
@@ -134,8 +134,8 @@ namespace ContextMenuManager.Methods
                     }
                     while (index != -1);
                 }
-                FilePathDic.Add(command, null);
-                return null;
+                FilePathDic.Add(command, string.Empty);
+                return string.Empty;
             }
         }
 

@@ -48,7 +48,7 @@ namespace ContextMenuManager.Controls
                     if (guids.Count > 0)
                     {
                         groupItem.Control.Tag = guids;
-                        if (groupItem.Text.IsNullOrWhiteSpace()) groupItem.Text = GuidInfo.GetText(guids[0]);
+                        if (string.IsNullOrWhiteSpace(groupItem.Text)) groupItem.Text = GuidInfo.GetText(guids[0]);
                         groupItem.Image = GuidInfo.GetImage(guids[0]);
                         var filePath = GuidInfo.GetFilePath(guids[0]);
                         var clsidPath = GuidInfo.GetClsidPath(guids[0]);
@@ -118,7 +118,7 @@ namespace ContextMenuManager.Controls
                             {
                                 var ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
                                 var iniPath = ruleXE.GetAttribute("FilePath");
-                                if (iniPath.IsNullOrWhiteSpace()) iniPath = groupItem.GroupPath;
+                                if (string.IsNullOrWhiteSpace(iniPath)) iniPath = groupItem.GroupPath;
                                 var section = ruleXE.GetAttribute("Section");
                                 var keyName = ruleXE.GetAttribute("KeyName");
                                 if (itemXE.SelectSingleNode("IsNumberItem") != null)

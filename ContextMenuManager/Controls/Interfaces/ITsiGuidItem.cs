@@ -101,13 +101,13 @@ namespace ContextMenuManager.Controls.Interfaces
                 }
                 return;
             }
-            if (dlg.ItemText.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(dlg.ItemText))
             {
                 AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                 return;
             }
             dlg.ItemText = ResourceString.GetDirectString(dlg.ItemText);
-            if (dlg.ItemText.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(dlg.ItemText))
             {
                 AppMessageBox.Show(AppString.Message.StringParsingFailed);
                 return;

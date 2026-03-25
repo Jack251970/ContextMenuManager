@@ -64,7 +64,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 var name = ShellLink.Description?.Trim();
-                if (name.IsNullOrWhiteSpace()) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
+                if (string.IsNullOrWhiteSpace(name)) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
                 if (name == string.Empty) name = Path.GetFileNameWithoutExtension(FilePath);
                 return name;
             }

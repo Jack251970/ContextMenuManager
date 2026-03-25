@@ -62,7 +62,7 @@ namespace ContextMenuManager.Controls
                 if (!XmlDicHelper.JudgeCulture(itemXE)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXE)) continue;
                 var keyName = itemXE.GetAttribute("KeyName");
-                if (keyName.IsNullOrWhiteSpace()) continue;
+                if (string.IsNullOrWhiteSpace(keyName)) continue;
                 var item = new EnhanceShellItem(this)
                 {
                     RegPath = $@"{groupItem.GroupPath}\shell\{keyName}",
@@ -101,7 +101,7 @@ namespace ContextMenuManager.Controls
                     }
                 }
                 item.Image ??= AppImage.NotFound;
-                if (item.Text.IsNullOrWhiteSpace()) item.Text = keyName;
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = keyName;
                 var tip = "";
                 foreach (XmlElement tipXE in itemXE.SelectNodes("Tip"))
                 {
@@ -109,7 +109,7 @@ namespace ContextMenuManager.Controls
                 }
                 if (itemXE.GetElementsByTagName("CreateFile").Count > 0)
                 {
-                    if (!tip.IsNullOrWhiteSpace()) tip += "\n";
+                    if (!string.IsNullOrWhiteSpace(tip)) tip += "\n";
                     tip += AppString.Tip.CommandFiles;
                 }
                 ToolTipBox.SetToolTip(item.ChkVisible, tip);
@@ -140,8 +140,8 @@ namespace ContextMenuManager.Controls
                         item.Text = ResourceString.GetDirectString(textXE.InnerText);
                     }
                 }
-                if (item.Text.IsNullOrWhiteSpace()) item.Text = GuidInfo.GetText(guid);
-                if (item.DefaultKeyName.IsNullOrWhiteSpace()) item.DefaultKeyName = guid.ToString("B");
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = GuidInfo.GetText(guid);
+                if (string.IsNullOrWhiteSpace(item.DefaultKeyName)) item.DefaultKeyName = guid.ToString("B");
                 var tip = "";
                 foreach (XmlElement tipXE in itemXN.SelectNodes("Tip"))
                 {

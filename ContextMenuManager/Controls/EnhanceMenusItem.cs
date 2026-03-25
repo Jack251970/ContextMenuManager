@@ -80,7 +80,7 @@ namespace ContextMenuManager.Controls
             if (!XmlDicHelper.JudgeCulture(keyXN)) return;
             if (!XmlDicHelper.JudgeOSVersion(keyXN)) return;
             var defaultValue = ((XmlElement)keyXN).GetAttribute("Default");
-            if (!defaultValue.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(defaultValue))
             {
                 defaultValue = Environment.ExpandEnvironmentVariables(defaultValue);
                 Registry.SetValue(regPath, "", defaultValue);

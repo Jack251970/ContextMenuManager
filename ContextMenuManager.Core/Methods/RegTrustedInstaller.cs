@@ -159,11 +159,14 @@ namespace ContextMenuManager.Methods
         /// <param name="regPath">要获取权限的注册表完整路径</param>
         public static void TakeRegKeyOwnerShip(string regPath)
         {
-            if (regPath.IsNullOrWhiteSpace()) return;
-            RegistryKey key = null;
-            WindowsIdentity id = null;
+            if (string.IsNullOrWhiteSpace(regPath)) return;
+            RegistryKey? key = null;
+            WindowsIdentity? id = null;
             //利用试错判断是否有写入权限
-            try { key = RegistryEx.GetRegistryKey(regPath, true); }
+            try
+            {
+                key = RegistryEx.GetRegistryKey(regPath, true);
+            }
             catch
             {
                 try
@@ -224,7 +227,7 @@ namespace ContextMenuManager.Methods
         /// <param name="regPath">要获取权限的注册表完整路径</param>
         public static void TakeRegTreeOwnerShip(string regPath)
         {
-            if (regPath.IsNullOrWhiteSpace()) return;
+            if (string.IsNullOrWhiteSpace(regPath)) return;
             TakeRegKeyOwnerShip(regPath);
             try
             {

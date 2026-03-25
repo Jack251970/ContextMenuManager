@@ -21,8 +21,8 @@ namespace ContextMenuManager.Controls
             {
                 var filePath = ItemFilePath;
                 var arguments = Arguments;
-                if (filePath.IsNullOrWhiteSpace()) return arguments ?? string.Empty;
-                if (arguments.IsNullOrWhiteSpace()) return filePath;
+                if (string.IsNullOrWhiteSpace(filePath)) return arguments ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(arguments)) return filePath;
                 if (filePath.Contains(" ")) filePath = $"\"{filePath}\"";
                 // Note: The original logic for arguments containing double quotes was a bit specific,
                 // I'll keep it as provided.

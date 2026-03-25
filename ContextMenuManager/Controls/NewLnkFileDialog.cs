@@ -103,12 +103,12 @@ namespace ContextMenuManager.Controls
             ItemFilePath = txtFilePath.Text;
             Arguments = txtArguments.Text;
 
-            if (ItemText.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(ItemText))
             {
                 AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                 return false;
             }
-            if (ItemFilePath.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(ItemFilePath))
             {
                 AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
                 return false;

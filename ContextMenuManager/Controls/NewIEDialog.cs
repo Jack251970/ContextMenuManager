@@ -66,28 +66,28 @@ namespace ContextMenuManager.Controls
             var itemFilePath = txtFilePath.Text;
             var arguments = txtArguments.Text;
 
-            if (itemText.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(itemText))
             {
                 AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                 return false;
             }
 
             var itemCommand = GetItemCommand(itemFilePath, arguments);
-            if (itemCommand.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(itemCommand))
             {
                 AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
                 return false;
             }
 
             RegPath = $@"{IEList.IEPath}\{IEItem.MeParts[0]}\{itemText.Replace("\\", "")}";
-            Microsoft.Win32.Registry.SetValue(RegPath, "", itemCommand);
+            Registry.SetValue(RegPath, "", itemCommand);
             return true;
         }
 
         private static string GetItemCommand(string filePath, string arguments)
         {
-            if (arguments.IsNullOrWhiteSpace()) return filePath;
-            if (filePath.IsNullOrWhiteSpace()) return arguments;
+            if (string.IsNullOrWhiteSpace(arguments)) return filePath;
+            if (string.IsNullOrWhiteSpace(filePath)) return arguments;
             if (filePath.Contains(" ")) filePath = $"\"{filePath}\"";
             if (!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
             return $"{filePath} {arguments}";

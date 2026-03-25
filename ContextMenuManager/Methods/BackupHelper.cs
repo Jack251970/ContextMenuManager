@@ -911,7 +911,7 @@ namespace ContextMenuManager.Methods
                     var value1 = openModeKey.GetValue("FriendlyTypeName")?.ToString();
                     var value2 = openModeKey.GetValue("")?.ToString();
                     value1 = ResourceString.GetDirectString(value1);
-                    if (value1.IsNullOrWhiteSpace() && value2.IsNullOrWhiteSpace()) continue;
+                    if (string.IsNullOrWhiteSpace(value1) && string.IsNullOrWhiteSpace(value2)) continue;
                 }
                 using var tKey = extKey.OpenSubKey(defalutOpenMode);
                 foreach (var part in ShellNewItem.SnParts)
@@ -1163,7 +1163,7 @@ namespace ContextMenuManager.Methods
                                 {
                                     var ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
                                     var iniPath = ruleXE.GetAttribute("FilePath");
-                                    if (iniPath.IsNullOrWhiteSpace()) iniPath = groupItem.GroupPath;
+                                    if (string.IsNullOrWhiteSpace(iniPath)) iniPath = groupItem.GroupPath;
                                     var section = ruleXE.GetAttribute("Section");
                                     var keyName = ruleXE.GetAttribute("KeyName");
                                     if (itemXE.SelectSingleNode("IsNumberItem") != null)
@@ -1344,7 +1344,7 @@ namespace ContextMenuManager.Methods
                 if (!XmlDicHelper.JudgeCulture(itemXE)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXE)) continue;
                 var keyName = itemXE.GetAttribute("KeyName");
-                if (keyName.IsNullOrWhiteSpace()) continue;
+                if (string.IsNullOrWhiteSpace(keyName)) continue;
                 var item = new EnhanceShellItem(null)
                 {
                     RegPath = $@"{groupItem.GroupPath}\shell\{keyName}",
@@ -1356,7 +1356,7 @@ namespace ContextMenuManager.Methods
                     if (!XmlDicHelper.JudgeCulture(szXE)) continue;
                     if (szXE.HasAttribute("MUIVerb")) item.Text = ResourceString.GetDirectString(szXE.GetAttribute("MUIVerb"));
                 }
-                if (item.Text.IsNullOrWhiteSpace()) item.Text = keyName;
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = keyName;
                 var itemName = item.Text;
                 var regPath = item.RegPath;
                 var pathSegments = regPath.Split('\\');
@@ -1399,8 +1399,8 @@ namespace ContextMenuManager.Methods
                         item.Text = ResourceString.GetDirectString(textXE.InnerText);
                     }
                 }
-                if (item.Text.IsNullOrWhiteSpace()) item.Text = GuidInfo.GetText(guid);
-                if (item.DefaultKeyName.IsNullOrWhiteSpace()) item.DefaultKeyName = guid.ToString("B");
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = GuidInfo.GetText(guid);
+                if (string.IsNullOrWhiteSpace(item.DefaultKeyName)) item.DefaultKeyName = guid.ToString("B");
                 var itemName = item.Text;
                 var regPath = item.RegPath;
                 var pathSegments = regPath.Split('\\');

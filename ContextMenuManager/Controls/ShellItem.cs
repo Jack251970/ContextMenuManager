@@ -65,7 +65,7 @@ namespace ContextMenuManager.Controls
         protected virtual bool IsSubItem => false;
         private bool IsOpenItem => KeyName.Equals("open", StringComparison.CurrentCultureIgnoreCase);
         public string ItemFilePath => GuidInfo.GetFilePath(Guid) ?? ObjectPath.ExtractFilePath(ItemCommand);
-        private bool HasIcon => !IconLocation.IsNullOrWhiteSpace() || HasLUAShield;
+        private bool HasIcon => !string.IsNullOrWhiteSpace(IconLocation) || HasLUAShield;
 
         private bool IsMultiItem
         {

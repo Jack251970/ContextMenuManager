@@ -142,17 +142,17 @@ namespace ContextMenuManager.Methods
                     itemText = GetAbsStr(guid, itemText, true);
                     itemText = ResourceString.GetDirectString(itemText);
                 }
-                if (itemText.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(itemText))
                 {
                     var uiText = CultureInfo.CurrentUICulture.Name + "-Text";
                     TryGetValue(guid, uiText, out itemText);
-                    if (itemText.IsNullOrWhiteSpace())
+                    if (string.IsNullOrWhiteSpace(itemText))
                     {
                         TryGetValue(guid, "Text", out itemText);
                         itemText = ResourceString.GetDirectString(itemText);
                     }
                 }
-                if (itemText.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(itemText))
                 {
                     foreach (var clsidPath in ClsidPaths)
                     {
@@ -160,18 +160,18 @@ namespace ContextMenuManager.Methods
                         {
                             itemText = Registry.GetValue($@"{clsidPath}\{guid:B}", value, null)?.ToString();
                             itemText = ResourceString.GetDirectString(itemText);
-                            if (!itemText.IsNullOrWhiteSpace()) break;
+                            if (!string.IsNullOrWhiteSpace(itemText)) break;
                         }
-                        if (!itemText.IsNullOrWhiteSpace()) break;
+                        if (!string.IsNullOrWhiteSpace(itemText)) break;
                     }
                 }
-                if (itemText.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(itemText))
                 {
                     var filePath = GetFilePath(guid);
                     if (File.Exists(filePath))
                     {
                         itemText = FileVersionInfo.GetVersionInfo(filePath).FileDescription;
-                        if (itemText.IsNullOrWhiteSpace())
+                        if (string.IsNullOrWhiteSpace(itemText))
                         {
                             itemText = Path.GetFileName(filePath);
                         }

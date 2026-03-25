@@ -70,7 +70,7 @@ namespace ContextMenuManager.Controls
                     var value1 = openModeKey.GetValue("FriendlyTypeName")?.ToString();
                     var value2 = openModeKey.GetValue("")?.ToString();
                     value1 = ResourceString.GetDirectString(value1);
-                    if (value1.IsNullOrWhiteSpace() && value2.IsNullOrWhiteSpace()) continue;
+                    if (string.IsNullOrWhiteSpace(value1) && string.IsNullOrWhiteSpace(value2)) continue;
                 }
                 using var tKey = extKey.OpenSubKey(defalutOpenMode);
                 foreach (var part in ShellNewItem.SnParts)
@@ -169,7 +169,7 @@ namespace ContextMenuManager.Controls
                 var item = new ShellNewItem(this, snKey.Name);
                 AddItem(item);
                 item.Control.Focus();
-                if (item.ItemText.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(item.ItemText))
                 {
                     item.ItemText = FileExtension.GetExtentionInfo(FileExtension.AssocStr.FriendlyDocName, extension);
                 }

@@ -78,7 +78,7 @@ namespace ContextMenuManager.Controls
             }
 
             var itemCommand = GetItemCommand(itemFilePath, arguments);
-            if (itemCommand.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(itemCommand))
             {
                 AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
                 return false;
@@ -118,8 +118,8 @@ namespace ContextMenuManager.Controls
 
         private static string GetItemCommand(string filePath, string arguments)
         {
-            if (arguments.IsNullOrWhiteSpace()) return filePath;
-            if (filePath.IsNullOrWhiteSpace()) return arguments;
+            if (string.IsNullOrWhiteSpace(arguments)) return filePath;
+            if (string.IsNullOrWhiteSpace(filePath)) return arguments;
             if (filePath.Contains(' ')) filePath = $"\"{filePath}\"";
             if (!arguments.Contains('\"')) arguments = $"\"{arguments}\"";
             return $"{filePath} {arguments}";

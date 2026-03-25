@@ -6,7 +6,7 @@ namespace ContextMenuManager.Methods
     {
         public static void SetToolTip(FrameworkElement element, string tip)
         {
-            if (tip.IsNullOrWhiteSpace()) return;
+            if (string.IsNullOrWhiteSpace(tip)) return;
             element.ToolTip = tip;
         }
     }

@@ -95,7 +95,7 @@ namespace ContextMenuManager.Controls
             var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             if (result == ContentDialogResult.Primary)
             {
-                if (txtText.Text.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(txtText.Text))
                 {
                     AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                     return RunDialog(owner); // Re-show if invalid
@@ -132,7 +132,7 @@ namespace ContextMenuManager.Controls
             {
                 txtFilePath.Text = exePath;
                 txtArguments.Text = filePath;
-                if (!arguments.IsNullOrWhiteSpace()) txtArguments.Text += " " + arguments;
+                if (!string.IsNullOrWhiteSpace(arguments)) txtArguments.Text += " " + arguments;
             }
             else
             {
@@ -145,14 +145,14 @@ namespace ContextMenuManager.Controls
             {
                 if (ScenePath != ShellList.MENUPATH_BACKGROUND)
                 {
-                    if (!txtArguments.Text.IsNullOrWhiteSpace()) txtArguments.Text += " ";
+                    if (!string.IsNullOrWhiteSpace(txtArguments.Text)) txtArguments.Text += " ";
                     txtArguments.Text += "\"%V\"";//自动加目录后缀
                 }
             }
             else if (Array.FindIndex(FileObjectsScenePaths, path
                => ScenePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)) != -1)
             {
-                if (!txtArguments.Text.IsNullOrWhiteSpace()) txtArguments.Text += " ";
+                if (!string.IsNullOrWhiteSpace(txtArguments.Text)) txtArguments.Text += " ";
                 txtArguments.Text += "\"%1\"";//自动加文件对象后缀
             }
         }
@@ -184,7 +184,7 @@ namespace ContextMenuManager.Controls
                 key.SetValue("SubCommands", "");
             else
             {
-                if (!ItemCommand.IsNullOrWhiteSpace())
+                if (!string.IsNullOrWhiteSpace(ItemCommand))
                 {
                     string command;
                     if (!isSE) command = ItemCommand;
