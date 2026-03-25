@@ -12,6 +12,11 @@ namespace ContextMenuManager.Controls
     internal sealed class OpenWithItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem,
         ITsiCommandItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem
     {
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
 
         public OpenWithItem(MyList list, string regPath) : base(list)
         {
@@ -115,7 +120,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiChangeText,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Control.ContextMenu.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),

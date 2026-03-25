@@ -45,7 +45,7 @@ namespace ContextMenuManager.Controls
 
                 cmbDic.SelectionChanged += (sender, e) =>
                 {
-                    Focus();
+                    Control.Focus();
                     UseUserDic = cmbDic.SelectedIndex == 1;
                 };
             }

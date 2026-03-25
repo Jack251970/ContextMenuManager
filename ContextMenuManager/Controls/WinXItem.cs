@@ -11,6 +11,12 @@ namespace ContextMenuManager.Controls
     internal sealed class WinXItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, IBtnMoveUpDownItem, ITsiAdministratorItem,
         ITsiTextItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiDeleteItem, ITsiShortcutCommandItem
     {
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public new WinXList List;
 
         public WinXItem(WinXList list, string filePath, FoldGroupItem group) : base(list)
@@ -235,7 +241,7 @@ namespace ContextMenuManager.Controls
                 TsiChangeGroup, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
                 TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Control.ContextMenu.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch,
@@ -296,12 +302,12 @@ namespace ContextMenuManager.Controls
             FilePath = lnkPath;
             RefreshKeyPath();
 
-            List.Controls.Remove(this);
+            List.Controls.Remove(Control);
             for (var i = 0; i < List.Controls.Count; i++)
             {
-                if (List.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
+                if (((MyUserControl)List.Controls[i]).Item is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
                 {
-                    List.Controls.Add(this);
+                    List.Controls.Add(Control);
                     List.SetItemIndex(this, i + 1);
                     Visible = !groupItem.IsFold;
                     ((WinXGroupItem)FoldGroupItem).RemoveWinXItem(this);
@@ -315,12 +321,12 @@ namespace ContextMenuManager.Controls
 
         private void MoveItem(bool isUp)
         {
-            var index = List.Controls.IndexOf(this);
+            var index = List.Controls.IndexOf(Control);
             if (index == List.Controls.Count - 1) return;
             index += isUp ? -1 : 1;
-            var ctr = List.Controls[index];
-            if (ctr is WinXGroupItem) return;
-            var item = (WinXItem)ctr;
+            var ctr = (MyUserControl)List.Controls[index];
+            if (ctr.Item is WinXGroupItem) return;
+            if (ctr.Item is not WinXItem item) throw new InvalidOperationException("The item to move must be a WinXItem.");
 
             MoveFileItem(item, true, out var path1, out var path2);
             if (WinOsVersion.Current >= WinOsVersion.Win11)

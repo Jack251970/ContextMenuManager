@@ -3,6 +3,7 @@ using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -169,7 +170,7 @@ namespace ContextMenuManager.Controls
 
             private void AddSeparator()
             {
-                if (Controls[^1] is SeparatorItem) return;
+                if (((MyUserControl)Controls[^1]).Item is SeparatorItem) return;
                 SubKeyNames.Add("|");
                 SaveSorting();
                 AddItem(new SeparatorItem(this));
@@ -208,7 +209,7 @@ namespace ContextMenuManager.Controls
                 SubKeyNames.RemoveAt(index - 1);
                 var nextIndex = index;
                 if (index == Controls.Count - 1) nextIndex--;
-                Controls.Remove(item);
+                Controls.Remove(item.Control);
                 Controls[nextIndex]?.Focus();
                 SaveSorting();
                 item.Dispose();
@@ -277,7 +278,7 @@ namespace ContextMenuManager.Controls
                         BtnMoveUp = new MoveButton(this, true);
                         BtnMoveUp.Click += (sender, e) => List.MoveItem(this, true);
                         BtnMoveDown.Click += (sender, e) => List.MoveItem(this, false);
-                        ToolTipBox.SetToolTip(this, AppString.Tip.InvalidItem);
+                        ToolTipBox.SetToolTip(Control, AppString.Tip.InvalidItem);
                         ToolTipBox.SetToolTip(BtnDelete, AppString.Menu.Delete);
                     }
                 }
@@ -362,11 +363,11 @@ namespace ContextMenuManager.Controls
 
             private void AddSeparator()
             {
-                if (Controls[^1] is SeparatorItem) return;
+                if (((MyUserControl)Controls[^1]).Item is SeparatorItem) return;
                 string regPath;
                 if (Controls.Count > 1)
                 {
-                    regPath = GetItemRegPath((MyListItem)Controls[^1]);
+                    regPath = GetItemRegPath(((MyUserControl)Controls[^1]).Item);
                 }
                 else
                 {
@@ -406,7 +407,7 @@ namespace ContextMenuManager.Controls
                 {
                     if (index > 1)
                     {
-                        otherItem = (MyListItem)Controls[index - 1];
+                        otherItem = ((MyUserControl)Controls[index - 1]).Item;
                         SetItemIndex(item, index - 1);
                     }
                 }
@@ -414,7 +415,7 @@ namespace ContextMenuManager.Controls
                 {
                     if (index < Controls.Count - 1)
                     {
-                        otherItem = (MyListItem)Controls[index + 1];
+                        otherItem = ((MyUserControl)Controls[index + 1]).Item;
                         SetItemIndex(item, index + 1);
                     }
                 }
@@ -496,7 +497,7 @@ namespace ContextMenuManager.Controls
                     var index = List.GetItemIndex(this);
                     if (index == List.Controls.Count - 1) index--;
                     List.Controls[index]?.Focus();
-                    List.Controls.Remove(this);
+                    List.Controls.Remove(Control);
                     Dispose();
                 }
             }

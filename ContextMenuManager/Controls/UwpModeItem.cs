@@ -9,6 +9,12 @@ namespace ContextMenuManager.Controls
     internal sealed class UwpModeItem : MyListItem, IChkVisibleItem, ITsiRegPathItem, ITsiFilePathItem,
         IBtnShowMenuItem, ITsiWebSearchItem, ITsiRegExportItem, ITsiRegDeleteItem, ITsiGuidItem
     {
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public UwpModeItem(MyList list, string uwpName, Guid guid) : base(list)
         {
             Guid = guid;

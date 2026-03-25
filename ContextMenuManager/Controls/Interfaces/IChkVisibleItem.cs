@@ -32,7 +32,7 @@ namespace ContextMenuManager.Controls.Interfaces
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);
 
-            listItem.Loaded += (s, e) =>
+            listItem.Control.Loaded += (s, e) =>
             {
                 _loading = true;
                 IsOn = item.ItemVisible;

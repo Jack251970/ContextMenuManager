@@ -30,6 +30,12 @@ namespace ContextMenuManager.Controls
             }
         }
 
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public ShellLink ShellLink { get; private set; }
         private string FileExtension => Path.GetExtension(FilePath);
         private bool IsShortcut => FileExtension.Equals(".lnk", StringComparison.CurrentCultureIgnoreCase);
@@ -200,7 +206,7 @@ namespace ContextMenuManager.Controls
                 TsiChangeIcon, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
                 TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Control.ContextMenu.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
@@ -209,7 +215,7 @@ namespace ContextMenuManager.Controls
                 TsiDetails.Items.Add(item);
             }
 
-            ContextMenu.Opened += (sender, e) => TsiChangeCommand.Visible = IsShortcut;
+            Control.ContextMenu.Opened += (sender, e) => TsiChangeCommand.Visible = IsShortcut;
 
             TsiChangeCommand.Click += (sender, e) =>
             {

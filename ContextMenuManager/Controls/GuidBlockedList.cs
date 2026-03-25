@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -50,7 +51,7 @@ namespace ContextMenuManager.Controls
                     Array.ForEach(BlockedPaths, path => Registry.SetValue(path, value, ""));
                     for (var i = 1; i < Controls.Count; i++)
                     {
-                        if (((GuidBlockedItem)Controls[i]).Guid.Equals(guid))
+                        if (((GuidBlockedItem)((MyUserControl)Controls[i]).Item).Guid.Equals(guid))
                         {
                             AppMessageBox.Show(AppString.Message.HasBeenAdded);
                             return;

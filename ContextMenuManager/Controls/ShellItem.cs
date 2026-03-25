@@ -425,7 +425,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiChangeText, new RToolStripSeparator(), TsiItemIcon,
                 TsiPosition, TsiOtherAttributes, new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe})
             {
-                ContextMenu.Items.Add(item);
+                Control.ContextMenu.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiChangeIcon, TsiDeleteIcon, TsiShieldIcon })
@@ -461,11 +461,17 @@ namespace ContextMenuManager.Controls
             TsiShowAsDisabled.Click += (sender, e) => ShowAsDisabledIfHidden = !TsiShowAsDisabled.Checked;
             TsiClsidLocation.Click += (sender, e) => ExternalProgram.JumpRegEdit(GuidInfo.GetClsidPath(Guid), null, AppConfig.OpenMoreRegedit);
             ChkVisible.PreCheckChanging += () => !ChkVisible.IsOn || TryProtectOpenItem();
-            ContextMenu.Opened += (sender, e) => RefreshMenuItem();
+            Control.ContextMenu.Opened += (sender, e) => RefreshMenuItem();
             BtnSubItems.Click += (sender, e) => ShowSubItems();
             TsiShieldIcon.Click += (sender, e) => UseShieldIcon();
             ToolTipBox.SetToolTip(BtnSubItems, AppString.Tip.EditSubItems);
             AddCtr(BtnSubItems);
+        }
+
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
         }
 
         private void DeleteIcon()

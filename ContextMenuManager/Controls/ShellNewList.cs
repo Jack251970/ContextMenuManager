@@ -102,7 +102,7 @@ namespace ContextMenuManager.Controls
             index += isUp ? -1 : 1;
             if (index == Controls.Count) return;
             var ctr = Controls[index];
-            if (ctr is ShellNewItem item && item.CanSort)
+            if (((MyUserControl)ctr).Item is ShellNewItem item && item.CanSort)
             {
                 SetItemIndex(shellNewItem, index);
                 SaveSorting();
@@ -114,7 +114,7 @@ namespace ContextMenuManager.Controls
             var extensions = new List<string>();
             for (var i = 2; i < Controls.Count; i++)
             {
-                if (Controls[i] is ShellNewItem item)
+                if (((MyUserControl)Controls[i]).Item is ShellNewItem item)
                 {
                     extensions.Add(item.Extension);
                 }
@@ -168,7 +168,7 @@ namespace ContextMenuManager.Controls
 
                 var item = new ShellNewItem(this, snKey.Name);
                 AddItem(item);
-                item.Focus();
+                item.Control.Focus();
                 if (item.ItemText.IsNullOrWhiteSpace())
                 {
                     item.ItemText = FileExtension.GetExtentionInfo(FileExtension.AssocStr.FriendlyDocName, extension);
@@ -203,6 +203,12 @@ namespace ContextMenuManager.Controls
 
         public sealed class ShellNewLockItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiWebSearchItem, ITsiRegPathItem
         {
+            public ContextMenu ContextMenu
+            {
+                get => Control.ContextMenu;
+                set => Control.ContextMenu = value;
+            }
+
             public ShellNewLockItem(ShellNewList list) : base(list)
             {
                 List = list;
@@ -237,7 +243,7 @@ namespace ContextMenuManager.Controls
                     else UnLock();
                     foreach (Control ctr in List.Controls)
                     {
-                        if (ctr is ShellNewItem item)
+                        if (((MyUserControl)ctr).Item is ShellNewItem item)
                         {
                             item.SetSortabled(value);
                         }

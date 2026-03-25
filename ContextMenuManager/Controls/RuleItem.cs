@@ -19,9 +19,15 @@ namespace ContextMenuManager.Controls
                 Image = info.Image;
                 BtnShowMenu = new MenuButton(this);
                 TsiSearch = new WebSearchMenuItem(this);
-                ContextMenu = new ContextMenu();
-                ContextMenu.Items.Add(TsiSearch);
+                Control.ContextMenu = new ContextMenu();
+                Control.ContextMenu.Items.Add(TsiSearch);
             }
+        }
+
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
         }
 
         public WebSearchMenuItem TsiSearch { get; set; }

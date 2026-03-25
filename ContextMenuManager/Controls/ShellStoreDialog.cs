@@ -42,7 +42,7 @@ namespace ContextMenuManager.Controls
                 var flag = chkSelectAll.IsChecked == true;
                 foreach (UIElement ctrl in list.Controls)
                 {
-                    if (ctrl is StoreShellItem item) item.IsSelected = flag;
+                    if (((MyUserControl)ctrl).Item is StoreShellItem item) item.IsSelected = flag;
                 }
             };
 
@@ -58,7 +58,7 @@ namespace ContextMenuManager.Controls
                         bool allSelected = true;
                         foreach (UIElement ctrl in list.Controls)
                         {
-                            if (ctrl is StoreShellItem shellItem && !shellItem.IsSelected)
+                            if (((MyUserControl)ctrl).Item is StoreShellItem shellItem && !shellItem.IsSelected)
                             {
                                 allSelected = false;
                                 break;
@@ -76,9 +76,9 @@ namespace ContextMenuManager.Controls
             var names = new List<string>();
             foreach (UIElement ctrl in list.Controls)
             {
-                if (ctrl is StoreShellItem item && item.IsSelected) names.Add(item.KeyName);
+                if (((MyUserControl)ctrl).Item is StoreShellItem item && item.IsSelected) names.Add(item.KeyName);
             }
-            SelectedKeyNames = names.ToArray();
+            SelectedKeyNames = [.. names];
             return true;
         }
     }
@@ -99,7 +99,7 @@ namespace ContextMenuManager.Controls
                     ContextMenu = null;
                     AddCtr(chkSelected);
                     ChkVisible.Visibility = BtnShowMenu.Visibility = BtnSubItems.Visibility = Visibility.Collapsed;
-                    MouseLeftButtonUp += (sender, e) => chkSelected.IsChecked = !chkSelected.IsChecked;
+                    Control.MouseLeftButtonUp += (sender, e) => chkSelected.IsChecked = !chkSelected.IsChecked;
                     chkSelected.Checked += (sender, e) => SelectedChanged?.Invoke();
                     chkSelected.Unchecked += (sender, e) => SelectedChanged?.Invoke();
                 }

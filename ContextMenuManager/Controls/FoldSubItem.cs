@@ -43,6 +43,12 @@ namespace ContextMenuManager.Controls
         public PathType PathType { get; set; }
 
         public MenuButton BtnShowMenu { get; set; }
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         private readonly PictureButton btnFold;
         private readonly PictureButton btnOpenPath;
         private readonly RToolStripMenuItem tsiFoldAll;
@@ -97,10 +103,10 @@ namespace ContextMenuManager.Controls
                 AddCtrs([btnFold, btnOpenPath]);
                 foreach (var item in new Control[] { tsiFoldAll, tsiUnfoldAll })
                 {
-                    ContextMenu.Items.Add(item);
+                    Control.ContextMenu.Items.Add(item);
                 }
 
-                MouseLeftButtonDown += (s, e) => Fold();
+                Control.MouseLeftButtonDown += (s, e) => Fold();
 
                 btnFold.Click += (sender, e) => Fold();
 

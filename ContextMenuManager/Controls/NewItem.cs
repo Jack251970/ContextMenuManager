@@ -16,7 +16,7 @@ namespace ContextMenuManager.Controls
                 AddCtr(BtnAddNewItem);
                 ToolTipBox.SetToolTip(BtnAddNewItem, text);
                 BtnAddNewItem.Click += (sender, e) => AddNewItem?.Invoke();
-                MouseDoubleClick += (sender, e) => AddNewItem?.Invoke();
+                Control.MouseDoubleClick += (sender, e) => AddNewItem?.Invoke();
             }
         }
 

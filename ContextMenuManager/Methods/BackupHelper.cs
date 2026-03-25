@@ -607,7 +607,8 @@ namespace ContextMenuManager.Methods
                     if (WinOsVersion.Current == WinOsVersion.Vista) return;
                     scenePath = MENUPATH_LIBRARY; break;
                 case Scenes.CustomExtension:
-                    foreach (var fileExtension in FileExtensionDialog.FileExtensionItems)
+                    // TODO: 优化该场景备份速度，目前仍然特别慢，尽管已经使用了线程优化
+                    var tasks = FileExtensionDialog.FileExtensionItems.Select(fileExtension => Task.Run(() =>
                     {
                         if (dialogInterface.IsCancelled) return;
                         // From: FileExtensionDialog.Extension
@@ -623,27 +624,8 @@ namespace ContextMenuManager.Methods
                         else scenePath = GetSysAssExtPath(extensionProperty);
                         currentExtension = extensionProperty;
                         GetShellListItems(scenePath, dialogInterface, currentExtension);
-                    }
-                    // TODO: 优化该场景备份速度，目前特别慢，原因是该场景下的二级菜单项目非常多，且每个二级菜单项都需要单独访问注册表进行加载，导致整体备份速度较慢
-                    // 使用线程优化需要接触UI基类的耦合，也就是MyListItem衍生类的问题
-                    /*var tasks = FileExtensionDialog.FileExtensionItems.Select(fileExtension => Task.Run(() =>
-                        {
-                            if (dialogInterface.IsCancelled) return;
-                            // From: FileExtensionDialog.Extension
-                            var extensionProperty = fileExtension.Trim();
-                            // From: FileExtensionDialog.RunDialog
-                            var extension = ObjectPath.RemoveIllegalChars(extensionProperty);
-                            var index = extension.LastIndexOf('.');
-                            if (index >= 0) extensionProperty = extension[index..];
-                            else extensionProperty = $".{extension}";
-                            // From: ShellList.LoadItems
-                            var isLnk = extensionProperty?.ToLower() == ".lnk";
-                            if (isLnk) scenePath = GetOpenModePath(".lnk");
-                            else scenePath = GetSysAssExtPath(extensionProperty);
-                            currentExtension = extensionProperty;
-                            GetShellListItems(scenePath, dialogInterface, currentExtension);
-                        }));
-                        await Task.WhenAll(tasks);*/
+                    }));
+                    await Task.WhenAll(tasks);
                     return;
                 case Scenes.PerceivedType:
                     foreach (var perceivedType in PerceivedTypes)

@@ -62,9 +62,9 @@ namespace ContextMenuManager.Controls
             btnPath.Click += (sender, e) => ExternalProgram.OpenDirectory(SendToPath);
             item.AddCtr(btnPath);
             InsertItem(item, 1);
-            item.ContextMenu = new ContextMenu();
+            item.Control.ContextMenu = new ContextMenu();
             var tsiRestoreDefault = new RToolStripMenuItem(AppString.Menu.RestoreDefault);
-            item.ContextMenu.Items.Add(tsiRestoreDefault);
+            item.Control.ContextMenu.Items.Add(tsiRestoreDefault);
             tsiRestoreDefault.Enabled = Directory.Exists(DefaultSendToPath);
             tsiRestoreDefault.Click += (sender, e) =>
             {

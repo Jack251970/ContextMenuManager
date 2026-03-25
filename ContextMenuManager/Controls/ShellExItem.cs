@@ -41,6 +41,12 @@ namespace ContextMenuManager.Controls
 
         public new ShellList List;
 
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public ShellExItem(ShellList list, Guid guid, string regPath) : base(list)
         {
             List = list;

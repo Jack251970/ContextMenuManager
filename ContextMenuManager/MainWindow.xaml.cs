@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using DrawingSize = System.Drawing.Size;
 
@@ -553,7 +554,7 @@ namespace ContextMenuManager
                 myList.ClearItems();
                 foreach (var item in originalListItems)
                 {
-                    myList.AddItem((MyListItem)item);
+                    myList.AddItem(((MyUserControl)item).Item);
                 }
                 originalListItems.Clear();
             }
@@ -564,7 +565,7 @@ namespace ContextMenuManager
             var itemsToShow = new List<MyListItem>();
             foreach (UIElement control in originalListItems)
             {
-                if (control is not MyListItem item)
+                if (((MyUserControl)control).Item is not MyListItem item)
                 {
                     continue;
                 }

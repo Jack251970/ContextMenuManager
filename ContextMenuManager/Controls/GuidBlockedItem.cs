@@ -9,6 +9,12 @@ namespace ContextMenuManager.Controls
 {
     internal class GuidBlockedItem : MyListItem, IBtnShowMenuItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiGuidItem, ITsiRegPathItem
     {
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public new GuidBlockedList List;
 
         public GuidBlockedItem(GuidBlockedList list, string value) : base(list)
@@ -92,7 +98,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] {TsiHandleGuid,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDelete })
             {
-                ContextMenu.Items.Add(item);
+                Control.ContextMenu.Items.Add(item);
             }
             
             foreach (var item in new Control[] { TsiSearch,
@@ -111,7 +117,7 @@ namespace ContextMenuManager.Controls
             if (!Guid.Equals(Guid.Empty)) ExplorerRestarter.Show();
             var index = List.GetItemIndex(this);
             index -= (index < List.Controls.Count - 1) ? 0 : 1;
-            List.Controls.Remove(this);
+            List.Controls.Remove(Control);
             List.Controls[index]?.Focus();
             Dispose();
         }

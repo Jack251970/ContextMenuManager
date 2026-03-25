@@ -47,7 +47,7 @@ namespace ContextMenuManager.Controls
                     }
                     if (guids.Count > 0)
                     {
-                        groupItem.Tag = guids;
+                        groupItem.Control.Tag = guids;
                         if (groupItem.Text.IsNullOrWhiteSpace()) groupItem.Text = GuidInfo.GetText(guids[0]);
                         groupItem.Image = GuidInfo.GetImage(guids[0]);
                         var filePath = GuidInfo.GetFilePath(guids[0]);

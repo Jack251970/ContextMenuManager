@@ -414,7 +414,7 @@ namespace ContextMenuManager.Controls
                                 var isAdded = false;
                                 foreach (Control ctr in Controls)
                                 {
-                                    if (ctr is UwpModeItem item && item.Guid == guid) { isAdded = true; break; }
+                                    if (((MyUserControl)ctr).Item is UwpModeItem item && item.Guid == guid) { isAdded = true; break; }
                                 }
                                 if (isAdded) continue;
                                 if (GuidInfo.GetFilePath(guid) == null) continue;
@@ -497,7 +497,7 @@ namespace ContextMenuManager.Controls
                     SetTextAndTip();
                     SetImage();
                     BtnSelect.MouseDown += (sender, e) => ShowSelectDialog();
-                    MouseDoubleClick += (sender, e) => ShowSelectDialog();
+                    Control.MouseDoubleClick += (sender, e) => ShowSelectDialog();
                 }
             }
 
@@ -773,15 +773,15 @@ namespace ContextMenuManager.Controls
                                 CurrentPerceivedType = PerceivedType; break;
                         }
 
-                        ((MainWindow)Window.GetWindow(this))?.JumpToScene(scene);
+                        ((MainWindow)Window.GetWindow(Control))?.JumpToScene(scene);
                     }
 
                     btnJump.Click += (sender, e) => SwitchTab();
-                    MouseDoubleClick += (sender, e) => SwitchTab();
+                    Control.MouseDoubleClick += (sender, e) => SwitchTab();
                 }
             }
 
-            private PictureButton btnJump;
+            private readonly PictureButton btnJump;
 
             public static string Extension = null;
             public static string PerceivedType = null;
@@ -878,7 +878,7 @@ namespace ContextMenuManager.Controls
             if (!dlg.ShowDialog()) return;
             for (var i = 0; i < Controls.Count; i++)
             {
-                if (Controls[i] is NewItem)
+                if (((MyUserControl)Controls[i]).Item is NewItem)
                 {
                     ShellItem item;
                     if (Scene != Scenes.PublicReferences) item = new ShellItem(this, dlg.NewItemRegPath);
@@ -933,7 +933,7 @@ namespace ContextMenuManager.Controls
                     {
                         if (isDragDrop)
                         {
-                            if (Controls[i] is FoldGroupItem groupItem)
+                            if (((MyUserControl)Controls[i]).Item is FoldGroupItem groupItem)
                             {
                                 if (groupItem.GroupPath.Equals(shellExPath, StringComparison.OrdinalIgnoreCase))
                                 {
@@ -948,7 +948,7 @@ namespace ContextMenuManager.Controls
                         }
                         else
                         {
-                            if (Controls[i] is NewItem)
+                            if (((MyUserControl)Controls[i]).Item is NewItem)
                             {
                                 InsertItem(item, i + 1);
                                 break;
@@ -985,7 +985,7 @@ namespace ContextMenuManager.Controls
 
                     cmbDic.SelectionChanged += (sender, e) =>
                     {
-                        Focus();
+                        Control.Focus();
                         UseWin11ContextMenuStyle = cmbDic.SelectedIndex == 0;
                     };
                     cmbDic.SelectedIndex = useWin11ContextMenuStyle ? 0 : 1;

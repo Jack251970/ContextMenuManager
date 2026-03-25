@@ -43,6 +43,12 @@ namespace ContextMenuManager.Controls
         private static readonly string[] UnableEditDataValues = ["Directory", "FileName", "Handler", "Command"];
         private static readonly string[] UnableChangeCommandValues = ["Data", "Directory", "FileName", "Handler"];
 
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public ShellNewItem(ShellNewList list, string regPath) : base(list)
         {
             List = list;
@@ -267,7 +273,7 @@ namespace ContextMenuManager.Controls
                 new RToolStripSeparator(), TsiChangeIcon, new RToolStripSeparator(), TsiOtherAttributes,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Control.ContextMenu.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiBeforeSeparator, TsiEditData })
@@ -282,7 +288,7 @@ namespace ContextMenuManager.Controls
                 TsiDetails.Items.Add(item);
             }
 
-            ContextMenu.Opened += (sender, e) =>
+            Control.ContextMenu.Opened += (sender, e) =>
             {
                 TsiEditData.Visible = CanEditData;
                 TsiChangeCommand.Visible = CanChangeCommand;
@@ -324,7 +330,7 @@ namespace ContextMenuManager.Controls
         {
             RegistryEx.DeleteKeyTree(RegPath);
             RegistryEx.DeleteKeyTree(BackupPath);
-            List.Controls.Remove(this);
+            List.Controls.Remove(Control);
             if (ShellNewList.ShellNewLockItem.IsLocked) List?.SaveSorting();
         }
     }

@@ -45,7 +45,7 @@ namespace ContextMenuManager.Controls
 
         public void AddItem(MyListItem item)
         {
-            stackPanel.Children.Add(item);
+            stackPanel.Children.Add(item.Control);
         }
 
         public void AddItems(MyListItem[] items)
@@ -60,19 +60,19 @@ namespace ContextMenuManager.Controls
 
         public void SetItemIndex(MyListItem item, int newIndex)
         {
-            stackPanel.Children.Remove(item);
-            stackPanel.Children.Insert(newIndex, item);
+            stackPanel.Children.Remove(item.Control);
+            stackPanel.Children.Insert(newIndex, item.Control);
         }
 
         public int GetItemIndex(MyListItem item)
         {
-            return stackPanel.Children.IndexOf(item);
+            return stackPanel.Children.IndexOf(item.Control);
         }
 
         public void InsertItem(MyListItem item, int index)
         {
             if (item == null) return;
-            stackPanel.Children.Insert(index, item);
+            stackPanel.Children.Insert(index, item.Control);
         }
 
         public virtual void ClearItems()
@@ -102,8 +102,10 @@ namespace ContextMenuManager.Controls
         }
     }
 
-    public class MyListItem : UserControl
+    public class MyListItem
     {
+        public MyUserControl Control { get; protected set; }
+
         protected readonly Grid grid;
         protected readonly Image imgIcon;
         protected readonly TextBlock txtTitle;
@@ -116,13 +118,17 @@ namespace ContextMenuManager.Controls
             if (list != null)
             {
                 List = list;
+                Control = new MyUserControl()
+                {
+                    Item = this
+                };
 
                 grid = new();
                 imgIcon = new() { Width = 32, Height = 32, Margin = new Thickness(20, 0, 10, 0) };
                 txtTitle = new() { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) };
                 flpControls = new() { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 20, 0) };
 
-                Height = 50;
+                Control.Height = 50;
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -135,10 +141,10 @@ namespace ContextMenuManager.Controls
                 grid.Children.Add(txtTitle);
                 grid.Children.Add(flpControls);
 
-                Content = grid;
+                Control.Content = grid;
 
-                MouseEnter += (s, e) => Background = (SolidColorBrush)Application.Current.Resources["ListViewItemBackgroundPointerOver"];
-                MouseLeave += (s, e) => Background = Brushes.Transparent;
+                Control.MouseEnter += (s, e) => Control.Background = (SolidColorBrush)Application.Current.Resources["ListViewItemBackgroundPointerOver"];
+                Control.MouseLeave += (s, e) => Control.Background = Brushes.Transparent;
             }
         }
 
@@ -172,7 +178,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 _visible = value;
-                if (List != null) Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+                if (List != null) Control.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -188,7 +194,7 @@ namespace ContextMenuManager.Controls
 
         public void Dispose()
         {
-            Content = null;
+            if (List != null) Control.Content = null;
         }
 
         public virtual void Indent()
@@ -224,5 +230,10 @@ namespace ContextMenuManager.Controls
                 flpControls.Children.Insert(newIndex, ctr);
             }
         }
+    }
+
+    public class MyUserControl : UserControl
+    {
+        public MyListItem Item { get; set; }
     }
 }

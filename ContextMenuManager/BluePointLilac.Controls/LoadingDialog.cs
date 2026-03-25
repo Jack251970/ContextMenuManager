@@ -61,9 +61,8 @@ namespace ContextMenuManager.Controls
             })
             {
                 Name = "LoadingDialogThread - " + title,
-                IsBackground = true
+                IsBackground = false
             };
-            workThread.SetApartmentState(ApartmentState.STA);
         }
 
         public static bool ShowDialog(string title, Func<LoadingDialogInterface, Task> action, MainWindow owner = null)

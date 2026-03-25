@@ -41,7 +41,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     return;
                 }
                 var listItem = (MyListItem)item;
-                var list = (MyList)listItem.Parent;
+                var list = (MyList)listItem.Control.Parent;
                 var index = list.GetItemIndex(listItem);
                 try
                 {
@@ -52,7 +52,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     AppMessageBox.Show(AppString.Message.AuthorityProtection);
                     return;
                 }
-                list.Controls.Remove(listItem);
+                list.Controls.Remove(listItem.Control);
                 list.Controls[index < list.Controls.Count ? index : (list.Controls.Count - 1)].Focus();
                 listItem.Dispose();
             };

@@ -12,6 +12,12 @@ namespace ContextMenuManager.Controls
 
     internal sealed class RestoreItem : MyListItem, IBtnShowMenuItem, ITsiFilePathItem, ITsiDeleteItem, ITsiRestoreItem
     {
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public RestoreItem(MyList list, ITsiRestoreFile item, string filePath, string deviceName, string creatTime) : base(list)
         {
             if (list != null)

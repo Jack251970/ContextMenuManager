@@ -12,6 +12,12 @@ namespace ContextMenuManager.Controls
     {
         public static readonly string[] MeParts = { "MenuExt", "-MenuExt" };
 
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
         public IEItem(MyList list, string regPath) : base(list)
         {
             if (list != null) InitializeComponents();
@@ -107,7 +113,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiChangeText,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Control.ContextMenu.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),

@@ -34,7 +34,7 @@ namespace ContextMenuManager.Controls.Interfaces
             TsiBlockGuid.Click += (sender, e) => BlockGuid();
             TsiAddGuidDic.Click += (sender, e) => AddGuidDic();
             TsiClsidLocation.Click += (sender, e) => OpenClsidPath();
-            ((MyListItem)item).ContextMenu.Opened += (sender, e) => RefreshMenuItem();
+            ((MyListItem)item).Control.ContextMenu.Opened += (sender, e) => RefreshMenuItem();
         }
 
         private readonly RToolStripMenuItem TsiCopyGuid = new(AppString.Menu.CopyGuid);
@@ -249,9 +249,8 @@ namespace ContextMenuManager.Controls.Interfaces
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);
             ToolTipBox.SetToolTip(this, AppString.SideBar.DetailedEdit);
-            listItem.Loaded += (sender, e) =>
+            listItem.Control.Loaded += (sender, e) =>
             {
-                if (listItem.Parent == null) return;
                 Visibility = XmlDicHelper.DetailedEditGuidDic.ContainsKey(item.Guid) ? Visibility.Visible : Visibility.Collapsed;
             };
             Click += (sender, e) =>
