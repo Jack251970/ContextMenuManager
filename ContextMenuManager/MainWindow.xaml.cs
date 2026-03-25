@@ -1,7 +1,6 @@
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
 using ContextMenuManager.Views;
-using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System;
@@ -66,14 +65,6 @@ namespace ContextMenuManager
 
             // First-run language download prompt
             Loaded += (_, _) => FirstRunDownloadLanguage();
-
-            DarkModeHelper_ThemeChanged(this, new EventArgs());
-            DarkModeHelper.ThemeChanged += DarkModeHelper_ThemeChanged;
-        }
-
-        private void DarkModeHelper_ThemeChanged(object sender, EventArgs e)
-        {
-            ThemeManager.Current.ApplicationTheme = DarkModeHelper.IsDarkTheme ? ApplicationTheme.Dark : ApplicationTheme.Light;
         }
 
         // Navigation building

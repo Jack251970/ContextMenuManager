@@ -11,6 +11,10 @@
     Height="610"
     MinWidth="680"
     MinHeight="450"
+    ui:ThemeManager.IsThemeAware="True"
+    ui:ThemeManager.RequestedTheme="Default"
+    ui:WindowHelper.SystemBackdropType="Mica"
+    ui:WindowHelper.UseModernWindowStyle="True"
     Closing="Window_Closing"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
