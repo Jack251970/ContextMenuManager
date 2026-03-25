@@ -20,7 +20,7 @@ namespace ContextMenuManager.Controls
 
         public bool IsCancelled => controller.IsCancelled;
 
-        private LoadingDialog(string title, Action<LoadingDialogInterface> action, MainWindow owner = null)
+        private LoadingDialog(string title, Func<LoadingDialogInterface, Task> action, MainWindow owner = null)
         {
             dialog = ContentDialogHost.CreateDialog(title, owner);
             dialog.IsPrimaryButtonEnabled = false;
@@ -55,14 +55,18 @@ namespace ContextMenuManager.Controls
             };
 
             controller = new LoadingDialogInterface(this);
-            workThread = new Thread(() => ExecuteAction(action))
+            workThread = new Thread(() =>
             {
-                Name = "LoadingDialogThread - " + title
+                ExecuteActionAsync(action).GetAwaiter().GetResult();
+            })
+            {
+                Name = "LoadingDialogThread - " + title,
+                IsBackground = true
             };
             workThread.SetApartmentState(ApartmentState.STA);
         }
 
-        public static bool ShowDialog(string title, Action<LoadingDialogInterface> action, MainWindow owner = null)
+        public static bool ShowDialog(string title, Func<LoadingDialogInterface, Task> action, MainWindow owner = null)
         {
             var instance = new LoadingDialog(title, action, owner);
             return ContentDialogHost.RunBlocking(async dialogOwner =>
@@ -74,12 +78,12 @@ namespace ContextMenuManager.Controls
             });
         }
 
-        private void ExecuteAction(Action<LoadingDialogInterface> action)
+        private async Task ExecuteActionAsync(Func<LoadingDialogInterface, Task> action)
         {
             controller.WaitTillDialogIsReady();
             try
             {
-                action(controller);
+                await action(controller);
             }
             finally
             {

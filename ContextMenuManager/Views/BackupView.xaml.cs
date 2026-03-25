@@ -125,7 +125,7 @@ namespace ContextMenuManager.Views
             };
 
             var success = LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
-                dialogInterface => helper.BackupItems(backupScenes, backupMode, dialogInterface));
+                dialogInterface => helper.BackupItemsAsync(backupScenes, backupMode, dialogInterface));
 
             if (!success)
             {
@@ -188,7 +188,7 @@ namespace ContextMenuManager.Views
             };
 
             var success = LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
-                dialogInterface => helper.RestoreItems(entry.FilePath, restoreScenes, restoreMode, dialogInterface));
+                dialogInterface => helper.RestoreItemsAsync(entry.FilePath, restoreScenes, restoreMode, dialogInterface));
 
             if (!success)
             {

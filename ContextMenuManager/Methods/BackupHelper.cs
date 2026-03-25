@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using static ContextMenuManager.Controls.ShellList;
@@ -140,7 +142,7 @@ namespace ContextMenuManager.Methods
         }
 
         // 备份指定场景内容
-        public void BackupItems(List<string> sceneTexts, BackupMode backupMode, LoadingDialogInterface dialogInterface)
+        public async Task BackupItemsAsync(List<string> sceneTexts, BackupMode backupMode, LoadingDialogInterface dialogInterface)
         {
             ClearBackupList();
             var count = GetBackupRestoreScenes(sceneTexts);
@@ -159,7 +161,7 @@ namespace ContextMenuManager.Methods
             metaData.BackupScenes = currentScenes;
             metaData.Version = BackupVersion;
             // 加载备份文件到缓冲区
-            BackupRestoreItems(dialogInterface);
+            await BackupRestoreItemsAsync(dialogInterface);
             // 保存缓冲区的备份文件
             if (dialogInterface.IsCancelled) return;
             SaveBackupList(filePath);
@@ -170,7 +172,7 @@ namespace ContextMenuManager.Methods
         }
 
         // 恢复指定场景内容
-        public void RestoreItems(string filePath, List<string> sceneTexts, RestoreMode restoreMode, LoadingDialogInterface dialogInterface)
+        public async Task RestoreItemsAsync(string filePath, List<string> sceneTexts, RestoreMode restoreMode, LoadingDialogInterface dialogInterface)
         {
             ClearBackupList();
             var count = GetBackupRestoreScenes(sceneTexts);
@@ -183,7 +185,7 @@ namespace ContextMenuManager.Methods
             if (dialogInterface.IsCancelled) return;
             LoadBackupList(filePath);
             // 还原缓冲区的备份文件
-            BackupRestoreItems(dialogInterface);
+            await BackupRestoreItemsAsync(dialogInterface);
             ClearBackupList();
             dialogInterface.SetProgress(count + 1);
         }
@@ -195,7 +197,6 @@ namespace ContextMenuManager.Methods
 
         private bool backup;                // 目前备份还是恢复
         private Scenes currentScene;        // 目前处理场景
-        private string currentExtension;    // 二级菜单项目
         private BackupMode backupMode;      // 目前备份模式
         private RestoreMode restoreMode;    // 目前恢复模式
 
@@ -250,7 +251,7 @@ namespace ContextMenuManager.Methods
         }
 
         // 按照目前处理场景逐个备份或恢复
-        private void BackupRestoreItems(LoadingDialogInterface dialogInterface)
+        private async Task BackupRestoreItemsAsync(LoadingDialogInterface dialogInterface)
         {
             foreach (var scene in currentScenes)
             {
@@ -261,7 +262,7 @@ namespace ContextMenuManager.Methods
                 {
                     LoadTempRestoreList(currentScene);
                 }
-                GetBackupItems(dialogInterface);
+                await GetBackupItemsAsync(dialogInterface);
                 dialogInterface?.SetProgress(currentScenes.IndexOf(scene) + 1, GetSceneName(scene));
             }
         }
@@ -305,7 +306,7 @@ namespace ContextMenuManager.Methods
 
         // 开始进行备份或恢复
         // （新增备份类别处5）
-        private void GetBackupItems(LoadingDialogInterface dialogInterface)
+        private async Task GetBackupItemsAsync(LoadingDialogInterface dialogInterface)
         {
             switch (currentScene)
             {
@@ -324,7 +325,7 @@ namespace ContextMenuManager.Methods
                 case Scenes.DetailedEdit:   // 详细编辑
                     GetDetailedEditListItems(); break;
                 default:    // 位于ShellList.cs内的备份项目
-                    GetShellListItems(dialogInterface); break;
+                    await GetShellListItemsAsync(dialogInterface); break;
             }
         }
 
@@ -575,10 +576,10 @@ namespace ContextMenuManager.Methods
 
         /*******************************ShellList.cs************************************/
 
-        private void GetShellListItems(LoadingDialogInterface dialogInterface)
+        private async Task GetShellListItemsAsync(LoadingDialogInterface dialogInterface)
         {
             string scenePath = null;
-            currentExtension = null;
+            string currentExtension = null;
             switch (currentScene)
             {
                 case Scenes.File:
@@ -605,10 +606,10 @@ namespace ContextMenuManager.Methods
                     //Vista系统没有这一项
                     if (WinOsVersion.Current == WinOsVersion.Vista) return;
                     scenePath = MENUPATH_LIBRARY; break;
-                // TODO: 优化该场景备份速度，目前特别慢，原因是该场景下的二级菜单项目非常多，且每个二级菜单项都需要单独访问注册表进行加载，导致整体备份速度较慢
                 case Scenes.CustomExtension:
                     foreach (var fileExtension in FileExtensionDialog.FileExtensionItems)
                     {
+                        if (dialogInterface.IsCancelled) return;
                         // From: FileExtensionDialog.Extension
                         var extensionProperty = fileExtension.Trim();
                         // From: FileExtensionDialog.RunDialog
@@ -621,24 +622,46 @@ namespace ContextMenuManager.Methods
                         if (isLnk) scenePath = GetOpenModePath(".lnk");
                         else scenePath = GetSysAssExtPath(extensionProperty);
                         currentExtension = extensionProperty;
-                        GetShellListItems(scenePath, dialogInterface);
+                        GetShellListItems(scenePath, dialogInterface, currentExtension);
                     }
+                    // TODO: 优化该场景备份速度，目前特别慢，原因是该场景下的二级菜单项目非常多，且每个二级菜单项都需要单独访问注册表进行加载，导致整体备份速度较慢
+                    // 使用线程优化需要接触UI基类的耦合，也就是MyListItem衍生类的问题
+                    /*var tasks = FileExtensionDialog.FileExtensionItems.Select(fileExtension => Task.Run(() =>
+                        {
+                            if (dialogInterface.IsCancelled) return;
+                            // From: FileExtensionDialog.Extension
+                            var extensionProperty = fileExtension.Trim();
+                            // From: FileExtensionDialog.RunDialog
+                            var extension = ObjectPath.RemoveIllegalChars(extensionProperty);
+                            var index = extension.LastIndexOf('.');
+                            if (index >= 0) extensionProperty = extension[index..];
+                            else extensionProperty = $".{extension}";
+                            // From: ShellList.LoadItems
+                            var isLnk = extensionProperty?.ToLower() == ".lnk";
+                            if (isLnk) scenePath = GetOpenModePath(".lnk");
+                            else scenePath = GetSysAssExtPath(extensionProperty);
+                            currentExtension = extensionProperty;
+                            GetShellListItems(scenePath, dialogInterface, currentExtension);
+                        }));
+                        await Task.WhenAll(tasks);*/
                     return;
                 case Scenes.PerceivedType:
                     foreach (var perceivedType in PerceivedTypes)
                     {
+                        if (dialogInterface.IsCancelled) return;
                         scenePath = GetSysAssExtPath(perceivedType);
                         currentExtension = perceivedType;
-                        GetShellListItems(scenePath, dialogInterface);
+                        GetShellListItems(scenePath, dialogInterface, currentExtension);
                     }
                     return;
                 case Scenes.DirectoryType:
                     foreach (var directoryType in DirectoryTypes)
                     {
+                        if (dialogInterface.IsCancelled) return;
                         if (directoryType == null) scenePath = null;
                         else scenePath = GetSysAssExtPath($"Directory.{directoryType}");
                         currentExtension = directoryType;
-                        GetShellListItems(scenePath, dialogInterface);
+                        GetShellListItems(scenePath, dialogInterface, currentExtension);
                     }
                     return;
                 case Scenes.LnkFile:
@@ -655,10 +678,10 @@ namespace ContextMenuManager.Methods
                     var item = new SelectItem(null, currentScene);
                     var dropEffect = ((int)DefaultDropEffect).ToString();
                     BackupRestoreSelectItem(item, dropEffect, currentScene);
-                    GetBackupShellExItems(GetShellExPath(MENUPATH_FOLDER), dialogInterface);
-                    GetBackupShellExItems(GetShellExPath(MENUPATH_DIRECTORY), dialogInterface);
-                    GetBackupShellExItems(GetShellExPath(MENUPATH_DRIVE), dialogInterface);
-                    GetBackupShellExItems(GetShellExPath(MENUPATH_ALLOBJECTS), dialogInterface);
+                    GetBackupShellExItems(GetShellExPath(MENUPATH_FOLDER), dialogInterface, currentExtension);
+                    GetBackupShellExItems(GetShellExPath(MENUPATH_DIRECTORY), dialogInterface, currentExtension);
+                    GetBackupShellExItems(GetShellExPath(MENUPATH_DRIVE), dialogInterface, currentExtension);
+                    GetBackupShellExItems(GetShellExPath(MENUPATH_ALLOBJECTS), dialogInterface, currentExtension);
                     return;
                 case Scenes.PublicReferences:
                     //Vista系统没有这一项
@@ -667,7 +690,7 @@ namespace ContextMenuManager.Methods
                     return;
             }
             // 获取ShellItem与ShellExItem类的备份项目
-            GetShellListItems(scenePath, dialogInterface);
+            GetShellListItems(scenePath, dialogInterface, currentExtension);
             switch (currentScene)
             {
                 case Scenes.Background:
@@ -700,20 +723,20 @@ namespace ContextMenuManager.Methods
                     for (var j = 0; j < AddedScenePathes.Length; j++)
                     {
                         scenePath = AddedScenePathes[j];
-                        GetBackupShellItems(GetShellPath(scenePath), dialogInterface);
-                        GetBackupShellExItems(GetShellExPath(scenePath), dialogInterface);
+                        GetBackupShellItems(GetShellPath(scenePath), dialogInterface, currentExtension);
+                        GetBackupShellExItems(GetShellExPath(scenePath), dialogInterface, currentExtension);
                     }
                     break;
                 case Scenes.ExeFile:
-                    GetBackupItems(GetOpenModePath(".exe"), dialogInterface);
+                    GetBackupItems(GetOpenModePath(".exe"), dialogInterface, currentExtension);
                     break;
             }
         }
 
-        private void GetShellListItems(string scenePath, LoadingDialogInterface dialogInterface)
+        private void GetShellListItems(string scenePath, LoadingDialogInterface dialogInterface, string currentExtension)
         {
             // 获取ShellItem与ShellExItem类的备份项目
-            GetBackupItems(scenePath, dialogInterface);
+            GetBackupItems(scenePath, dialogInterface, currentExtension);
             if (WinOsVersion.Current >= WinOsVersion.Win10)
             {
                 // 获取UwpModeItem类的备份项目
@@ -723,19 +746,19 @@ namespace ContextMenuManager.Methods
             // 自选文件扩展名后加载对应的右键菜单
             if (currentScene == Scenes.CustomExtension && currentExtension != null)
             {
-                GetBackupItems(GetOpenModePath(currentExtension), dialogInterface);
+                GetBackupItems(GetOpenModePath(currentExtension), dialogInterface, currentExtension);
             }
         }
 
-        private void GetBackupItems(string scenePath, LoadingDialogInterface dialogInterface)
+        private void GetBackupItems(string scenePath, LoadingDialogInterface dialogInterface, string currentExtension)
         {
             if (scenePath == null) return;
             RegTrustedInstaller.TakeRegKeyOwnerShip(scenePath);
-            GetBackupShellItems(GetShellPath(scenePath), dialogInterface);
-            GetBackupShellExItems(GetShellExPath(scenePath), dialogInterface);
+            GetBackupShellItems(GetShellPath(scenePath), dialogInterface, currentExtension);
+            GetBackupShellExItems(GetShellExPath(scenePath), dialogInterface, currentExtension);
         }
 
-        private void GetBackupShellItems(string shellPath, LoadingDialogInterface dialogInterface)
+        private void GetBackupShellItems(string shellPath, LoadingDialogInterface dialogInterface, string currentExtension)
         {
             using var shellKey = RegistryEx.GetRegistryKey(shellPath);
             if (shellKey == null) return;
@@ -759,7 +782,7 @@ namespace ContextMenuManager.Methods
             }
         }
 
-        private void GetBackupShellExItems(string shellExPath, LoadingDialogInterface dialogInterface)
+        private void GetBackupShellExItems(string shellExPath, LoadingDialogInterface dialogInterface, string currentExtension)
         {
             var names = new List<string>();
             using var shellExKey = RegistryEx.GetRegistryKey(shellExPath);
@@ -1425,6 +1448,9 @@ namespace ContextMenuManager.Methods
         // 备份列表/恢复列表缓存区
         private static List<BackupItem> backupRestoreList = [];
 
+        // 备份列表/恢复列表锁
+        private static readonly Lock backupRestoreListLock = new();
+
         // 单场景恢复列表暂存区
         public static List<BackupItem> sceneRestoreList = new();
 
@@ -1446,13 +1472,16 @@ namespace ContextMenuManager.Methods
 
         public static void AddItem(string keyName, BackupItemType backupItemType, string itemData, Scenes scene)
         {
-            backupRestoreList.Add(new BackupItem
+            lock (backupRestoreListLock)
             {
-                KeyName = keyName,
-                ItemType = backupItemType,
-                ItemData = itemData,
-                BackupScene = scene,
-            });
+                backupRestoreList.Add(new BackupItem
+                {
+                    KeyName = keyName,
+                    ItemType = backupItemType,
+                    ItemData = itemData,
+                    BackupScene = scene,
+                });
+            }
         }
 
         public static void AddItem(string keyName, BackupItemType backupItemType, bool itemData, Scenes scene)
@@ -1467,26 +1496,35 @@ namespace ContextMenuManager.Methods
 
         public static int GetBackupListCount()
         {
-            return backupRestoreList.Count;
+            lock (backupRestoreListLock)
+            {
+                return backupRestoreList.Count;
+            }
         }
 
         public static void ClearBackupList()
         {
-            backupRestoreList.Clear();
+            lock (backupRestoreListLock)
+            {
+                backupRestoreList.Clear();
+            }
         }
 
         public static void SaveBackupList(string filePath)
         {
             // 创建一个父对象，并将BackupList和MetaData对象包装到其中
-            var myData = new BackupData()
+            lock (backupRestoreListLock)
             {
-                MetaData = metaData,
-                BackupList = backupRestoreList,
-            };
+                var myData = new BackupData()
+                {
+                    MetaData = metaData,
+                    BackupList = backupRestoreList,
+                };
 
-            // 序列化root对象并保存到XML文档
-            using var stream = new FileStream(filePath, FileMode.Create);
-            backupDataSerializer.Serialize(stream, myData, namespaces);
+                // 序列化root对象并保存到XML文档
+                using var stream = new FileStream(filePath, FileMode.Create);
+                backupDataSerializer.Serialize(stream, myData, namespaces);
+            }
         }
 
         public static void LoadBackupList(string filePath)
@@ -1501,23 +1539,29 @@ namespace ContextMenuManager.Methods
             // 获取MetaData对象
             metaData = myData.MetaData;
 
-            // 清理backupRestoreList变量
-            backupRestoreList.Clear();
-            backupRestoreList = null;
+            lock (backupRestoreListLock)
+            {
+                // 清理backupRestoreList变量
+                backupRestoreList.Clear();
+                backupRestoreList = null;
 
-            // 获取BackupList对象
-            backupRestoreList = myData.BackupList;
+                // 获取BackupList对象
+                backupRestoreList = myData.BackupList;
+            }
         }
 
         public static void LoadTempRestoreList(Scenes scene)
         {
             sceneRestoreList.Clear();
             // 根据backupScene加载列表
-            foreach (var item in backupRestoreList)
+            lock (backupRestoreListLock)
             {
-                if (item.BackupScene == scene)
+                foreach (var item in backupRestoreList)
                 {
-                    sceneRestoreList.Add(item);
+                    if (item.BackupScene == scene)
+                    {
+                        sceneRestoreList.Add(item);
+                    }
                 }
             }
         }
