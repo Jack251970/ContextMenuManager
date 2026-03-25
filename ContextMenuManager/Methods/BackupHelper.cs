@@ -142,7 +142,7 @@ namespace ContextMenuManager.Methods
         }
 
         // 备份指定场景内容
-        public async Task BackupItemsAsync(List<string> sceneTexts, BackupMode backupMode, LoadingDialogInterface dialogInterface)
+        public void BackupItems(List<string> sceneTexts, BackupMode backupMode, LoadingDialogInterface dialogInterface)
         {
             ClearBackupList();
             var count = GetBackupRestoreScenes(sceneTexts);
@@ -161,7 +161,7 @@ namespace ContextMenuManager.Methods
             metaData.BackupScenes = currentScenes;
             metaData.Version = BackupVersion;
             // 加载备份文件到缓冲区
-            await BackupRestoreItemsAsync(dialogInterface);
+            BackupRestoreItems(dialogInterface);
             // 保存缓冲区的备份文件
             if (dialogInterface.IsCancelled) return;
             SaveBackupList(filePath);
@@ -172,7 +172,7 @@ namespace ContextMenuManager.Methods
         }
 
         // 恢复指定场景内容
-        public async Task RestoreItemsAsync(string filePath, List<string> sceneTexts, RestoreMode restoreMode, LoadingDialogInterface dialogInterface)
+        public void RestoreItems(string filePath, List<string> sceneTexts, RestoreMode restoreMode, LoadingDialogInterface dialogInterface)
         {
             ClearBackupList();
             var count = GetBackupRestoreScenes(sceneTexts);
@@ -185,7 +185,7 @@ namespace ContextMenuManager.Methods
             if (dialogInterface.IsCancelled) return;
             LoadBackupList(filePath);
             // 还原缓冲区的备份文件
-            await BackupRestoreItemsAsync(dialogInterface);
+            BackupRestoreItems(dialogInterface);
             ClearBackupList();
             dialogInterface.SetProgress(count + 1);
         }
@@ -251,7 +251,7 @@ namespace ContextMenuManager.Methods
         }
 
         // 按照目前处理场景逐个备份或恢复
-        private async Task BackupRestoreItemsAsync(LoadingDialogInterface dialogInterface)
+        private void BackupRestoreItems(LoadingDialogInterface dialogInterface)
         {
             foreach (var scene in currentScenes)
             {
@@ -262,7 +262,7 @@ namespace ContextMenuManager.Methods
                 {
                     LoadTempRestoreList(currentScene);
                 }
-                await GetBackupItemsAsync(dialogInterface);
+                GetBackupItems(dialogInterface);
                 dialogInterface?.SetProgress(currentScenes.IndexOf(scene) + 1, GetSceneName(scene));
             }
         }
@@ -306,7 +306,7 @@ namespace ContextMenuManager.Methods
 
         // 开始进行备份或恢复
         // （新增备份类别处5）
-        private async Task GetBackupItemsAsync(LoadingDialogInterface dialogInterface)
+        private void GetBackupItems(LoadingDialogInterface dialogInterface)
         {
             switch (currentScene)
             {
@@ -325,7 +325,7 @@ namespace ContextMenuManager.Methods
                 case Scenes.DetailedEdit:   // 详细编辑
                     GetDetailedEditListItems(); break;
                 default:    // 位于ShellList.cs内的备份项目
-                    await GetShellListItemsAsync(dialogInterface); break;
+                    GetShellListItems(dialogInterface); break;
             }
         }
 
@@ -576,7 +576,7 @@ namespace ContextMenuManager.Methods
 
         /*******************************ShellList.cs************************************/
 
-        private async Task GetShellListItemsAsync(LoadingDialogInterface dialogInterface)
+        private void GetShellListItems(LoadingDialogInterface dialogInterface)
         {
             string scenePath = null;
             string currentExtension = null;
