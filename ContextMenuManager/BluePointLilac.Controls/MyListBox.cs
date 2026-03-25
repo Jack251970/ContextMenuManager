@@ -43,6 +43,11 @@ namespace ContextMenuManager.Controls
 
         public event EventHandler HoveredItemChanged;
 
+        public void AddItem(MyUserControl control)
+        {
+            stackPanel.Children.Add(control);
+        }
+
         public void AddItem(MyListItem item)
         {
             stackPanel.Children.Add(item.Control);
@@ -82,17 +87,17 @@ namespace ContextMenuManager.Controls
 
         public void SortItemByText()
         {
-            var items = stackPanel.Children.OfType<MyListItem>().ToList();
+            var items = stackPanel.Children.OfType<MyUserControl>().ToList();
             stackPanel.Children.Clear();
             items.Sort(new TextComparer());
             items.ForEach(AddItem);
         }
 
-        public class TextComparer : IComparer<MyListItem>
+        public class TextComparer : IComparer<MyUserControl>
         {
-            public int Compare(MyListItem x, MyListItem y)
+            public int Compare(MyUserControl x, MyUserControl y)
             {
-                return string.Compare(x.Text, y.Text, StringComparison.OrdinalIgnoreCase);
+                return string.Compare(x.Item.Text, y.Item.Text, StringComparison.OrdinalIgnoreCase);
             }
         }
 
