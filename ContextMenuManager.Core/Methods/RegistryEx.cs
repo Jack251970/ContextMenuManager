@@ -2,6 +2,8 @@
 using System;
 using System.Security.AccessControl;
 
+#nullable enable
+
 namespace ContextMenuManager.Methods
 {
     public static class RegistryEx
@@ -18,16 +20,20 @@ namespace ContextMenuManager.Methods
         public const string HKCC = "HKCC";
         public const string HKU = "HKU";
 
-        public static void CopyTo(this RegistryKey srcKey, RegistryKey dstKey)
+        public static void CopyTo(this RegistryKey? srcKey, RegistryKey? dstKey)
         {
-            foreach (var name in srcKey.GetValueNames())
+            if (srcKey == null) return;
+            foreach (var name in srcKey.GetValueNames() ?? [])
             {
-                dstKey.SetValue(name, srcKey.GetValue(name), srcKey.GetValueKind(name));
+                if (srcKey.GetValue(name) is not object value) continue;
+                dstKey?.SetValue(name, value, srcKey.GetValueKind(name));
             }
             foreach (var name in srcKey.GetSubKeyNames())
             {
                 using var srcSubKey = srcKey.OpenSubKey(name);
-                using var dstSubKey = dstKey.CreateSubKey(name, true);
+                if (srcSubKey == null) continue;
+                using var dstSubKey = dstKey?.CreateSubKey(name, true);
+                if (dstSubKey == null) continue;
                 srcSubKey.CopyTo(dstSubKey);
             }
         }
@@ -51,7 +57,7 @@ namespace ContextMenuManager.Methods
             DeleteKeyTree(srcPath, true);
         }
 
-        public static RegistryKey CreateSubKey(this RegistryKey key, string subKeyName, bool writable)
+        public static RegistryKey? CreateSubKey(this RegistryKey key, string subKeyName, bool writable)
         {
             using (key.CreateSubKey(subKeyName))
                 return key.OpenSubKey(subKeyName, writable);
@@ -140,7 +146,7 @@ namespace ContextMenuManager.Methods
         /// <param name="regPath">注册表项路径</param>
         /// <param name="writable">写入访问权限</param>
         /// <param name="create">是否创建新项</param>
-        public static RegistryKey GetRegistryKey(string regPath, bool writable = false, bool create = false)
+        public static RegistryKey? GetRegistryKey(string regPath, bool writable = false, bool create = false)
         {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root)
@@ -154,7 +160,7 @@ namespace ContextMenuManager.Methods
             }
         }
 
-        public static RegistryKey GetRegistryKey(string regPath, RegistryKeyPermissionCheck check, RegistryRights rights)
+        public static RegistryKey? GetRegistryKey(string regPath, RegistryKeyPermissionCheck check, RegistryRights rights)
         {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root) return root.OpenSubKey(keyPath, check, rights);

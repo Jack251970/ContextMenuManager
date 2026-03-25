@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
+#nullable enable
+
 namespace ContextMenuManager.Methods
 {
     /// 获取TrustedInstaller权限注册表项的所有权
