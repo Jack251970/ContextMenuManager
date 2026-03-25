@@ -162,7 +162,7 @@ namespace ContextMenuManager.Methods
 
         public static void HashLnk(string lnkPath)
         {
-            SHCreateItemFromParsingName(lnkPath, null, typeof(IShellItem2).GUID, out var item);
+            SHCreateItemFromParsingName(lnkPath, null!, typeof(IShellItem2).GUID, out var item);
             var item2 = (IShellItem2)item;
             PSGetPropertyKeyFromName("System.Link.TargetParsingPath", out var pk);
             //shellPKey = PKEY_Link_TargetParsingPath
