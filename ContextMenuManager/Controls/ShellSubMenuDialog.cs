@@ -170,7 +170,7 @@ namespace ContextMenuManager.Controls
 
             private void AddSeparator()
             {
-                if (((MyUserControl)Controls[^1]).Item is SeparatorItem) return;
+                if (Controls[^1].Item is SeparatorItem) return;
                 SubKeyNames.Add("|");
                 SaveSorting();
                 AddItem(new SeparatorItem(this));
@@ -363,11 +363,11 @@ namespace ContextMenuManager.Controls
 
             private void AddSeparator()
             {
-                if (((MyUserControl)Controls[^1]).Item is SeparatorItem) return;
+                if (Controls[^1].Item is SeparatorItem) return;
                 string regPath;
                 if (Controls.Count > 1)
                 {
-                    regPath = GetItemRegPath(((MyUserControl)Controls[^1]).Item);
+                    regPath = GetItemRegPath(Controls[^1].Item);
                 }
                 else
                 {
@@ -407,7 +407,7 @@ namespace ContextMenuManager.Controls
                 {
                     if (index > 1)
                     {
-                        otherItem = ((MyUserControl)Controls[index - 1]).Item;
+                        otherItem = Controls[index - 1].Item;
                         SetItemIndex(item, index - 1);
                     }
                 }
@@ -415,7 +415,7 @@ namespace ContextMenuManager.Controls
                 {
                     if (index < Controls.Count - 1)
                     {
-                        otherItem = ((MyUserControl)Controls[index + 1]).Item;
+                        otherItem = Controls[index + 1].Item;
                         SetItemIndex(item, index + 1);
                     }
                 }
@@ -546,9 +546,9 @@ namespace ContextMenuManager.Controls
             public static bool CanAddMore(MyList list)
             {
                 var count = 0;
-                foreach (var item in list.Controls)
+                foreach (var control in list.Controls)
                 {
-                    if (item.GetType().BaseType == typeof(SubShellTypeItem)) count++;
+                    if (control.Item is SubShellTypeItem) count++;
                 }
                 var flag = count < 16;
                 if (!flag) AppMessageBox.Show(AppString.Message.CannotAddNewItem);

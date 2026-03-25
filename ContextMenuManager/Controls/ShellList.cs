@@ -412,9 +412,9 @@ namespace ContextMenuManager.Controls
                             if (Guid.TryParse(itemXE.GetAttribute("Guid"), out var guid))
                             {
                                 var isAdded = false;
-                                foreach (Control ctr in Controls)
+                                foreach (var ctr in Controls)
                                 {
-                                    if (((MyUserControl)ctr).Item is UwpModeItem item && item.Guid == guid) { isAdded = true; break; }
+                                    if (ctr.Item is UwpModeItem item && item.Guid == guid) { isAdded = true; break; }
                                 }
                                 if (isAdded) continue;
                                 if (GuidInfo.GetFilePath(guid) == null) continue;
@@ -878,7 +878,7 @@ namespace ContextMenuManager.Controls
             if (!dlg.ShowDialog()) return;
             for (var i = 0; i < Controls.Count; i++)
             {
-                if (((MyUserControl)Controls[i]).Item is NewItem)
+                if (Controls[i].Item is NewItem)
                 {
                     ShellItem item;
                     if (Scene != Scenes.PublicReferences) item = new ShellItem(this, dlg.NewItemRegPath);
@@ -933,7 +933,7 @@ namespace ContextMenuManager.Controls
                     {
                         if (isDragDrop)
                         {
-                            if (((MyUserControl)Controls[i]).Item is FoldGroupItem groupItem)
+                            if (Controls[i].Item is FoldGroupItem groupItem)
                             {
                                 if (groupItem.GroupPath.Equals(shellExPath, StringComparison.OrdinalIgnoreCase))
                                 {
@@ -948,7 +948,7 @@ namespace ContextMenuManager.Controls
                         }
                         else
                         {
-                            if (((MyUserControl)Controls[i]).Item is NewItem)
+                            if (Controls[i].Item is NewItem)
                             {
                                 InsertItem(item, i + 1);
                                 break;

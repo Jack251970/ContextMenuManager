@@ -305,7 +305,7 @@ namespace ContextMenuManager.Controls
             List.Controls.Remove(Control);
             for (var i = 0; i < List.Controls.Count; i++)
             {
-                if (((MyUserControl)List.Controls[i]).Item is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
+                if (List.Controls[i].Item is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
                 {
                     List.Controls.Add(Control);
                     List.SetItemIndex(this, i + 1);
@@ -324,7 +324,7 @@ namespace ContextMenuManager.Controls
             var index = List.Controls.IndexOf(Control);
             if (index == List.Controls.Count - 1) return;
             index += isUp ? -1 : 1;
-            var ctr = (MyUserControl)List.Controls[index];
+            var ctr = List.Controls[index];
             if (ctr.Item is WinXGroupItem) return;
             if (ctr.Item is not WinXItem item) throw new InvalidOperationException("The item to move must be a WinXItem.");
 

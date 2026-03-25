@@ -537,7 +537,7 @@ namespace ContextMenuManager
             {
                 if (originalListItems.Count == 0)
                 {
-                    foreach (UIElement ctrl in myList.Controls)
+                    foreach (var ctrl in myList.Controls)
                     {
                         originalListItems.Add(ctrl);
                     }

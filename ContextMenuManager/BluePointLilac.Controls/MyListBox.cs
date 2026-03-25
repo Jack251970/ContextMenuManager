@@ -21,7 +21,19 @@ namespace ContextMenuManager.Controls
             Content = scrollViewer;
         }
 
-        public UIElementCollection Controls => stackPanel.Children;
+        public List<MyUserControl> Controls
+        {
+            get
+            {
+                List<MyUserControl> controls = [];
+                foreach (var item in stackPanel.Children)
+                {
+                    if (item is MyUserControl control) controls.Add(control);
+                    else throw new InvalidOperationException();
+                }
+                return controls;
+            }
+        }
 
         public bool Visible
         {

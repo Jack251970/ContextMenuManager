@@ -102,7 +102,7 @@ namespace ContextMenuManager.Controls
             index += isUp ? -1 : 1;
             if (index == Controls.Count) return;
             var ctr = Controls[index];
-            if (((MyUserControl)ctr).Item is ShellNewItem item && item.CanSort)
+            if (ctr.Item is ShellNewItem item && item.CanSort)
             {
                 SetItemIndex(shellNewItem, index);
                 SaveSorting();
@@ -114,7 +114,7 @@ namespace ContextMenuManager.Controls
             var extensions = new List<string>();
             for (var i = 2; i < Controls.Count; i++)
             {
-                if (((MyUserControl)Controls[i]).Item is ShellNewItem item)
+                if (Controls[i].Item is ShellNewItem item)
                 {
                     extensions.Add(item.Extension);
                 }
@@ -146,7 +146,7 @@ namespace ContextMenuManager.Controls
                 }
                 foreach (var ctr in Controls)
                 {
-                    if (ctr is ShellNewItem shellItem)
+                    if (ctr.Item is ShellNewItem shellItem)
                     {
                         if (shellItem.Extension.Equals(extension, StringComparison.OrdinalIgnoreCase))
                         {
@@ -241,9 +241,9 @@ namespace ContextMenuManager.Controls
                 {
                     if (value) List.SaveSorting();
                     else UnLock();
-                    foreach (Control ctr in List.Controls)
+                    foreach (var ctr in List.Controls)
                     {
-                        if (((MyUserControl)ctr).Item is ShellNewItem item)
+                        if (ctr.Item is ShellNewItem item)
                         {
                             item.SetSortabled(value);
                         }

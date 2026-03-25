@@ -40,9 +40,9 @@ namespace ContextMenuManager.Controls
             chkSelectAll.Click += (sender, e) =>
             {
                 var flag = chkSelectAll.IsChecked == true;
-                foreach (UIElement ctrl in list.Controls)
+                foreach (var ctrl in list.Controls)
                 {
-                    if (((MyUserControl)ctrl).Item is StoreShellItem item) item.IsSelected = flag;
+                    if (ctrl.Item is StoreShellItem item) item.IsSelected = flag;
                 }
             };
 
@@ -56,9 +56,9 @@ namespace ContextMenuManager.Controls
                     item.SelectedChanged += () =>
                     {
                         bool allSelected = true;
-                        foreach (UIElement ctrl in list.Controls)
+                        foreach (var ctrl in list.Controls)
                         {
-                            if (((MyUserControl)ctrl).Item is StoreShellItem shellItem && !shellItem.IsSelected)
+                            if (ctrl.Item is StoreShellItem shellItem && !shellItem.IsSelected)
                             {
                                 allSelected = false;
                                 break;
@@ -74,9 +74,9 @@ namespace ContextMenuManager.Controls
             if (result != ContentDialogResult.Primary) return false;
 
             var names = new List<string>();
-            foreach (UIElement ctrl in list.Controls)
+            foreach (var ctrl in list.Controls)
             {
-                if (((MyUserControl)ctrl).Item is StoreShellItem item && item.IsSelected) names.Add(item.KeyName);
+                if (ctrl.Item is StoreShellItem item && item.IsSelected) names.Add(item.KeyName);
             }
             SelectedKeyNames = [.. names];
             return true;

@@ -51,7 +51,7 @@ namespace ContextMenuManager.Controls
                     Array.ForEach(BlockedPaths, path => Registry.SetValue(path, value, ""));
                     for (var i = 1; i < Controls.Count; i++)
                     {
-                        if (((GuidBlockedItem)((MyUserControl)Controls[i]).Item).Guid.Equals(guid))
+                        if (((GuidBlockedItem)Controls[i].Item).Guid.Equals(guid))
                         {
                             AppMessageBox.Show(AppString.Message.HasBeenAdded);
                             return;

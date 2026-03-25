@@ -121,7 +121,7 @@ namespace ContextMenuManager.Controls
         {
             foreach (var ctr in List.Controls)
             {
-                if (ctr is FoldSubItem item && item.FoldGroupItem == this)
+                if (ctr.Item is FoldSubItem item && item.FoldGroupItem == this)
                 {
                     Visible = true;
                     return;
@@ -140,7 +140,7 @@ namespace ContextMenuManager.Controls
             btnFold.BaseImage = isFold ? AppImage.Down : AppImage.Up;
             foreach (var ctr in List.Controls)
             {
-                if (ctr is FoldSubItem item && item.FoldGroupItem == this) item.Visible = !isFold;
+                if (ctr.Item is FoldSubItem item && item.FoldGroupItem == this) item.Visible = !isFold;
             }
         }
 
@@ -148,7 +148,7 @@ namespace ContextMenuManager.Controls
         {
             foreach (var ctr in List.Controls)
             {
-                if (ctr is FoldGroupItem groupItem) groupItem.IsFold = isFold;
+                if (ctr.Item is FoldGroupItem groupItem) groupItem.IsFold = isFold;
             }
         }
     }

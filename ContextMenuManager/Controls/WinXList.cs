@@ -229,9 +229,9 @@ namespace ContextMenuManager.Controls
                         shellLink.Save();
                     }
                     DesktopIni.SetLocalizedFileNames(lnkPath, itemText);
-                    foreach (MyListItem ctr in Controls)
+                    foreach (var ctr in Controls)
                     {
-                        if (ctr is WinXGroupItem groupItem && groupItem.Text == dirName)
+                        if (ctr.Item is WinXGroupItem groupItem && groupItem.Text == dirName)
                         {
                             var item = new WinXItem(this, lnkPath, groupItem) { Visible = !groupItem.IsFold };
                             item.BtnMoveDown.Visibility = item.BtnMoveUp.Visibility = AppConfig.WinXSortable ? Visibility.Visible : Visibility.Collapsed;
