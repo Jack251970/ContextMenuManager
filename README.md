@@ -77,7 +77,7 @@
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
   [Gitee Releases]: https://gitee.com/Jack251970/ContextMenuManager/releases
-  [.NET SDK]: https://dotnet.microsoft.com/zh-cn/download/dotnet/9.0
+  [.NET SDK]: https://dotnet.microsoft.com/zh-cn/download/dotnet/10.0
 
 ## ❤️ 感谢
 

@@ -25,13 +25,16 @@ namespace ContextMenuManager.Controls.Interfaces
         public HandleGuidMenuItem(ITsiGuidItem item) : base(AppString.Menu.HandleGuid)
         {
             Item = item;
-            DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { TsiAddGuidDic,
-                new RToolStripSeparator(), TsiCopyGuid, TsiBlockGuid, TsiClsidLocation });
+            foreach (var dropDownItem in new Control[] { TsiAddGuidDic,
+                new RToolStripSeparator(), TsiCopyGuid, TsiBlockGuid, TsiClsidLocation })
+            {
+                Items.Add(dropDownItem);
+            }
             TsiCopyGuid.Click += (sender, e) => CopyGuid();
             TsiBlockGuid.Click += (sender, e) => BlockGuid();
             TsiAddGuidDic.Click += (sender, e) => AddGuidDic();
             TsiClsidLocation.Click += (sender, e) => OpenClsidPath();
-            ((MyListItem)item).ContextMenuStrip.Opening += (sender, e) => RefreshMenuItem();
+            ((MyListItem)item).ContextMenu.Opened += (sender, e) => RefreshMenuItem();
         }
 
         private readonly RToolStripMenuItem TsiCopyGuid = new(AppString.Menu.CopyGuid);
@@ -45,8 +48,8 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             var guid = Item.Guid.ToString("B");
             Clipboard.SetText(guid);
-            AppMessageBox.Show($"{AppString.Message.CopiedToClipboard}\n{guid}",
-                System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+            AppMessageBox.Show($"{AppString.Message.CopiedToClipboard}\n{guid}", null,
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void BlockGuid()
@@ -61,8 +64,8 @@ namespace ContextMenuManager.Controls.Interfaces
                 {
                     if (Item.Guid.Equals(ShellExItem.LnkOpenGuid) && AppConfig.ProtectOpenItem)
                     {
-                        if (AppMessageBox.Show(AppString.Message.PromptIsOpenItem,
-                            System.Windows.Forms.MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes) return;
+                        if (AppMessageBox.Show(AppString.Message.PromptIsOpenItem, null,
+                            MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
                     }
                     Microsoft.Win32.Registry.SetValue(path, Item.Guid.ToString("B"), string.Empty);
                 }
@@ -72,9 +75,11 @@ namespace ContextMenuManager.Controls.Interfaces
 
         private void AddGuidDic()
         {
-            var dlg = new AddGuidDicDialog();
-            dlg.ItemText = GuidInfo.GetText(Item.Guid);
-            dlg.ItemIcon = GuidInfo.GetImage(Item.Guid);
+            var dlg = new AddGuidDicDialog
+            {
+                ItemText = GuidInfo.GetText(Item.Guid),
+                ItemIcon = GuidInfo.GetImage(Item.Guid)
+            };
             var location = GuidInfo.GetIconLocation(Item.Guid);
             dlg.ItemIconPath = location.IconPath;
             dlg.ItemIconIndex = location.IconIndex;
@@ -161,10 +166,7 @@ namespace ContextMenuManager.Controls.Interfaces
             public bool RunDialog(MainWindow owner)
             {
                 var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.AddGuidDic, owner);
-                dialog.PrimaryButtonText = ResourceString.OK;
-                dialog.CloseButtonText = ResourceString.Cancel;
                 dialog.SecondaryButtonText = AppString.Dialog.DeleteGuidDic;
-                dialog.DefaultButton = ContentDialogButton.Primary;
 
                 var stackPanel = new WpfStackPanel { MinWidth = 350 };
                 
@@ -176,7 +178,7 @@ namespace ContextMenuManager.Controls.Interfaces
                 ControlHelper.SetHeader(txtName, AppString.Dialog.ItemText);
                 stackPanel.Children.Add(txtName);
 
-                var iconPanel = new WpfStackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal };
+                var iconPanel = new WpfStackPanel { Orientation = Orientation.Horizontal };
                 
                 var imgIcon = new WpfImage
                 {
@@ -193,9 +195,11 @@ namespace ContextMenuManager.Controls.Interfaces
                 };
                 btnBrowse.Click += (s, e) =>
                 {
-                    var iconDlg = new IconDialog();
-                    iconDlg.IconPath = ItemIconPath;
-                    iconDlg.IconIndex = ItemIconIndex;
+                    var iconDlg = new IconDialog
+                    {
+                        IconPath = ItemIconPath,
+                        IconIndex = ItemIconIndex
+                    };
                     if (iconDlg.ShowDialog())
                     {
                         using var icon = ResourceIcon.GetIcon(iconDlg.IconPath, iconDlg.IconIndex);
@@ -245,16 +249,17 @@ namespace ContextMenuManager.Controls.Interfaces
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);
             ToolTipBox.SetToolTip(this, AppString.SideBar.DetailedEdit);
-            listItem.ParentChanged += (sender, e) =>
+            listItem.Loaded += (sender, e) =>
             {
-                if (listItem.IsDisposed) return;
                 if (listItem.Parent == null) return;
-                Visible = XmlDicHelper.DetailedEditGuidDic.ContainsKey(item.Guid);
+                Visibility = XmlDicHelper.DetailedEditGuidDic.ContainsKey(item.Guid) ? Visibility.Visible : Visibility.Collapsed;
             };
-            MouseDown += (sender, e) =>
+            Click += (sender, e) =>
             {
-                var dlg = new DetailedEditDialog();
-                dlg.GroupGuid = item.Guid;
+                var dlg = new DetailedEditDialog
+                {
+                    GroupGuid = item.Guid
+                };
                 dlg.ShowDialog();
             };
         }

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml;
+using ContextMenuManager.Properties;
 
 namespace ContextMenuManager.Methods
 {
@@ -47,11 +48,11 @@ namespace ContextMenuManager.Methods
             }
 
             LoadDic(UwpModeItemsDic, AppConfig.WebUwpModeItemsDic,
-                AppConfig.UserUwpModeItemsDic, Properties.Resources.UwpModeItemsDic);
+                AppConfig.UserUwpModeItemsDic, AppResources.UwpModeItemsDic);
             LoadDic(EnhanceMenusDic, AppConfig.WebEnhanceMenusDic,
-                AppConfig.UserEnhanceMenusDic, Properties.Resources.EnhanceMenusDic);
+                AppConfig.UserEnhanceMenusDic, AppResources.EnhanceMenusDic);
             LoadDic(DetailedEditDic, AppConfig.WebDetailedEditDic,
-                AppConfig.UserDetailedEditDic, Properties.Resources.DetailedEditDic);
+                AppConfig.UserDetailedEditDic, AppResources.DetailedEditDic);
 
             EnhanceMenuPathDic.Clear();
             for (var i = 0; i < 2; i++)

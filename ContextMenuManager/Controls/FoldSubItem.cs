@@ -1,22 +1,27 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
 using System;
-using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 using static ContextMenuManager.Methods.ObjectPath;
 
 namespace ContextMenuManager.Controls
 {
     internal class FoldSubItem : MyListItem
     {
+        public FoldSubItem(MyList list) : base (list)
+        {
+
+        }
+
         public FoldGroupItem FoldGroupItem { get; set; }
 
-        public void Indent()
+        public override void Indent()
         {
-            var w = 40.DpiZoom();
-            Controls["Image"].Left += w;
-            Controls["Text"].Left += w;
+            var w = 40;
+            if(HasImage) imgIcon.Margin = new Thickness(imgIcon.Margin.Left + w, imgIcon.Margin.Top, imgIcon.Margin.Right, imgIcon.Margin.Bottom);
+            else txtTitle.Margin = new Thickness(txtTitle.Margin.Left + w, txtTitle.Margin.Top, txtTitle.Margin.Right, txtTitle.Margin.Bottom);
         }
     }
 
@@ -40,63 +45,75 @@ namespace ContextMenuManager.Controls
         public MenuButton BtnShowMenu { get; set; }
         private readonly PictureButton btnFold;
         private readonly PictureButton btnOpenPath;
-        private readonly RToolStripMenuItem tsiFoldAll = new(AppString.Menu.FoldAll);
-        private readonly RToolStripMenuItem tsiUnfoldAll = new(AppString.Menu.UnfoldAll);
+        private readonly RToolStripMenuItem tsiFoldAll;
+        private readonly RToolStripMenuItem tsiUnfoldAll;
 
-        public FoldGroupItem(string groupPath, PathType pathType)
+        public FoldGroupItem(MyList list, string groupPath, PathType pathType) : base(list)
         {
-            btnFold = new PictureButton(AppImage.Up);
-            BtnShowMenu = new MenuButton(this);
-            btnOpenPath = new PictureButton(AppImage.Open);
+            if (list != null)
+            {
+                btnFold = new PictureButton(AppImage.Up);
+                BtnShowMenu = new MenuButton(this);
+                btnOpenPath = new PictureButton(AppImage.Open);
+
+                tsiFoldAll = new(AppString.Menu.FoldAll);
+                tsiUnfoldAll = new(AppString.Menu.UnfoldAll);
+            }
 
             if (pathType is PathType.File or PathType.Directory)
             {
                 groupPath = Environment.ExpandEnvironmentVariables(groupPath);
             }
-            string tip = null;
-            Action openPath = null;
-            switch (pathType)
-            {
-                case PathType.File:
-                    tip = AppString.Menu.FileLocation;
-                    Text = Path.GetFileNameWithoutExtension(groupPath);
-                    Image = ResourceIcon.GetExtensionIcon(groupPath).ToBitmap();
-                    openPath = () => ExternalProgram.JumpExplorer(groupPath, AppConfig.OpenMoreExplorer);
-                    break;
-                case PathType.Directory:
-                    tip = AppString.Menu.FileLocation;
-                    Text = Path.GetFileNameWithoutExtension(groupPath);
-                    Image = ResourceIcon.GetFolderIcon(groupPath).ToBitmap();
-                    openPath = () => ExternalProgram.OpenDirectory(groupPath);
-                    break;
-                case PathType.Registry:
-                    tip = AppString.Menu.RegistryLocation;
-                    openPath = () => ExternalProgram.JumpRegEdit(groupPath, null, AppConfig.OpenMoreRegedit);
-                    break;
-            }
+
             PathType = pathType;
             GroupPath = groupPath;
-            Font = new Font(Font, FontStyle.Bold);
-            AddCtrs(new[] { btnFold, btnOpenPath });
-            ContextMenuStrip.Items.AddRange(new[] { tsiFoldAll, tsiUnfoldAll });
-            MouseDown += (sender, e) =>
+
+            if (list != null)
             {
-                if (e.Button == MouseButtons.Left) Fold();
-            };
-            btnFold.MouseDown += (sender, e) =>
-            {
-                Fold();
-                btnFold.Image = btnFold.BaseImage;
-            };
-            tsiFoldAll.Click += (sender, e) => FoldAll(true);
-            tsiUnfoldAll.Click += (sender, e) => FoldAll(false);
-            btnOpenPath.MouseDown += (sender, e) => openPath.Invoke();
-            ToolTipBox.SetToolTip(btnOpenPath, tip);
+                string tip = null;
+                Action openPath = null;
+                switch (pathType)
+                {
+                    case PathType.File:
+                        tip = AppString.Menu.FileLocation;
+                        Text = Path.GetFileNameWithoutExtension(groupPath);
+                        Image = ResourceIcon.GetExtensionIcon(groupPath).ToBitmap();
+                        openPath = () => ExternalProgram.JumpExplorer(groupPath, AppConfig.OpenMoreExplorer);
+                        break;
+                    case PathType.Directory:
+                        tip = AppString.Menu.FileLocation;
+                        Text = Path.GetFileNameWithoutExtension(groupPath);
+                        Image = ResourceIcon.GetFolderIcon(groupPath).ToBitmap();
+                        openPath = () => ExternalProgram.OpenDirectory(groupPath);
+                        break;
+                    case PathType.Registry:
+                        tip = AppString.Menu.RegistryLocation;
+                        openPath = () => ExternalProgram.JumpRegEdit(groupPath, null, AppConfig.OpenMoreRegedit);
+                        break;
+                }
+
+                txtTitle.FontWeight = FontWeights.Bold;
+
+                AddCtrs([btnFold, btnOpenPath]);
+                foreach (var item in new Control[] { tsiFoldAll, tsiUnfoldAll })
+                {
+                    ContextMenu.Items.Add(item);
+                }
+
+                MouseLeftButtonDown += (s, e) => Fold();
+
+                btnFold.Click += (sender, e) => Fold();
+
+                tsiFoldAll.Click += (sender, e) => FoldAll(true);
+                tsiUnfoldAll.Click += (sender, e) => FoldAll(false);
+                btnOpenPath.Click += (sender, e) => openPath.Invoke();
+                ToolTipBox.SetToolTip(btnOpenPath, tip);
+            }
         }
 
         public void SetVisibleWithSubItemCount()
         {
-            foreach (Control ctr in Parent.Controls)
+            foreach (var ctr in List.Controls)
             {
                 if (ctr is FoldSubItem item && item.FoldGroupItem == this)
                 {
@@ -109,28 +126,24 @@ namespace ContextMenuManager.Controls
 
         private void Fold()
         {
-            Parent.SuspendLayout();
             IsFold = !IsFold;
-            Parent.ResumeLayout();
         }
 
         private void FoldMe(bool isFold)
         {
             btnFold.BaseImage = isFold ? AppImage.Down : AppImage.Up;
-            foreach (Control ctr in Parent?.Controls)
+            foreach (var ctr in List.Controls)
             {
-                if (ctr is FoldSubItem item && item.FoldGroupItem == this) ctr.Visible = !isFold;
+                if (ctr is FoldSubItem item && item.FoldGroupItem == this) item.Visible = !isFold;
             }
         }
 
         private void FoldAll(bool isFold)
         {
-            Parent.SuspendLayout();
-            foreach (Control ctr in Parent.Controls)
+            foreach (var ctr in List.Controls)
             {
                 if (ctr is FoldGroupItem groupItem) groupItem.IsFold = isFold;
             }
-            Parent.ResumeLayout();
         }
     }
 }

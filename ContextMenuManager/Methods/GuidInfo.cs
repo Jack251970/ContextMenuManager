@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using ContextMenuManager.Properties;
 
 namespace ContextMenuManager.Methods
 {
@@ -30,7 +31,7 @@ namespace ContextMenuManager.Methods
 
         private static readonly IniWriter UserDic = new(AppConfig.UserGuidInfosDic);
         private static readonly IniReader WebDic = new(AppConfig.WebGuidInfosDic);
-        private static readonly IniReader AppDic = new(new StringBuilder(Properties.Resources.GuidInfosDic));
+        private static readonly IniReader AppDic = new(new StringBuilder(AppResources.GuidInfosDic));
         private static readonly Dictionary<Guid, IconLocation> IconLocationDic = new();
         private static readonly Dictionary<Guid, string> ItemTextDic = new();
         private static readonly Dictionary<Guid, Image> ItemImageDic = new();

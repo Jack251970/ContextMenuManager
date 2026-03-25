@@ -25,7 +25,6 @@
 
         <Style x:Key="SettingNameStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="15" />
-            <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
@@ -55,7 +54,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="ConfigPathLabel" Style="{StaticResource SettingNameStyle}" />
                             <TextBlock x:Name="ConfigPathHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
@@ -81,9 +80,8 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="UpdateFrequencyLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="UpdateFrequencyHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <ComboBox
@@ -107,9 +105,8 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="RepoLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="RepoHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
                         <ComboBox
                             x:Name="RepoComboBox"
@@ -126,9 +123,8 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="EngineLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="EngineHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
                         <ComboBox
                             x:Name="EngineComboBox"
@@ -150,17 +146,19 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="AutoBackupLabel" Style="{StaticResource SettingNameStyle}" />
                             <TextBlock x:Name="AutoBackupHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <CheckBox
+                            <ui:ToggleSwitch
                                 x:Name="AutoBackupCheckBox"
+                                MinWidth="0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
-                                Checked="AutoBackupCheckBox_OnChanged"
-                                Unchecked="AutoBackupCheckBox_OnChanged" />
+                                OffContent=""
+                                OnContent=""
+                                Toggled="AutoBackupCheckBox_OnChanged" />
                             <Button
                                 x:Name="OpenBackupDirButton"
                                 Margin="12,0,0,0"
@@ -177,17 +175,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="TopMostLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="TopMostHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
-                        <CheckBox
+                        <ui:ToggleSwitch
                             x:Name="TopMostCheckBox"
                             Grid.Column="1"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Checked="TopMostCheckBox_OnChanged"
-                            Unchecked="TopMostCheckBox_OnChanged" />
+                            OffContent=""
+                            OnContent=""
+                            Toggled="TopMostCheckBox_OnChanged" />
                     </Grid>
 
                     <Separator Margin="0,0,0,16" />
@@ -197,17 +196,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="ProtectOpenItemLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="ProtectOpenItemHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
-                        <CheckBox
+                        <ui:ToggleSwitch
                             x:Name="ProtectOpenItemCheckBox"
                             Grid.Column="1"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Checked="ProtectOpenItemCheckBox_OnChanged"
-                            Unchecked="ProtectOpenItemCheckBox_OnChanged" />
+                            OffContent=""
+                            OnContent=""
+                            Toggled="ProtectOpenItemCheckBox_OnChanged" />
                     </Grid>
 
                     <Separator Margin="0,0,0,16" />
@@ -217,17 +217,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="ShowFilePathLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="ShowFilePathHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
-                        <CheckBox
+                        <ui:ToggleSwitch
                             x:Name="ShowFilePathCheckBox"
                             Grid.Column="1"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Checked="ShowFilePathCheckBox_OnChanged"
-                            Unchecked="ShowFilePathCheckBox_OnChanged" />
+                            OffContent=""
+                            OnContent=""
+                            Toggled="ShowFilePathCheckBox_OnChanged" />
                     </Grid>
 
                     <Separator Margin="0,0,0,16" />
@@ -237,17 +238,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="OpenMoreRegeditLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="OpenMoreRegeditHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
-                        <CheckBox
+                        <ui:ToggleSwitch
                             x:Name="OpenMoreRegeditCheckBox"
                             Grid.Column="1"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Checked="OpenMoreRegeditCheckBox_OnChanged"
-                            Unchecked="OpenMoreRegeditCheckBox_OnChanged" />
+                            OffContent=""
+                            OnContent=""
+                            Toggled="OpenMoreRegeditCheckBox_OnChanged" />
                     </Grid>
 
                     <Separator Margin="0,0,0,16" />
@@ -257,17 +259,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="OpenMoreExplorerLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="OpenMoreExplorerHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
-                        <CheckBox
+                        <ui:ToggleSwitch
                             x:Name="OpenMoreExplorerCheckBox"
                             Grid.Column="1"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Checked="OpenMoreExplorerCheckBox_OnChanged"
-                            Unchecked="OpenMoreExplorerCheckBox_OnChanged" />
+                            OffContent=""
+                            OnContent=""
+                            Toggled="OpenMoreExplorerCheckBox_OnChanged" />
                     </Grid>
 
                     <Separator Margin="0,0,0,16" />
@@ -277,17 +280,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="HideDisabledItemsLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="HideDisabledItemsHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
-                        <CheckBox
+                        <ui:ToggleSwitch
                             x:Name="HideDisabledItemsCheckBox"
                             Grid.Column="1"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Checked="HideDisabledItemsCheckBox_OnChanged"
-                            Unchecked="HideDisabledItemsCheckBox_OnChanged" />
+                            OffContent=""
+                            OnContent=""
+                            Toggled="HideDisabledItemsCheckBox_OnChanged" />
                     </Grid>
 
                     <Separator x:Name="HideSysStoreSeparator" Margin="0,0,0,16" />
@@ -297,17 +301,18 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock x:Name="HideSysStoreItemsLabel" Style="{StaticResource SettingNameStyle}" />
-                            <TextBlock x:Name="HideSysStoreItemsHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
-                        <CheckBox
+                        <ui:ToggleSwitch
                             x:Name="HideSysStoreItemsCheckBox"
                             Grid.Column="1"
+                            MinWidth="0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Checked="HideSysStoreItemsCheckBox_OnChanged"
-                            Unchecked="HideSysStoreItemsCheckBox_OnChanged" />
+                            OffContent=""
+                            OnContent=""
+                            Toggled="HideSysStoreItemsCheckBox_OnChanged" />
                     </Grid>
                 </StackPanel>
             </Border>

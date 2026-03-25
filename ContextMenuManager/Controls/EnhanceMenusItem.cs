@@ -29,10 +29,13 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public EnhanceShellItem()
+        public EnhanceShellItem(MyList list) : base(list)
         {
-            ChkVisible = new VisibleCheckBox(this);
-            Indent();
+            if (list != null)
+            {
+                ChkVisible = new VisibleCheckBox(this);
+                Indent();
+            }
         }
 
         private static void WriteAttributesValue(XmlNode valueXN, string regPath)
@@ -188,10 +191,13 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public EnhanceShellExItem()
+        public EnhanceShellExItem(MyList list) : base(list)
         {
-            ChkVisible = new VisibleCheckBox(this);
-            Indent();
+            if (list != null)
+            {
+                ChkVisible = new VisibleCheckBox(this);
+                Indent();
+            }
         }
     }
 }

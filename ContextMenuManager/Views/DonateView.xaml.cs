@@ -1,4 +1,5 @@
 using ContextMenuManager.Methods;
+using ContextMenuManager.Properties;
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -12,7 +13,7 @@ namespace ContextMenuManager.Views
 {
     public partial class DonateView : UserControl
     {
-        private static readonly Bitmap AllQr = new(Properties.Resources.Donate);
+        private static readonly Bitmap AllQr = new(AppResources.Donate);
         private static readonly Bitmap WechatQr = CropQr(0);
         private static readonly Bitmap AlipayQr = CropQr(1);
         private static readonly Bitmap QqQr = CropQr(2);

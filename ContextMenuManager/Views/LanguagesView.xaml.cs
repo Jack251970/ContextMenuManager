@@ -143,11 +143,11 @@ namespace ContextMenuManager.Views
                 message = AppString.Message.RestartApp;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = AppMessageBox.Show(
                 message,
                 AppString.General.AppName,
                 MessageBoxButton.OKCancel,
-                System.Windows.MessageBoxImage.Question);
+                MessageBoxImage.Question);
 
             if (result != MessageBoxResult.OK)
             {
@@ -184,14 +184,14 @@ namespace ContextMenuManager.Views
             var doc = await client.GetWebJsonToXmlAsync(apiUrl);
             if (doc == null)
             {
-                System.Windows.MessageBox.Show(AppString.Message.WebDataReadFailed, AppString.General.AppName);
+                AppMessageBox.Show(AppString.Message.WebDataReadFailed, AppString.General.AppName);
                 return;
             }
 
             var list = doc.FirstChild?.ChildNodes;
             if (list == null || list.Count == 0)
             {
-                System.Windows.MessageBox.Show(AppString.Message.WebDataReadFailed, AppString.General.AppName);
+                AppMessageBox.Show(AppString.Message.WebDataReadFailed, AppString.General.AppName);
                 return;
             }
 
@@ -216,11 +216,11 @@ namespace ContextMenuManager.Views
             var downloaded = await client.WebStringToFileAsync(filePath, fileUrl);
             if (!downloaded)
             {
-                var openWeb = System.Windows.MessageBox.Show(
+                var openWeb = AppMessageBox.Show(
                     $"{AppString.Message.WebDataReadFailed}\r\n ● {fileName}\r\n{AppString.Message.OpenWebUrl}",
                     AppString.General.AppName,
                     MessageBoxButton.YesNo,
-                    System.Windows.MessageBoxImage.Question);
+                    MessageBoxImage.Question);
                 if (openWeb == MessageBoxResult.Yes)
                 {
                     ExternalProgram.OpenWebUrl(fileUrl);
@@ -248,8 +248,6 @@ namespace ContextMenuManager.Views
         private async Task<string> PromptLanguageSelectionAsync(string[] langs)
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.DownloadLanguages);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
 
             var comboBox = new ComboBox
             {
@@ -274,9 +272,7 @@ namespace ContextMenuManager.Views
         private async Task ShowTranslateDialogAsync()
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.TranslateTool);
-            dialog.PrimaryButtonText = AppString.Menu.Save ?? ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
-            dialog.FullSizeDesired = true;
+            dialog.PrimaryButtonText = AppString.Menu.Save ?? AppString.Dialog.OK;
 
             var editor = new TranslateEditor();
             dialog.Content = editor.Root;
@@ -316,14 +312,17 @@ namespace ContextMenuManager.Views
             public TranslatorEntry(string name, string url)
             {
                 Name = name;
-                Url = string.Equals(url, "null", StringComparison.OrdinalIgnoreCase) ? null : url;
+                if (!string.IsNullOrWhiteSpace(url) && !string.Equals(url, "null", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                    {
+                        Url = uri;
+                    }
+                }
             }
 
             public string Name { get; }
-            public string Url { get; }
-            public Cursor Cursor => string.IsNullOrWhiteSpace(Url) ? Cursors.Arrow : Cursors.Hand;
-            public Brush Foreground => string.IsNullOrWhiteSpace(Url) ? Brushes.DimGray : Brushes.White;
-            public TextDecorationCollection Decorations => string.IsNullOrWhiteSpace(Url) ? null : TextDecorations.Underline;
+            public Uri Url { get; }
         }
 
         private sealed class TranslateEditor

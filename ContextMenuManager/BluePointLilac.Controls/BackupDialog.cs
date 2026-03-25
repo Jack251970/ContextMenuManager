@@ -30,14 +30,12 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(Title, owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
-            dialog.FullSizeDesired = true;
 
             var checkAll = new WpfCheckBox
             {
                 Content = AppString.Dialog.SelectAll,
-                Margin = new Thickness(0, 0, 0, 8)
+                Margin = new Thickness(0, 0, 0, 8),
+                MinWidth = 0
             };
 
             var comboBox = new WpfComboBox
@@ -58,21 +56,65 @@ namespace ContextMenuManager.Controls
                 treePanel.Children.Add(panel);
             }
 
-            checkAll.Checked += (_, _) => SetAll(nodeMap, true);
-            checkAll.Unchecked += (_, _) => SetAll(nodeMap, false);
+            bool isUpdating = false;
+
+            checkAll.Checked += (_, _) =>
+            {
+                if (isUpdating) return;
+                isUpdating = true;
+                SetAll(nodeMap, true);
+                RefreshState(nodeMap, checkAll);
+                isUpdating = false;
+            };
+            checkAll.Unchecked += (_, _) =>
+            {
+                if (isUpdating) return;
+                isUpdating = true;
+                SetAll(nodeMap, false);
+                RefreshState(nodeMap, checkAll);
+                isUpdating = false;
+            };
 
             foreach (var group in nodeMap)
             {
-                group.Parent.Checked += (_, _) => SetGroup(group, true);
-                group.Parent.Unchecked += (_, _) => SetGroup(group, false);
+                group.Parent.Checked += (_, _) =>
+                {
+                    if (isUpdating) return;
+                    isUpdating = true;
+                    SetGroup(group, true);
+                    RefreshState(nodeMap, checkAll);
+                    isUpdating = false;
+                };
+                group.Parent.Unchecked += (_, _) =>
+                {
+                    if (isUpdating) return;
+                    isUpdating = true;
+                    SetGroup(group, false);
+                    RefreshState(nodeMap, checkAll);
+                    isUpdating = false;
+                };
                 foreach (var child in group.Children)
                 {
-                    child.Checked += (_, _) => RefreshState(nodeMap, checkAll);
-                    child.Unchecked += (_, _) => RefreshState(nodeMap, checkAll);
+                    child.Checked += (_, _) =>
+                    {
+                        if (isUpdating) return;
+                        isUpdating = true;
+                        RefreshState(nodeMap, checkAll);
+                        isUpdating = false;
+                    };
+                    child.Unchecked += (_, _) =>
+                    {
+                        if (isUpdating) return;
+                        isUpdating = true;
+                        RefreshState(nodeMap, checkAll);
+                        isUpdating = false;
+                    };
                 }
             }
 
+            isUpdating = true;
             RefreshState(nodeMap, checkAll);
+            isUpdating = false;
 
             dialog.Content = new WpfStackPanel
             {
@@ -133,7 +175,7 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            return groups.Where(g => g.Children.Count > 0).ToList();
+            return [.. groups.Where(g => g.Children.Count > 0)];
         }
 
         private static void SetAll(IEnumerable<TreeGroup> groups, bool isChecked)
@@ -159,16 +201,17 @@ namespace ContextMenuManager.Controls
             {
                 var allChecked = group.Children.All(x => x.IsChecked == true);
                 var anyChecked = group.Children.Any(x => x.IsChecked == true);
-                group.Parent.IsChecked = allChecked;
-                group.Parent.IsThreeState = true;
-                if (!allChecked && anyChecked)
-                {
-                    group.Parent.IsChecked = null;
-                }
+                group.Parent.IsThreeState = false;
+                if (allChecked) group.Parent.IsChecked = true;
+                else if (anyChecked) group.Parent.IsChecked = null;
+                else group.Parent.IsChecked = false;
             }
 
             var childNodes = groups.SelectMany(x => x.Children).ToArray();
-            checkAll.IsChecked = childNodes.Length > 0 && childNodes.All(x => x.IsChecked == true);
+            checkAll.IsThreeState = false;
+            if (childNodes.Length > 0 && childNodes.All(x => x.IsChecked == true)) checkAll.IsChecked = true;
+            else if (childNodes.Any(x => x.IsChecked == true)) checkAll.IsChecked = null;
+            else checkAll.IsChecked = false;
         }
 
         private static List<string> GetSortedSelection(IEnumerable<TreeGroup> groups)
@@ -191,8 +234,8 @@ namespace ContextMenuManager.Controls
         {
             public TreeGroup(string title, IEnumerable<string> match)
             {
-                Match = match.ToArray();
-                Parent = new WpfCheckBox { Content = title, FontWeight = FontWeights.SemiBold };
+                Match = [.. match];
+                Parent = new WpfCheckBox { Content = title, MinWidth = 0 };
                 ChildrenHost = new WpfStackPanel { Margin = new Thickness(24, 6, 0, 12) };
                 Panel = new WpfStackPanel();
                 Panel.Children.Add(Parent);
@@ -203,7 +246,7 @@ namespace ContextMenuManager.Controls
             public WpfCheckBox Parent { get; }
             public WpfStackPanel ChildrenHost { get; }
             public WpfStackPanel Panel { get; }
-            public List<WpfCheckBox> Children { get; } = new();
+            public List<WpfCheckBox> Children { get; } = [];
 
             public void AddChild(string text)
             {
@@ -211,7 +254,8 @@ namespace ContextMenuManager.Controls
                 {
                     Content = text,
                     Tag = text,
-                    Margin = new Thickness(0, 2, 0, 2)
+                    Margin = new Thickness(0, 2, 0, 2),
+                    MinWidth = 0
                 };
                 Children.Add(child);
                 ChildrenHost.Children.Add(child);

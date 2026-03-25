@@ -18,8 +18,6 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(Title, owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
 
             var comboBox = new WpfComboBox
             {

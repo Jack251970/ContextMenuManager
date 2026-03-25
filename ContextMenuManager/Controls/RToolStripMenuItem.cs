@@ -1,48 +1,53 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
+using System;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
-    internal class RToolStripMenuItem : ToolStripMenuItem
+    internal class RToolStripMenuItem : MenuItem
     {
         public RToolStripMenuItem() : base()
         {
-            ForeColor = DarkModeHelper.FormFore;
-            BackColor = DarkModeHelper.FormBack;
         }
 
-        public RToolStripMenuItem(string text) : base(text)
+        public RToolStripMenuItem(string text) : this()
         {
-            ForeColor = DarkModeHelper.FormFore;
-            BackColor = DarkModeHelper.FormBack;
+            Header = text;
         }
 
-        public RToolStripMenuItem(string text, Image image) : base(text, image)
+        public RToolStripMenuItem(string text, EventHandler onClick) : this(text)
         {
-            ForeColor = DarkModeHelper.FormFore;
-            BackColor = DarkModeHelper.FormBack;
+            Click += (s, e) => onClick?.Invoke(s, EventArgs.Empty);
         }
 
-        public RToolStripMenuItem(string text, Image image, EventHandler onClick) : base(text, image, onClick)
+        public RToolStripMenuItem(string text, EventHandler onClick, string name) : this(text, onClick)
         {
-            ForeColor = DarkModeHelper.FormFore;
-            BackColor = DarkModeHelper.FormBack;
+            Name = name;
         }
 
-        public RToolStripMenuItem(string text, Image image, EventHandler onClick, string name) : base(text, image, onClick, name)
+        public bool Enabled
         {
-            ForeColor = DarkModeHelper.FormFore;
-            BackColor = DarkModeHelper.FormBack;
+            get => IsEnabled;
+            set => IsEnabled = value;
+        }
+
+        public new bool Checked
+        {
+            get => IsChecked;
+            set => IsChecked = value;
+        }
+
+        public bool Visible
+        {
+            get => Visibility == Visibility.Visible;
+            set => Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
-    public class RToolStripSeparator : ToolStripSeparator
+    public class RToolStripSeparator : Separator
     {
         public RToolStripSeparator() : base()
         {
-            ForeColor = DarkModeHelper.FormFore;
-            BackColor = DarkModeHelper.FormBack;
         }
     }
 }

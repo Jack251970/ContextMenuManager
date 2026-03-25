@@ -1,5 +1,5 @@
-using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,8 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 using System.Xml;
 
 namespace ContextMenuManager.Controls
@@ -24,7 +25,7 @@ namespace ContextMenuManager.Controls
             AddNewItem();
             var item = new ShellNewLockItem(this);
             AddItem(item);
-            Separator = new ShellNewSeparator();
+            Separator = new ShellNewSeparator(this);
             AddItem(Separator);
             if (ShellNewLockItem.IsLocked) LoadLockItems();
             else LoadUnlockItems();
@@ -35,7 +36,7 @@ namespace ContextMenuManager.Controls
         {
             var extensions = new List<string> { "Folder" };//文件夹
             using var root = Registry.ClassesRoot;
-            extensions.AddRange(Array.FindAll(root.GetSubKeyNames(), keyName => keyName.StartsWith(".")));
+            extensions.AddRange(Array.FindAll(root.GetSubKeyNames(), keyName => keyName.StartsWith('.')));
             if (WinOsVersion.Current < WinOsVersion.Win10) extensions.Add("Briefcase");//公文包(Win10没有)
             LoadItems(extensions);
         }
@@ -44,7 +45,7 @@ namespace ContextMenuManager.Controls
         private void LoadLockItems()
         {
             var extensions = (string[])Registry.GetValue(ShellNewPath, "Classes", null);
-            LoadItems(extensions.ToList());
+            LoadItems([.. extensions]);
         }
 
         private void LoadItems(List<string> extensions)
@@ -79,7 +80,7 @@ namespace ContextMenuManager.Controls
                     using var snKey = extKey.OpenSubKey(snPart);
                     if (ShellNewItem.EffectValueNames.Any(valueName => snKey?.GetValue(valueName) != null))
                     {
-                        var item = new ShellNewItem(snKey.Name, this);
+                        var item = new ShellNewItem(this, snKey.Name);
                         if (item.BeforeSeparator)
                         {
                             var index2 = GetItemIndex(Separator);
@@ -125,7 +126,7 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem()
         {
-            var newItem = new NewItem();
+            var newItem = new NewItem(this);
             AddItem(newItem);
             newItem.AddNewItem += async () =>
             {
@@ -136,14 +137,14 @@ namespace ContextMenuManager.Controls
                 var openMode = FileExtension.GetOpenMode(extension);
                 if (string.IsNullOrEmpty(openMode))
                 {
-                    if (AppMessageBox.Show(AppString.Message.NoOpenModeExtension,
-                        MessageBoxButtons.OKCancel) == DialogResult.OK)
+                    if (AppMessageBox.Show(AppString.Message.NoOpenModeExtension, null,
+                        MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                     {
                         ExternalProgram.ShowOpenWithDialog(extension);
                     }
                     return;
                 }
-                foreach (Control ctr in Controls)
+                foreach (var ctr in Controls)
                 {
                     if (ctr is ShellNewItem shellItem)
                     {
@@ -165,7 +166,7 @@ namespace ContextMenuManager.Controls
                 if (bytes != null) snKey.SetValue("Data", bytes, RegistryValueKind.Binary);
                 else snKey.SetValue("NullFile", "", RegistryValueKind.String);
 
-                var item = new ShellNewItem(snKey.Name, this);
+                var item = new ShellNewItem(this, snKey.Name);
                 AddItem(item);
                 item.Focus();
                 if (item.ItemText.IsNullOrWhiteSpace())
@@ -202,34 +203,39 @@ namespace ContextMenuManager.Controls
 
         public sealed class ShellNewLockItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiWebSearchItem, ITsiRegPathItem
         {
-            public ShellNewLockItem(ShellNewList list)
+            public ShellNewLockItem(ShellNewList list) : base(list)
             {
-                Owner = list;
-                Image = AppImage.Lock;
-                Text = AppString.Other.LockNewMenu;
-                BtnShowMenu = new MenuButton(this);
-                ChkVisible = new VisibleCheckBox(this) { Checked = IsLocked };
-                ToolTipBox.SetToolTip(ChkVisible, AppString.Tip.LockNewMenu);
-                TsiSearch = new WebSearchMenuItem(this);
-                TsiRegLocation = new RegLocationMenuItem(this);
-                ContextMenuStrip.Items.AddRange(new ToolStripItem[]
-                    { TsiSearch, new RToolStripSeparator(), TsiRegLocation });
+                List = list;
+                if (list != null)
+                {
+                    Image = AppImage.Lock;
+                    Text = AppString.Other.LockNewMenu;
+                    BtnShowMenu = new MenuButton(this);
+                    ChkVisible = new VisibleCheckBox() { IsOn = IsLocked };
+                    ToolTipBox.SetToolTip(ChkVisible, AppString.Tip.LockNewMenu);
+                    TsiSearch = new WebSearchMenuItem(this);
+                    TsiRegLocation = new RegLocationMenuItem(this);
+                    foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(), TsiRegLocation })
+                    {
+                        ContextMenu.Items.Add(item);
+                    }
+                }
             }
 
             public MenuButton BtnShowMenu { get; set; }
             public WebSearchMenuItem TsiSearch { get; set; }
             public RegLocationMenuItem TsiRegLocation { get; set; }
             public VisibleCheckBox ChkVisible { get; set; }
-            public ShellNewList Owner { get; private set; }
+            public new ShellNewList List { get; private set; }
 
             public bool ItemVisible // 锁定新建菜单是否锁定
             {
                 get => IsLocked;
                 set
                 {
-                    if (value) Owner.SaveSorting();
+                    if (value) List.SaveSorting();
                     else UnLock();
-                    foreach (Control ctr in Owner.Controls)
+                    foreach (Control ctr in List.Controls)
                     {
                         if (ctr is ShellNewItem item)
                         {
@@ -289,10 +295,20 @@ namespace ContextMenuManager.Controls
 
         public sealed class ShellNewSeparator : MyListItem
         {
-            public ShellNewSeparator()
+            public ShellNewSeparator(MyList list) : base(list)
             {
-                Text = AppString.Other.Separator;
-                HasImage = false;
+                if (list != null)
+                {
+                    Text = AppString.Other.Separator;
+                    HasImage = false;
+                    Indent();
+                }
+            }
+
+            public override void Indent()
+            {
+                var w = 16.0;
+                txtTitle.Margin = new Thickness(txtTitle.Margin.Left + w, txtTitle.Margin.Top, txtTitle.Margin.Right, txtTitle.Margin.Bottom);
             }
         }
     }

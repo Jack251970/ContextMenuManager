@@ -5,7 +5,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
@@ -253,7 +252,7 @@ namespace ContextMenuManager.Methods
                         UseShellExecute = true
                     })?.Dispose();
                 }
-                catch (Exception ex1) when (
+                catch (Exception) when (
                     ex is Win32Exception || 
                     ex is InvalidOperationException || 
                     ex is UnauthorizedAccessException)

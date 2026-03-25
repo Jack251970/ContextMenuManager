@@ -1,7 +1,6 @@
 using ContextMenuManager.Methods;
 using System;
-using System.Drawing;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -16,7 +15,7 @@ namespace ContextMenuManager.Controls
 
         public void AddSwitchItem()
         {
-            var item = new SwitchDicItem { UseUserDic = UseUserDic };
+            var item = new SwitchDicItem(this) { UseUserDic = UseUserDic };
             item.UseDicChanged += () =>
             {
                 UseUserDic = item.UseUserDic;
@@ -29,27 +28,27 @@ namespace ContextMenuManager.Controls
 
     internal sealed class SwitchDicItem : MyListItem
     {
-        public SwitchDicItem()
+        public SwitchDicItem(MyList list) : base(list)
         {
-            Text = AppString.Other.SwitchDictionaries;
-            AddCtr(cmbDic);
-            cmbDic.DropDown += (sender, e) =>
+            if (list != null)
             {
-                var maxWidth = 0;
-                foreach (var item in cmbDic.Items)
+                cmbDic = new()
                 {
-                    maxWidth = Math.Max(maxWidth, TextRenderer.MeasureText(item.ToString(), cmbDic.Font).Width);
-                }
-                maxWidth = Math.Max(maxWidth, cmbDic.Width);
-                cmbDic.DropDownWidth = maxWidth;
-            };
-            cmbDic.Font = new Font(Font.FontFamily, Font.Size + 1F);
-            cmbDic.Items.AddRange(new[] { AppString.Other.WebDictionaries, AppString.Other.UserDictionaries });
-            cmbDic.SelectionChangeCommitted += (sender, e) =>
-            {
-                Focus();
-                UseUserDic = cmbDic.SelectedIndex == 1;
-            };
+                    Width = 120
+                };
+
+                Text = AppString.Other.SwitchDictionaries;
+                AddCtr(cmbDic);
+
+                cmbDic.Items.Add(AppString.Other.WebDictionaries);
+                cmbDic.Items.Add(AppString.Other.UserDictionaries);
+
+                cmbDic.SelectionChanged += (sender, e) =>
+                {
+                    Focus();
+                    UseUserDic = cmbDic.SelectedIndex == 1;
+                };
+            }
         }
 
         private bool? useUserDic = null;
@@ -62,17 +61,13 @@ namespace ContextMenuManager.Controls
                 var flag = useUserDic == null;
                 useUserDic = value;
                 Image = UseUserDic ? AppImage.User : AppImage.Web;
-                cmbDic.SelectedIndex = value ? 1 : 0;
+                cmbDic?.SelectedIndex = value ? 1 : 0;
                 if (!flag) UseDicChanged?.Invoke();
             }
         }
 
         public Action UseDicChanged;
 
-        private readonly ComboBox cmbDic = new()
-        {
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            Width = 120.DpiZoom()
-        };
+        private readonly ComboBox cmbDic;
     }
 }

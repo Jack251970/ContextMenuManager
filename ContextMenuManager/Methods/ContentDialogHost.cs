@@ -16,7 +16,10 @@ namespace ContextMenuManager.Methods
             {
                 Title = title,
                 Owner = ResolveOwner(owner),
-                DefaultButton = ContentDialogButton.Primary
+                DefaultButton = ContentDialogButton.Primary,
+                PrimaryButtonText = AppString.Dialog.OK,
+                CloseButtonText = AppString.Dialog.Cancel,
+                IsSecondaryButtonEnabled = false
             };
         }
 

@@ -1,4 +1,5 @@
 using ContextMenuManager.Methods;
+using ContextMenuManager.Properties;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -20,11 +21,11 @@ namespace ContextMenuManager.Views
             entries = new Dictionary<int, DictionaryEntry>
             {
                 [0] = new DictionaryEntry(() => AppString.Other.Dictionaries, DescriptionTextBox, false, null),
-                [1] = new DictionaryEntry(() => Properties.Resources.AppLanguageDic, AppLanguageTextBox, true, AppConfig.ZH_CNINI),
-                [2] = new DictionaryEntry(() => Properties.Resources.GuidInfosDic, GuidInfoTextBox, true, AppConfig.GUIDINFOSDICINI),
-                [3] = new DictionaryEntry(() => Properties.Resources.DetailedEditDic, DetailedEditTextBox, true, AppConfig.DETAILEDEDITDICXML),
-                [4] = new DictionaryEntry(() => Properties.Resources.EnhanceMenusDic, EnhanceMenusTextBox, true, AppConfig.ENHANCEMENUSICXML),
-                [5] = new DictionaryEntry(() => Properties.Resources.UwpModeItemsDic, UwpModeTextBox, true, AppConfig.UWPMODEITEMSDICXML)
+                [1] = new DictionaryEntry(() => AppResources.AppLanguageDic, AppLanguageTextBox, true, AppConfig.ZH_CNINI),
+                [2] = new DictionaryEntry(() => AppResources.GuidInfosDic, GuidInfoTextBox, true, AppConfig.GUIDINFOSDICINI),
+                [3] = new DictionaryEntry(() => AppResources.DetailedEditDic, DetailedEditTextBox, true, AppConfig.DETAILEDEDITDICXML),
+                [4] = new DictionaryEntry(() => AppResources.EnhanceMenusDic, EnhanceMenusTextBox, true, AppConfig.ENHANCEMENUSICXML),
+                [5] = new DictionaryEntry(() => AppResources.UwpModeItemsDic, UwpModeTextBox, true, AppConfig.UWPMODEITEMSDICXML)
             };
 
             LoadLabels();
@@ -52,6 +53,23 @@ namespace ContextMenuManager.Views
             UwpModeTab.Header = AppString.Other.UwpMode;
 
             UpdateHeader();
+        }
+
+        private bool CheckCanSave(int index)
+        {
+            if (index == -1)
+            {
+                index = 0;
+            }
+
+            if (entries.TryGetValue(index, out var entry))
+            {
+                return entry.CanSave;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private void DictionaryTabControl_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -83,7 +101,7 @@ namespace ContextMenuManager.Views
             var tabHeader = (DictionaryTabControl.SelectedItem as TabItem)?.Header?.ToString() ?? string.Empty;
             CurrentTabLabel.Text = tabHeader;
             CurrentTabHintText.Text = index == 0 ? AppConfig.DicsDir : AppConfig.UserDicsDir;
-            OpenDirButton.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+            EditButton.Visibility = SaveButton.Visibility = GetCurrentEntry().CanSave ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void OpenDirButton_OnClick(object sender, RoutedEventArgs e)
@@ -124,7 +142,8 @@ namespace ContextMenuManager.Views
 
         private DictionaryEntry GetCurrentEntry()
         {
-            return entries.TryGetValue(DictionaryTabControl.SelectedIndex, out var entry) ? entry : entries[0];
+            var index = DictionaryTabControl.SelectedIndex == -1 ? 0 : DictionaryTabControl.SelectedIndex;
+            return entries.TryGetValue(index, out var entry) ? entry : entries[0];
         }
 
         private sealed class DictionaryEntry

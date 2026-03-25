@@ -1,7 +1,7 @@
 ﻿using ContextMenuManager.Methods;
 using System;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -25,7 +25,7 @@ namespace ContextMenuManager.Controls.Interfaces
             {
                 if (item is ITsiRegDeleteItem regItem && AppConfig.AutoBackup)
                 {
-                    if (AppMessageBox.Show(AppString.Message.DeleteButCanRestore, MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    if (AppMessageBox.Show(AppString.Message.DeleteButCanRestore, null, MessageBoxButton.YesNo) != MessageBoxResult.Yes)
                     {
                         return;
                     }
@@ -35,8 +35,8 @@ namespace ContextMenuManager.Controls.Interfaces
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath));
                     ExternalProgram.ExportRegistry(regItem.RegPath, filePath);
                 }
-                else if (AppMessageBox.Show(item is RestoreItem ? AppString.Message.ConfirmDeleteBackupPermanently : AppString.Message.ConfirmDeletePermanently,
-                    MessageBoxButtons.YesNo) != DialogResult.Yes)
+                else if (AppMessageBox.Show(item is RestoreItem ? AppString.Message.ConfirmDeleteBackupPermanently : AppString.Message.ConfirmDeletePermanently, null,
+                    MessageBoxButton.YesNo) != MessageBoxResult.Yes)
                 {
                     return;
                 }

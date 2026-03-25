@@ -18,6 +18,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="36" />
         </Grid.RowDefinitions>
 
         <!--  Navigation View (replaces WinForms MyToolBar + MySideBar)  -->
@@ -29,14 +30,6 @@
             IsSettingsVisible="False"
             OpenPaneLength="185"
             SelectionChanged="NavView_SelectionChanged">
-            <!--  Refresh button pinned to pane footer  -->
-            <ui:NavigationView.PaneFooter>
-                <Button
-                    x:Name="RefreshButton"
-                    Margin="4,4,4,8"
-                    HorizontalAlignment="Stretch"
-                    Click="RefreshButton_Click" />
-            </ui:NavigationView.PaneFooter>
 
             <!--  Main content area  -->
             <Grid>
@@ -46,12 +39,18 @@
                 </Grid.RowDefinitions>
 
                 <!--  Search box  -->
-                <TextBox
-                    x:Name="SearchBox"
-                    Grid.Row="0"
-                    Margin="8,4"
-                    ui:ControlHelper.PlaceholderText="Search..."
-                    TextChanged="SearchBox_TextChanged" />
+                <StackPanel x:Name="SearchBoxPanel">
+                    <TextBox
+                        x:Name="SearchBox"
+                        Grid.Row="0"
+                        Margin="8,4"
+                        TextChanged="SearchBox_TextChanged" />
+                    <Button
+                        x:Name="RefreshButton"
+                        Margin="8,4"
+                        HorizontalAlignment="Stretch"
+                        Click="RefreshButton_Click" />
+                </StackPanel>
 
                 <Grid Grid.Row="1">
                     <Grid.RowDefinitions>
@@ -64,15 +63,22 @@
                         x:Name="WpfContentHost"
                         Grid.Row="1"
                         Visibility="Collapsed" />
-                    <!--  WinForms content controls hosted via WindowsFormsHost  -->
-                    <WindowsFormsHost x:Name="ContentHost" Grid.Row="1" />
                 </Grid>
             </Grid>
         </ui:NavigationView>
 
+        <!--  Separator  -->
+        <Border
+            Grid.Row="1"
+            Height="{DynamicResource AppBarSeparatorWidth}"
+            Background="{DynamicResource AppBarSeparatorForeground}" />
+
         <!--  Status Bar  -->
-        <StatusBar Grid.Row="1">
-            <StatusBarItem HorizontalContentAlignment="Stretch">
+        <StatusBar Grid.Row="2">
+            <StatusBarItem
+                Margin="8,0,0,0"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch">
                 <TextBlock x:Name="StatusText" Padding="4,2" />
             </StatusBarItem>
         </StatusBar>

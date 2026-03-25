@@ -20,8 +20,6 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
 
             var txtText = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
             var txtFilePath = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };

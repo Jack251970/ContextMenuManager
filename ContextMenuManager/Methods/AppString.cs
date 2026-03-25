@@ -1,4 +1,5 @@
 using System.Text;
+using ContextMenuManager.Properties;
 
 namespace ContextMenuManager.Methods
 {
@@ -17,7 +18,7 @@ namespace ContextMenuManager.Methods
                 return _userLangReader;
             }
         }
-        public static readonly IniReader DefLangReader = new(new StringBuilder(Properties.Resources.AppLanguageDic));
+        public static readonly IniReader DefLangReader = new(new StringBuilder(AppResources.AppLanguageDic));
 
         private static string GetValue(string section, string key)
         {
@@ -44,8 +45,6 @@ namespace ContextMenuManager.Methods
         public static class General
         {
             public static string AppName { get; set; }
-            public static string Search { get; set; }  // 添加搜索文本
-            public static string NoResultsFor { get; set; }  // 添加无结果文本
         }
 
         /// <summary>工具栏</summary>
@@ -387,6 +386,8 @@ namespace ContextMenuManager.Methods
             public static string TopMost { get; set; }
             public static string Unknown { get; set; }
             public static string RestoreItemText { get; set; }
+            public static string SearchContent { get; set; }
+            public static string StatusSearch { get; set; }
         }
     }
 }

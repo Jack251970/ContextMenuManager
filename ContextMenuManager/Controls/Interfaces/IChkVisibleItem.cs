@@ -1,6 +1,7 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
-using System.Windows.Forms;
+using System.Windows;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -10,36 +11,68 @@ namespace ContextMenuManager.Controls.Interfaces
         VisibleCheckBox ChkVisible { get; set; }
     }
 
-    internal sealed class VisibleCheckBox : CheckBox
+    internal sealed class VisibleCheckBox : ToggleSwitch
     {
         public Action CheckChanged;
+
         public Func<bool> PreCheckChanging;
 
-        public VisibleCheckBox(IChkVisibleItem item)
+        private bool _loading;
+        private bool _reverted;
+
+        public VisibleCheckBox()
         {
-            this.AutoCheck = false;
-            this.Cursor = Cursors.Hand;
+            MinWidth = 0;
+            Header = OnContent = OffContent = null;
+            Toggled += VisibleCheckBox_Toggled;
+        }
+
+        public VisibleCheckBox(IChkVisibleItem item) : this()
+        {
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);
-            this.CheckedChanged += (s, e) => CheckChanged?.Invoke();
-            CheckChanged += () => item.ItemVisible = Checked;
-            listItem.ParentChanged += (sender, e) =>
+
+            listItem.Loaded += (s, e) =>
             {
-                if (listItem.IsDisposed) return;
-                if (listItem.Parent == null) return;
-                Checked = item.ItemVisible;
+                _loading = true;
+                IsOn = item.ItemVisible;
                 if (listItem is FoldSubItem subItem && subItem.FoldGroupItem != null) return;
-                if (listItem.FindForm() is ShellStoreDialog.ShellStoreForm) return;
-                if (AppConfig.HideDisabledItems) listItem.Visible = Checked;
+                if (AppConfig.HideDisabledItems) listItem.Visible = IsOn;
+                CheckChanged += () => item.ItemVisible = IsOn;
+                _loading = false;
             };
         }
 
-        protected override void OnClick(EventArgs e)
+        private void VisibleCheckBox_Toggled(object sender, RoutedEventArgs e)
         {
+            CheckChanged?.Invoke();
+        }
+
+        protected override void OnToggled()
+        {
+            // We are loading the initial state, just set the toggle without invoking CheckChanged
+            if (_loading)
+            {
+                base.OnToggled();
+                return;
+            }
+
+            // We are reverting the toggle state
+            if (_reverted)
+            {
+                _reverted = false;
+                return;
+            }
+
             if (PreCheckChanging == null || PreCheckChanging())
             {
-                Checked = !Checked;
-                base.OnClick(e);
+                base.OnToggled();
+            }
+            // Revert the toggle state and do not invoke OnToggled again
+            else if (!_reverted)
+            {
+                _reverted = true;
+                IsOn = !IsOn;
             }
         }
     }

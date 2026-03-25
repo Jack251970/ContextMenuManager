@@ -1,9 +1,9 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
 using Microsoft.Win32;
 using System;
 using System.Drawing;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -12,9 +12,9 @@ namespace ContextMenuManager.Controls
     {
         public static readonly string[] MeParts = { "MenuExt", "-MenuExt" };
 
-        public IEItem(string regPath)
+        public IEItem(MyList list, string regPath) : base(list)
         {
-            InitializeComponents();
+            if (list != null) InitializeComponents();
             RegPath = regPath;
         }
 
@@ -26,7 +26,7 @@ namespace ContextMenuManager.Controls
             {
                 regPath = value;
                 Text = ItemText;
-                Image = ItemImage;
+                if (List != null) Image = ItemImage;
             }
         }
         public string ValueName => null;
@@ -76,7 +76,7 @@ namespace ContextMenuManager.Controls
         public string SearchText => $@"{AppString.SideBar.IEMenu} {Text}";
         public string ItemFilePath => ObjectPath.ExtractFilePath(ItemCommand);
         private Icon ItemIcon => ResourceIcon.GetIcon(ItemFilePath) ?? ResourceIcon.GetExtensionIcon(ItemFilePath);
-        private Image ItemImage => ItemIcon?.ToBitmap() ?? AppImage.NotFound;
+        private System.Drawing.Image ItemImage => ItemIcon?.ToBitmap() ?? AppImage.NotFound;
 
         public MenuButton BtnShowMenu { get; set; }
         public VisibleCheckBox ChkVisible { get; set; }
@@ -88,7 +88,7 @@ namespace ContextMenuManager.Controls
         public RegLocationMenuItem TsiRegLocation { get; set; }
         public RegExportMenuItem TsiRegExport { get; set; }
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
+        private RToolStripMenuItem TsiDetails { get; set; }
 
         private void InitializeComponents()
         {
@@ -102,12 +102,19 @@ namespace ContextMenuManager.Controls
             TsiRegLocation = new RegLocationMenuItem(this);
             TsiRegExport = new RegExportMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText,
-                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
+            foreach (var item in new Control[] { TsiChangeText,
+                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                ContextMenu.Items.Add(item);
+            }
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new RToolStripSeparator(),
-                TsiChangeCommand, TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport});
+            foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
+                TsiChangeCommand, TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport})
+            {
+                TsiDetails.Items.Add(item);
+            }
         }
 
         public void DeleteMe()

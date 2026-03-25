@@ -3,25 +3,22 @@ using ContextMenuManager.Methods;
 using ContextMenuManager.Views;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using DrawingSize = System.Drawing.Size;
-using WinForms = System.Windows.Forms;
-using WpfMessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace ContextMenuManager
 {
     public partial class MainWindow : Window
     {
-        // TODO
-        public static readonly string DefaultText = "Ver: Debug";/*$"Ver: {Application.ProductVersion}    {Application.CompanyName}";*/
+        public static readonly string DefaultText = $"Ver: {InfoHelper.ProductVersion}    {InfoHelper.CompanyName}";
 
-        internal static MainWindow Instance { get; private set; }
-
-        // WinForms content controls hosted in the WindowsFormsHost
         private readonly ShellList shellList = new();
         private readonly ShellNewList shellNewList = new();
         private readonly SendToList sendToList = new();
@@ -38,24 +35,19 @@ namespace ContextMenuManager
         private readonly AboutAppView aboutAppView = new();
         private readonly DonateView donateView = new();
 
-        // WinForms container panel (single child for WindowsFormsHost)
-        private readonly WinForms.Panel contentPanel = new();
-
-        private WinForms.Control currentListControl;
+        private UIElement currentListControl;
         private string currentTag;
 
         // Saved items for search restore (mirrors MainForm logic)
-        private readonly List<WinForms.Control> originalListItems = new();
+        private readonly List<UIElement> originalListItems = [];
 
         public MainWindow()
         {
             InitializeComponent();
-            Instance = this;
 
             Title = AppString.General.AppName ?? "ContextMenuManager";
             RefreshButton.Content = AppString.ToolBar.Refresh ?? "Refresh";
-            SearchBox.SetValue(iNKORE.UI.WPF.Modern.Controls.Helpers.ControlHelper.PlaceholderTextProperty,
-                AppString.General.Search ?? "Search...");
+            ControlHelper.SetPlaceholderText(SearchBox, AppString.Other.SearchContent ?? "Search...");
             appSettingView.OwnerWindow = this;
             languagesView.OwnerWindow = this;
             backupView.OwnerWindow = this;
@@ -69,39 +61,14 @@ namespace ContextMenuManager
             }
             Topmost = AppConfig.TopMost;
 
-            // Set up the WinForms container panel
-            contentPanel.Dock = WinForms.DockStyle.Fill;
-            contentPanel.BackColor = System.Drawing.Color.Transparent;
-
-            // Add all main content controls (hidden by default)
-            foreach (var ctrl in AllContentControls())
-            {
-                ctrl.Dock = WinForms.DockStyle.Fill;
-                ctrl.Visible = false;
-                contentPanel.Controls.Add(ctrl);
-            }
-
-            // Host the WinForms panel inside WPF
-            ContentHost.Child = contentPanel;
-
             // Populate navigation items from AppString
             BuildNavigation();
 
-            // Show first page
-            NavigateTo("shell_file");
-
             // First-run language download prompt
             Loaded += (_, _) => FirstRunDownloadLanguage();
-            Closed += (_, _) =>
-            {
-                if (ReferenceEquals(Instance, this))
-                {
-                    Instance = null;
-                }
-            };
 
-            DarkModeHelper.ThemeChanged += DarkModeHelper_ThemeChanged;
             ThemeManager.SetRequestedTheme(this, DarkModeHelper.IsDarkTheme ? ElementTheme.Dark : ElementTheme.Light);
+            DarkModeHelper.ThemeChanged += DarkModeHelper_ThemeChanged;
         }
 
         private void DarkModeHelper_ThemeChanged(object sender, EventArgs e)
@@ -109,19 +76,13 @@ namespace ContextMenuManager
             ThemeManager.SetRequestedTheme(this, DarkModeHelper.IsDarkTheme ? ElementTheme.Dark : ElementTheme.Light);
         }
 
-        private WinForms.Control[] AllContentControls() =>
-        [
-            shellList, shellNewList, sendToList, openWithList, winXList,
-            enhanceMenusList, detailedEditList, guidBlockedList, iEList,
-        ];
-
         // Navigation building
 
         private void BuildNavigation()
         {
             var homeItem = MakeSectionItem(AppString.ToolBar.Home ?? "Home", "\uE80F");
-            AddSubItems(homeItem, new[]
-            {
+            AddSubItems(homeItem,
+            [
                 (AppString.SideBar.File ?? "File", "shell_file"),
                 (AppString.SideBar.Folder ?? "Folder", "shell_folder"),
                 (AppString.SideBar.Directory ?? "Directory", "shell_directory"),
@@ -132,7 +93,7 @@ namespace ContextMenuManager
                 (AppString.SideBar.Computer ?? "Computer", "shell_computer"),
                 (AppString.SideBar.RecycleBin ?? "Recycle Bin", "shell_recyclebin"),
                 (AppString.SideBar.Library ?? "Library", "shell_library"),
-            });
+            ]);
             homeItem.MenuItems.Add(new NavigationViewItemSeparator());
             homeItem.MenuItems.Add(MakeItem(AppString.SideBar.New ?? "New", "shell_new"));
             homeItem.MenuItems.Add(MakeItem(AppString.SideBar.SendTo ?? "Send To", "shell_sendto"));
@@ -142,67 +103,103 @@ namespace ContextMenuManager
             homeItem.IsExpanded = true;
 
             var typeItem = MakeSectionItem(AppString.ToolBar.Type ?? "Type", "\uE8A9");
-            AddSubItems(typeItem, new[]
-            {
+            AddSubItems(typeItem,
+            [
                 (AppString.SideBar.LnkFile ?? "Lnk File", "type_lnk"),
                 (AppString.SideBar.UwpLnk ?? "UWP Lnk", "type_uwplnk"),
                 (AppString.SideBar.ExeFile ?? "Exe File", "type_exe"),
                 (AppString.SideBar.UnknownType ?? "Unknown Type", "type_unknown"),
-            });
+            ]);
             typeItem.MenuItems.Add(new NavigationViewItemSeparator());
-            AddSubItems(typeItem, new[]
-            {
+            AddSubItems(typeItem,
+            [
                 (AppString.SideBar.CustomExtension ?? "Custom Extension", "type_custom"),
                 (AppString.SideBar.PerceivedType ?? "Perceived Type", "type_perceived"),
                 (AppString.SideBar.DirectoryType ?? "Directory Type", "type_directory"),
-            });
+            ]);
             typeItem.MenuItems.Add(new NavigationViewItemSeparator());
             typeItem.MenuItems.Add(MakeItem(AppString.SideBar.MenuAnalysis ?? "Menu Analysis", "type_menuanalysis"));
 
             var ruleItem = MakeSectionItem(AppString.ToolBar.Rule ?? "Rule", "\uE90F");
-            AddSubItems(ruleItem, new[]
-            {
+            AddSubItems(ruleItem,
+            [
                 (AppString.SideBar.EnhanceMenu ?? "Enhance Menu", "rule_enhance"),
                 (AppString.SideBar.DetailedEdit ?? "Detailed Edit", "rule_detailed"),
-            });
+            ]);
             ruleItem.MenuItems.Add(new NavigationViewItemSeparator());
-            AddSubItems(ruleItem, new[]
-            {
+            AddSubItems(ruleItem,
+            [
                 (AppString.SideBar.DragDrop ?? "Drag Drop", "rule_dragdrop"),
                 (AppString.SideBar.PublicReferences ?? "Public References", "rule_public"),
                 (AppString.SideBar.IEMenu ?? "IE Menu", "rule_ie"),
-            });
+            ]);
             ruleItem.MenuItems.Add(new NavigationViewItemSeparator());
-            AddSubItems(ruleItem, new[]
-            {
+            AddSubItems(ruleItem,
+            [
                 (AppString.SideBar.GuidBlocked ?? "GUID Blocked", "rule_guid"),
                 (AppString.SideBar.CustomRegPath ?? "Custom Reg Path", "rule_customreg"),
-            });
+            ]);
 
             NavView.MenuItems.Add(homeItem);
             NavView.MenuItems.Add(typeItem);
             NavView.MenuItems.Add(ruleItem);
 
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppSetting ?? "Settings", "about_settings"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppLanguage ?? "Language", "about_language"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.BackupRestore ?? "Backup", "about_backup"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.Dictionaries ?? "Dictionaries", "about_dict"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AboutApp ?? "About", "about_app"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.Donate ?? "Donate", "about_donate"));
+            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppSetting ?? "Settings", "about_settings", "\uE713"));
+            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppLanguage ?? "Language", "about_language", "\uE775"));
+            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.BackupRestore ?? "Backup", "about_backup", "\uE777"));
+            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.Dictionaries ?? "Dictionaries", "about_dict", "\uE82D"));
+            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AboutApp ?? "About", "about_app", "\uE946"));
+            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.Donate ?? "Donate", "about_donate", "\uEB51"));
+
+            if (NavView.MenuItems[0] is NavigationViewItem parent && parent.MenuItems[0] is NavigationViewItem item)
+            {
+                NavView.SelectedItem = item;
+            }
         }
 
-        private static NavigationViewItem MakeSectionItem(string content, string glyph) =>
-            new NavigationViewItem { Content = content, Icon = new FontIcon { Glyph = glyph } };
+        private static NavigationViewItem MakeSectionItem(string content, string glyph)
+        {
+            var item = new NavigationViewItem() { Content = content, Icon = new FontIcon { Glyph = glyph } };
+            return item;
+        }
 
-        private static NavigationViewItem MakeItem(string content, string tag) =>
-            new NavigationViewItem { Content = content, Tag = tag };
+        private static NavigationViewItem MakeItem(string content, string tag, string glyph = null)
+        {
+            var item = new NavigationViewItem { Content = content, Tag = tag };
+            if (!string.IsNullOrEmpty(glyph))
+            {
+                item.Icon = new FontIcon { Glyph = glyph };
+            }
+            return item;
+        }
 
-        private static void AddSubItems(NavigationViewItem parent, (string content, string tag)[] items)
+        private void AddSubItems(NavigationViewItem parent, (string content, string tag)[] items)
         {
             foreach (var (content, tag) in items)
             {
                 parent.MenuItems.Add(MakeItem(content, tag));
             }
+            foreach (var item in parent.MenuItems)
+            {
+                if (item is NavigationViewItem navItem)
+                {
+                    navItem.MouseEnter += NavItem_MouseEnter;
+                    navItem.MouseLeave += NavItem_MouseLeave;
+                }
+            }
+        }
+
+        private void NavItem_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is NavigationViewItem item && item.Tag is string tag)
+            {
+                UpdateStatusText(GetStatusText(tag));
+            }
+        }
+
+        private void NavItem_MouseLeave(object sender, MouseEventArgs e)
+        {
+            UpdateStatusText(GetStatusText(currentTag));
         }
 
         // Navigation / content switching
@@ -220,17 +217,14 @@ namespace ContextMenuManager
 
         private void NavigateTo(string tag)
         {
-            if (tag == null)
+            ArgumentNullException.ThrowIfNull(tag);
+            
+            if (currentTag == tag)
             {
                 return;
             }
 
             currentTag = tag;
-
-            foreach (WinForms.Control ctrl in contentPanel.Controls)
-            {
-                ctrl.Visible = false;
-            }
 
             if (currentListControl is MyList myList)
             {
@@ -250,10 +244,10 @@ namespace ContextMenuManager
                 case "shell_computer": LoadShell(Scenes.Computer); break;
                 case "shell_recyclebin": LoadShell(Scenes.RecycleBin); break;
                 case "shell_library": LoadShell(Scenes.Library); break;
-                case "shell_new": shellNewList.LoadItems(); ShowControl(shellNewList); break;
-                case "shell_sendto": sendToList.LoadItems(); ShowControl(sendToList); break;
-                case "shell_openwith": openWithList.LoadItems(); ShowControl(openWithList); break;
-                case "shell_winx": winXList.LoadItems(); ShowControl(winXList); break;
+                case "shell_new": LoadShell(Scenes.New); break;
+                case "shell_sendto": LoadShell(Scenes.SendTo); break;
+                case "shell_openwith": LoadShell(Scenes.OpenWith); break;
+                case "shell_winx": LoadShell(Scenes.WinX); break;
 
                 case "type_lnk": LoadShell(Scenes.LnkFile); break;
                 case "type_uwplnk": LoadShell(Scenes.UwpLnk); break;
@@ -264,47 +258,43 @@ namespace ContextMenuManager
                 case "type_directory": LoadShell(Scenes.DirectoryType); break;
                 case "type_menuanalysis": LoadShell(Scenes.MenuAnalysis); break;
 
-                case "rule_enhance":
-                    enhanceMenusList.ScenePath = null;
-                    enhanceMenusList.LoadItems();
-                    ShowControl(enhanceMenusList);
-                    break;
-                case "rule_detailed":
-                    detailedEditList.GroupGuid = Guid.Empty;
-                    detailedEditList.LoadItems();
-                    ShowControl(detailedEditList);
-                    break;
+                case "rule_enhance": LoadShell(Scenes.EnhanceMenu); break;
+                case "rule_detailed": LoadShell(Scenes.DetailedEdit); break;
                 case "rule_dragdrop": LoadShell(Scenes.DragDrop); break;
                 case "rule_public": LoadShell(Scenes.PublicReferences); break;
-                case "rule_ie": iEList.LoadItems(); ShowControl(iEList); break;
-                case "rule_guid": guidBlockedList.LoadItems(); ShowControl(guidBlockedList); break;
+                case "rule_ie": LoadShell(Scenes.InternetExplorer); break;
+                case "rule_guid": LoadShell(Scenes.GuidBlocked); break;
                 case "rule_customreg": LoadShell(Scenes.CustomRegPath); break;
 
                 case "about_settings":
                     appSettingView.RefreshFromConfig();
-                    ShowWpfControl(appSettingView);
+                    ShowControl(appSettingView);
                     break;
                 case "about_language":
                     languagesView.LoadLanguages();
-                    ShowWpfControl(languagesView);
+                    ShowControl(languagesView);
                     break;
                 case "about_backup":
                     backupView.LoadItems();
-                    ShowWpfControl(backupView);
+                    ShowControl(backupView);
                     break;
                 case "about_dict":
                     dictionariesView.LoadText();
-                    ShowWpfControl(dictionariesView);
+                    ShowControl(dictionariesView);
                     break;
                 case "about_app":
                     aboutAppView.RefreshContent();
-                    ShowWpfControl(aboutAppView);
+                    ShowControl(aboutAppView);
                     break;
                 case "about_donate":
                     donateView.RefreshContent();
-                    ShowWpfControl(donateView);
+                    ShowControl(donateView);
                     break;
+                default:
+                    throw new NotImplementedException();
             }
+
+            UpdateStatusText(GetStatusText(currentTag));
         }
 
         internal void JumpToScene(Scenes scene)
@@ -321,6 +311,10 @@ namespace ContextMenuManager
                 Scenes.Computer => "shell_computer",
                 Scenes.RecycleBin => "shell_recyclebin",
                 Scenes.Library => "shell_library",
+                Scenes.New => "shell_new",
+                Scenes.SendTo => "shell_sendto",
+                Scenes.OpenWith => "shell_openwith",
+                Scenes.WinX => "shell_winx",
                 Scenes.LnkFile => "type_lnk",
                 Scenes.UwpLnk => "type_uwplnk",
                 Scenes.ExeFile => "type_exe",
@@ -329,18 +323,94 @@ namespace ContextMenuManager
                 Scenes.PerceivedType => "type_perceived",
                 Scenes.DirectoryType => "type_directory",
                 Scenes.MenuAnalysis => "type_menuanalysis",
+                Scenes.EnhanceMenu => "rule_enhance",
+                Scenes.DetailedEdit => "rule_detailed",
                 Scenes.DragDrop => "rule_dragdrop",
                 Scenes.PublicReferences => "rule_public",
                 Scenes.CustomRegPath => "rule_customreg",
                 _ => null
-            };
-
-            if (tag == null)
-            {
-                return;
-            }
-
+            } ?? throw new ArgumentException("Unsupported scene for JumpToScene", nameof(scene));
             SelectNavigationItem(tag);
+        }
+
+        internal static string GetStatusText(Scenes scene)
+        {
+            return scene switch
+            {
+                Scenes.File => AppString.StatusBar.File,
+                Scenes.Folder => AppString.StatusBar.Folder,
+                Scenes.Directory => AppString.StatusBar.Directory,
+                Scenes.Background => AppString.StatusBar.Background,
+                Scenes.Desktop => AppString.StatusBar.Desktop,
+                Scenes.Drive => AppString.StatusBar.Drive,
+                Scenes.AllObjects => AppString.StatusBar.AllObjects,
+                Scenes.Computer => AppString.StatusBar.Computer,
+                Scenes.RecycleBin => AppString.StatusBar.RecycleBin,
+                Scenes.Library => AppString.StatusBar.Library,
+                Scenes.New => AppString.StatusBar.New,
+                Scenes.SendTo => AppString.StatusBar.SendTo,
+                Scenes.OpenWith => AppString.StatusBar.OpenWith,
+                Scenes.WinX => AppString.StatusBar.WinX,
+                Scenes.LnkFile => AppString.StatusBar.LnkFile,
+                Scenes.UwpLnk => AppString.StatusBar.UwpLnk,
+                Scenes.ExeFile => AppString.StatusBar.ExeFile,
+                Scenes.UnknownType => AppString.StatusBar.UnknownType,
+                Scenes.CustomExtension => AppString.StatusBar.CustomExtension,
+                Scenes.PerceivedType => AppString.StatusBar.PerceivedType,
+                Scenes.DirectoryType => AppString.StatusBar.DirectoryType,
+                Scenes.MenuAnalysis => AppString.StatusBar.MenuAnalysis,
+                Scenes.EnhanceMenu => AppString.StatusBar.EnhanceMenu,
+                Scenes.DetailedEdit => AppString.StatusBar.DetailedEdit,
+                Scenes.DragDrop => AppString.StatusBar.DragDrop,
+                Scenes.PublicReferences => AppString.StatusBar.PublicReferences,
+                Scenes.InternetExplorer => AppString.StatusBar.IEMenu,
+                Scenes.GuidBlocked => AppString.StatusBar.GuidBlocked,
+                Scenes.CustomRegPath => AppString.StatusBar.CustomRegPath,
+                _ => null
+            } ?? throw new ArgumentException("Unsupported scene for GetStatusText", nameof(scene));
+        }
+
+        internal static string GetStatusText(string tag)
+        {
+            return tag switch
+            {
+                "shell_file" => GetStatusText(Scenes.File),
+                "shell_folder" => GetStatusText(Scenes.Folder),
+                "shell_directory" => GetStatusText(Scenes.Directory),
+                "shell_background" => GetStatusText(Scenes.Background),
+                "shell_desktop" => GetStatusText(Scenes.Desktop),
+                "shell_drive" => GetStatusText(Scenes.Drive),
+                "shell_allobjects" => GetStatusText(Scenes.AllObjects),
+                "shell_computer" => GetStatusText(Scenes.Computer),
+                "shell_recyclebin" => GetStatusText(Scenes.RecycleBin),
+                "shell_library" => GetStatusText(Scenes.Library),
+                "shell_new" => GetStatusText(Scenes.New),
+                "shell_sendto" => GetStatusText(Scenes.SendTo),
+                "shell_openwith" => GetStatusText(Scenes.OpenWith),
+                "shell_winx" => GetStatusText(Scenes.WinX),
+                "type_lnk" => GetStatusText(Scenes.LnkFile),
+                "type_uwplnk" => GetStatusText(Scenes.UwpLnk),
+                "type_exe" => GetStatusText(Scenes.ExeFile),
+                "type_unknown" => GetStatusText(Scenes.UnknownType),
+                "type_custom" => GetStatusText(Scenes.CustomExtension),
+                "type_perceived" => GetStatusText(Scenes.PerceivedType),
+                "type_directory" => GetStatusText(Scenes.DirectoryType),
+                "type_menuanalysis" => GetStatusText(Scenes.MenuAnalysis),
+                "rule_enhance" => GetStatusText(Scenes.EnhanceMenu),
+                "rule_detailed" => GetStatusText(Scenes.DetailedEdit),
+                "rule_dragdrop" => GetStatusText(Scenes.DragDrop),
+                "rule_public" => GetStatusText(Scenes.PublicReferences),
+                "rule_ie" => GetStatusText(Scenes.InternetExplorer),
+                "rule_guid" => GetStatusText(Scenes.GuidBlocked),
+                "rule_customreg" => GetStatusText(Scenes.CustomRegPath),
+                "about_settings" => DefaultText,
+                "about_language" => DefaultText,
+                "about_backup" => DefaultText,
+                "about_dict" => DefaultText,
+                "about_app" => DefaultText,
+                "about_donate" => DefaultText,
+                _ => null
+            } ?? throw new ArgumentException("Unsupported tag for GetStatusText", nameof(tag));
         }
 
         internal void RefreshCurrentView()
@@ -393,48 +463,55 @@ namespace ContextMenuManager
 
         private void LoadShell(Scenes scene)
         {
-            shellList.Scene = scene;
-            shellList.LoadItems();
-            ShowControl(shellList);
+            switch (scene)
+            {
+                case Scenes.New: shellNewList.LoadItems(); ShowControl(shellNewList); break;
+                case Scenes.SendTo: sendToList.LoadItems(); ShowControl(sendToList); break;
+                case Scenes.OpenWith: openWithList.LoadItems(); ShowControl(openWithList); break;
+                case Scenes.WinX: winXList.LoadItems(); ShowControl(winXList); break;
+                case Scenes.InternetExplorer: iEList.LoadItems(); ShowControl(iEList); break;
+                case Scenes.GuidBlocked: guidBlockedList.LoadItems(); ShowControl(guidBlockedList); break;
+                case Scenes.EnhanceMenu:
+                    enhanceMenusList.ScenePath = null;
+                    enhanceMenusList.LoadItems();
+                    ShowControl(enhanceMenusList);
+                    break;
+                case Scenes.DetailedEdit:
+                    detailedEditList.GroupGuid = Guid.Empty;
+                    detailedEditList.LoadItems();
+                    ShowControl(detailedEditList);
+                    break;
+                default:
+                    shellList.Scene = scene; shellList.LoadItems();
+                    ShowControl(shellList);
+                    break;
+            }
         }
 
-        private void ShowControl(WinForms.Control ctrl)
+        private void ShowControl(UIElement ctrl)
         {
-            WpfContentHost.Content = null;
-            WpfContentHost.Visibility = Visibility.Collapsed;
-            ContentHost.Visibility = Visibility.Visible;
-            ctrl.Visible = true;
-            currentListControl = ctrl;
-            SetSearchEnabled(ctrl is MyList);
-        }
-
-        private void ShowWpfControl(System.Windows.Controls.Control ctrl)
-        {
-            ContentHost.Visibility = Visibility.Collapsed;
             WpfContentHost.Content = ctrl;
             WpfContentHost.Visibility = Visibility.Visible;
-            currentListControl = null;
-            SetSearchEnabled(false);
-            UpdateStatusText(string.Empty);
+            currentListControl = ctrl;
+            SetSearchEnabled(ctrl is MyList);
+            if (ctrl is not MyList) UpdateStatusText(DefaultText);
         }
 
         private void SetSearchEnabled(bool enabled)
         {
             SearchBox.Text = string.Empty;
-            SearchBox.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+            SearchBoxPanel.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // Refresh
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            WinForms.Cursor.Current = WinForms.Cursors.WaitCursor;
             ObjectPath.FilePathDic.Clear();
             AppConfig.ReloadConfig();
             GuidInfo.ReloadDics();
             XmlDicHelper.ReloadDics();
             NavigateTo(currentTag);
-            WinForms.Cursor.Current = WinForms.Cursors.Default;
         }
 
         // Search
@@ -459,7 +536,7 @@ namespace ContextMenuManager
             {
                 if (originalListItems.Count == 0)
                 {
-                    foreach (WinForms.Control ctrl in myList.Controls)
+                    foreach (UIElement ctrl in myList.Controls)
                     {
                         originalListItems.Add(ctrl);
                     }
@@ -473,10 +550,10 @@ namespace ContextMenuManager
         {
             if (currentListControl is MyList myList && originalListItems.Count > 0)
             {
-                myList.Controls.Clear();
+                myList.ClearItems();
                 foreach (var item in originalListItems)
                 {
-                    myList.Controls.Add(item);
+                    myList.AddItem((MyListItem)item);
                 }
                 originalListItems.Clear();
             }
@@ -484,17 +561,16 @@ namespace ContextMenuManager
 
         private void FilterListItems(MyList listControl, string searchText)
         {
-            var itemsToShow = new List<WinForms.Control>();
-
-            foreach (WinForms.Control control in listControl.Controls)
+            var itemsToShow = new List<MyListItem>();
+            foreach (UIElement control in originalListItems)
             {
                 if (control is not MyListItem item)
                 {
                     continue;
                 }
 
-                var matches = item.Text?.ToLower().Contains(searchText) == true
-                    || item.SubText?.ToLower().Contains(searchText) == true;
+                var matches = item.Text?.ToLower().Contains(searchText, StringComparison.CurrentCultureIgnoreCase) == true
+                    || item.SubText?.ToLower().Contains(searchText, StringComparison.CurrentCultureIgnoreCase) == true;
 
                 if (!matches)
                 {
@@ -502,7 +578,7 @@ namespace ContextMenuManager
                     {
                         if (prop.PropertyType == typeof(string) && prop.Name is not "Text" and not "SubText")
                         {
-                            if (prop.GetValue(item) is string val && val.ToLower().Contains(searchText))
+                            if (prop.GetValue(item) is string val && val.Contains(searchText, StringComparison.CurrentCultureIgnoreCase))
                             {
                                 matches = true;
                                 break;
@@ -517,16 +593,24 @@ namespace ContextMenuManager
                 }
             }
 
-            listControl.Controls.Clear();
+            listControl.ClearItems();
             foreach (var item in itemsToShow)
             {
-                listControl.Controls.Add(item);
+                listControl.AddItem(item);
             }
 
-            var statusMsg = itemsToShow.Count == 0
-                ? $"{AppString.General.NoResultsFor ?? "No results for"} \"{searchText}\""
-                : $"{AppString.General.Search ?? "Found"}: {itemsToShow.Count}";
-            UpdateStatusText(statusMsg);
+            if (string.IsNullOrEmpty(SearchBox.Text))
+            {
+                UpdateStatusText(GetStatusText(currentTag));
+            }
+            else
+            {
+                var statusMsg = AppString.Other.StatusSearch ?? "Search '%searchText' - Find %visibleCount items (%totalCount items in total)";
+                statusMsg = statusMsg.Replace("%searchText", SearchBox.Text)
+                    .Replace("%visibleCount", itemsToShow.Count.ToString())
+                    .Replace("%totalCount", originalListItems.Count.ToString());
+                UpdateStatusText(statusMsg);
+            }
         }
 
         // Status bar helper
@@ -542,11 +626,11 @@ namespace ContextMenuManager
         {
             if (ExplorerRestarterBanner.IsPendingRestart)
             {
-                var result = System.Windows.MessageBox.Show(
+                var result = AppMessageBox.Show(
                     ExplorerRestarterBanner.MessageText,
                     AppString.General.AppName,
                     MessageBoxButton.OKCancel,
-                    WpfMessageBoxImage.Question);
+                    MessageBoxImage.Question);
                 if (result == MessageBoxResult.OK)
                 {
                     ExternalProgram.RestartExplorer();
@@ -558,8 +642,6 @@ namespace ContextMenuManager
             Opacity = 0;
         }
 
-        // First-run helper
-
         private void FirstRunDownloadLanguage()
         {
             if (!AppConfig.IsFirstRun)
@@ -567,18 +649,18 @@ namespace ContextMenuManager
                 return;
             }
 
-            if (System.Globalization.CultureInfo.CurrentUICulture.Name == "zh-CN")
+            if (CultureInfo.CurrentUICulture.Name == "zh-CN")
             {
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = AppMessageBox.Show(
                 "It is detected that you may be running this program for the first time,\n" +
                 "and your system display language is not Simplified Chinese (zh-CN).\n" +
                 "Do you need to download another language?",
                 AppString.General.AppName,
                 MessageBoxButton.YesNo,
-                WpfMessageBoxImage.Question);
+                MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {

@@ -21,8 +21,6 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
 
             var txtText = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
             var txtFilePath = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
@@ -111,11 +109,9 @@ namespace ContextMenuManager.Controls
             {
                 key.SetValue("FriendlyAppName", itemText);
             }
-            using (var cmdKey = RegistryEx.GetRegistryKey(commandPath, true, true))
-            {
-                cmdKey.SetValue("", itemCommand);
-                RegPath = cmdKey.Name;
-            }
+            using var cmdKey = RegistryEx.GetRegistryKey(commandPath, true, true);
+            cmdKey.SetValue("", itemCommand);
+            RegPath = cmdKey.Name;
 
             return true;
         }
@@ -124,8 +120,8 @@ namespace ContextMenuManager.Controls
         {
             if (arguments.IsNullOrWhiteSpace()) return filePath;
             if (filePath.IsNullOrWhiteSpace()) return arguments;
-            if (filePath.Contains(" ")) filePath = $"\"{filePath}\"";
-            if (!arguments.Contains("\"")) arguments = $"\"{arguments}\"";
+            if (filePath.Contains(' ')) filePath = $"\"{filePath}\"";
+            if (!arguments.Contains('\"')) arguments = $"\"{arguments}\"";
             return $"{filePath} {arguments}";
         }
     }

@@ -5,7 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows;
 using WpfProgressBar = System.Windows.Controls.ProgressBar;
 
 namespace ContextMenuManager.Controls
@@ -23,7 +23,7 @@ namespace ContextMenuManager.Controls
             return ContentDialogHost.RunBlocking(async owner =>
             {
                 var dialog = ContentDialogHost.CreateDialog(Text, (MainWindow)owner);
-                dialog.CloseButtonText = ResourceString.Cancel;
+                dialog.IsPrimaryButtonEnabled = false;
                 dialog.DefaultButton = ContentDialogButton.Close;
 
                 var progressBar = new WpfProgressBar
@@ -97,7 +97,7 @@ namespace ContextMenuManager.Controls
             catch (Exception e)
             {
                 TryDeleteFile();
-                System.Windows.Forms.MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                AppMessageBox.Show(e.Message, Text, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
         }

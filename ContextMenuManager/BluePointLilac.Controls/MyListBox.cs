@@ -1,80 +1,32 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace ContextMenuManager.Controls
 {
-    public class MyListBox : Panel
+    public class MyList : UserControl
     {
-        public MyListBox()
-        {
-            AutoScroll = true;
-            UpdateColors();
-
-            // 订阅主题变化事件
-            DarkModeHelper.ThemeChanged += OnThemeChanged;
-        }
-
-        protected override void OnMouseWheel(MouseEventArgs e)
-        {
-            // 使滚动幅度与MyListItem的高度相配合，防止滚动过快导致来不及重绘界面变花
-            base.OnMouseWheel(new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, Math.Sign(e.Delta) * 50.DpiZoom()));
-        }
-
-        /// <summary>
-        /// 主题变化事件处理
-        /// </summary>
-        private void OnThemeChanged(object sender, EventArgs e)
-        {
-            if (IsHandleCreated && !IsDisposed)
-            {
-                UpdateColors();
-                Invalidate(true);
-            }
-        }
-
-        /// <summary>
-        /// 更新控件颜色
-        /// </summary>
-        public void UpdateColors()
-        {
-            BackColor = DarkModeHelper.FormBack;
-            ForeColor = DarkModeHelper.FormFore;
-        }
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                DarkModeHelper.ThemeChanged -= OnThemeChanged;
-            }
-            base.Dispose(disposing);
-        }
-    }
-
-    public class MyList : FlowLayoutPanel
-    {
-        public Panel Owner
-        {
-            get => (Panel)Parent;
-            set => Parent = value;
-        }
+        protected readonly StackPanel stackPanel = new();
+        protected readonly ScrollViewer scrollViewer = new();
 
         public MyList()
         {
-            AutoSize = true;
-            WrapContents = true;
-            Dock = DockStyle.Top;
-            DoubleBuffered = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            scrollViewer.Content = stackPanel;
+            scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+            scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            Content = scrollViewer;
+        }
 
-            // 订阅主题变化事件
-            DarkModeHelper.ThemeChanged += OnThemeChanged;
+        public UIElementCollection Controls => stackPanel.Children;
+
+        public bool Visible
+        {
+            get => Visibility == Visibility.Visible;
+            set => Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private MyListItem hoveredItem;
@@ -84,18 +36,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 if (hoveredItem == value) return;
-                if (hoveredItem != null)
-                {
-                    hoveredItem.ForeColor = DarkModeHelper.FormFore;
-                    hoveredItem.Font = new Font(hoveredItem.Font, FontStyle.Regular);
-                }
                 hoveredItem = value;
-                if (hoveredItem != null)
-                {
-                    value.ForeColor = DarkModeHelper.MainColor;
-                    value.Font = new Font(hoveredItem.Font, FontStyle.Bold);
-                    value.Focus();
-                }
                 HoveredItemChanged?.Invoke(this, null);
             }
         }
@@ -104,307 +45,184 @@ namespace ContextMenuManager.Controls
 
         public void AddItem(MyListItem item)
         {
-            SuspendLayout();
-            item.Parent = this;
-            item.MouseEnter += (sender, e) => HoveredItem = item;
-            MouseWheel += (sender, e) => item.ContextMenuStrip?.Close();
-            void ResizeItem()
-            {
-                item.Width = Owner.Width - item.Margin.Horizontal;
-            }
-
-            Owner.Resize += (sender, e) => ResizeItem();
-            ResizeItem();
-            ResumeLayout();
+            stackPanel.Children.Add(item);
         }
 
         public void AddItems(MyListItem[] items)
         {
-            Array.ForEach(items, item => AddItem(item));
+            Array.ForEach(items, AddItem);
         }
 
         public void AddItems(List<MyListItem> items)
         {
-            items.ForEach(item => AddItem(item));
+            items.ForEach(AddItem);
         }
 
         public void SetItemIndex(MyListItem item, int newIndex)
         {
-            Controls.SetChildIndex(item, newIndex);
+            stackPanel.Children.Remove(item);
+            stackPanel.Children.Insert(newIndex, item);
         }
 
         public int GetItemIndex(MyListItem item)
         {
-            return Controls.GetChildIndex(item);
+            return stackPanel.Children.IndexOf(item);
         }
 
         public void InsertItem(MyListItem item, int index)
         {
             if (item == null) return;
-            AddItem(item);
-            SetItemIndex(item, index);
+            stackPanel.Children.Insert(index, item);
         }
 
         public virtual void ClearItems()
         {
-            if (Controls.Count == 0) return;
-            SuspendLayout();
-            for (var i = Controls.Count - 1; i >= 0; i--)
-            {
-                var ctr = Controls[i];
-                Controls.Remove(ctr);
-                ctr.Dispose();
-            }
-            ResumeLayout();
+            stackPanel.Children.Clear();
         }
 
         public void SortItemByText()
         {
-            var items = new List<MyListItem>();
-            foreach (MyListItem item in Controls) items.Add(item);
-            Controls.Clear();
+            var items = stackPanel.Children.OfType<MyListItem>().ToList();
+            stackPanel.Children.Clear();
             items.Sort(new TextComparer());
-            items.ForEach(item => AddItem(item));
+            items.ForEach(AddItem);
         }
 
         public class TextComparer : IComparer<MyListItem>
         {
             public int Compare(MyListItem x, MyListItem y)
             {
-                if (x.Equals(y)) return 0;
-                string[] strs = { x.Text, y.Text };
-                Array.Sort(strs);
-                if (strs[0] == x.Text) return -1;
-                else return 1;
+                return string.Compare(x.Text, y.Text, StringComparison.OrdinalIgnoreCase);
             }
         }
 
-        /// <summary>
-        /// 主题变化事件处理
-        /// </summary>
-        private void OnThemeChanged(object sender, EventArgs e)
+        public void Dispose()
         {
-            if (IsHandleCreated && !IsDisposed)
-            {
-                // 更新悬停项的颜色
-                if (hoveredItem != null && hoveredItem.IsHandleCreated && !hoveredItem.IsDisposed)
-                {
-                    hoveredItem.ForeColor = DarkModeHelper.MainColor;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                DarkModeHelper.ThemeChanged -= OnThemeChanged;
-            }
-            base.Dispose(disposing);
+            Content = null;
         }
     }
 
-    public class MyListItem : Panel
+    public class MyListItem : UserControl
     {
-        private string subText; // 添加SubText字段
+        protected readonly Grid grid;
+        protected readonly Image imgIcon;
+        protected readonly TextBlock txtTitle;
+        protected readonly StackPanel flpControls;
 
-        public MyListItem()
+        protected MyList List;
+
+        public MyListItem(MyList list)
         {
-            SuspendLayout();
-            HasImage = true;
-            DoubleBuffered = true;
-            Height = 50.DpiZoom();
-            Margin = new Padding(0);
-            Font = SystemFonts.IconTitleFont;
+            if (list != null)
+            {
+                List = list;
 
-            // 初始化颜色
-            UpdateColors();
+                grid = new();
+                imgIcon = new() { Width = 32, Height = 32, Margin = new Thickness(20, 0, 10, 0) };
+                txtTitle = new() { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) };
+                flpControls = new() { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 20, 0) };
 
-            Controls.AddRange(new Control[] { lblSeparator, flpControls, lblText, picImage });
-            Resize += (Sender, e) => pnlScrollbar.Height = ClientSize.Height;
-            flpControls.MouseClick += (sender, e) => OnMouseClick(e);
-            flpControls.MouseEnter += (sender, e) => OnMouseEnter(e);
-            flpControls.MouseDown += (sender, e) => OnMouseDown(e);
-            lblSeparator.SetEnabled(false);
-            lblText.SetEnabled(false);
-            CenterControl(lblText);
-            CenterControl(picImage);
-            AddCtr(pnlScrollbar, 0);
+                Height = 50;
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            // 订阅主题变化事件
-            DarkModeHelper.ThemeChanged += OnThemeChanged;
+                Grid.SetColumn(imgIcon, 0);
+                Grid.SetColumn(txtTitle, 1);
+                Grid.SetColumn(flpControls, 2);
 
-            ResumeLayout();
+                grid.Children.Add(imgIcon);
+                grid.Children.Add(txtTitle);
+                grid.Children.Add(flpControls);
+
+                Content = grid;
+
+                MouseEnter += (s, e) => Background = (SolidColorBrush)Application.Current.Resources["ListViewItemBackgroundPointerOver"];
+                MouseLeave += (s, e) => Background = Brushes.Transparent;
+            }
         }
 
-        public Image Image
+        private System.Drawing.Image _image;
+        public System.Drawing.Image Image
         {
-            get => picImage.Image;
-            set => picImage.Image = value;
-        }
-        public new string Text
-        {
-            get => lblText.Text;
-            set => lblText.Text = value;
-        }
-        public new Font Font
-        {
-            get => lblText.Font;
-            set => lblText.Font = value;
-        }
-        public new Color ForeColor
-        {
-            get => lblText.ForeColor;
-            set => lblText.ForeColor = value;
-        }
-
-        // 添加SubText属性
-        public string SubText
-        {
-            get => subText; set => subText = value;// 如果需要显示副文本，可以在这里添加UI更新逻辑
-        }
-
-        private bool hasImage;
-        public bool HasImage
-        {
-            get => hasImage;
+            get => _image;
             set
             {
-                hasImage = value;
-                picImage.Visible = value;
-                lblText.Left = (value ? 60 : 20).DpiZoom();
+                _image = value;
+                if (value != null) imgIcon.Source = value.ToBitmapSource();
+                else imgIcon.Source = null;
             }
         }
 
-        private readonly Label lblText = new()
+        private string _text;
+        public string Text
         {
-            AutoSize = true,
-            Name = "Text"
-        };
-        private readonly PictureBox picImage = new()
-        {
-            SizeMode = PictureBoxSizeMode.AutoSize,
-            Left = 20.DpiZoom(),
-            Enabled = false,
-            Name = "Image"
-        };
-        private readonly FlowLayoutPanel flpControls = new()
-        {
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlowDirection = FlowDirection.RightToLeft,
-            Anchor = AnchorStyles.Right,
-            AutoSize = true,
-            Name = "Controls"
-        };
-        private readonly Label lblSeparator = new()
-        {
-            BackColor = DarkModeHelper.FormFore,
-            Dock = DockStyle.Bottom,
-            Name = "Separator",
-            Height = 1
-        };//分割线
-        private readonly Panel pnlScrollbar = new()
-        {
-            Width = SystemInformation.VerticalScrollBarWidth,
-            Enabled = false
-        };//预留滚动条宽度
-
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            base.OnMouseDown(e); OnMouseEnter(null);
-        }
-
-        private void CenterControl(Control ctr)
-        {
-            void reSize()
+            get => _text;
+            set
             {
-                if (ctr.Parent == null) return;
-                var top = (ClientSize.Height - ctr.Height) / 2;
-                ctr.Top = top;
-                if (ctr.Parent == flpControls)
-                {
-                    ctr.Margin = new Padding(0, top, ctr.Margin.Right, top);
-                }
+                _text = value;
+                if (List != null) txtTitle.Text = value;
             }
-            ctr.Parent.Resize += (sender, e) => reSize();
-            ctr.Resize += (sender, e) => reSize();
-            reSize();
         }
 
-        public void AddCtr(Control ctr)
+        private bool _visible;
+        public bool Visible
         {
-            AddCtr(ctr, 20.DpiZoom());
-        }
-
-        public void AddCtr(Control ctr, int space)
-        {
-            SuspendLayout();
-            ctr.Parent = flpControls;
-            ctr.Margin = new Padding(0, 0, space, 0);
-            ctr.MouseEnter += (sender, e) => OnMouseEnter(e);
-            ctr.MouseDown += (sender, e) => OnMouseEnter(e);
-            CenterControl(ctr);
-            ResumeLayout();
-        }
-
-        public void AddCtrs(Control[] ctrs)
-        {
-            Array.ForEach(ctrs, ctr => AddCtr(ctr));
-        }
-
-        public void RemoveCtrAt(int index)
-        {
-            if (flpControls.Controls.Count > index) flpControls.Controls.RemoveAt(index + 1);
-        }
-
-        public int GetCtrIndex(Control ctr)
-        {
-            return flpControls.Controls.GetChildIndex(ctr, true) - 1;
-        }
-
-        public void SetCtrIndex(Control ctr, int newIndex)
-        {
-            flpControls.Controls.SetChildIndex(ctr, newIndex + 1);
-        }
-
-        /// <summary>
-        /// 主题变化事件处理
-        /// </summary>
-        private void OnThemeChanged(object sender, EventArgs e)
-        {
-            if (IsHandleCreated && !IsDisposed)
+            get => _visible;
+            set
             {
-                UpdateColors();
-                Invalidate(true);
+                _visible = value;
+                if (List != null) Visibility = value ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
-        /// <summary>
-        /// 更新控件颜色
-        /// </summary>
-        public void UpdateColors()
-        {
-            BackColor = DarkModeHelper.FormBack;
-            ForeColor = DarkModeHelper.FormFore;
+        public System.Drawing.Font Font { get; set; }
 
-            // 更新子控件颜色
-            lblSeparator.BackColor = DarkModeHelper.FormFore;
-            lblText.ForeColor = DarkModeHelper.FormFore;
+        public string SubText { get; set; }
+
+        public bool HasImage
+        {
+            get => imgIcon.Visibility == Visibility.Visible;
+            set => imgIcon.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (disposing)
+            Content = null;
+        }
+
+        public virtual void Indent()
+        {
+
+        }
+
+        public void AddCtr(UIElement ctr)
+        {
+            AddCtr(ctr, 10);
+        }
+
+        public void AddCtr(UIElement ctr, int space)
+        {
+            if (ctr is FrameworkElement fe)
             {
-                DarkModeHelper.ThemeChanged -= OnThemeChanged;
+                fe.VerticalAlignment = VerticalAlignment.Center;
+                fe.Margin = new Thickness(0, 0, space, 0);
             }
-            base.Dispose(disposing);
+            flpControls.Children.Insert(0, ctr);
+        }
+
+        public void AddCtrs(UIElement[] ctrs)
+        {
+            Array.ForEach(ctrs, AddCtr);
+        }
+
+        public void SetCtrIndex(UIElement ctr, int newIndex)
+        {
+            if (flpControls.Children.Contains(ctr))
+            {
+                flpControls.Children.Remove(ctr);
+                flpControls.Children.Insert(newIndex, ctr);
+            }
         }
     }
 }

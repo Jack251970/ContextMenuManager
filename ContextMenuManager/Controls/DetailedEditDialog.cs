@@ -1,7 +1,5 @@
-﻿using ContextMenuManager.Methods;
-using iNKORE.UI.WPF.Modern.Controls;
+using ContextMenuManager.Methods;
 using System;
-using System.Windows.Forms.Integration;
 
 namespace ContextMenuManager.Controls
 {
@@ -16,30 +14,17 @@ namespace ContextMenuManager.Controls
             var dialog = ContentDialogHost.CreateDialog(
                 AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid)), 
                 owner);
-            dialog.CloseButtonText = ResourceString.OK;
-            dialog.FullSizeDesired = true;
 
             var list = new DetailedEditList
             {
                 GroupGuid = GroupGuid,
                 UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid],
-                Dock = System.Windows.Forms.DockStyle.Fill
+                MinWidth = 500,
+                MinHeight = 400
             };
             list.LoadItems();
 
-            var host = new WindowsFormsHost
-            {
-                Child = new System.Windows.Forms.Panel
-                {
-                    Controls = { list },
-                    Height = 400,
-                    Width = 600
-                },
-                Height = 400,
-                Width = 600
-            };
-
-            dialog.Content = host;
+            dialog.Content = list;
             ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }

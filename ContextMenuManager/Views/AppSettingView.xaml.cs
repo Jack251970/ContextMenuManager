@@ -32,14 +32,14 @@ namespace ContextMenuManager.Views
             RepoComboBox.SelectedIndex = AppConfig.RequestUseGithub ? 0 : 1;
             EngineComboBox.SelectedIndex = GetEngineSelectIndex();
 
-            AutoBackupCheckBox.IsChecked = AppConfig.AutoBackup;
-            TopMostCheckBox.IsChecked = AppConfig.TopMost;
-            ProtectOpenItemCheckBox.IsChecked = AppConfig.ProtectOpenItem;
-            ShowFilePathCheckBox.IsChecked = AppConfig.ShowFilePath;
-            OpenMoreRegeditCheckBox.IsChecked = AppConfig.OpenMoreRegedit;
-            OpenMoreExplorerCheckBox.IsChecked = AppConfig.OpenMoreExplorer;
-            HideDisabledItemsCheckBox.IsChecked = AppConfig.HideDisabledItems;
-            HideSysStoreItemsCheckBox.IsChecked = AppConfig.HideSysStoreItems;
+            AutoBackupCheckBox.IsOn = AppConfig.AutoBackup;
+            TopMostCheckBox.IsOn = AppConfig.TopMost;
+            ProtectOpenItemCheckBox.IsOn = AppConfig.ProtectOpenItem;
+            ShowFilePathCheckBox.IsOn = AppConfig.ShowFilePath;
+            OpenMoreRegeditCheckBox.IsOn = AppConfig.OpenMoreRegedit;
+            OpenMoreExplorerCheckBox.IsOn = AppConfig.OpenMoreExplorer;
+            HideDisabledItemsCheckBox.IsOn = AppConfig.HideDisabledItems;
+            HideSysStoreItemsCheckBox.IsOn = AppConfig.HideSysStoreItems;
 
             var showHideSysStore = WinOsVersion.Current >= WinOsVersion.Win7;
             HideSysStoreRow.Visibility = showHideSysStore ? Visibility.Visible : Visibility.Collapsed;
@@ -86,39 +86,29 @@ namespace ContextMenuManager.Views
             OpenConfigDirButton.Content = AppString.Menu.FileLocation ?? "Open";
 
             UpdateFrequencyLabel.Text = AppString.Other.SetUpdateFrequency;
-            UpdateFrequencyHint.Text = "Choose how often the app checks for a new release.";
             CheckUpdateButton.Content = AppString.About.CheckUpdate ?? "Check Update";
 
             RepoLabel.Text = AppString.Other.SetRequestRepo;
-            RepoHint.Text = "Select the preferred source for update and download requests.";
 
             EngineLabel.Text = AppString.Other.WebSearchEngine;
-            EngineHint.Text = "Pick a preset engine or provide a custom URL template.";
 
             AutoBackupLabel.Text = AppString.Other.AutoBackup;
             AutoBackupHint.Text = AppConfig.RegBackupDir;
             OpenBackupDirButton.Content = AppString.Menu.FileLocation ?? "Open";
 
             TopMostLabel.Text = AppString.Other.TopMost;
-            TopMostHint.Text = "Keep the main window above other windows.";
 
             ProtectOpenItemLabel.Text = AppString.Other.ProtectOpenItem;
-            ProtectOpenItemHint.Text = "Prevent accidental edits to protected Open items.";
 
             ShowFilePathLabel.Text = AppString.Other.ShowFilePath;
-            ShowFilePathHint.Text = "Display backing file or registry paths while browsing items.";
 
             OpenMoreRegeditLabel.Text = AppString.Other.OpenMoreRegedit;
-            OpenMoreRegeditHint.Text = "Expose the extended registry editor entry when available.";
 
             OpenMoreExplorerLabel.Text = AppString.Other.OpenMoreExplorer;
-            OpenMoreExplorerHint.Text = "Expose the extended Explorer entry when available.";
 
             HideDisabledItemsLabel.Text = AppString.Other.HideDisabledItems;
-            HideDisabledItemsHint.Text = "Filter disabled items out of the visible lists.";
 
             HideSysStoreItemsLabel.Text = AppString.Other.HideSysStoreItems;
-            HideSysStoreItemsHint.Text = "Hide system store items when the current Windows version supports it.";
 
             LoadDynamicOptions();
         }
@@ -151,11 +141,11 @@ namespace ContextMenuManager.Views
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = AppMessageBox.Show(
                 AppString.Message.RestartApp,
                 AppString.General.AppName,
                 MessageBoxButton.OKCancel,
-                System.Windows.MessageBoxImage.Question);
+                MessageBoxImage.Question);
             if (result != MessageBoxResult.OK)
             {
                 RefreshFromConfig();
@@ -205,8 +195,6 @@ namespace ContextMenuManager.Views
             }
 
             var dialog = ContentDialogHost.CreateDialog(AppString.Other.SetCustomEngine);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
 
             var inputBox = new TextBox
             {
@@ -233,7 +221,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.AutoBackup = AutoBackupCheckBox.IsChecked == true;
+                AppConfig.AutoBackup = AutoBackupCheckBox.IsOn;
             }
         }
 
@@ -241,7 +229,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.TopMost = TopMostCheckBox.IsChecked == true;
+                AppConfig.TopMost = TopMostCheckBox.IsOn;
                 if (OwnerWindow != null)
                 {
                     OwnerWindow.Topmost = AppConfig.TopMost;
@@ -253,7 +241,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.ProtectOpenItem = ProtectOpenItemCheckBox.IsChecked == true;
+                AppConfig.ProtectOpenItem = ProtectOpenItemCheckBox.IsOn;
             }
         }
 
@@ -261,7 +249,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.ShowFilePath = ShowFilePathCheckBox.IsChecked == true;
+                AppConfig.ShowFilePath = ShowFilePathCheckBox.IsOn;
             }
         }
 
@@ -269,7 +257,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.OpenMoreRegedit = OpenMoreRegeditCheckBox.IsChecked == true;
+                AppConfig.OpenMoreRegedit = OpenMoreRegeditCheckBox.IsOn;
             }
         }
 
@@ -277,7 +265,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.OpenMoreExplorer = OpenMoreExplorerCheckBox.IsChecked == true;
+                AppConfig.OpenMoreExplorer = OpenMoreExplorerCheckBox.IsOn;
             }
         }
 
@@ -285,7 +273,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.HideDisabledItems = HideDisabledItemsCheckBox.IsChecked == true;
+                AppConfig.HideDisabledItems = HideDisabledItemsCheckBox.IsOn;
             }
         }
 
@@ -293,7 +281,7 @@ namespace ContextMenuManager.Views
         {
             if (!isLoading)
             {
-                AppConfig.HideSysStoreItems = HideSysStoreItemsCheckBox.IsChecked == true;
+                AppConfig.HideSysStoreItems = HideSysStoreItemsCheckBox.IsOn;
             }
         }
 

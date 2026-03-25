@@ -3,7 +3,6 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
@@ -149,7 +148,7 @@ namespace ContextMenuManager.Methods
             if (iconIndex == -1)
             {
                 hInst = LoadLibrary(iconPath);
-                hIcons[0] = LoadImage(hInst, "#1", 1, SystemInformation.IconSize.Width, SystemInformation.IconSize.Height, 0);
+                hIcons[0] = LoadImage(hInst, "#1", 1, System.Windows.Forms.SystemInformation.IconSize.Width, System.Windows.Forms.SystemInformation.IconSize.Height, 0);
             }
             else ExtractIconEx(iconPath, iconIndex, hIcons, null, 1);
 

@@ -2,7 +2,6 @@ using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Drawing;
-using System.Windows.Forms;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 using WpfTextBox = System.Windows.Controls.TextBox;
 using WpfTextWrapping = System.Windows.TextWrapping;
@@ -12,7 +11,8 @@ namespace ContextMenuManager.Controls
     public sealed class InputDialog
     {
         /// <summary>输入对话框标题</summary>
-        public string Title { get; set; } = Application.ProductName;
+        public string Title { get; set; } = AppString.General.AppName;
+
         /// <summary>输入对话框文本框文本</summary>
         public string Text { get; set; }
         public Size Size { get; set; }
@@ -22,8 +22,6 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(Title, owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
 
             var inputBox = new WpfTextBox
             {

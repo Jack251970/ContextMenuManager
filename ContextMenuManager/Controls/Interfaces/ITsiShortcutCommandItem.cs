@@ -1,7 +1,7 @@
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
-using System.Windows.Forms;
+using System.Windows.Controls;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
 using WpfTextBox = System.Windows.Controls.TextBox;
 
@@ -11,14 +11,14 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         ShellLink ShellLink { get; }
         ShortcutCommandMenuItem TsiChangeCommand { get; set; }
-        ContextMenuStrip ContextMenuStrip { get; set; }
+        ContextMenu ContextMenu { get; set; }
     }
 
     internal sealed class ShortcutCommandMenuItem : RToolStripMenuItem
     {
         public ShortcutCommandMenuItem(ITsiShortcutCommandItem item) : base(AppString.Menu.ChangeCommand)
         {
-            item.ContextMenuStrip.Opening += (sender, e) =>
+            item.ContextMenu.Opened += (sender, e) =>
             {
                 Visible = !string.IsNullOrEmpty(item.ShellLink?.TargetPath);
             };
@@ -48,9 +48,6 @@ namespace ContextMenuManager.Controls.Interfaces
             public bool RunDialog(MainWindow owner)
             {
                 var dialog = ContentDialogHost.CreateDialog(AppString.Menu.ChangeCommand, owner);
-                dialog.PrimaryButtonText = ResourceString.OK;
-                dialog.CloseButtonText = ResourceString.Cancel;
-                dialog.DefaultButton = ContentDialogButton.Primary;
 
                 var txtCommand = new WpfTextBox
                 {

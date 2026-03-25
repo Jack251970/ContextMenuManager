@@ -3,7 +3,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using System.Windows.Forms;
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
 namespace ContextMenuManager.Methods
@@ -190,46 +189,6 @@ namespace ContextMenuManager.Methods
             }
 
             set => shellLinkW.SetDescription(value);
-        }
-
-        public Keys HotKey
-        {
-            get
-            {
-                shellLinkW.GetHotKey(out var key);
-                var hotKey = ((key & 0xFF00) << 8) | (key & 0xFF);
-                return (Keys)hotKey;
-            }
-            set
-            {
-                if ((value & Keys.Modifiers) == 0) throw new ArgumentException("Hotkey must include a modifier key.");
-                var key = unchecked((ushort)(((int)(value & Keys.Modifiers) >> 8) | (int)(value & Keys.KeyCode)));
-                shellLinkW.SetHotKey(key);
-            }
-        }
-
-        public FormWindowState WindowStyle
-        {
-            get
-            {
-                shellLinkW.GetShowCmd(out var style);
-                return style switch
-                {
-                    SW_SHOWMINIMIZED or SW_SHOWMINNOACTIVE => FormWindowState.Minimized,
-                    SW_SHOWMAXIMIZED => FormWindowState.Maximized,
-                    _ => FormWindowState.Normal,
-                };
-            }
-            set
-            {
-                var style = value switch
-                {
-                    FormWindowState.Minimized => SW_SHOWMINIMIZED,
-                    FormWindowState.Maximized => SW_SHOWMAXIMIZED,
-                    _ => SW_SHOWNORMAL,
-                };
-                shellLinkW.SetShowCmd(style);
-            }
         }
 
         public bool RunAsAdministrator

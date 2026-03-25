@@ -111,16 +111,14 @@
                                             <Button
                                                 Padding="10,4"
                                                 Click="RestoreBackupButton_OnClick"
-                                                CommandParameter="{Binding}">
-                                                Restore
-                                            </Button>
+                                                CommandParameter="{Binding}"
+                                                Content="{Binding Restore, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                                             <Button
                                                 Margin="8,0,0,0"
                                                 Padding="10,4"
                                                 Click="DeleteBackupButton_OnClick"
-                                                CommandParameter="{Binding}">
-                                                Delete
-                                            </Button>
+                                                CommandParameter="{Binding}"
+                                                Content="{Binding Delete, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

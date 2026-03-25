@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
@@ -45,7 +44,7 @@ namespace ContextMenuManager.Methods
         public const string GiteeDonateRaw = "https://gitee.com/Jack251970/ContextMenuManager/raw/master/Donate.md";
         public const string GiteeDonate = "https://gitee.com/Jack251970/ContextMenuManager/blob/master/Donate.md";
 
-        public static readonly string AppConfigDir = $@"{Application.StartupPath}\Config";
+        public static readonly string AppConfigDir = $@"{AppContext.BaseDirectory}\Config";
         public static readonly string AppDataDir = Environment.ExpandEnvironmentVariables(@"%AppData%\ContextMenuManager");
         public static readonly string AppDataConfigDir = $@"{AppDataDir}\Config";
         public static readonly string ConfigDir = Directory.Exists(AppConfigDir) ? AppConfigDir : AppDataConfigDir;
@@ -89,6 +88,8 @@ namespace ContextMenuManager.Methods
 
         private static readonly IniReader ConfigReader = new(ConfigIni);
         private static readonly IniWriter ConfigWriter = new(ConfigIni);
+
+        private static string[] Paths => [AppDataDir, ConfigDir, ProgramsDir, RegBackupDir, MenuBackupDir, LangsDir, DicsDir, WebDicsDir, UserDicsDir];
 
         public static void BackupWinX()
         {
@@ -141,39 +142,43 @@ namespace ContextMenuManager.Methods
 
         private static void CreateDirectory()
         {
-            foreach (var dirPath in new[] { AppDataDir, ConfigDir, ProgramsDir, RegBackupDir, MenuBackupDir, LangsDir, DicsDir, WebDicsDir, UserDicsDir })
+            foreach (var dirPath in Paths)
             {
                 Directory.CreateDirectory(dirPath);
-                Application.ApplicationExit += (sender, e) =>
-                {
-                    if (Directory.Exists(dirPath) && Directory.GetFileSystemEntries(dirPath).Length == 0)
-                    {
-                        try
-                        {
-                            Directory.Delete(dirPath);
-                        }
-                        catch
-                        {
+            }
+        }
 
-                        }
+        internal static void CleanDirectory()
+        {
+            foreach (var dirPath in Paths)
+            {
+                if (Directory.Exists(dirPath) && Directory.GetFileSystemEntries(dirPath).Length == 0)
+                {
+                    try
+                    {
+                        Directory.Delete(dirPath);
                     }
-                };
+                    catch
+                    {
+
+                    }
+                }
             }
         }
 
         private static void LoadLanguage()
         {
             language = GetGeneralValue("Language");
-            if (language.ToLower() == "default")
+            if (language.Equals("default", StringComparison.CurrentCultureIgnoreCase))
             {
                 LanguageIniPath = "";
                 return;
             }
             if (language == "") language = CultureInfo.CurrentUICulture.Name;
-            
+
 #if DEBUG
             // 在开发环境中使用项目根目录下的languages目录
-            string devLangsDir = $@"{Application.StartupPath}\..\languages";
+            string devLangsDir = $@"{AppContext.BaseDirectory}\..\languages";
             LanguageIniPath = $@"{devLangsDir}\{language}.ini";
             if (!File.Exists(LanguageIniPath))
             {

@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Methods
 {
@@ -22,19 +21,6 @@ namespace ContextMenuManager.Methods
 
             bounds = Rectangle.FromLTRB(rect.Left, rect.Top, rect.Right, rect.Bottom);
             return bounds.Width > 0 && bounds.Height > 0;
-        }
-
-        public static void PositionFormNearOwner(Form form, IntPtr hwndOwner, int topOffset)
-        {
-            if (!TryGetOwnerBounds(hwndOwner, out var ownerBounds))
-            {
-                form.StartPosition = FormStartPosition.CenterScreen;
-                return;
-            }
-
-            form.StartPosition = FormStartPosition.Manual;
-            form.Left = ownerBounds.Left + Math.Max(0, (ownerBounds.Width - form.Width) / 2);
-            form.Top = ownerBounds.Top + topOffset;
         }
 
         [LibraryImport("user32.dll")]

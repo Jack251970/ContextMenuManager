@@ -1,10 +1,10 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -29,8 +29,8 @@ namespace ContextMenuManager.Controls
         private void LoadWinXItems()
         {
             // 获取两处WinX目录下的所有文件夹路径
-            var dirPaths1 = Directory.Exists(WinXPath) ? Directory.GetDirectories(WinXPath) : new string[] { };
-            var dirPaths2 = Directory.Exists(BackupWinXPath) ? Directory.GetDirectories(BackupWinXPath) : new string[] { };
+            var dirPaths1 = Directory.Exists(WinXPath) ? Directory.GetDirectories(WinXPath) : [];
+            var dirPaths2 = Directory.Exists(BackupWinXPath) ? Directory.GetDirectories(BackupWinXPath) : [];
             // 两处WinX目录下的文件夹名称合并，去重，排序，反序
             var dirKeyPaths = new List<string> { };
             foreach (var dirPath in dirPaths1)
@@ -53,7 +53,7 @@ namespace ContextMenuManager.Controls
                 var dirPath1 = $@"{WinXPath}\{dirKeyPath}";
                 var dirPath2 = $@"{BackupWinXPath}\{dirKeyPath}";
 
-                var groupItem = new WinXGroupItem(dirPath1);
+                var groupItem = new WinXGroupItem(this, dirPath1);
                 AddItem(groupItem);
 
                 List<string> lnkPaths;
@@ -69,8 +69,8 @@ namespace ContextMenuManager.Controls
 
                 foreach (var path in lnkPaths)
                 {
-                    var winXItem = new WinXItem(path, groupItem);
-                    winXItem.BtnMoveDown.Visible = winXItem.BtnMoveUp.Visible = AppConfig.WinXSortable;
+                    var winXItem = new WinXItem(this, path, groupItem);
+                    winXItem.BtnMoveDown.Visibility = winXItem.BtnMoveUp.Visibility = AppConfig.WinXSortable ? Visibility.Visible : Visibility.Collapsed;
                     AddItem(winXItem);
                     groupItem.AddWinXItem(winXItem);
                 }
@@ -91,8 +91,8 @@ namespace ContextMenuManager.Controls
                 // 获取两处WinX目录下的所有lnk文件路径
                 var dirPath1 = $@"{WinXPath}\{dirKeyPath}";
                 var dirPath2 = $@"{BackupWinXPath}\{dirKeyPath}";
-                var lnkPaths1 = Directory.Exists(dirPath1) ? Directory.GetFiles(dirPath1, "*.lnk") : new string[] { };
-                var lnkPaths2 = Directory.Exists(dirPath2) ? Directory.GetFiles(dirPath2, "*.lnk") : new string[] { };
+                var lnkPaths1 = Directory.Exists(dirPath1) ? Directory.GetFiles(dirPath1, "*.lnk") : [];
+                var lnkPaths2 = Directory.Exists(dirPath2) ? Directory.GetFiles(dirPath2, "*.lnk") : [];
 
                 // 两处WinX目录下的lnk文件路径合并，排序，反序
                 var editedlnkPaths = new List<string> { };
@@ -113,7 +113,7 @@ namespace ContextMenuManager.Controls
                 // 获取之前的路径元素
                 foreach (var lnkKeyPath in editedlnkPaths)
                 {
-                    lnkPaths.Add(lnkKeyPath.EndsWith("-") ? lnkKeyPath[..^1].Replace(WinXPath, BackupWinXPath) : lnkKeyPath);
+                    lnkPaths.Add(lnkKeyPath.EndsWith('-') ? lnkKeyPath[..^1].Replace(WinXPath, BackupWinXPath) : lnkKeyPath);
                 }
                 return lnkPaths;
             }
@@ -122,7 +122,7 @@ namespace ContextMenuManager.Controls
                 var dirPath = $@"{WinXPath}\{dirKeyPath}";
                 var lnkPaths = Directory.GetFiles(dirPath, "*.lnk");
                 Array.Reverse(lnkPaths);
-                return lnkPaths.ToList();
+                return [.. lnkPaths];
             }
         }
 
@@ -192,12 +192,12 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem()
         {
-            var newItem = new NewItem();
+            var newItem = new NewItem(this);
             AddItem(newItem);
             var btnCreateDir = new PictureButton(AppImage.NewFolder);
             ToolTipBox.SetToolTip(btnCreateDir, AppString.Tip.CreateGroup);
             newItem.AddCtr(btnCreateDir);
-            btnCreateDir.MouseDown += (sender, e) => CreateNewGroup();
+            btnCreateDir.Click += (sender, e) => CreateNewGroup();
             newItem.AddNewItem += () =>
             {
                 var dlg1 = new NewLnkFileDialog();
@@ -233,8 +233,8 @@ namespace ContextMenuManager.Controls
                     {
                         if (ctr is WinXGroupItem groupItem && groupItem.Text == dirName)
                         {
-                            var item = new WinXItem(lnkPath, groupItem) { Visible = !groupItem.IsFold };
-                            item.BtnMoveDown.Visible = item.BtnMoveUp.Visible = AppConfig.WinXSortable;
+                            var item = new WinXItem(this, lnkPath, groupItem) { Visible = !groupItem.IsFold };
+                            item.BtnMoveDown.Visibility = item.BtnMoveUp.Visibility = AppConfig.WinXSortable ? Visibility.Visible : Visibility.Collapsed;
                             InsertItem(item, GetItemIndex(groupItem) + 1);
                             groupItem.AddWinXItem(item);
                             break;
@@ -282,7 +282,7 @@ namespace ContextMenuManager.Controls
                 var defaultDirPath = dirPath.Replace(WinXPath, DefaultWinXPath);
                 CreateGroupPath(defaultDirPath);
             }
-            InsertItem(new WinXGroupItem(dirPath), 1);
+            InsertItem(new WinXGroupItem(this, dirPath), 1);
         }
 
         public static string[] GetGroupNames()
@@ -291,24 +291,40 @@ namespace ContextMenuManager.Controls
             var winxDi = new DirectoryInfo(WinXPath);
             foreach (var di in winxDi.GetDirectories()) items.Add(di.Name);
             items.Reverse();
-            return items.ToArray();
+            return [.. items];
         }
 
         private sealed class WinXSortableItem : MyListItem
         {
-            private readonly CheckBox chkWinXSortable = new();
+            private readonly CheckBox chkWinXSortable;
 
-            public WinXSortableItem(WinXList list)
+            public WinXSortableItem(WinXList list) : base(list)
             {
-                Text = AppString.Other.WinXSortable;
-                Image = AppImage.Sort;
-                chkWinXSortable.Cursor = Cursors.Hand;
-                AddCtr(chkWinXSortable);
-                chkWinXSortable.Checked = AppConfig.WinXSortable;
-                chkWinXSortable.CheckedChanged += (sender, e) =>
+                if (list != null)
                 {
-                    AppConfig.WinXSortable = chkWinXSortable.Checked; list.ClearItems(); list.LoadItems();
-                };
+                    chkWinXSortable = new()
+                    {
+                        MinWidth = 0
+                    };
+
+                    Text = AppString.Other.WinXSortable;
+                    Image = AppImage.Sort;
+                    AddCtr(chkWinXSortable);
+                    chkWinXSortable.IsChecked = AppConfig.WinXSortable;
+
+                    chkWinXSortable.Checked += (s, e) =>
+                    {
+                        AppConfig.WinXSortable = chkWinXSortable.IsChecked == true;
+                        list.ClearItems();
+                        list.LoadItems();
+                    };
+                    chkWinXSortable.Unchecked += (s, e) =>
+                    {
+                        AppConfig.WinXSortable = chkWinXSortable.IsChecked == true;
+                        list.ClearItems();
+                        list.LoadItems();
+                    };
+                }
             }
         }
     }

@@ -1,6 +1,4 @@
-﻿using ContextMenuManager.Methods;
-using iNKORE.UI.WPF.Modern.Controls;
-using System.Windows.Forms.Integration;
+using ContextMenuManager.Methods;
 
 namespace ContextMenuManager.Controls
 {
@@ -13,30 +11,17 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.SideBar.EnhanceMenu, owner);
-            dialog.CloseButtonText = ResourceString.OK;
-            dialog.FullSizeDesired = true;
 
             var list = new EnhanceMenuList
             {
                 ScenePath = ScenePath,
                 UseUserDic = XmlDicHelper.EnhanceMenuPathDic[ScenePath],
-                Dock = System.Windows.Forms.DockStyle.Fill
+                MinWidth = 500,
+                MinHeight = 400
             };
             list.LoadItems();
 
-            var host = new WindowsFormsHost
-            {
-                Child = new System.Windows.Forms.Panel
-                {
-                    Controls = { list },
-                    Height = 400,
-                    Width = 600
-                },
-                Height = 400,
-                Width = 600
-            };
-
-            dialog.Content = host;
+            dialog.Content = list;
             ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }

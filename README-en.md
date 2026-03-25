@@ -79,7 +79,7 @@ Made with [contrib.rocks](https://contrib.rocks).
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
   [Gitee Releases]: https://gitee.com/Jack251970/ContextMenuManager/releases
-  [.NET SDK]: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+  [.NET SDK]: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 
 ## ❤️ Thank You
 

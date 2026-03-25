@@ -1,4 +1,5 @@
 using ContextMenuManager.Methods;
+using ContextMenuManager.Properties;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
@@ -15,7 +16,7 @@ namespace ContextMenuManager.Views
         public AboutAppView()
         {
             InitializeComponent();
-            LogoImage.Source = ToBitmapSource(Properties.Resources.Logo);
+            LogoImage.Source = ToBitmapSource(AppResources.Logo);
             RefreshContent();
         }
 

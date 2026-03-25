@@ -28,7 +28,7 @@ namespace ContextMenuManager.Controls.Interfaces
             {
                 Text = command,
                 Title = AppString.Menu.ChangeCommand,
-                Size = new Size(530, 260).DpiZoom()
+                Size = new Size(530, 260)
             };
             if (dlg.ShowDialog() != true) return null;
             if (!CommandCanBeEmpty && string.IsNullOrEmpty(dlg.Text))

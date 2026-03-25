@@ -1,9 +1,9 @@
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
+using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Forms;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
 using WpfRadioButton = System.Windows.Controls.RadioButton;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
@@ -23,9 +23,6 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
-            dialog.DefaultButton = ContentDialogButton.Primary;
 
             var stackPanel = new WpfStackPanel { MinWidth = 460 };
             CreateCommonControls(stackPanel);
@@ -44,7 +41,8 @@ namespace ContextMenuManager.Controls
             var chkSE = new WpfCheckBox
             {
                 Content = "ShellExecute",
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                MinWidth = 0
             };
             // Logic for ShellExecute needs to be handled. Since ShellExecuteCheckBox was a WinForms control with its own dialog,
             // we'll need to store its state here if it's checked.
@@ -112,10 +110,12 @@ namespace ContextMenuManager.Controls
 
         protected override void OnBrowseClick()
         {
-            using var dlg = new OpenFileDialog();
-            dlg.DereferenceLinks = false;
-            dlg.Filter = $"{AppString.Dialog.Program}|*.exe|{AppString.Dialog.AllFiles}|*";
-            if (dlg.ShowDialog() != DialogResult.OK) return;
+            var dlg = new OpenFileDialog
+            {
+                DereferenceLinks = false,
+                Filter = $"{AppString.Dialog.Program}|*.exe|{AppString.Dialog.AllFiles}|*"
+            };
+            if (dlg.ShowDialog() != true) return;
             var filePath = dlg.FileName;
             var arguments = "";
             txtText.Text = Path.GetFileNameWithoutExtension(filePath);

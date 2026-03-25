@@ -9,8 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using WinForms = System.Windows.Forms;
 
 namespace ContextMenuManager.Views
 {
@@ -18,7 +16,10 @@ namespace ContextMenuManager.Views
     {
         private readonly BackupHelper helper = new();
 
-        public ObservableCollection<BackupEntry> BackupEntries { get; } = new();
+        public ObservableCollection<BackupEntry> BackupEntries { get; } = [];
+
+        public string Restore => AppString.Menu.RestoreBackup ?? "Restore backup";
+        public string Delete => AppString.Menu.DeleteBackup ?? "Delete backup";
 
         public Window OwnerWindow { get; set; }
 
@@ -112,7 +113,7 @@ namespace ContextMenuManager.Views
             var backupScenes = dlg.TvSelectedItems;
             if (backupScenes.Count == 0)
             {
-                System.Windows.MessageBox.Show(AppString.Message.NotChooseAnyBackup, AppString.General.AppName);
+                AppMessageBox.Show(AppString.Message.NotChooseAnyBackup, AppString.General.AppName);
                 return;
             }
 
@@ -123,26 +124,23 @@ namespace ContextMenuManager.Views
                 _ => BackupMode.All
             };
 
-            Mouse.OverrideCursor = Cursors.Wait;
-            var error = await Task.Run(() => LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
-                dialogInterface => helper.BackupItems(backupScenes, backupMode, dialogInterface)));
-            Mouse.OverrideCursor = null;
+            var success = LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
+                dialogInterface => helper.BackupItems(backupScenes, backupMode, dialogInterface));
 
-            if (error != null)
+            if (!success)
             {
-                System.Windows.MessageBox.Show(error.Message, AppString.General.AppName);
                 return;
             }
 
             LoadItems();
-            System.Windows.MessageBox.Show(
+            AppMessageBox.Show(
                 AppString.Message.BackupSucceeded.Replace("%s", helper.backupCount.ToString()),
                 AppString.General.AppName);
         }
 
         private async void RestoreBackupButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if ((sender as Button)?.CommandParameter is BackupEntry entry)
+            if (sender is Button { CommandParameter: BackupEntry entry })
             {
                 await RestoreBackupAsync(entry);
             }
@@ -153,12 +151,12 @@ namespace ContextMenuManager.Views
             BackupList.LoadBackupDataMetaData(entry.FilePath);
             if (BackupList.metaData.Version <= BackupHelper.DeprecatedBackupVersion)
             {
-                System.Windows.MessageBox.Show(AppString.Message.DeprecatedBackupVersion, AppString.General.AppName);
+                AppMessageBox.Show(AppString.Message.DeprecatedBackupVersion, AppString.General.AppName);
                 return;
             }
             if (BackupList.metaData.Version < BackupHelper.BackupVersion)
             {
-                System.Windows.MessageBox.Show(AppString.Message.OldBackupVersion, AppString.General.AppName);
+                AppMessageBox.Show(AppString.Message.OldBackupVersion, AppString.General.AppName);
             }
 
             var dlg = new BackupDialog
@@ -178,7 +176,7 @@ namespace ContextMenuManager.Views
             var restoreScenes = dlg.TvSelectedItems;
             if (restoreScenes.Count == 0)
             {
-                System.Windows.MessageBox.Show(AppString.Message.NotChooseAnyRestore, AppString.General.AppName);
+                AppMessageBox.Show(AppString.Message.NotChooseAnyRestore, AppString.General.AppName);
                 return;
             }
 
@@ -189,14 +187,11 @@ namespace ContextMenuManager.Views
                 _ => RestoreMode.NotHandleNotOnList
             };
 
-            Mouse.OverrideCursor = Cursors.Wait;
-            var error = await Task.Run(() => LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
-                dialogInterface => helper.RestoreItems(entry.FilePath, restoreScenes, restoreMode, dialogInterface)));
-            Mouse.OverrideCursor = null;
+            var success = LoadingDialog.ShowDialog(AppString.SideBar.BackupRestore,
+                dialogInterface => helper.RestoreItems(entry.FilePath, restoreScenes, restoreMode, dialogInterface));
 
-            if (error != null)
+            if (!success)
             {
-                System.Windows.MessageBox.Show(error.Message, AppString.General.AppName);
                 return;
             }
 
@@ -207,14 +202,13 @@ namespace ContextMenuManager.Views
         {
             if (restoreList == null || restoreList.Count == 0)
             {
-                System.Windows.MessageBox.Show(AppString.Message.NoNeedRestore, AppString.General.AppName);
+                AppMessageBox.Show(AppString.Message.NoNeedRestore, AppString.General.AppName);
                 return;
             }
 
             var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.RestoreDetails);
-            dialog.CloseButtonText = ResourceString.OK;
+            dialog.CloseButtonText = AppString.Dialog.OK;
             dialog.DefaultButton = ContentDialogButton.Close;
-            dialog.FullSizeDesired = true;
 
             var items = restoreList.Select(item =>
             {
@@ -275,11 +269,11 @@ namespace ContextMenuManager.Views
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = AppMessageBox.Show(
                 AppString.Message.ConfirmDeleteBackupPermanently,
                 AppString.General.AppName,
                 MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Warning);
+                MessageBoxImage.Warning);
 
             if (result != MessageBoxResult.Yes)
             {
@@ -296,7 +290,7 @@ namespace ContextMenuManager.Views
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message, AppString.General.AppName);
+                AppMessageBox.Show(ex.Message, AppString.General.AppName);
             }
         }
 

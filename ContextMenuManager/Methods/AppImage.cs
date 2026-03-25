@@ -1,69 +1,52 @@
-using ContextMenuManager.Properties;
 using System.Drawing;
+using ContextMenuManager.Properties;
 
 namespace ContextMenuManager.Methods
 {
     internal static class AppImage
     {
-        private static readonly double Scale = HighDpi.DpiScale / 1.5;
-        ///<summary>主页</summary>
-        public static readonly Image Home = Resources.Home.ResizeImage(Scale);
-        ///<summary>文件类型</summary>
-        public static readonly Image Type = Resources.Type.ResizeImage(Scale);
-        ///<summary>五角星</summary>
-        public static readonly Image Star = Resources.Star.ResizeImage(Scale);
-        ///<summary>刷新</summary>
-        public static readonly Image Refresh = Resources.Refresh.ResizeImage(Scale);
-        ///<summary>关于问号</summary>
-        public static readonly Image About = Resources.About.ResizeImage(Scale);
         ///<summary>设置按钮</summary>
-        public static readonly Image Setting = Resources.Setting.ResizeImage(Scale);
+        public static readonly Image Setting = AppResources.Setting;
         ///<summary>编辑子项</summary>
-        public static readonly Image SubItems = Resources.SubItems.ResizeImage(Scale);
+        public static readonly Image SubItems = AppResources.SubItems;
         ///<summary>删除</summary>
-        public static readonly Image Delete = Resources.Delete.ResizeImage(Scale);
+        public static readonly Image Delete = AppResources.Delete;
         ///<summary>添加</summary>
-        public static readonly Image AddNewItem = Resources.Add.ResizeImage(Scale);
+        public static readonly Image AddNewItem = AppResources.Add;
         ///<summary>添加已有项目</summary>
-        public static readonly Image AddExisting = Resources.AddExisting.ResizeImage(Scale);
+        public static readonly Image AddExisting = AppResources.AddExisting;
         ///<summary>添加分割线</summary>
-        public static readonly Image AddSeparator = Resources.AddSeparator.ResizeImage(Scale);
+        public static readonly Image AddSeparator = AppResources.AddSeparator;
         ///<summary>添加增强菜单</summary>
-        public static readonly Image Enhance = Resources.Enhance.ResizeImage(Scale);
+        public static readonly Image Enhance = AppResources.Enhance;
         ///<summary>打开</summary>
-        public static readonly Image Open = Resources.Open.ResizeImage(Scale);
-        ///<summary>下载</summary>
-        public static readonly Image DownLoad = Resources.DownLoad.ResizeImage(Scale);
-        ///<summary>翻译</summary>
-        public static readonly Image Translate = Resources.Translate.ResizeImage(Scale);
-        ///<summary>检查更新</summary>
-        public static readonly Image CheckUpdate = Resources.CheckUpdate.ResizeImage(Scale);
+        public static readonly Image Open = AppResources.Open;
         ///<summary>菜单风格</summary>
-        public static readonly Image ContextMenuStyle = Resources.ContextMenuStyle.ResizeImage(Scale);
+        public static readonly Image ContextMenuStyle = AppResources.ContextMenuStyle;
         ///<summary>排序</summary>
-        public static readonly Image Sort = Resources.Sort.ResizeImage(Scale);
+        public static readonly Image Sort = AppResources.Sort;
         ///<summary>上</summary>
-        public static readonly Image Up = Resources.Up.ResizeImage(Scale);
+        public static readonly Image Up = AppResources.Up;
         ///<summary>下</summary>
-        public static readonly Image Down = Up.RotateImage(RotateFlipType.Rotate180FlipNone);
+        public static readonly Image Down = AppResources.Down;
         ///<summary>新建项目</summary>
-        public static readonly Image NewItem = Resources.NewItem.ResizeImage(Scale);
+        public static readonly Image NewItem = AppResources.NewItem;
         ///<summary>备份项目</summary>
-        public static readonly Image BackupItem = Resources.BackupItem.ResizeImage(Scale);
+        public static readonly Image BackupItem = AppResources.BackupItem;
         ///<summary>新建文件夹</summary>
-        public static readonly Image NewFolder = Resources.NewFolder.ResizeImage(Scale);
+        public static readonly Image NewFolder = AppResources.NewFolder;
         ///<summary>自定义</summary>
-        public static readonly Image Custom = Resources.Custom.ResizeImage(Scale);
+        public static readonly Image Custom = AppResources.Custom;
         ///<summary>选择</summary>
-        public static readonly Image Select = Resources.Select.ResizeImage(Scale);
+        public static readonly Image Select = AppResources.Select;
         ///<summary>跳转</summary>
-        public static readonly Image Jump = Resources.Jump.ResizeImage(Scale);
+        public static readonly Image Jump = AppResources.Jump;
         ///<summary>Microsoft Store</summary>
-        public static readonly Image MicrosoftStore = Resources.MicrosoftStore.ResizeImage(Scale);
+        public static readonly Image MicrosoftStore = AppResources.MicrosoftStore;
         ///<summary>用户</summary>
-        public static readonly Image User = Resources.User.ResizeImage(Scale);
+        public static readonly Image User = AppResources.User;
         ///<summary>网络</summary>
-        public static readonly Image Web = Resources.Web.ResizeImage(Scale);
+        public static readonly Image Web = AppResources.Web;
         ///<summary>系统文件</summary>
         public static readonly Image SystemFile = GetIconImage("imageres.dll", -67);
         ///<summary>资源不存在</summary>

@@ -2,7 +2,6 @@
 using Microsoft.Win32;
 using System;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
@@ -16,7 +15,7 @@ namespace ContextMenuManager.Controls
             //Win8及以上版本系统才有在应用商店中查找应用
             if (WinOsVersion.Current >= WinOsVersion.Win8)
             {
-                var storeItem = new VisibleRegRuleItem(VisibleRegRuleItem.UseStoreOpenWith);
+                var storeItem = new VisibleRegRuleItem(this, VisibleRegRuleItem.UseStoreOpenWith);
                 InsertItem(storeItem, 1);
             }
         }
@@ -45,7 +44,7 @@ namespace ContextMenuManager.Controls
                 var command = commandKey?.GetValue("")?.ToString();
                 if (ObjectPath.ExtractFilePath(command) != null)
                 {
-                    var item = new OpenWithItem(commandKey.Name);
+                    var item = new OpenWithItem(this, commandKey.Name);
                     AddItem(item);
                 }
             }
@@ -53,13 +52,13 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem()
         {
-            var newItem = new NewItem();
+            var newItem = new NewItem(this);
             InsertItem(newItem, 0);
             newItem.AddNewItem += () =>
             {
                 var dlg = new NewOpenWithDialog();
                 if (dlg.ShowDialog() == true)
-                    InsertItem(new OpenWithItem(dlg.RegPath), 2);
+                    InsertItem(new OpenWithItem(this, dlg.RegPath), 2);
             };
         }
     }

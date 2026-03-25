@@ -1,5 +1,5 @@
-﻿using ContextMenuManager.Methods;
-using System.Windows.Forms;
+using ContextMenuManager.Methods;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -7,7 +7,7 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         string RegPath { get; }
         string ValueName { get; }
-        ContextMenuStrip ContextMenuStrip { get; set; }
+        ContextMenu ContextMenu { get; set; }
         RegLocationMenuItem TsiRegLocation { get; set; }
     }
 
@@ -16,7 +16,7 @@ namespace ContextMenuManager.Controls.Interfaces
         public RegLocationMenuItem(ITsiRegPathItem item) : base(AppString.Menu.RegistryLocation)
         {
             Click += (sender, e) => ExternalProgram.JumpRegEdit(item.RegPath, item.ValueName, AppConfig.OpenMoreRegedit);
-            item.ContextMenuStrip.Opening += (sender, e) =>
+            item.ContextMenu.Opened += (sender, e) =>
             {
                 using var key = RegistryEx.GetRegistryKey(item.RegPath);
                 Visible = key != null;

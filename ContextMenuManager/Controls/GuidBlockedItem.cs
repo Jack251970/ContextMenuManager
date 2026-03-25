@@ -1,28 +1,37 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
 using System;
 using System.Linq;
-using System.Windows.Forms;
+using System.Windows.Controls;
+using System.Windows;
 
 namespace ContextMenuManager.Controls
 {
     internal class GuidBlockedItem : MyListItem, IBtnShowMenuItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiGuidItem, ITsiRegPathItem
     {
-        public GuidBlockedItem(string value)
+        public new GuidBlockedList List;
+
+        public GuidBlockedItem(GuidBlockedList list, string value) : base(list)
         {
-            InitializeComponents();
             Value = value;
+            if (list != null)
+            {
+                List = list;
+                InitializeComponents();
+            }
+            
             if (GuidEx.TryParse(value, out var guid))
             {
                 Guid = guid;
-                Image = GuidInfo.GetImage(guid);
+                if (list != null) Image = GuidInfo.GetImage(guid);
                 ItemFilePath = GuidInfo.GetFilePath(Guid);
             }
             else
             {
                 Guid = Guid.Empty;
-                Image = AppImage.SystemFile;
+                if (list != null) Image = AppImage.SystemFile;
             }
+
             Text = ItemText;
         }
 
@@ -65,8 +74,8 @@ namespace ContextMenuManager.Controls
         public HandleGuidMenuItem TsiHandleGuid { get; set; }
         public RegLocationMenuItem TsiRegLocation { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
-        private readonly RToolStripMenuItem TsiDelete = new(AppString.Menu.Delete);
+        private RToolStripMenuItem TsiDetails { get; set; }
+        private RToolStripMenuItem TsiDelete { get; set; }
 
         private void InitializeComponents()
         {
@@ -77,23 +86,33 @@ namespace ContextMenuManager.Controls
             TsiFileLocation = new FileLocationMenuItem(this);
             TsiRegLocation = new RegLocationMenuItem(this);
             TsiHandleGuid = new HandleGuidMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
+            TsiDelete = new(AppString.Menu.Delete);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] {TsiHandleGuid,
-                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDelete });
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch,
-                new RToolStripSeparator(), TsiFileProperties, TsiFileLocation, TsiRegLocation});
+            foreach (var item in new Control[] {TsiHandleGuid,
+                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDelete })
+            {
+                ContextMenu.Items.Add(item);
+            }
+            
+            foreach (var item in new Control[] { TsiSearch,
+                new RToolStripSeparator(), TsiFileProperties, TsiFileLocation, TsiRegLocation})
+            {
+                TsiDetails.Items.Add(item);
+            }
 
             TsiDelete.Click += (sender, e) => DeleteMe();
         }
 
         public void DeleteMe()
         {
-            if (AppMessageBox.Show(AppString.Message.ConfirmDelete, MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+            if (AppMessageBox.Show(AppString.Message.ConfirmDelete, null, MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
             Array.ForEach(GuidBlockedList.BlockedPaths, path => RegistryEx.DeleteValue(path, Value));
             if (!Guid.Equals(Guid.Empty)) ExplorerRestarter.Show();
-            var index = Parent.Controls.GetChildIndex(this);
-            index -= (index < Parent.Controls.Count - 1) ? 0 : 1;
-            Parent.Controls[index].Focus();
+            var index = List.GetItemIndex(this);
+            index -= (index < List.Controls.Count - 1) ? 0 : 1;
+            List.Controls.Remove(this);
+            List.Controls[index]?.Focus();
             Dispose();
         }
     }

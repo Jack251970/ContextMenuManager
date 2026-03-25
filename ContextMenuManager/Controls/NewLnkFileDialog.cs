@@ -24,8 +24,6 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
 
             var txtText = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
             var txtFilePath = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
@@ -65,7 +63,7 @@ namespace ContextMenuManager.Controls
             txtFilePath.TextChanged += (sender, e) =>
             {
                 var filePath = txtFilePath.Text;
-                if (Path.GetExtension(filePath).ToLower() == ".lnk")
+                if (Path.GetExtension(filePath).Equals(".lnk", System.StringComparison.CurrentCultureIgnoreCase))
                 {
                     using var shortcut = new ShellLink(filePath);
                     if (File.Exists(shortcut.TargetPath))
@@ -131,13 +129,14 @@ namespace ContextMenuManager.Controls
 
         private void BrowseFile(WpfTextBox txtFilePath, WpfTextBox txtArguments, WpfTextBox txtText)
         {
-            var dlg = new OpenFileDialog();
-            dlg.Filter = FileFilter;
-            dlg.DereferenceLinks = false;
+            var dlg = new OpenFileDialog
+            {
+                Filter = FileFilter,
+                DereferenceLinks = false
+            };
             if (dlg.ShowDialog() == true)
             {
                 var filePath = dlg.FileName;
-                var arguments = "";
                 txtFilePath.Text = filePath;
                 txtText.Text = Path.GetFileNameWithoutExtension(filePath);
 
@@ -154,15 +153,15 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        private void BrowseFolder(WpfTextBox txtFilePath, WpfTextBox txtText)
+        private static void BrowseFolder(WpfTextBox txtFilePath, WpfTextBox txtText)
         {
-            var dlg = new System.Windows.Forms.FolderBrowserDialog();
+            var dlg = new OpenFolderDialog();
             if (Directory.Exists(txtFilePath.Text))
-                dlg.SelectedPath = txtFilePath.Text;
-            if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                dlg.InitialDirectory = txtFilePath.Text;
+            if (dlg.ShowDialog() == true)
             {
-                txtFilePath.Text = dlg.SelectedPath;
-                txtText.Text = Path.GetFileName(dlg.SelectedPath);
+                txtFilePath.Text = dlg.FolderName;
+                txtText.Text = Path.GetFileName(dlg.FolderName);
             }
         }
     }

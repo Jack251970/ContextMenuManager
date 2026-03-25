@@ -1,5 +1,4 @@
 ﻿using ContextMenuManager.Methods;
-using iNKORE.UI.WPF.Modern.Controls;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -19,8 +18,6 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.RestoreDetails, owner);
-            dialog.CloseButtonText = ResourceString.OK;
-            dialog.FullSizeDesired = true;
 
             var restoreCount = RestoreData?.Count ?? 0;
             var lblRestore = new WpfTextBlock

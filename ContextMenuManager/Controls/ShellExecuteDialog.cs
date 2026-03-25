@@ -4,10 +4,6 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using WpfRadioButton = System.Windows.Controls.RadioButton;
-using WpfStackPanel = System.Windows.Controls.StackPanel;
-using WpfGrid = System.Windows.Controls.Grid;
-using WpfLabel = System.Windows.Controls.Label;
 
 namespace ContextMenuManager.Controls
 {
@@ -21,21 +17,18 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog("ShellExecute", owner);
-            dialog.PrimaryButtonText = ResourceString.OK;
-            dialog.CloseButtonText = ResourceString.Cancel;
-            dialog.DefaultButton = ContentDialogButton.Primary;
 
-            var stackPanel = new WpfStackPanel { MinWidth = 300 };
+            var stackPanel = new StackPanel { MinWidth = 300 };
 
             // Verb Selection
             var verbs = new[] { "open", "runas", "edit", "print", "find", "explore" };
-            var radioButtons = new WpfRadioButton[verbs.Length];
-            var verbPanel = new WpfStackPanel { Margin = new Thickness(0, 0, 0, 16) };
-            verbPanel.Children.Add(new WpfLabel { Content = "Verb", FontWeight = FontWeights.Bold });
+            var radioButtons = new RadioButton[verbs.Length];
+            var verbPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
+            verbPanel.Children.Add(new Label { Content = "Verb", FontWeight = FontWeights.Bold });
 
             for (int i = 0; i < verbs.Length; i++)
             {
-                radioButtons[i] = new WpfRadioButton
+                radioButtons[i] = new RadioButton
                 {
                     Content = verbs[i],
                     IsChecked = i == 0,
@@ -46,15 +39,15 @@ namespace ContextMenuManager.Controls
             stackPanel.Children.Add(verbPanel);
 
             // WindowStyle Selection
-            var stylePanel = new WpfStackPanel { Orientation = Orientation.Horizontal };
-            stylePanel.Children.Add(new WpfLabel { Content = "WindowStyle", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) });
+            var stylePanel = new StackPanel { Orientation = Orientation.Horizontal };
+            stylePanel.Children.Add(new Label { Content = "WindowStyle", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) });
             
             var numberBox = new NumberBox
             {
                 Value = 1,
                 Minimum = 0,
                 Maximum = 10,
-                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
+                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Hidden,
                 Width = 120
             };
             stylePanel.Children.Add(numberBox);

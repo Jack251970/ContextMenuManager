@@ -1,6 +1,5 @@
 ﻿using ContextMenuManager.Methods;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -20,9 +19,11 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             Click += (sender, e) =>
             {
-                var dlg = new IconDialog();
-                dlg.IconPath = item.IconPath;
-                dlg.IconIndex = item.IconIndex;
+                var dlg = new IconDialog
+                {
+                    IconPath = item.IconPath,
+                    IconIndex = item.IconIndex
+                };
                 if (dlg.ShowDialog() != true) return;
                 using var icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex);
                 Image image = icon?.ToBitmap();

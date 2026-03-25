@@ -121,8 +121,6 @@
                                                     <ui:HyperlinkButton
                                                         Margin="0,0,0,6"
                                                         Content="{Binding Name}"
-                                                        Cursor="{Binding Cursor}"
-                                                        Foreground="{Binding Foreground}"
                                                         NavigateUri="{Binding Url}" />
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

@@ -1,9 +1,10 @@
-﻿using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -38,9 +39,15 @@ namespace ContextMenuManager.Controls
         public static readonly string[] CmhParts = { "ContextMenuHandlers", "-ContextMenuHandlers" };
         public static readonly Guid LnkOpenGuid = new("00021401-0000-0000-c000-000000000046");
 
-        public ShellExItem(Guid guid, string regPath)
+        public new ShellList List;
+
+        public ShellExItem(ShellList list, Guid guid, string regPath) : base(list)
         {
-            InitializeComponents();
+            List = list;
+            if (list != null)
+            {
+                InitializeComponents();
+            }
             Guid = guid;
             RegPath = regPath;
         }
@@ -53,7 +60,7 @@ namespace ContextMenuManager.Controls
             {
                 regPath = value;
                 Text = ItemText;
-                Image = GuidInfo.GetImage(Guid);
+                if (List != null) Image = GuidInfo.GetImage(Guid);
             }
         }
 
@@ -126,20 +133,26 @@ namespace ContextMenuManager.Controls
             TsiRegExport = new RegExportMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiHandleGuid, new RToolStripSeparator(),
-                TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
+            foreach (var item in new Control[] { TsiHandleGuid, new RToolStripSeparator(),
+                TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                ContextMenu.Items.Add(item);
+            }
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new RToolStripSeparator(),
-                TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport});
+            foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
+                TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport})
+            {
+                TsiDetails.Items.Add(item);
+            }
 
-            ContextMenuStrip.Opening += (sender, e) => TsiDeleteMe.Enabled = !(Guid.Equals(LnkOpenGuid) && AppConfig.ProtectOpenItem);
+            ContextMenu.Opened += (sender, e) => TsiDeleteMe.IsEnabled = !(Guid.Equals(LnkOpenGuid) && AppConfig.ProtectOpenItem);
             ChkVisible.PreCheckChanging += TryProtectOpenItem;
         }
 
         public bool TryProtectOpenItem()
         {
-            if (!ChkVisible.Checked || !Guid.Equals(LnkOpenGuid) || !AppConfig.ProtectOpenItem) return true;
-            return AppMessageBox.Show(AppString.Message.PromptIsOpenItem, MessageBoxButtons.YesNo) == DialogResult.Yes;
+            if (!ChkVisible.IsOn || !Guid.Equals(LnkOpenGuid) || !AppConfig.ProtectOpenItem) return true;
+            return AppMessageBox.Show(AppString.Message.PromptIsOpenItem, null, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
         }
 
         public void DeleteMe()
