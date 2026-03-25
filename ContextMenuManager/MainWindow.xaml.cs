@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using DrawingSize = System.Drawing.Size;
 
@@ -68,13 +67,13 @@ namespace ContextMenuManager
             // First-run language download prompt
             Loaded += (_, _) => FirstRunDownloadLanguage();
 
-            ThemeManager.SetRequestedTheme(this, DarkModeHelper.IsDarkTheme ? ElementTheme.Dark : ElementTheme.Light);
+            DarkModeHelper_ThemeChanged(this, new EventArgs());
             DarkModeHelper.ThemeChanged += DarkModeHelper_ThemeChanged;
         }
 
         private void DarkModeHelper_ThemeChanged(object sender, EventArgs e)
         {
-            ThemeManager.SetRequestedTheme(this, DarkModeHelper.IsDarkTheme ? ElementTheme.Dark : ElementTheme.Light);
+            ThemeManager.Current.ApplicationTheme = DarkModeHelper.IsDarkTheme ? ApplicationTheme.Dark : ApplicationTheme.Light;
         }
 
         // Navigation building
