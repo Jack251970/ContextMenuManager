@@ -187,7 +187,7 @@ namespace ContextMenuManager.Controls
         public ShortcutCommandMenuItem TsiChangeCommand { get; set; }
         public RunAsAdministratorItem TsiAdministrator { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
+        private RToolStripMenuItem TsiDetails { get; set; }
 
         private void InitializeComponents()
         {
@@ -201,6 +201,7 @@ namespace ContextMenuManager.Controls
             TsiFileLocation = new FileLocationMenuItem(this);
             TsiFileProperties = new FilePropertiesMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
 
             foreach (var item in new Control[] { TsiChangeText, new RToolStripSeparator(),
                 TsiChangeIcon, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),

@@ -493,6 +493,7 @@ namespace ContextMenuManager.Controls
                 Scene = scene;
                 if (list != null)
                 {
+                    BtnSelect = new(AppImage.Select);
                     AddCtr(BtnSelect);
                     SetTextAndTip();
                     SetImage();
@@ -501,7 +502,7 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            private readonly PictureButton BtnSelect = new(AppImage.Select);
+            private PictureButton BtnSelect;
 
             public Scenes Scene { get; private set; }
             public string SelectedPath { get; set; }
