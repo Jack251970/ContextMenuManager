@@ -116,7 +116,7 @@ namespace ContextMenuManager.Controls
         protected readonly TextBlock txtTitle;
         protected readonly StackPanel flpControls;
 
-        protected MyList List;
+        public MyList List { get; protected set; }
 
         public MyListItem(MyList list)
         {

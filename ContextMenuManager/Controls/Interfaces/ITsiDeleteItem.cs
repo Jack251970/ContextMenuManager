@@ -41,7 +41,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     return;
                 }
                 var listItem = (MyListItem)item;
-                var list = (MyList)listItem.Control.Parent;
+                var list = listItem.List;
                 var index = list.GetItemIndex(listItem);
                 try
                 {
