@@ -134,7 +134,7 @@ namespace ContextMenuManager.Methods
                 if (blRc == false) return false;
 
                 //恢复特权的唯一标识符空间
-                blRc = LookupPrivilegeValue(null, sPrivilege, ref luid);
+                blRc = LookupPrivilegeValue(null!, sPrivilege, ref luid);
                 if (blRc == false) return false;
 
                 //建立或取消特权
@@ -190,6 +190,8 @@ namespace ContextMenuManager.Methods
                     //得到真正所有者
                     //IdentityReference oldId = security.GetOwner(typeof(SecurityIdentifier));
                     //SecurityIdentifier siTrustedInstaller = new SecurityIdentifier(oldId.ToString());
+
+                    if (id.User is null) throw new InvalidOperationException("Null user");
 
                     //使进程用户成为所有者
                     security.SetOwner(id.User);

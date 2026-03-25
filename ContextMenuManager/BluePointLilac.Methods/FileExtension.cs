@@ -3,6 +3,8 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
+#nullable enable
+
 namespace ContextMenuManager.Methods
 {
     public static class FileExtension
@@ -48,7 +50,7 @@ namespace ContextMenuManager.Methods
         public static string GetExtentionInfo(AssocStr assocStr, string extension)
         {
             uint pcchOut = 0;
-            AssocQueryString(AssocF.Verify, assocStr, extension, string.Empty, null, ref pcchOut);
+            AssocQueryString(AssocF.Verify, assocStr, extension, string.Empty, null!, ref pcchOut);
             var pszOut = new StringBuilder((int)pcchOut);
             AssocQueryString(AssocF.Verify, assocStr, extension, string.Empty, pszOut, ref pcchOut);
             return pszOut.ToString();
