@@ -607,8 +607,7 @@ namespace ContextMenuManager.Methods
                     if (WinOsVersion.Current == WinOsVersion.Vista) return;
                     scenePath = MENUPATH_LIBRARY; break;
                 case Scenes.CustomExtension:
-                    // TODO: 优化该场景备份速度，此处运行特别慢，尽管已经使用了线程优化
-                    var tasks = FileExtensionDialog.FileExtensionItems.Select(fileExtension => Task.Run(() =>
+                    foreach (var fileExtension in FileExtensionDialog.FileExtensionItems)
                     {
                         if (dialogInterface.IsCancelled) return;
                         // From: FileExtensionDialog.Extension
@@ -624,8 +623,7 @@ namespace ContextMenuManager.Methods
                         else scenePath = GetSysAssExtPath(extensionProperty);
                         currentExtension = extensionProperty;
                         GetShellListItems(scenePath, dialogInterface, currentExtension);
-                    }));
-                    await Task.WhenAll(tasks);
+                    }
                     return;
                 case Scenes.PerceivedType:
                     foreach (var perceivedType in PerceivedTypes)
