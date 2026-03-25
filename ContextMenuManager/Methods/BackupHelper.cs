@@ -607,7 +607,7 @@ namespace ContextMenuManager.Methods
                     if (WinOsVersion.Current == WinOsVersion.Vista) return;
                     scenePath = MENUPATH_LIBRARY; break;
                 case Scenes.CustomExtension:
-                    // TODO: 优化该场景备份速度，目前仍然特别慢，尽管已经使用了线程优化
+                    // TODO: 优化该场景备份速度，此处运行特别慢，尽管已经使用了线程优化
                     var tasks = FileExtensionDialog.FileExtensionItems.Select(fileExtension => Task.Run(() =>
                     {
                         if (dialogInterface.IsCancelled) return;
