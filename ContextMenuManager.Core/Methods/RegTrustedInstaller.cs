@@ -187,11 +187,15 @@ namespace ContextMenuManager.Methods
                     //打开没有权限的注册表路径
                     key = RegistryEx.GetRegistryKey(regPath, RegistryKeyPermissionCheck.ReadWriteSubTree, RegistryRights.TakeOwnership);
 
+                    if (key == null) throw new InvalidOperationException("Null registry key");
+
                     var security = key.GetAccessControl(AccessControlSections.All);
 
                     //得到真正所有者
                     //IdentityReference oldId = security.GetOwner(typeof(SecurityIdentifier));
                     //SecurityIdentifier siTrustedInstaller = new SecurityIdentifier(oldId.ToString());
+
+                    if (security == null) throw new InvalidOperationException("Null security");
 
                     if (id.User is null) throw new InvalidOperationException("Null user");
 
