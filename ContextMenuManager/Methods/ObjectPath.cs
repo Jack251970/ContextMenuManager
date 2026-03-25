@@ -135,7 +135,7 @@ namespace ContextMenuManager.Methods
                     while (index != -1);
                 }
                 FilePathDic.TryAdd(command, string.Empty);
-                return string.Empty;
+                return null;
             }
         }
 
