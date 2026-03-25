@@ -92,8 +92,4 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
   <ItemGroup>
     <Page Include="App.xaml" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ContextMenuManager.Core\ContextMenuManager.Core.csproj" />
-  </ItemGroup>
 </Project>
