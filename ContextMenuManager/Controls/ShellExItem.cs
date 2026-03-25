@@ -118,7 +118,7 @@ namespace ContextMenuManager.Controls
         public RegExportMenuItem TsiRegExport { get; set; }
         public HandleGuidMenuItem TsiHandleGuid { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
+        private RToolStripMenuItem TsiDetails { get; set; }
 
         private void InitializeComponents()
         {
@@ -132,6 +132,7 @@ namespace ContextMenuManager.Controls
             TsiRegLocation = new RegLocationMenuItem(this);
             TsiRegExport = new RegExportMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
 
             foreach (var item in new Control[] { TsiHandleGuid, new RToolStripSeparator(),
                 TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
