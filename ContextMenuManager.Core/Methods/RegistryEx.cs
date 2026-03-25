@@ -148,6 +148,31 @@ namespace ContextMenuManager.Methods
         /// <param name="create">是否创建新项</param>
         public static RegistryKey? GetRegistryKey(string regPath, bool writable = false, bool create = false)
         {
+            try
+            {
+                return GetRegistryKeyWithoutTakingOwnership(regPath , writable, create);
+            }
+            catch
+            {
+                return GetRegistryKeyWithTakingOwnership(regPath, writable, create);
+            }
+        }
+
+        private static RegistryKey? GetRegistryKeyWithoutTakingOwnership(string regPath, bool writable = false, bool create = false)
+        {
+            GetRootAndSubRegPath(regPath, out var root, out var keyPath);
+            using (root)
+            {
+                if (create) return root.CreateSubKey(keyPath, writable);
+                else
+                {
+                    return root.OpenSubKey(keyPath, writable);
+                }
+            }
+        }
+
+        private static RegistryKey? GetRegistryKeyWithTakingOwnership(string regPath, bool writable = false, bool create = false)
+        {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root)
             {
@@ -163,7 +188,10 @@ namespace ContextMenuManager.Methods
         public static RegistryKey? GetRegistryKey(string regPath, RegistryKeyPermissionCheck check, RegistryRights rights)
         {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
-            using (root) return root.OpenSubKey(keyPath, check, rights);
+            using (root)
+            {
+                return root.OpenSubKey(keyPath, check, rights);
+            }
         }
     }
 }
