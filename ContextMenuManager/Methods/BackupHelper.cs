@@ -829,7 +829,7 @@ namespace ContextMenuManager.Methods
                         foreach (XmlElement itemXE in sceneXN.ChildNodes)
                         {
                             if (dialogInterface.IsCancelled) return;
-                            if (GuidEx.TryParse(itemXE.GetAttribute("Guid"), out var guid))
+                            if (Guid.TryParse(itemXE.GetAttribute("Guid"), out var guid))
                             {
                                 if (guidList.Contains(guid)) continue;
                                 if (GuidInfo.GetFilePath(guid) == null) continue;
@@ -1107,7 +1107,7 @@ namespace ContextMenuManager.Methods
                         var guidList = groupXN.SelectNodes("Guid");
                         foreach (XmlNode guidXN in guidList)
                         {
-                            if (!GuidEx.TryParse(guidXN.InnerText, out var guid)) continue;
+                            if (!Guid.TryParse(guidXN.InnerText, out var guid)) continue;
                             if (!File.Exists(GuidInfo.GetFilePath(guid))) continue;
                             guids.Add(guid);
                         }
@@ -1384,7 +1384,7 @@ namespace ContextMenuManager.Methods
                 if (!XmlDicHelper.FileExists(itemXN)) continue;
                 if (!XmlDicHelper.JudgeCulture(itemXN)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXN)) continue;
-                if (!GuidEx.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
+                if (!Guid.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
                 var item = new EnhanceShellExItem(null)
                 {
                     FoldGroupItem = groupItem,

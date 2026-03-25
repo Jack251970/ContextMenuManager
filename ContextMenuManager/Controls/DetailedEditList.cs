@@ -28,7 +28,7 @@ namespace ContextMenuManager.Controls
                     var guidList = groupXN.SelectNodes("Guid");
                     foreach (XmlNode guidXN in guidList)
                     {
-                        if (!GuidEx.TryParse(guidXN.InnerText, out var guid)) continue;
+                        if (!Guid.TryParse(guidXN.InnerText, out var guid)) continue;
                         if (!File.Exists(GuidInfo.GetFilePath(guid))) continue;
                         if (GroupGuid != Guid.Empty && GroupGuid != guid) continue;
                         guids.Add(guid);

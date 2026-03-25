@@ -73,7 +73,7 @@ namespace ContextMenuManager.Methods
                 if (doc?.DocumentElement == null) continue;
                 foreach (XmlNode guidXN in doc.SelectNodes("Data/Group/Guid"))
                 {
-                    if (GuidEx.TryParse(guidXN.InnerText, out var guid))
+                    if (Guid.TryParse(guidXN.InnerText, out var guid))
                     {
                         if (DetailedEditGuidDic.ContainsKey(guid)) continue;
                         DetailedEditGuidDic.Add(guid, i == 1);

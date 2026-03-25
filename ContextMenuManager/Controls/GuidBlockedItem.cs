@@ -26,7 +26,7 @@ namespace ContextMenuManager.Controls
                 InitializeComponents();
             }
             
-            if (GuidEx.TryParse(value, out var guid))
+            if (Guid.TryParse(value, out var guid))
             {
                 Guid = guid;
                 if (list != null) Image = GuidInfo.GetImage(guid);
@@ -64,7 +64,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 string text;
-                if (GuidEx.TryParse(Value, out var guid)) text = GuidInfo.GetText(guid);
+                if (Guid.TryParse(Value, out var guid)) text = GuidInfo.GetText(guid);
                 else text = AppString.Message.MalformedGuid;
                 text += "\n" + Value;
                 return text;

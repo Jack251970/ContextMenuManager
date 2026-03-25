@@ -356,7 +356,7 @@ namespace ContextMenuManager.Controls
                 foreach (var item in keyValues)
                 {
                     var value = Registry.GetValue(item.Key, item.Value, null)?.ToString();
-                    if (GuidEx.TryParse(value, out var guid)) return guid;
+                    if (Guid.TryParse(value, out var guid)) return guid;
                 }
                 return Guid.Empty;
             }

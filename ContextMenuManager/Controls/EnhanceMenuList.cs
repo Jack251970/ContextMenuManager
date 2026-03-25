@@ -124,7 +124,7 @@ namespace ContextMenuManager.Controls
                 if (!XmlDicHelper.FileExists(itemXN)) continue;
                 if (!XmlDicHelper.JudgeCulture(itemXN)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXN)) continue;
-                if (!GuidEx.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
+                if (!Guid.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
                 var item = new EnhanceShellExItem(this)
                 {
                     FoldGroupItem = groupItem,

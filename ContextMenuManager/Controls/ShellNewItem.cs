@@ -100,7 +100,7 @@ namespace ContextMenuManager.Controls
                 }
                 using var cKey = oKey.OpenSubKey("CLSID");
                 var value = cKey?.GetValue("")?.ToString();
-                if (GuidEx.TryParse(value, out var guid))
+                if (Guid.TryParse(value, out var guid))
                 {
                     filePath = GuidInfo.GetFilePath(guid);
                     if (filePath != null) return filePath;

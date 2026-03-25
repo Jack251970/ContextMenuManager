@@ -43,9 +43,9 @@ namespace ContextMenuManager.Controls
             newItem.AddNewItem += () =>
             {
                 var dlg = new InputDialog { Title = AppString.Dialog.InputGuid };
-                if (GuidEx.TryParse(Clipboard.GetText(), out var guid)) dlg.Text = guid.ToString();
+                if (Guid.TryParse(Clipboard.GetText(), out var guid)) dlg.Text = guid.ToString();
                 if (dlg.ShowDialog() != true) return;
-                if (GuidEx.TryParse(dlg.Text, out guid))
+                if (Guid.TryParse(dlg.Text, out guid))
                 {
                     var value = guid.ToString("B");
                     Array.ForEach(BlockedPaths, path => Registry.SetValue(path, value, ""));

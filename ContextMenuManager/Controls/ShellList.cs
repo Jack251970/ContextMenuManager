@@ -409,7 +409,7 @@ namespace ContextMenuManager.Controls
                     {
                         foreach (XmlElement itemXE in sceneXN.ChildNodes)
                         {
-                            if (GuidEx.TryParse(itemXE.GetAttribute("Guid"), out var guid))
+                            if (Guid.TryParse(itemXE.GetAttribute("Guid"), out var guid))
                             {
                                 var isAdded = false;
                                 foreach (Control ctr in Controls)
@@ -893,9 +893,9 @@ namespace ContextMenuManager.Controls
         {
             var isDragDrop = Scene == Scenes.DragDrop;
             var dlg1 = new InputDialog { Title = AppString.Dialog.InputGuid };
-            if (GuidEx.TryParse(Clipboard.GetText(), out var guid)) dlg1.Text = guid.ToString();
+            if (Guid.TryParse(Clipboard.GetText(), out var guid)) dlg1.Text = guid.ToString();
             if (dlg1.ShowDialog() != true) return;
-            if (GuidEx.TryParse(dlg1.Text, out guid))
+            if (Guid.TryParse(dlg1.Text, out guid))
             {
                 if (isDragDrop)
                 {

@@ -24,8 +24,8 @@ namespace ContextMenuManager.Controls
                     try
                     {
                         using var key = cmKey.OpenSubKey(keyName);
-                        if (!GuidEx.TryParse(key.GetValue("")?.ToString(), out var guid))
-                            GuidEx.TryParse(keyName, out guid);
+                        if (!Guid.TryParse(key.GetValue("")?.ToString(), out var guid))
+                            Guid.TryParse(keyName, out guid);
                         if (!guid.Equals(Guid.Empty))
                             dic.Add(key.Name, guid);
                     }
