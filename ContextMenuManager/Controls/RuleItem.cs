@@ -5,6 +5,7 @@ using System;
 using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace ContextMenuManager.Controls
 {
@@ -334,8 +335,7 @@ namespace ContextMenuManager.Controls
                 LblValue = new()
                 {
                     BorderThickness = new Thickness(1),
-                    BorderBrush = System.Windows.Media.Brushes.Gray,
-                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Cursor = Cursors.Hand,
                 };
                 AddCtr(LblValue);
                 ToolTipBox.SetToolTip(LblValue, info.Tip);
