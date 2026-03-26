@@ -53,6 +53,7 @@ namespace ContextMenuManager
                 };
                 link.Inlines.Add(url);
                 link.NavigateUri = uri;
+                link.Click += (s, e) => SearchWeb.OpenInBrowserTab(url);
             }
             catch (Exception)
             {

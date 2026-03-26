@@ -107,7 +107,7 @@ namespace ContextMenuManager.Properties
         public static Image Up => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/Up.png");
         public static Image User => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/User.png");
         public static Image Web => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/Web.png");
-
+        public static Image BuyMeCoffe => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/BuyMeCoffe.png");
         public static string AppLanguageDic => GetText("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Texts/AppLanguageDic.ini");
         public static string GuidInfosDic => GetText("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Texts/GuidInfosDic.ini");
         public static string DetailedEditDic => GetText("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Texts/DetailedEditDic.xml");

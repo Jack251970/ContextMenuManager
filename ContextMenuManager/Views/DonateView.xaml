@@ -33,6 +33,15 @@
                         RenderOptions.BitmapScalingMode="HighQuality"
                         Stretch="Uniform" />
                 </Border>
+
+                <Image
+                    x:Name="BuyMeCoffeeImage"
+                    Width="151"
+                    Height="38"
+                    Cursor="Hand"
+                    MouseLeftButtonUp="BuyMeCoffeeImage_OnMouseLeftButtonUp"
+                    RenderOptions.BitmapScalingMode="HighQuality"
+                    Stretch="Uniform" />
             </StackPanel>
         </ScrollViewer>
     </Grid>
