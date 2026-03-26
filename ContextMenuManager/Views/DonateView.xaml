@@ -27,7 +27,7 @@
                     <Image
                         x:Name="QrImage"
                         Width="420"
-                        Height="420"
+                        Height="140"
                         Cursor="Hand"
                         MouseLeftButtonUp="QrImage_OnMouseLeftButtonUp"
                         RenderOptions.BitmapScalingMode="HighQuality"

@@ -41,19 +41,23 @@ namespace ContextMenuManager.Views
                 if (position.X < third)
                 {
                     SetQrImage(WechatQr);
+                    QrImage.Height *= 3;
                 }
                 else if (position.X < third * 2)
                 {
                     SetQrImage(AlipayQr);
+                    QrImage.Height *= 3;
                 }
                 else
                 {
                     SetQrImage(QqQr);
+                    QrImage.Height *= 3;
                 }
             }
             else
             {
                 SetQrImage(AllQr);
+                QrImage.Height /= 3;
             }
         }
 
