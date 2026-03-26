@@ -10,11 +10,8 @@ namespace ContextMenuManager.Methods
         {
             get
             {
-                if (_userLangReader == null)
-                {
-                    // 延迟初始化，确保AppConfig.LanguageIniPath已经被正确设置
-                    _userLangReader = new IniReader(AppConfig.LanguageIniPath);
-                }
+                // 延迟初始化，确保AppConfig.LanguageIniPath已经被正确设置
+                _userLangReader ??= new IniReader(AppConfig.LanguageIniPath);
                 return _userLangReader;
             }
         }
