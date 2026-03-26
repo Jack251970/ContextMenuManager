@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Properties;
+using System;
 using System.Globalization;
 using System.Text;
 using System.Windows;
@@ -11,6 +13,7 @@ namespace ContextMenuManager
         public ReportWindow(Exception exception)
         {
             InitializeComponent();
+            Icon = AppResources.Logo.ToBitmapSource();
             ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);
             SetException(exception);
         }

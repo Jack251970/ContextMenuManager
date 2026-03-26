@@ -1,10 +1,7 @@
 using ContextMenuManager.Methods;
 using ContextMenuManager.Properties;
 using System;
-using System.Runtime.InteropServices;
 using System.Windows.Controls;
-using System.Windows.Interop;
-using System.Windows.Media.Imaging;
 
 namespace ContextMenuManager.Views
 {
@@ -16,7 +13,7 @@ namespace ContextMenuManager.Views
         public AboutAppView()
         {
             InitializeComponent();
-            LogoImage.Source = ToBitmapSource(AppResources.Logo);
+            LogoImage.Source = AppResources.Logo.ToBitmapSource();
             RefreshContent();
         }
 
@@ -36,26 +33,5 @@ namespace ContextMenuManager.Views
         {
             Updater.Update(true);
         }
-
-        private static BitmapSource ToBitmapSource(System.Drawing.Bitmap bitmap)
-        {
-            var hBitmap = bitmap.GetHbitmap();
-            try
-            {
-                return Imaging.CreateBitmapSourceFromHBitmap(
-                    hBitmap,
-                    IntPtr.Zero,
-                    System.Windows.Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
-            }
-            finally
-            {
-                DeleteObject(hBitmap);
-            }
-        }
-
-        [DllImport("gdi32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool DeleteObject(IntPtr hObject);
     }
 }

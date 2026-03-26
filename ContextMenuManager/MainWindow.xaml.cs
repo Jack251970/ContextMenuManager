@@ -1,5 +1,6 @@
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
+using ContextMenuManager.Properties;
 using ContextMenuManager.Views;
 using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
@@ -45,6 +46,7 @@ namespace ContextMenuManager
             InitializeComponent();
 
             Title = AppString.General.AppName ?? "ContextMenuManager";
+            Icon = AppResources.Logo.ToBitmapSource();
             RefreshButton.Content = AppString.ToolBar.Refresh ?? "Refresh";
             ControlHelper.SetPlaceholderText(SearchBox, AppString.Other.SearchContent ?? "Search...");
             AppSettingView.OwnerWindow = this;

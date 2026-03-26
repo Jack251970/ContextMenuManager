@@ -46,7 +46,7 @@ namespace ContextMenuManager.Properties
         public static Image DownLoad => GetImage("DownLoad");
         public static Image Enhance => GetImage("Enhance");
         public static Image Jump => GetImage("Jump");
-        public static Bitmap Logo => (Bitmap)GetImage("Logo");
+        public static Image Logo => GetImage("Logo");
         public static Image MicrosoftStore => GetImage("MicrosoftStore");
         public static Image NewFolder => GetImage("NewFolder");
         public static Image NewItem => GetImage("NewItem");
