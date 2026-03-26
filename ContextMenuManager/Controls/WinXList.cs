@@ -1,10 +1,10 @@
+using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -296,31 +296,22 @@ namespace ContextMenuManager.Controls
 
         private sealed class WinXSortableItem : MyListItem
         {
-            private readonly CheckBox chkWinXSortable;
+            private readonly VisibleCheckBox chkWinXSortable;
 
             public WinXSortableItem(WinXList list) : base(list)
             {
                 if (list != null)
                 {
-                    chkWinXSortable = new()
-                    {
-                        MinWidth = 0
-                    };
+                    chkWinXSortable = new();
 
                     Text = AppString.Other.WinXSortable;
                     Image = AppImage.Sort;
                     AddCtr(chkWinXSortable);
-                    chkWinXSortable.IsChecked = AppConfig.WinXSortable;
+                    chkWinXSortable.IsOn = AppConfig.WinXSortable;
 
-                    chkWinXSortable.Checked += (s, e) =>
+                    chkWinXSortable.Toggled += (s, e) =>
                     {
-                        AppConfig.WinXSortable = chkWinXSortable.IsChecked == true;
-                        list.ClearItems();
-                        list.LoadItems();
-                    };
-                    chkWinXSortable.Unchecked += (s, e) =>
-                    {
-                        AppConfig.WinXSortable = chkWinXSortable.IsChecked == true;
+                        AppConfig.WinXSortable = chkWinXSortable.IsOn == true;
                         list.ClearItems();
                         list.LoadItems();
                     };
