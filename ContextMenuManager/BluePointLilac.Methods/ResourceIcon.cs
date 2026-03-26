@@ -26,6 +26,15 @@ namespace ContextMenuManager.Methods
         [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, FileInfoFlags uFlags);
 
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int nIndex);
+
+        // SM_CXICON = 11, SM_CYICON = 12
+        public static (int Width, int Height) IconSize => (
+            GetSystemMetrics(11),
+            GetSystemMetrics(12)
+        );
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private struct SHFILEINFO
         {
@@ -148,7 +157,7 @@ namespace ContextMenuManager.Methods
             if (iconIndex == -1)
             {
                 hInst = LoadLibrary(iconPath);
-                hIcons[0] = LoadImage(hInst, "#1", 1, System.Windows.Forms.SystemInformation.IconSize.Width, System.Windows.Forms.SystemInformation.IconSize.Height, 0);
+                hIcons[0] = LoadImage(hInst, "#1", 1, IconSize.Width, IconSize.Height, 0);
             }
             else ExtractIconEx(iconPath, iconIndex, hIcons, null, 1);
 
