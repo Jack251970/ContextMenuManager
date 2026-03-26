@@ -16,7 +16,10 @@ namespace ContextMenuManager.Controls
     {
         public string RegPath { get; private set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {

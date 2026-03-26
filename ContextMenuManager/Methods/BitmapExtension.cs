@@ -30,7 +30,7 @@ namespace ContextMenuManager.Methods
                 DeleteObject(hBitmap);
             }
         }
-        
+
         public static BitmapSource ToBitmapSource(this Image image)
         {
             return (image as Bitmap)?.ToBitmapSource();

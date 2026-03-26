@@ -1,11 +1,11 @@
-﻿using Microsoft.Win32;
+﻿using ContextMenuManager.Properties;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml;
-using ContextMenuManager.Properties;
 
 namespace ContextMenuManager.Methods
 {

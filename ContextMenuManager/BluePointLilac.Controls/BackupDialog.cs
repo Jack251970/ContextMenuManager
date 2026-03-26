@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using WpfOrientation = System.Windows.Controls.Orientation;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfComboBox = System.Windows.Controls.ComboBox;
+using WpfOrientation = System.Windows.Controls.Orientation;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 using WpfScrollViewer = System.Windows.Controls.ScrollViewer;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
@@ -25,8 +25,11 @@ namespace ContextMenuManager.Controls
         public string[] TvItems { get; set; }
         public List<string> TvSelectedItems { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
-        
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
+
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(Title, owner);
@@ -56,7 +59,7 @@ namespace ContextMenuManager.Controls
                 treePanel.Children.Add(panel);
             }
 
-            bool isUpdating = false;
+            var isUpdating = false;
 
             checkAll.Checked += (_, _) =>
             {

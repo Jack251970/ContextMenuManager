@@ -6,7 +6,10 @@ namespace ContextMenuManager.Controls
     {
         public string ScenePath { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {

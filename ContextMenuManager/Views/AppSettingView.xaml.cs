@@ -230,10 +230,7 @@ namespace ContextMenuManager.Views
             if (!isLoading)
             {
                 AppConfig.TopMost = TopMostCheckBox.IsOn;
-                if (OwnerWindow != null)
-                {
-                    OwnerWindow.Topmost = AppConfig.TopMost;
-                }
+                OwnerWindow?.Topmost = AppConfig.TopMost;
             }
         }
 

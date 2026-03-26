@@ -32,7 +32,7 @@ namespace ContextMenuManager.Views
 
         private void QrImage_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (ReferenceEquals(QrImage.Source, null))
+            if (QrImage.Source is null)
             {
                 return;
             }

@@ -37,7 +37,10 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public new bool ShowDialog() => RunDialog(null);
+        public new bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public new bool RunDialog(MainWindow owner)
         {

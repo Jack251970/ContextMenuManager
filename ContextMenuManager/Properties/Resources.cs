@@ -13,11 +13,11 @@ namespace ContextMenuManager.Properties
 
         private static Image GetImage(string name)
         {
-            string path = Path.Combine(ImagesPath, name + ".png");
+            var path = Path.Combine(ImagesPath, name + ".png");
             if (File.Exists(path)) return Image.FromFile(path);
-            
+
             // Try to find it in the project structure if not found in base directory (for debug/dev)
-            string devPath = Path.Combine(BasePath, "..", "..", "..", "Properties", "Resources", "Images", name + ".png");
+            var devPath = Path.Combine(BasePath, "..", "..", "..", "Properties", "Resources", "Images", name + ".png");
             if (File.Exists(devPath)) return Image.FromFile(devPath);
 
             return null;
@@ -25,10 +25,10 @@ namespace ContextMenuManager.Properties
 
         private static string GetText(string name, string extension = ".xml")
         {
-            string path = Path.Combine(TextsPath, name + extension);
+            var path = Path.Combine(TextsPath, name + extension);
             if (File.Exists(path)) return File.ReadAllText(path);
 
-            string devPath = Path.Combine(BasePath, "..", "..", "..", "Properties", "Resources", "Texts", name + extension);
+            var devPath = Path.Combine(BasePath, "..", "..", "..", "Properties", "Resources", "Texts", name + extension);
             if (File.Exists(devPath)) return File.ReadAllText(devPath);
 
             return string.Empty;

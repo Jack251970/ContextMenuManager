@@ -1,8 +1,8 @@
-using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
 using System;
-using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

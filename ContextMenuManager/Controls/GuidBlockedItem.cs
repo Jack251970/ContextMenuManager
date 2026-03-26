@@ -1,9 +1,9 @@
-using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Methods;
 using System;
 using System.Linq;
-using System.Windows.Controls;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -25,7 +25,7 @@ namespace ContextMenuManager.Controls
                 List = list;
                 InitializeComponents();
             }
-            
+
             if (Guid.TryParse(value, out var guid))
             {
                 Guid = guid;
@@ -100,7 +100,7 @@ namespace ContextMenuManager.Controls
             {
                 Control.ContextMenu.Items.Add(item);
             }
-            
+
             foreach (var item in new Control[] { TsiSearch,
                 new RToolStripSeparator(), TsiFileProperties, TsiFileLocation, TsiRegLocation})
             {

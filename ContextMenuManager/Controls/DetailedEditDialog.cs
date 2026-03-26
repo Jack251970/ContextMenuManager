@@ -7,12 +7,15 @@ namespace ContextMenuManager.Controls
     {
         public Guid GroupGuid { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(
-                AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid)), 
+                AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid)),
                 owner);
 
             var list = new DetailedEditList

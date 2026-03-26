@@ -1122,7 +1122,8 @@ namespace ContextMenuManager.Methods
                             if (string.IsNullOrEmpty(regPath)) regPath = groupItem.GroupPath;
                             else if (regPath.StartsWith('\\')) regPath = groupItem.GroupPath + regPath;
                             return regPath;
-                        };
+                        }
+                        ;
 
                         // 遍历groupItem内所有Item节点
                         foreach (XmlElement itemXE in groupXN.SelectNodes("Item"))

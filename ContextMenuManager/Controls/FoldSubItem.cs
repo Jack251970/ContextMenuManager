@@ -1,5 +1,5 @@
-using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Methods;
 using System;
 using System.IO;
 using System.Windows;
@@ -10,7 +10,7 @@ namespace ContextMenuManager.Controls
 {
     internal class FoldSubItem : MyListItem
     {
-        public FoldSubItem(MyList list) : base (list)
+        public FoldSubItem(MyList list) : base(list)
         {
 
         }
@@ -20,7 +20,7 @@ namespace ContextMenuManager.Controls
         public override void Indent()
         {
             var w = 40;
-            if(HasImage) imgIcon.Margin = new Thickness(imgIcon.Margin.Left + w, imgIcon.Margin.Top, imgIcon.Margin.Right, imgIcon.Margin.Bottom);
+            if (HasImage) imgIcon.Margin = new Thickness(imgIcon.Margin.Left + w, imgIcon.Margin.Top, imgIcon.Margin.Right, imgIcon.Margin.Bottom);
             else txtTitle.Margin = new Thickness(txtTitle.Margin.Left + w, txtTitle.Margin.Top, txtTitle.Margin.Right, txtTitle.Margin.Bottom);
         }
     }

@@ -22,7 +22,7 @@ namespace ContextMenuManager
             var paragraph = Hyperlink("Please open an issue:", websiteUrl);
             ErrorTextbox.Document.Blocks.Add(paragraph);
 
-            StringBuilder content = new StringBuilder();
+            var content = new StringBuilder();
             content.AppendLine();
             content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             content.AppendLine("Exception:");

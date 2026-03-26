@@ -17,7 +17,10 @@ namespace ContextMenuManager.Controls
         public string Text { get; set; }
         public Size Size { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {

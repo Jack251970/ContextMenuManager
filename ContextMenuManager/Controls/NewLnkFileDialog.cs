@@ -4,11 +4,11 @@ using Microsoft.Win32;
 using System.IO;
 using System.Windows;
 using WpfButton = System.Windows.Controls.Button;
+using WpfOrientation = System.Windows.Controls.Orientation;
 using WpfRadioButton = System.Windows.Controls.RadioButton;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
 using WpfTextBlock = System.Windows.Controls.TextBlock;
 using WpfTextBox = System.Windows.Controls.TextBox;
-using WpfOrientation = System.Windows.Controls.Orientation;
 
 namespace ContextMenuManager.Controls
 {
@@ -19,7 +19,10 @@ namespace ContextMenuManager.Controls
         public string Arguments { get; set; }
         public string FileFilter { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {

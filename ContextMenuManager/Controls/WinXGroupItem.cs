@@ -1,5 +1,5 @@
-using ContextMenuManager.Methods;
 using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Methods;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
@@ -126,10 +126,7 @@ namespace ContextMenuManager.Controls
         }
         public void RemoveWinXItem(WinXItem item)
         {
-            if (winXItems.Contains(item))
-            {
-                winXItems.Remove(item);
-            }
+            winXItems.Remove(item);
         }
 
         public VisibleCheckBox ChkVisible { get; set; }
@@ -150,13 +147,13 @@ namespace ContextMenuManager.Controls
             SetCtrIndex(ChkVisible, 2);
             TsiDeleteMe = new DeleteMeMenuItem(this);
             TsiChangeText = new ChangeTextMenuItem(this);
-            
+
             foreach (var item in new Control[] { new RToolStripSeparator(),
                 TsiChangeText, TsiRestoreDefault, new RToolStripSeparator(), TsiDeleteMe })
             {
                 ContextMenu.Items.Add(item);
             }
-            
+
             ContextMenu.Opened += (sender, e) => TsiRestoreDefault.IsEnabled = Directory.Exists(DefaultFolderPath);
             TsiRestoreDefault.Click += (sender, e) => RestoreDefault();
         }

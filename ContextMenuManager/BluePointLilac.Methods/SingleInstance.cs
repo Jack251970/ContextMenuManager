@@ -61,9 +61,9 @@ namespace ContextMenuManager.Methods
         public static bool InitializeAsFirstInstance()
         {
             // Build unique application Id and the IPC channel name.
-            string applicationIdentifier = InstanceMutexName + Environment.UserName;
+            var applicationIdentifier = InstanceMutexName + Environment.UserName;
 
-            string channelName = string.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
+            var channelName = string.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
 
             // Create mutex based on unique application Id to check if this is the first instance of the application. 
             SingleInstanceMutex = new Mutex(true, applicationIdentifier, out var firstInstance);
@@ -98,7 +98,7 @@ namespace ContextMenuManager.Methods
         /// <param name="channelName">Application's IPC channel name.</param>
         private static async Task CreateRemoteServiceAsync(string channelName)
         {
-            using NamedPipeServerStream pipeServer = new NamedPipeServerStream(channelName, PipeDirection.In);
+            using var pipeServer = new NamedPipeServerStream(channelName, PipeDirection.In);
             while (true)
             {
                 // Wait for connection to the pipe
@@ -122,7 +122,7 @@ namespace ContextMenuManager.Methods
         private static async Task SignalFirstInstanceAsync(string channelName)
         {
             // Create a client pipe connected to server
-            using NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", channelName, PipeDirection.Out);
+            using var pipeClient = new NamedPipeClientStream(".", channelName, PipeDirection.Out);
 
             // Connect to the available pipe
             await pipeClient.ConnectAsync(0);
@@ -185,7 +185,7 @@ namespace ContextMenuManager.Methods
             if (string.IsNullOrEmpty(appPath)) return;
 
             // 1. 处理参数：使用空格分隔，并确保路径带有双引号
-            string arguments = (args != null && args.Length > 0) ? string.Join(" ", args) : "";
+            var arguments = (args != null && args.Length > 0) ? string.Join(" ", args) : "";
 
             var contents = new List<string>
             {
@@ -210,7 +210,7 @@ namespace ContextMenuManager.Methods
 
             // 2. 关键点：用 Chr(34) 或多重引号包裹路径，防止空格截断
             // 最终命令形式应该是：wsh.Run """C:\Path With Space\App.exe"" args"
-            string runCommand = $"wsh.Run \"\"\"{appPath}\"\" {arguments}\", 1, False";
+            var runCommand = $"wsh.Run \"\"\"{appPath}\"\" {arguments}\", 1, False";
             contents.Add(runCommand);
 
             contents.Add("Set wsh = Nothing");

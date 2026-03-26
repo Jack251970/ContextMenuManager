@@ -3,7 +3,6 @@ using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -15,7 +14,10 @@ namespace ContextMenuManager.Controls
         public string Text { get; set; }
         public string ParentPath { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {
@@ -86,11 +88,11 @@ namespace ContextMenuManager.Controls
             var dialog = ContentDialogHost.CreateDialog(title, owner);
             dialog.IsPrimaryButtonEnabled = false;
             dialog.CloseButtonText = AppString.Dialog.OK;
-            
+
             list.MinWidth = 500;
             list.MinHeight = 400;
             dialog.Content = list;
-            
+
             ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }
@@ -571,7 +573,7 @@ namespace ContextMenuManager.Controls
                     btnAddExisting.Click += (sender, e) => AddExisting?.Invoke();
                     btnAddSeparator.Click += (sender, e) => AddSeparator?.Invoke();
                 }
-                
+
             }
 
             private readonly PictureButton btnAddExisting;

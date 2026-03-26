@@ -150,7 +150,7 @@ namespace ContextMenuManager.Methods
         {
             try
             {
-                return GetRegistryKeyWithoutTakingOwnership(regPath , writable, create);
+                return GetRegistryKeyWithoutTakingOwnership(regPath, writable, create);
             }
             catch
             {

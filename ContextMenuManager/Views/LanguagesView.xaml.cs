@@ -11,9 +11,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 
 namespace ContextMenuManager.Views
 {
@@ -492,8 +489,15 @@ namespace ContextMenuManager.Views
                 return dic;
             }
 
-            private static string Encode(string text) => text.Replace("\n", "\\n").Replace("\r", "\\r");
-            private static string Decode(string text) => (text ?? string.Empty).Replace("\\r", "\r").Replace("\\n", "\n");
+            private static string Encode(string text)
+            {
+                return text.Replace("\n", "\\n").Replace("\r", "\\r");
+            }
+
+            private static string Decode(string text)
+            {
+                return (text ?? string.Empty).Replace("\\r", "\r").Replace("\\n", "\n");
+            }
         }
     }
 }

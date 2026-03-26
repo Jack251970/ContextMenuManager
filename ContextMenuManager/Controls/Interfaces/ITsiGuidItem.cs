@@ -1,14 +1,14 @@
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Image = System.Drawing.Image;
 using WpfButton = System.Windows.Controls.Button;
 using WpfImage = System.Windows.Controls.Image;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
 using WpfTextBox = System.Windows.Controls.TextBox;
-using Image = System.Drawing.Image;
-using iNKORE.UI.WPF.Modern.Controls.Helpers;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -161,7 +161,10 @@ namespace ContextMenuManager.Controls.Interfaces
                 }
             }
 
-            public bool ShowDialog() => RunDialog(null);
+            public bool ShowDialog()
+            {
+                return RunDialog(null);
+            }
 
             public bool RunDialog(MainWindow owner)
             {
@@ -169,7 +172,7 @@ namespace ContextMenuManager.Controls.Interfaces
                 dialog.SecondaryButtonText = AppString.Dialog.DeleteGuidDic;
 
                 var stackPanel = new WpfStackPanel { MinWidth = 350 };
-                
+
                 var txtName = new WpfTextBox
                 {
                     Text = ItemText ?? string.Empty,
@@ -179,7 +182,7 @@ namespace ContextMenuManager.Controls.Interfaces
                 stackPanel.Children.Add(txtName);
 
                 var iconPanel = new WpfStackPanel { Orientation = Orientation.Horizontal };
-                
+
                 var imgIcon = new WpfImage
                 {
                     Width = 32,
@@ -214,18 +217,18 @@ namespace ContextMenuManager.Controls.Interfaces
                 };
 
                 var iconLabel = new Label { Content = AppString.Menu.ItemIcon, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
-                
+
                 iconPanel.Children.Add(iconLabel);
                 iconPanel.Children.Add(imgIcon);
                 iconPanel.Children.Add(btnBrowse);
-                
+
                 stackPanel.Children.Add(new Label { Content = AppString.Menu.ItemIcon, FontWeight = FontWeights.Bold });
                 stackPanel.Children.Add(iconPanel);
 
                 dialog.Content = stackPanel;
 
                 var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
-                
+
                 if (result == ContentDialogResult.Primary)
                 {
                     ItemText = txtName.Text;
@@ -236,7 +239,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     IsDelete = true;
                     return false;
                 }
-                
+
                 return false;
             }
         }

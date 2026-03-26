@@ -12,7 +12,10 @@ namespace ContextMenuManager.Controls
         public string Verb { get; set; }
         public int WindowStyle { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {
@@ -26,7 +29,7 @@ namespace ContextMenuManager.Controls
             var verbPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
             verbPanel.Children.Add(new Label { Content = "Verb", FontWeight = FontWeights.Bold });
 
-            for (int i = 0; i < verbs.Length; i++)
+            for (var i = 0; i < verbs.Length; i++)
             {
                 radioButtons[i] = new RadioButton
                 {
@@ -41,7 +44,7 @@ namespace ContextMenuManager.Controls
             // WindowStyle Selection
             var stylePanel = new StackPanel { Orientation = Orientation.Horizontal };
             stylePanel.Children.Add(new Label { Content = "WindowStyle", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) });
-            
+
             var numberBox = new NumberBox
             {
                 Value = 1,
@@ -58,7 +61,7 @@ namespace ContextMenuManager.Controls
             var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             if (result == ContentDialogResult.Primary)
             {
-                for (int i = 0; i < verbs.Length; i++)
+                for (var i = 0; i < verbs.Length; i++)
                 {
                     if (radioButtons[i].IsChecked == true)
                     {
@@ -82,21 +85,19 @@ namespace ContextMenuManager.Controls
 
             if (Environment.OSVersion.Version.Major >= 10)
             {
-                string winStyleStr;
-                switch (windowStyle)
+                var winStyleStr = windowStyle switch
                 {
-                    case 0: winStyleStr = "Hidden"; break;
-                    case 1: winStyleStr = "Normal"; break;
-                    case 2: winStyleStr = "Minimized"; break;
-                    case 3: winStyleStr = "Maximized"; break;
-                    default: winStyleStr = "Normal"; break;
-                }
+                    0 => "Hidden",
+                    1 => "Normal",
+                    2 => "Minimized",
+                    3 => "Maximized",
+                    _ => "Normal",
+                };
+                var psFileName = "'" + fileName.Replace("'", "''") + "'";
+                var psVerb = "'" + verb.Replace("'", "''") + "'";
+                var psArgs = "'" + arguments.Replace("'", "''") + "'";
 
-                string psFileName = "'" + fileName.Replace("'", "''") + "'";
-                string psVerb = "'" + verb.Replace("'", "''") + "'";
-                string psArgs = "'" + arguments.Replace("'", "''") + "'";
-
-                string psDirPart = "";
+                var psDirPart = "";
                 if (!string.IsNullOrWhiteSpace(directory))
                 {
                     psDirPart = $"-WorkingDirectory '{directory.Replace("'", "''")}'";

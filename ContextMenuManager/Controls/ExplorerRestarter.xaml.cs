@@ -1,5 +1,4 @@
 using ContextMenuManager.Methods;
-using System;
 using System.Windows;
 using System.Windows.Controls;
 

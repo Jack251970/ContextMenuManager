@@ -43,7 +43,10 @@ namespace ContextMenuManager.Controls.Interfaces
             public string Command { get; set; }
             public string Arguments { get; set; }
 
-            public bool ShowDialog() => RunDialog(null);
+            public bool ShowDialog()
+            {
+                return RunDialog(null);
+            }
 
             public bool RunDialog(MainWindow owner)
             {

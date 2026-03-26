@@ -31,7 +31,7 @@ namespace ContextMenuManager.Methods
             if (string.IsNullOrWhiteSpace(sb.ToString())) return;
             var lines = sb.ToString().Split(new[] { "\r\n", "\n" },
                 StringSplitOptions.RemoveEmptyEntries).ToList();//拆分为行
-            for (int i = 0; i < lines.Count; i++)
+            for (var i = 0; i < lines.Count; i++)
             {
                 lines[i] = lines[i].Trim();
             }

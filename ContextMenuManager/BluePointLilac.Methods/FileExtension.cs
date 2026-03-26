@@ -40,7 +40,7 @@ namespace ContextMenuManager.Methods
         }
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, 
+        private static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra,
             [Out] StringBuilder sOut, [In][Out] ref uint nOut);
 
         public const string FILEEXTSPATH = @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts";

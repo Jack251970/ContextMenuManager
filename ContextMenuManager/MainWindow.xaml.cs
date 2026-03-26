@@ -209,7 +209,7 @@ namespace ContextMenuManager
         private void NavigateTo(string tag)
         {
             ArgumentNullException.ThrowIfNull(tag);
-            
+
             if (currentTag == tag)
             {
                 return;
@@ -553,7 +553,7 @@ namespace ContextMenuManager
         private void FilterListItems(MyList listControl, string searchText)
         {
             var itemsToShow = new List<MyListItem>();
-            foreach (UIElement control in originalListItems)
+            foreach (var control in originalListItems)
             {
                 if (((MyUserControl)control).Item is not MyListItem item)
                 {

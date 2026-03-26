@@ -38,7 +38,7 @@ namespace ContextMenuManager.Methods
                     process.WaitForInputIdle();
 
                     // 等待主窗口句柄可用，最多等待5秒
-                    int retries = MAX_WINDOW_WAIT_RETRIES;
+                    var retries = MAX_WINDOW_WAIT_RETRIES;
                     while (retries-- > 0)
                     {
                         process.Refresh();
@@ -54,9 +54,9 @@ namespace ContextMenuManager.Methods
                 SetForegroundWindow(hMain);
 
                 // 等待树视图和列表视图控件就绪，最多等待5秒
-                IntPtr hTree = IntPtr.Zero;
-                IntPtr hList = IntPtr.Zero;
-                int retries2 = MAX_CHILD_WINDOW_WAIT_RETRIES;
+                var hTree = IntPtr.Zero;
+                var hList = IntPtr.Zero;
+                var retries2 = MAX_CHILD_WINDOW_WAIT_RETRIES;
                 while (retries2-- > 0)
                 {
                     hTree = FindWindowEx(hMain, IntPtr.Zero, "SysTreeView32", null);
@@ -192,7 +192,7 @@ namespace ContextMenuManager.Methods
             {
                 // 获取所有 explorer.exe 进程
                 var explorerProcesses = Process.GetProcessesByName("explorer");
-                
+
                 // 终止所有 explorer.exe 进程
                 foreach (var process in explorerProcesses)
                 {
@@ -214,10 +214,10 @@ namespace ContextMenuManager.Methods
                         }
                     }
                 }
-                
+
                 // 等待一小段时间确保所有进程已完全退出
                 Thread.Sleep(500);
-                
+
                 // 启动新的 explorer.exe 进程
                 Process.Start(new ProcessStartInfo
                 {
@@ -226,9 +226,9 @@ namespace ContextMenuManager.Methods
                 })?.Dispose();
             }
             catch (Exception ex) when (
-                ex is Win32Exception || 
-                ex is InvalidOperationException || 
-                ex is UnauthorizedAccessException)
+                ex is Win32Exception or
+                InvalidOperationException or
+                UnauthorizedAccessException)
             {
                 // 如果上述方法失败，回退到使用 taskkill
                 // 可能的原因：权限不足、进程保护等
@@ -253,9 +253,9 @@ namespace ContextMenuManager.Methods
                     })?.Dispose();
                 }
                 catch (Exception ex1) when (
-                    ex1 is Win32Exception ||
-                    ex1 is InvalidOperationException ||
-                    ex1 is UnauthorizedAccessException)
+                    ex1 is Win32Exception or
+                    InvalidOperationException or
+                    UnauthorizedAccessException)
                 {
                     // 两种方法都失败，静默失败避免程序崩溃
                     // 用户会看到 explorer 没有重启，可以手动处理

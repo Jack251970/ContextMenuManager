@@ -13,7 +13,10 @@ namespace ContextMenuManager.Controls
         public string[] Items { get; set; }
         public bool CanEdit { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {

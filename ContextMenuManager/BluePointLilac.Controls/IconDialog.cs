@@ -15,7 +15,10 @@ namespace ContextMenuManager.Controls
         public int IconIndex { get => iconIndex; set => iconIndex = value; }
         public string IconPath { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {

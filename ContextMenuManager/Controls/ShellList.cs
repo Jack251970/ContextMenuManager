@@ -502,7 +502,7 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            private PictureButton BtnSelect;
+            private readonly PictureButton BtnSelect;
 
             public Scenes Scene { get; private set; }
             public string SelectedPath { get; set; }
@@ -844,7 +844,7 @@ namespace ContextMenuManager.Controls
                 {
                     var srcPath = $@"{dlg.ShellPath}\{keyName}";
                     var dstPath = ObjectPath.GetNewPathWithIndex($@"{shellPath}\{keyName}", ObjectPath.PathType.Registry);
-                        
+
                     RegistryEx.CopyTo(srcPath, dstPath);
                     AddItem(new ShellItem(this, dstPath));
                 }

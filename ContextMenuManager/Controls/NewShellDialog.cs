@@ -4,10 +4,10 @@ using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Windows;
-using WpfStackPanel = System.Windows.Controls.StackPanel;
-using WpfRadioButton = System.Windows.Controls.RadioButton;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfOrientation = System.Windows.Controls.Orientation;
+using WpfRadioButton = System.Windows.Controls.RadioButton;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
 
 namespace ContextMenuManager.Controls
 {
@@ -18,7 +18,10 @@ namespace ContextMenuManager.Controls
         public string NewItemRegPath { get; private set; }//返回的新ShellItem的注册表路径
         public string NewItemKeyName => RegistryEx.GetKeyName(NewItemRegPath);
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {
@@ -47,7 +50,7 @@ namespace ContextMenuManager.Controls
             // Logic for ShellExecute needs to be handled. Since ShellExecuteCheckBox was a WinForms control with its own dialog,
             // we'll need to store its state here if it's checked.
             string seVerb = null;
-            int seWindowStyle = 0;
+            var seWindowStyle = 0;
 
             chkSE.Click += (s, e) =>
             {

@@ -178,7 +178,7 @@ namespace ContextMenuManager.Methods
 
 #if DEBUG
             // 在开发环境中使用项目根目录下的languages目录
-            string devLangsDir = $@"{AppContext.BaseDirectory}\..\languages";
+            var devLangsDir = $@"{AppContext.BaseDirectory}\..\languages";
             LanguageIniPath = $@"{devLangsDir}\{language}.ini";
             if (!File.Exists(LanguageIniPath))
             {
@@ -189,7 +189,7 @@ namespace ContextMenuManager.Methods
             // 在发布环境中使用Config\Languages目录
             LanguageIniPath = $@"{LangsDir}\{language}.ini";
 #endif
-            
+
             if (!File.Exists(LanguageIniPath))
             {
                 LanguageIniPath = "";

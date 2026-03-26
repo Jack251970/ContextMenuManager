@@ -1,11 +1,11 @@
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System.Windows;
+using WpfButton = System.Windows.Controls.Button;
+using WpfColumnDefinition = System.Windows.Controls.ColumnDefinition;
+using WpfGrid = System.Windows.Controls.Grid;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
 using WpfTextBox = System.Windows.Controls.TextBox;
-using WpfButton = System.Windows.Controls.Button;
-using WpfGrid = System.Windows.Controls.Grid;
-using WpfColumnDefinition = System.Windows.Controls.ColumnDefinition;
-using iNKORE.UI.WPF.Modern.Controls.Helpers;
 
 namespace ContextMenuManager.Controls
 {

@@ -14,7 +14,10 @@ namespace ContextMenuManager.Controls
         public string ShellPath { get; set; }
         public bool IsReference { get; set; }
 
-        public bool ShowDialog() => RunDialog(null);
+        public bool ShowDialog()
+        {
+            return RunDialog(null);
+        }
 
         public bool RunDialog(MainWindow owner)
         {
@@ -27,7 +30,7 @@ namespace ContextMenuManager.Controls
             };
 
             var dialog = ContentDialogHost.CreateDialog(
-                IsReference ? AppString.Dialog.CheckReference : AppString.Dialog.CheckCopy, 
+                IsReference ? AppString.Dialog.CheckReference : AppString.Dialog.CheckCopy,
                 owner);
 
             var stackPanel = new StackPanel();
@@ -55,7 +58,7 @@ namespace ContextMenuManager.Controls
                     var item = new StoreShellItem(list, regPath, IsReference);
                     item.SelectedChanged += () =>
                     {
-                        bool allSelected = true;
+                        var allSelected = true;
                         foreach (var ctrl in list.Controls)
                         {
                             if (ctrl.Item is StoreShellItem shellItem && !shellItem.IsSelected)

@@ -55,7 +55,7 @@ namespace ContextMenuManager.Methods
             if (FilePathDic.TryGetValue(command, out var value)) return value;
             else
             {
-                string filePath = string.Empty;
+                var filePath = string.Empty;
                 var partCmd = Environment.ExpandEnvironmentVariables(command).Replace(@"\\", @"\");
                 if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
                 {
@@ -79,11 +79,11 @@ namespace ContextMenuManager.Methods
                 }
                 else if (partCmd.StartsWith(PowerShellCommandPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    int idx = partCmd.IndexOf("-FilePath '", StringComparison.OrdinalIgnoreCase);
+                    var idx = partCmd.IndexOf("-FilePath '", StringComparison.OrdinalIgnoreCase);
                     if (idx != -1)
                     {
-                        int start = idx + 11;
-                        int end = partCmd.IndexOf('\'', start);
+                        var start = idx + 11;
+                        var end = partCmd.IndexOf('\'', start);
                         if (end != -1)
                         {
                             var fileName = partCmd[start..end].Replace("''", "'");

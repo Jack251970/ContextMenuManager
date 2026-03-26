@@ -1,5 +1,5 @@
-using System.Drawing;
 using ContextMenuManager.Properties;
+using System.Drawing;
 
 namespace ContextMenuManager.Methods
 {

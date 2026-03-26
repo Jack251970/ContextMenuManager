@@ -1,7 +1,7 @@
+using ContextMenuManager.Methods;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using ContextMenuManager.Methods;
 
 namespace ContextMenuManager.Controls
 {

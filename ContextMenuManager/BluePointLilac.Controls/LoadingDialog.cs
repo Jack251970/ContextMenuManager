@@ -137,7 +137,7 @@ namespace ContextMenuManager.Controls
                     {
                         dialog.progressBar.Value = value;
                     }
-                    
+
                     description = string.IsNullOrEmpty(description) ? "..." : description;
                     dialog.descriptionText.Text = description;
                 });
