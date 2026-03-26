@@ -151,6 +151,12 @@
                             <TextBlock x:Name="AutoBackupHint" Style="{StaticResource SettingHintStyle}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button
+                                x:Name="OpenBackupDirButton"
+                                Margin="0,0,12,0"
+                                Padding="14,7"
+                                VerticalAlignment="Center"
+                                Click="OpenBackupDirButton_OnClick" />
                             <ui:ToggleSwitch
                                 x:Name="AutoBackupCheckBox"
                                 MinWidth="0"
@@ -159,12 +165,6 @@
                                 OffContent=""
                                 OnContent=""
                                 Toggled="AutoBackupCheckBox_OnChanged" />
-                            <Button
-                                x:Name="OpenBackupDirButton"
-                                Margin="12,0,0,0"
-                                Padding="14,7"
-                                VerticalAlignment="Center"
-                                Click="OpenBackupDirButton_OnClick" />
                         </StackPanel>
                     </Grid>
 

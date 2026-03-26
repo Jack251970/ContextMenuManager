@@ -47,11 +47,11 @@
                     <TextBox
                         x:Name="SearchBox"
                         Grid.Row="0"
-                        Margin="8,4"
+                        Margin="16,8"
                         TextChanged="SearchBox_TextChanged" />
                     <Button
                         x:Name="RefreshButton"
-                        Margin="8,4,8,0"
+                        Margin="16,0,16,0"
                         HorizontalAlignment="Stretch"
                         Click="RefreshButton_Click" />
                 </StackPanel>
@@ -62,7 +62,10 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <controls:ExplorerRestarter x:Name="ExplorerRestarterBanner" Grid.Row="0" />
+                    <controls:ExplorerRestarter
+                        x:Name="ExplorerRestarterBanner"
+                        Grid.Row="0"
+                        Margin="15,6,15,6" />
                     <ContentControl
                         x:Name="WpfContentHost"
                         Grid.Row="1"

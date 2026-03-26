@@ -45,10 +45,7 @@
                 </StackPanel>
             </Border>
 
-            <Border
-                Grid.Row="1"
-                Margin="0,20,0,0"
-                Style="{StaticResource CardStyle}">
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <ui:HyperlinkButton x:Name="GitHubLinkText" Margin="0,18,0,0" />
 
