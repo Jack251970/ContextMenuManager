@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,34 +147,6 @@ namespace ContextMenuManager.Methods
 
     public static class SingleInstance
     {
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindowAsync(IntPtr hWnd, int cmdShow);
-
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        /// <summary>判断单实例程序是否正在运行</summary>
-        /// <remarks>若正在运行激活窗口</remarks>
-        public static bool IsRunning()
-        {
-            using var current = Process.GetCurrentProcess();
-            foreach (var process in Process.GetProcessesByName(current.ProcessName))
-            {
-                using (process)
-                {
-                    if (process.Id == current.Id) continue;
-                    if (process.MainModule.FileName == current.MainModule.FileName)
-                    {
-                        const int SW_RESTORE = 9;
-                        ShowWindowAsync(process.MainWindowHandle, SW_RESTORE);
-                        SetForegroundWindow(process.MainWindowHandle);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
         /// <summary>重启单实例程序</summary>
         /// <param name="args">重启程序时传入参数</param>
         /// <param name="updatePath">用于更新程序的新版本文件路径，为null则为普通重启</param>
