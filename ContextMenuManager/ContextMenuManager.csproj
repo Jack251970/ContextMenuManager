@@ -41,6 +41,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <NoWarn>$(NoWarn);WFO1000;CA1416</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+	
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <ErrorReport>send</ErrorReport>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
@@ -54,6 +55,7 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
     <FileAlignment>4096</FileAlignment>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
+	
   <ItemGroup>
 		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
@@ -61,35 +63,12 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
   </ItemGroup>
 	
   <ItemGroup>
-    <Content Include="Properties\Resources\Images\Enhance.png" />
-    <Content Include="Properties\Resources\Images\Jump.png" />
-    <Content Include="Properties\Resources\Images\Sort.png" />
-    <Content Include="Properties\Resources\Images\User.png" />
-    <Content Include="Properties\Resources\Images\Web.png" />
-    <Content Include="Properties\Resources\ShellNew\0.c" />
-    <Content Include="Properties\Resources\ShellNew\0.html" />
-    <Content Include="Properties\Resources\ShellNew\0.xml" />
-    <Content Include="Properties\Resources\Texts\UwpModeItemsDic.xml" />
     <Content Include="Properties\AppIcon.ico" />
-    <Content Include="Properties\Resources\Images\Custom.png" />
-    <Content Include="Properties\Resources\Images\NewFolder.png" />
-    <Content Include="Properties\Resources\Texts\EnhanceMenusDic.xml" />
-    <Content Include="Properties\Resources\Images\Add.png" />
-    <Content Include="Properties\Resources\Images\AddExisting.png" />
-    <Content Include="Properties\Resources\Images\AddSeparator.png" />
-    <Content Include="Properties\Resources\Images\Delete.png" />
-    <Content Include="Properties\Resources\Images\MicrosoftStore.png" />
-    <Content Include="Properties\Resources\Images\NewItem.png" />
-    <Content Include="Properties\Resources\Images\Open.png" />
-    <Content Include="Properties\Resources\Images\Setting.png" />
-    <Content Include="Properties\Resources\Images\SubItems.png" />
-    <Content Include="Properties\Resources\Images\Up.png" />
-		<Content Include="Properties\Resources\Images\Down.png" />
-    <Content Include="Properties\Resources\Images\Donate.png" />
-    <Content Include="Properties\Resources\Texts\DetailedEditDic.xml" />
+    <Resource Include="Properties\Resources\**\*.*" />
   </ItemGroup>
 
   <ItemGroup>
     <Page Include="App.xaml" />
   </ItemGroup>
+	
 </Project>
