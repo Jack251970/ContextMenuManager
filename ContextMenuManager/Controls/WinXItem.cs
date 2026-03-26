@@ -202,7 +202,7 @@ namespace ContextMenuManager.Controls
 
         public bool ChkChecked
         {
-            get => ItemVisible;
+            get => ChkVisible.IsOn;
             set => ChkVisible.IsOn = value;
         }
 
