@@ -106,13 +106,10 @@
                         ItemsSource="{Binding TranslatorGroups, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border
-                                    Margin="0,0,0,12"
-                                    Padding="0,0,0,12"
-                                    BorderThickness="0,0,0,1">
+                                <Border>
                                     <StackPanel>
                                         <TextBlock
-                                            FontSize="15"
+                                            Margin="0,8,0,0"
                                             FontWeight="SemiBold"
                                             Text="{Binding LanguageDisplayName}" />
                                         <ItemsControl Margin="0,10,0,0" ItemsSource="{Binding Translators}">
