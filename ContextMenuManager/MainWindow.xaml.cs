@@ -18,21 +18,21 @@ namespace ContextMenuManager
     {
         public static readonly string DefaultText = $"Ver: {InfoHelper.ProductVersion}    {InfoHelper.CompanyName}";
 
-        private readonly ShellList shellList = new();
-        private readonly ShellNewList shellNewList = new();
-        private readonly SendToList sendToList = new();
-        private readonly OpenWithList openWithList = new();
-        private readonly WinXList winXList = new();
-        private readonly EnhanceMenuList enhanceMenusList = new();
-        private readonly DetailedEditList detailedEditList = new();
-        private readonly GuidBlockedList guidBlockedList = new();
-        private readonly IEList iEList = new();
-        private readonly AppSettingView appSettingView = new();
-        private readonly LanguagesView languagesView = new();
-        private readonly BackupView backupView = new();
-        private readonly DictionariesView dictionariesView = new();
-        private readonly AboutAppView aboutAppView = new();
-        private readonly DonateView donateView = new();
+        private ShellList ShellList { get => field ??= new(); }
+        private ShellNewList ShellNewList { get => field ??= new(); }
+        private SendToList SendToList { get => field ??= new(); }
+        private OpenWithList OpenWithList { get => field ??= new(); }
+        private WinXList WinXList { get => field ??= new(); }
+        private EnhanceMenuList EnhanceMenusList { get => field ??= new(); }
+        private DetailedEditList DetailedEditList { get => field ??= new(); }
+        private GuidBlockedList GuidBlockedList { get => field ??= new(); }
+        private IEList IEList { get => field ??= new(); }
+        private AppSettingView AppSettingView { get => field ??= new(); }
+        private LanguagesView LanguagesView { get => field ??= new(); }
+        private BackupView BackupView { get => field ??= new(); }
+        private DictionariesView DictionariesView { get => field ??= new(); }
+        private AboutAppView AboutAppView { get => field ??= new(); }
+        private DonateView DonateView { get => field ??= new(); }
 
         private UIElement currentListControl;
         private string currentTag;
@@ -47,9 +47,9 @@ namespace ContextMenuManager
             Title = AppString.General.AppName ?? "ContextMenuManager";
             RefreshButton.Content = AppString.ToolBar.Refresh ?? "Refresh";
             ControlHelper.SetPlaceholderText(SearchBox, AppString.Other.SearchContent ?? "Search...");
-            appSettingView.OwnerWindow = this;
-            languagesView.OwnerWindow = this;
-            backupView.OwnerWindow = this;
+            AppSettingView.OwnerWindow = this;
+            LanguagesView.OwnerWindow = this;
+            BackupView.OwnerWindow = this;
 
             // Restore saved window size
             var savedSize = AppConfig.MainFormSize;
@@ -258,28 +258,28 @@ namespace ContextMenuManager
                 case "rule_customreg": LoadShell(Scenes.CustomRegPath); break;
 
                 case "about_settings":
-                    appSettingView.RefreshFromConfig();
-                    ShowControl(appSettingView);
+                    AppSettingView.RefreshFromConfig();
+                    ShowControl(AppSettingView);
                     break;
                 case "about_language":
-                    languagesView.LoadLanguages();
-                    ShowControl(languagesView);
+                    LanguagesView.LoadLanguages();
+                    ShowControl(LanguagesView);
                     break;
                 case "about_backup":
-                    backupView.LoadItems();
-                    ShowControl(backupView);
+                    BackupView.LoadItems();
+                    ShowControl(BackupView);
                     break;
                 case "about_dict":
-                    dictionariesView.LoadText();
-                    ShowControl(dictionariesView);
+                    DictionariesView.LoadText();
+                    ShowControl(DictionariesView);
                     break;
                 case "about_app":
-                    aboutAppView.RefreshContent();
-                    ShowControl(aboutAppView);
+                    AboutAppView.RefreshContent();
+                    ShowControl(AboutAppView);
                     break;
                 case "about_donate":
-                    donateView.RefreshContent();
-                    ShowControl(donateView);
+                    DonateView.RefreshContent();
+                    ShowControl(DonateView);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -456,25 +456,25 @@ namespace ContextMenuManager
         {
             switch (scene)
             {
-                case Scenes.New: shellNewList.LoadItems(); ShowControl(shellNewList); break;
-                case Scenes.SendTo: sendToList.LoadItems(); ShowControl(sendToList); break;
-                case Scenes.OpenWith: openWithList.LoadItems(); ShowControl(openWithList); break;
-                case Scenes.WinX: winXList.LoadItems(); ShowControl(winXList); break;
-                case Scenes.InternetExplorer: iEList.LoadItems(); ShowControl(iEList); break;
-                case Scenes.GuidBlocked: guidBlockedList.LoadItems(); ShowControl(guidBlockedList); break;
+                case Scenes.New: ShellNewList.LoadItems(); ShowControl(ShellNewList); break;
+                case Scenes.SendTo: SendToList.LoadItems(); ShowControl(SendToList); break;
+                case Scenes.OpenWith: OpenWithList.LoadItems(); ShowControl(OpenWithList); break;
+                case Scenes.WinX: WinXList.LoadItems(); ShowControl(WinXList); break;
+                case Scenes.InternetExplorer: IEList.LoadItems(); ShowControl(IEList); break;
+                case Scenes.GuidBlocked: GuidBlockedList.LoadItems(); ShowControl(GuidBlockedList); break;
                 case Scenes.EnhanceMenu:
-                    enhanceMenusList.ScenePath = null;
-                    enhanceMenusList.LoadItems();
-                    ShowControl(enhanceMenusList);
+                    EnhanceMenusList.ScenePath = null;
+                    EnhanceMenusList.LoadItems();
+                    ShowControl(EnhanceMenusList);
                     break;
                 case Scenes.DetailedEdit:
-                    detailedEditList.GroupGuid = Guid.Empty;
-                    detailedEditList.LoadItems();
-                    ShowControl(detailedEditList);
+                    DetailedEditList.GroupGuid = Guid.Empty;
+                    DetailedEditList.LoadItems();
+                    ShowControl(DetailedEditList);
                     break;
                 default:
-                    shellList.Scene = scene; shellList.LoadItems();
-                    ShowControl(shellList);
+                    ShellList.Scene = scene; ShellList.LoadItems();
+                    ShowControl(ShellList);
                     break;
             }
         }
@@ -656,7 +656,7 @@ namespace ContextMenuManager
             if (result == MessageBoxResult.Yes)
             {
                 NavigateTo("about_language");
-                languagesView.ShowLanguageDialog();
+                LanguagesView.ShowLanguageDialog();
             }
         }
     }
