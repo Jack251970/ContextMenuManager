@@ -43,7 +43,7 @@ namespace ContextMenuManager.Controls
 
                 using var commandKey = shellKey.OpenSubKey($@"{keyName}\command");
                 var command = commandKey?.GetValue("")?.ToString();
-                if (!string.IsNullOrEmpty(ObjectPath.ExtractFilePath(command)))
+                if (ObjectPath.ExtractFilePath(command) != null)
                 {
                     var item = new OpenWithItem(this, commandKey.Name);
                     AddItem(item);
