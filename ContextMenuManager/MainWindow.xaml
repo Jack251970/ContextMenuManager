@@ -51,7 +51,7 @@
                         TextChanged="SearchBox_TextChanged" />
                     <Button
                         x:Name="RefreshButton"
-                        Margin="8,4"
+                        Margin="8,4,8,0"
                         HorizontalAlignment="Stretch"
                         Click="RefreshButton_Click" />
                 </StackPanel>

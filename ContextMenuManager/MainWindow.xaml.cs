@@ -618,7 +618,7 @@ namespace ContextMenuManager
             if (ExplorerRestarterBanner.IsPendingRestart)
             {
                 var result = AppMessageBox.Show(
-                    ExplorerRestarterBanner.MessageText,
+                    AppString.Other.RestartExplorer,
                     AppString.General.AppName,
                     MessageBoxButton.OKCancel,
                     MessageBoxImage.Question);

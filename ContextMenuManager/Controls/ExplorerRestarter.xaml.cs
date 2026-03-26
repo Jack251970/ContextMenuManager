@@ -1,56 +1,43 @@
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
-    public partial class ExplorerRestarter : UserControl
+    public partial class ExplorerRestarter : InfoBar
     {
         private static ExplorerRestarter current;
-        private static bool isPendingRestart;
-        private static string pendingMessage = AppString.Other.RestartExplorer;
 
         public ExplorerRestarter()
         {
             InitializeComponent();
-            current = this;
-            MessageText = AppString.Other.RestartExplorer;
-            RestartButton.Content = AppString.Other.RestartExplorer;
-            RestartButton.ToolTip = AppString.Tip.RestartExplorer;
+            Message = AppString.Other.RestartExplorer;
+            Loaded += (_, _) =>
+            {
+                if (current != this)
+                {
+                    current = this;
+                }
+            };
             Unloaded += (_, _) =>
             {
-                if (ReferenceEquals(current, this))
+                if (current == this)
                 {
                     current = null;
                 }
             };
         }
 
-        public bool IsPendingRestart => Visibility == Visibility.Visible;
-        public static bool PendingRestart => isPendingRestart;
-        public static string PendingMessage => pendingMessage;
-
-        public string MessageText
-        {
-            get => MessageTextBlock.Text;
-            set => MessageTextBlock.Text = value;
-        }
+        public bool IsPendingRestart => IsOpen = true;
 
         public static void Show()
         {
-            isPendingRestart = true;
-            pendingMessage = AppString.Other.RestartExplorer;
-            current?.Dispatcher.Invoke(() =>
-            {
-                current.MessageText = pendingMessage;
-                current.Visibility = Visibility.Visible;
-            });
+            current?.Dispatcher.Invoke(() => current.IsOpen = true);
         }
 
         public static void Hide()
         {
-            isPendingRestart = false;
-            current?.Dispatcher.Invoke(() => current.Visibility = Visibility.Collapsed);
+            current?.Dispatcher.Invoke(() => current.IsOpen = false);
         }
 
         private void RestartButton_OnClick(object sender, RoutedEventArgs e)
