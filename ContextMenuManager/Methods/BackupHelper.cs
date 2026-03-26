@@ -746,7 +746,7 @@ namespace ContextMenuManager.Methods
             {
                 if (dialogInterface.IsCancelled) return;
                 var regPath = $@"{shellPath}\{keyName}";
-                var item = new ShellItem(null, regPath);
+                var item = new ShellItem(null, regPath, false);
                 var itemName = item.ItemText;
                 var ifItemInMenu = item.ItemVisible;
                 if (currentScene is Scenes.CustomExtension or Scenes.PerceivedType or Scenes.DirectoryType)
@@ -806,7 +806,7 @@ namespace ContextMenuManager.Methods
             foreach (var itemName in shellKey.GetSubKeyNames())
             {
                 if (AppConfig.HideSysStoreItems && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)) continue;
-                var item = new StoreShellItem(null, $@"{ShellItem.CommandStorePath}\{itemName}", true, false);
+                var item = new StoreShellItem(null, $@"{ShellItem.CommandStorePath}\{itemName}", true, false, false);
                 var regPath = item.RegPath;
                 var ifItemInMenu = item.ItemVisible;
                 BackupRestoreItem(item, itemName, itemName, BackupItemType.StoreShellItem, ifItemInMenu, currentScene);

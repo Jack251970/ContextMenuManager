@@ -55,7 +55,7 @@ namespace ContextMenuManager.Controls
                 {
                     if (Filter != null && !Filter(itemName)) continue;
                     var regPath = $@"{ShellPath}\{itemName}";
-                    var item = new StoreShellItem(list, regPath, IsReference);
+                    var item = new StoreShellItem(list, regPath, IsReference, true, true);
                     item.SelectedChanged += () =>
                     {
                         var allSelected = true;
@@ -88,7 +88,7 @@ namespace ContextMenuManager.Controls
 
     internal sealed class StoreShellItem : ShellItem
     {
-        public StoreShellItem(MyList list, string regPath, bool isPublic, bool isSelect = true) : base(list, regPath)
+        public StoreShellItem(MyList list, string regPath, bool isPublic, bool isSelect, bool isShellStoreDialog) : base(list, regPath, isShellStoreDialog)
         {
             IsPublic = isPublic;
             if (list != null)

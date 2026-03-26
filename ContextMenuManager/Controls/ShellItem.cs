@@ -35,9 +35,9 @@ namespace ContextMenuManager.Controls
             Bottom
         }
 
-        public ShellItem(MyList list, string regPath) : base(list)
+        public ShellItem(MyList list, string regPath, bool isShellStoreDialog) : base(list)
         {
-            if (list != null) InitializeComponents();
+            if (list != null) InitializeComponents(isShellStoreDialog);
             RegPath = regPath;
         }
 
@@ -391,10 +391,10 @@ namespace ContextMenuManager.Controls
         private RToolStripMenuItem TsiShowAsDisabled;
         private RToolStripMenuItem TsiClsidLocation;
 
-        private void InitializeComponents()
+        private void InitializeComponents(bool isShellStoreDialog)
         {
             BtnShowMenu = new MenuButton(this);
-            ChkVisible = new VisibleCheckBox(this);
+            ChkVisible = new VisibleCheckBox(this, isShellStoreDialog);
             TsiChangeText = new ChangeTextMenuItem(this);
             TsiChangeCommand = new ChangeCommandMenuItem(this);
             TsiChangeIcon = new ChangeIconMenuItem(this);

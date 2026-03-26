@@ -324,7 +324,7 @@ namespace ContextMenuManager.Controls
             RegTrustedInstaller.TakeRegTreeOwnerShip(shellKey.Name);
             foreach (var keyName in shellKey.GetSubKeyNames())
             {
-                var item = new ShellItem(this, $@"{shellPath}\{keyName}");
+                var item = new ShellItem(this, $@"{shellPath}\{keyName}", false);
                 AddItem(item);
             }
         }
@@ -394,7 +394,7 @@ namespace ContextMenuManager.Controls
             foreach (var itemName in shellKey.GetSubKeyNames())
             {
                 if (AppConfig.HideSysStoreItems && itemName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)) continue;
-                AddItem(new StoreShellItem(this, $@"{ShellItem.CommandStorePath}\{itemName}", true, false));
+                AddItem(new StoreShellItem(this, $@"{ShellItem.CommandStorePath}\{itemName}", true, false, false));
             }
         }
 
@@ -846,7 +846,7 @@ namespace ContextMenuManager.Controls
                     var dstPath = ObjectPath.GetNewPathWithIndex($@"{shellPath}\{keyName}", ObjectPath.PathType.Registry);
 
                     RegistryEx.CopyTo(srcPath, dstPath);
-                    AddItem(new ShellItem(this, dstPath));
+                    AddItem(new ShellItem(this, dstPath, false));
                 }
             };
 
@@ -882,8 +882,8 @@ namespace ContextMenuManager.Controls
                 if (Controls[i].Item is NewItem)
                 {
                     ShellItem item;
-                    if (Scene != Scenes.PublicReferences) item = new ShellItem(this, dlg.NewItemRegPath);
-                    else item = new StoreShellItem(this, dlg.NewItemRegPath, true, false);
+                    if (Scene != Scenes.PublicReferences) item = new ShellItem(this, dlg.NewItemRegPath, false);
+                    else item = new StoreShellItem(this, dlg.NewItemRegPath, true, false, false);
                     InsertItem(item, i + 1);
                     break;
                 }

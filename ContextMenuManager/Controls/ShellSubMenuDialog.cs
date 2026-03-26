@@ -129,7 +129,7 @@ namespace ContextMenuManager.Controls
                 {
                     using var key = shellKey.OpenSubKey(keyName);
                     MyListItem item;
-                    if (key != null) item = new SubShellItem(this, keyName);
+                    if (key != null) item = new SubShellItem(this, keyName, false);
                     else if (keyName == "|") item = new SeparatorItem(this);
                     else item = new InvalidItem(this, keyName);
                     AddItem(item);
@@ -147,7 +147,7 @@ namespace ContextMenuManager.Controls
                 if (!dlg.ShowDialog()) return;
                 SubKeyNames.Add(dlg.NewItemKeyName);
                 SaveSorting();
-                AddItem(new SubShellItem(this, dlg.NewItemKeyName));
+                AddItem(new SubShellItem(this, dlg.NewItemKeyName, false));
             }
 
             private void AddReference()
@@ -164,7 +164,7 @@ namespace ContextMenuManager.Controls
                 foreach (var keyName in dlg.SelectedKeyNames)
                 {
                     if (!SubShellTypeItem.CanAddMore(this)) return;
-                    AddItem(new SubShellItem(this, keyName));
+                    AddItem(new SubShellItem(this, keyName, false));
                     SubKeyNames.Add(keyName);
                     SaveSorting();
                 }
@@ -219,7 +219,7 @@ namespace ContextMenuManager.Controls
 
             private sealed class SubShellItem : SubShellTypeItem
             {
-                public SubShellItem(PulicMultiItemsList list, string keyName) : base(list, $@"{CommandStorePath}\{keyName}")
+                public SubShellItem(PulicMultiItemsList list, string keyName, bool isShellStoreDialog) : base(list, $@"{CommandStorePath}\{keyName}", isShellStoreDialog)
                 {
                     List = list;
                     if (list != null)
@@ -346,7 +346,7 @@ namespace ContextMenuManager.Controls
                     }
                     else
                     {
-                        AddItem(new SubShellItem(this, regPath));
+                        AddItem(new SubShellItem(this, regPath, false));
                     }
                 }
             }
@@ -360,7 +360,7 @@ namespace ContextMenuManager.Controls
                     ShellPath = ShellPath
                 };
                 if (!dlg.ShowDialog()) return;
-                AddItem(new SubShellItem(this, dlg.NewItemRegPath));
+                AddItem(new SubShellItem(this, dlg.NewItemRegPath, false));
             }
 
             private void AddSeparator()
@@ -397,7 +397,7 @@ namespace ContextMenuManager.Controls
                     var dstPath = ObjectPath.GetNewPathWithIndex($@"{ShellPath}\{keyName}", ObjectPath.PathType.Registry);
 
                     RegistryEx.CopyTo(srcPath, dstPath);
-                    AddItem(new SubShellItem(this, dstPath));
+                    AddItem(new SubShellItem(this, dstPath, false));
                 }
             }
 
@@ -448,7 +448,7 @@ namespace ContextMenuManager.Controls
 
             private sealed class SubShellItem : SubShellTypeItem
             {
-                public SubShellItem(PrivateMultiItemsList list, string regPath) : base(list, regPath)
+                public SubShellItem(PrivateMultiItemsList list, string regPath, bool isShellStoreDialog) : base(list, regPath, isShellStoreDialog)
                 {
                     List = list;
                     if (list != null)
@@ -529,7 +529,7 @@ namespace ContextMenuManager.Controls
 
         private class SubShellTypeItem : ShellItem, IBtnMoveUpDownItem
         {
-            public SubShellTypeItem(MyList list, string regPath) : base(list, regPath)
+            public SubShellTypeItem(MyList list, string regPath, bool isShellStoreDialog) : base(list, regPath, isShellStoreDialog)
             {
                 if (list != null)
                 {

@@ -27,7 +27,7 @@ namespace ContextMenuManager.Controls.Interfaces
             Toggled += VisibleCheckBox_Toggled;
         }
 
-        public VisibleCheckBox(IChkVisibleItem item) : this()
+        public VisibleCheckBox(IChkVisibleItem item, bool isShellStoreDialog = false) : this()
         {
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);
@@ -35,11 +35,18 @@ namespace ContextMenuManager.Controls.Interfaces
             listItem.Control.Loaded += (s, e) =>
             {
                 _loading = true;
-                IsOn = item.ItemVisible;
-                if (listItem is FoldSubItem subItem && subItem.FoldGroupItem != null) return;
-                if (AppConfig.HideDisabledItems) listItem.Visible = IsOn;
-                CheckChanged += () => item.ItemVisible = IsOn;
-                _loading = false;
+                try
+                {
+                    IsOn = item.ItemVisible;
+                    if (listItem is FoldSubItem subItem && subItem.FoldGroupItem != null) return;
+                    if (isShellStoreDialog) return;
+                    if (AppConfig.HideDisabledItems) listItem.Visible = IsOn;
+                }
+                finally
+                {
+                    CheckChanged += () => item.ItemVisible = IsOn;
+                    _loading = false;
+                }
             };
         }
 
