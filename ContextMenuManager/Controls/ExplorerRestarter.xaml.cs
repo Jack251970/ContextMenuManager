@@ -28,7 +28,7 @@ namespace ContextMenuManager.Controls
             };
         }
 
-        public bool IsPendingRestart => IsOpen = true;
+        public bool IsPendingRestart => IsOpen == true;
 
         public static void Show()
         {
