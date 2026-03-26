@@ -207,8 +207,6 @@ namespace ContextMenuManager.Views
             }
 
             var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.RestoreDetails);
-            dialog.IsPrimaryButtonEnabled = false;
-            dialog.DefaultButton = ContentDialogButton.Close;
 
             var items = restoreList.Select(item =>
             {
