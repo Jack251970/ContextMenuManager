@@ -17,9 +17,9 @@ namespace ContextMenuManager.Views
     public partial class LanguagesView : UserControl
     {
         private bool isLoading;
-        private readonly ObservableCollection<LanguageOption> languageOptions = new();
+        private readonly ObservableCollection<LanguageOption> languageOptions = [];
 
-        public ObservableCollection<TranslatorGroup> TranslatorGroups { get; } = new();
+        public ObservableCollection<TranslatorGroup> TranslatorGroups { get; } = [];
 
         public Window OwnerWindow { get; set; }
 
@@ -39,8 +39,6 @@ namespace ContextMenuManager.Views
             languageOptions.Clear();
             TranslatorGroups.Clear();
 
-            languageOptions.Add(new LanguageOption("default", "(default) 简体中文"));
-
             if (Directory.Exists(AppConfig.LangsDir))
             {
                 foreach (var fileName in Directory.GetFiles(AppConfig.LangsDir, "*.ini"))
@@ -58,8 +56,8 @@ namespace ContextMenuManager.Views
 
                     languageOptions.Add(new LanguageOption(langCode, languageName));
 
-                    var translators = translator.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
-                    var urls = translatorUrl.Split(new[] { "\\r\\n", "\\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    var translators = translator.Split(["\\r\\n", "\\n"], StringSplitOptions.RemoveEmptyEntries);
+                    var urls = translatorUrl.Split(["\\r\\n", "\\n"], StringSplitOptions.RemoveEmptyEntries);
                     var group = new TranslatorGroup(languageName);
 
                     for (var i = 0; i < translators.Length; i++)
@@ -400,7 +398,7 @@ namespace ContextMenuManager.Views
                 File.WriteAllText(dialog.FileName, builder.ToString(), Encoding.Unicode);
             }
 
-            private FrameworkElement BuildRoot()
+            private Grid BuildRoot()
             {
                 var browseButton = new Button
                 {
