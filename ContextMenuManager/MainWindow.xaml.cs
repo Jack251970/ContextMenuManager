@@ -54,7 +54,7 @@ namespace ContextMenuManager
             BackupView.OwnerWindow = this;
 
             // Restore saved window size
-            var savedSize = AppConfig.MainFormSize;
+            var savedSize = AppConfig.MainWindowSize;
             if (savedSize.Width >= 680 && savedSize.Height >= 450)
             {
                 Width = savedSize.Width;
@@ -631,7 +631,7 @@ namespace ContextMenuManager
                 }
             }
 
-            AppConfig.MainFormSize = new DrawingSize((int)Width, (int)Height);
+            AppConfig.MainWindowSize = new DrawingSize((int)Width, (int)Height);
             Opacity = 0;
         }
 

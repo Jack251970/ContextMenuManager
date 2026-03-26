@@ -317,11 +317,11 @@ namespace ContextMenuManager.Methods
             set => SetWindowValue("TopMost", value ? 1 : 0);
         }
 
-        public static Size MainFormSize
+        public static Size MainWindowSize
         {
             get
             {
-                var str = GetWindowValue("MainFormSize");
+                var str = GetWindowValue("MainWindowSize");
                 var index = str.IndexOf(',');
                 if (index == -1) return Size.Empty;
                 if (int.TryParse(str[..index], out var x))
@@ -329,7 +329,7 @@ namespace ContextMenuManager.Methods
                         return new Size(x, y);
                 return Size.Empty;
             }
-            set => SetWindowValue("MainFormSize", value.Width + "," + value.Height);
+            set => SetWindowValue("MainWindowSize", value.Width + "," + value.Height);
         }
     }
 }
