@@ -1137,12 +1137,11 @@ namespace ContextMenuManager.Methods
                                 // 获取文本、提示文本
                                 foreach (XmlElement textXE in itemXE.SelectNodes("Text"))
                                 {
-                                    // TODO: 在备份的时候应该忽视Culture属性！在中英文系统之间备份时会导致备份的KeyName不同
-                                    if (XmlDicHelper.JudgeCulture(textXE)) info.Text = ResourceString.GetDirectString(textXE.GetAttribute("Value"));
+                                    if (XmlDicHelper.JudgeCulture(textXE, true)) info.Text = ResourceString.GetDirectString(textXE.GetAttribute("Value"));
                                 }
                                 foreach (XmlElement tipXE in itemXE.SelectNodes("Tip"))
                                 {
-                                    if (XmlDicHelper.JudgeCulture(tipXE)) info.Tip = ResourceString.GetDirectString(tipXE.GetAttribute("Value"));
+                                    if (XmlDicHelper.JudgeCulture(tipXE, true)) info.Tip = ResourceString.GetDirectString(tipXE.GetAttribute("Value"));
                                 }
                                 info.RestartExplorer = itemXE.SelectSingleNode("RestartExplorer") != null;
 
@@ -1312,7 +1311,7 @@ namespace ContextMenuManager.Methods
                         var path = xn.SelectSingleNode("RegPath")?.InnerText;
                         foreach (XmlElement textXE in xn.SelectNodes("Text"))
                         {
-                            if (XmlDicHelper.JudgeCulture(textXE))
+                            if (XmlDicHelper.JudgeCulture(textXE, true))
                             {
                                 text = ResourceString.GetDirectString(textXE.GetAttribute("Value"));
                             }
@@ -1339,7 +1338,7 @@ namespace ContextMenuManager.Methods
             foreach (XmlElement itemXE in shellXN.SelectNodes("Item"))
             {
                 if (!XmlDicHelper.FileExists(itemXE)) continue;
-                if (!XmlDicHelper.JudgeCulture(itemXE)) continue;
+                if (!XmlDicHelper.JudgeCulture(itemXE, true)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXE)) continue;
                 var keyName = itemXE.GetAttribute("KeyName");
                 if (string.IsNullOrWhiteSpace(keyName)) continue;
@@ -1351,7 +1350,7 @@ namespace ContextMenuManager.Methods
                 };
                 foreach (XmlElement szXE in itemXE.SelectNodes("Value/REG_SZ"))
                 {
-                    if (!XmlDicHelper.JudgeCulture(szXE)) continue;
+                    if (!XmlDicHelper.JudgeCulture(szXE, true)) continue;
                     if (szXE.HasAttribute("MUIVerb")) item.Text = ResourceString.GetDirectString(szXE.GetAttribute("MUIVerb"));
                 }
                 if (string.IsNullOrWhiteSpace(item.Text)) item.Text = keyName;
@@ -1380,7 +1379,7 @@ namespace ContextMenuManager.Methods
             foreach (XmlNode itemXN in shellExXN.SelectNodes("Item"))
             {
                 if (!XmlDicHelper.FileExists(itemXN)) continue;
-                if (!XmlDicHelper.JudgeCulture(itemXN)) continue;
+                if (!XmlDicHelper.JudgeCulture(itemXN, true)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXN)) continue;
                 if (!Guid.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
                 var item = new EnhanceShellExItem(null)
@@ -1392,7 +1391,7 @@ namespace ContextMenuManager.Methods
                 };
                 foreach (XmlNode textXE in itemXN.SelectNodes("Text"))
                 {
-                    if (XmlDicHelper.JudgeCulture(textXE))
+                    if (XmlDicHelper.JudgeCulture(textXE, true))
                     {
                         item.Text = ResourceString.GetDirectString(textXE.InnerText);
                     }

@@ -120,11 +120,16 @@ namespace ContextMenuManager.Methods
             return true;
         }
 
-        public static bool JudgeCulture(XmlNode itemXN)
+        public static bool JudgeCulture(XmlNode itemXN, bool isBackup = false)
         {
-            //return true;//测试用
             var culture = itemXN.SelectSingleNode("Culture")?.InnerText;
             if (string.IsNullOrEmpty(culture)) return true;
+            if (isBackup)
+            {
+                // 备份时不区分语言，默认只备份en-US的项
+                if (culture.Equals("en-US", StringComparison.OrdinalIgnoreCase)) return true;
+                else return false;
+            }
             if (culture.Equals(AppConfig.Language, StringComparison.OrdinalIgnoreCase)) return true;
             if (culture.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase)) return true;
             return false;
