@@ -1,5 +1,4 @@
-﻿using BluePointLilac.Methods;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.IO;
 
@@ -12,9 +11,9 @@ namespace ContextMenuManager.Methods
 
         public static string GetPackageName(string uwpName)
         {
-            if (string.IsNullOrEmpty(uwpName)) return null;
+            if (string.IsNullOrEmpty(uwpName)) return string.Empty;
             using var packageKey = RegistryEx.GetRegistryKey(PackageRegPath);
-            if (packageKey == null) return null;
+            if (packageKey == null) return string.Empty;
             foreach (var packageName in packageKey.GetSubKeyNames())
             {
                 if (packageName.StartsWith(uwpName, StringComparison.OrdinalIgnoreCase))
@@ -22,23 +21,23 @@ namespace ContextMenuManager.Methods
                     return packageName;
                 }
             }
-            return null;
+            return string.Empty;
         }
 
         public static string GetRegPath(string uwpName, Guid guid)
         {
             var packageName = GetPackageName(uwpName);
-            if (packageName == null) return null;
+            if (packageName == null) return string.Empty;
             else return $@"{PackageRegPath}\{packageName}\Class\{guid:B}";
         }
 
         public static string GetFilePath(string uwpName, Guid guid)
         {
             var regPath = GetRegPath(uwpName, guid);
-            if (regPath == null) return null;
+            if (regPath == null) return string.Empty;
             var packageName = GetPackageName(uwpName);
             using var pKey = RegistryEx.GetRegistryKey($@"{PackagesRegPath}\{packageName}");
-            if (pKey == null) return null;
+            if (pKey == null) return string.Empty;
             var dirPath = pKey.GetValue("Path")?.ToString();
             var dllPath = Registry.GetValue(regPath, "DllPath", null)?.ToString();
             var filePath = $@"{dirPath}\{dllPath}";
@@ -50,7 +49,7 @@ namespace ContextMenuManager.Methods
                 return filePath;
             }
             if (Directory.Exists(dirPath)) return dirPath;
-            return null;
+            return string.Empty;
         }
     }
 }

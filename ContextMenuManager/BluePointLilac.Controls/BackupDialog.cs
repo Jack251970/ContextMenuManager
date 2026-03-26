@@ -1,15 +1,20 @@
-﻿using BluePointLilac.Methods;
-using ContextMenuManager.BluePointLilac.Controls;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
+using System.Windows;
+using WpfCheckBox = System.Windows.Controls.CheckBox;
+using WpfComboBox = System.Windows.Controls.ComboBox;
+using WpfOrientation = System.Windows.Controls.Orientation;
+using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
+using WpfScrollViewer = System.Windows.Controls.ScrollViewer;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
-    public class BackupDialog : CommonDialog
+    public class BackupDialog
     {
         public string Title { get; set; }
         public string CmbTitle { get; set; }
@@ -20,295 +25,243 @@ namespace BluePointLilac.Controls
         public string[] TvItems { get; set; }
         public List<string> TvSelectedItems { get; set; }
 
-        public override void Reset() { }
-
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog()
         {
-            using var frm = new SelectForm();
-            frm.Text = Title;
-            frm.CmbTitle = CmbTitle;
-            frm.CmbItems = CmbItems;
-            frm.TvTitle = TvTitle;
-            frm.TvItems = TvItems;
-            frm.CmbSelectedText = CmbSelectedText ?? (CmbSelectedIndex >= 0 ? CmbItems?[CmbSelectedIndex] : null);
-            if (Control.FromHandle(hwndOwner) is Form owner) frm.TopMost = true;
-
-            if (frm.ShowDialog() == DialogResult.OK)
-            {
-                CmbSelectedText = frm.CmbSelectedText;
-                CmbSelectedIndex = frm.CmbSelectedIndex;
-                TvSelectedItems = frm.TvSelectedItems;
-                return true;
-            }
-            return false;
+            return RunDialog(null);
         }
 
-        private sealed class SelectForm : RForm
+        public bool RunDialog(MainWindow owner)
         {
-            public SelectForm()
+            var dialog = ContentDialogHost.CreateDialog(Title, owner);
+
+            var checkAll = new WpfCheckBox
             {
-                SuspendLayout();
-                AcceptButton = btnOK;
-                CancelButton = btnCancel;
-                Font = SystemFonts.MenuFont;
-                ShowIcon = ShowInTaskbar = MaximizeBox = MinimizeBox = false;
-                FormBorderStyle = FormBorderStyle.FixedSingle;
-                StartPosition = FormStartPosition.CenterParent;
-                InitializeComponents();
-                ResumeLayout();
-                InitTheme();
-                DarkModeHelper.ThemeChanged += OnThemeChanged;
-            }
-
-            public string CmbTitle
-            {
-                get => cmbInfo.Text;
-                set { cmbInfo.Text = value; cmbItems.Left = cmbInfo.Right; cmbItems.Width -= cmbInfo.Width; }
-            }
-
-            public string[] CmbItems
-            {
-                get
-                {
-                    var items = new string[cmbItems.Items.Count];
-                    cmbItems.Items.CopyTo(items, 0);
-                    return items;
-                }
-                set
-                {
-                    cmbItems.Items.Clear();
-                    cmbItems.Items.AddRange(value);
-                }
-            }
-
-            public int CmbSelectedIndex { get => cmbItems.SelectedIndex; set => cmbItems.SelectedIndex = value; }
-            public string CmbSelectedText { get => cmbItems.Text; set => cmbItems.Text = value; }
-            public string TvTitle { get => tvInfo.Text; set => tvInfo.Text = value; }
-
-            public string[] TvItems
-            {
-                get => tvValue;
-                set { tvValue = value; ShowTreeView(); }
-            }
-
-            public List<string> TvSelectedItems => GetSortedTvSelectedItems();
-
-            private string[] tvValue;
-            private readonly List<string> tvSelectedItems = new();
-            private bool isFirst = true;
-            private bool changeDone = false;
-
-            private readonly Label tvInfo = new() { AutoSize = true };
-            private readonly TreeView treeView = new()
-            {
-                ForeColor = DarkModeHelper.FormFore,
-                BackColor = DarkModeHelper.FormBack,
-                CheckBoxes = true,
-                Indent = 20.DpiZoom(),
-                ItemHeight = 25.DpiZoom(),
+                Content = AppString.Dialog.SelectAll,
+                Margin = new Thickness(0, 0, 0, 8),
+                MinWidth = 0
             };
 
-            private readonly CheckBox checkAll = new()
+            var comboBox = new WpfComboBox
             {
-                Name = "CheckAll",
-                Text = AppString.Dialog.SelectAll,
-                AutoSize = true,
+                MinWidth = 260,
+                ItemsSource = CmbItems ?? Array.Empty<string>(),
+                SelectedIndex = CmbSelectedIndex
+            };
+            if (!string.IsNullOrWhiteSpace(CmbSelectedText))
+            {
+                comboBox.Text = CmbSelectedText;
+            }
+
+            var nodeMap = CreateTreeNodes(TvItems ?? Array.Empty<string>());
+            var treePanel = new WpfStackPanel();
+            foreach (var panel in nodeMap.Select(x => x.Panel))
+            {
+                treePanel.Children.Add(panel);
+            }
+
+            var isUpdating = false;
+
+            checkAll.Checked += (_, _) =>
+            {
+                if (isUpdating) return;
+                isUpdating = true;
+                SetAll(nodeMap, true);
+                RefreshState(nodeMap, checkAll);
+                isUpdating = false;
+            };
+            checkAll.Unchecked += (_, _) =>
+            {
+                if (isUpdating) return;
+                isUpdating = true;
+                SetAll(nodeMap, false);
+                RefreshState(nodeMap, checkAll);
+                isUpdating = false;
             };
 
-            private readonly Label cmbInfo = new() { AutoSize = true };
-            private readonly RComboBox cmbItems = new()
+            foreach (var group in nodeMap)
             {
-                AutoCompleteMode = AutoCompleteMode.None,
-                AutoCompleteSource = AutoCompleteSource.None,
-                DropDownHeight = 300.DpiZoom(),
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                ImeMode = ImeMode.Disable
-            };
-
-            private readonly Button btnOK = new()
-            {
-                DialogResult = DialogResult.OK,
-                Text = ResourceString.OK,
-                AutoSize = true
-            };
-
-            private readonly Button btnCancel = new()
-            {
-                DialogResult = DialogResult.Cancel,
-                Text = ResourceString.Cancel,
-                AutoSize = true
-            };
-
-            private void InitializeComponents()
-            {
-                Controls.AddRange(new Control[] { tvInfo, treeView, checkAll, cmbInfo, cmbItems, btnOK, btnCancel });
-                var margin = 20.DpiZoom();
-                tvInfo.Top = checkAll.Top = margin;
-                tvInfo.Left = treeView.Left = cmbInfo.Left = margin;
-                treeView.Top = tvInfo.Bottom + 5.DpiZoom();
-                treeView.Height = 300.DpiZoom();
-                cmbInfo.Top = cmbItems.Top = treeView.Bottom + margin;
-                cmbItems.Left = cmbInfo.Right;
-                cmbItems.Width = 300.DpiZoom();
-                btnOK.Top = btnCancel.Top = cmbItems.Bottom + margin;
-                btnOK.Left = (cmbItems.Width + cmbInfo.Width + 2 * margin - margin) / 2 - btnOK.Width;
-                btnCancel.Left = btnOK.Right + margin;
-                ClientSize = new Size(cmbItems.Right + margin, btnCancel.Bottom + margin);
-                treeView.Width = ClientSize.Width - 2 * margin;
-                checkAll.Left = treeView.Right - checkAll.Width;
-                checkAll.Click += CheckAll_Click;
-                cmbItems.AutosizeDropDownWidth();
-
-                treeView.BeforeCheck += TreeView_BeforeCheck;
-                treeView.AfterSelect += TreeView_AfterSelect;
-                treeView.AfterCheck += TreeView_AfterCheck;
-            }
-
-            private new void InitTheme()
-            {
-                BackColor = DarkModeHelper.FormBack;
-                ForeColor = DarkModeHelper.FormFore;
-                tvInfo.ForeColor = DarkModeHelper.FormFore;
-                checkAll.ForeColor = DarkModeHelper.FormFore;
-                cmbInfo.ForeColor = DarkModeHelper.FormFore;
-                btnOK.BackColor = btnCancel.BackColor = DarkModeHelper.ButtonMain;
-                btnOK.ForeColor = btnCancel.ForeColor = DarkModeHelper.FormFore;
-                DarkModeHelper.AdjustControlColors(this);
-            }
-
-            private void OnThemeChanged(object sender, EventArgs e)
-            {
-                InitTheme();
-                Invalidate();
-            }
-
-            private void ShowTreeView()
-            {
-                treeView.Nodes.AddRange(new[]
+                group.Parent.Checked += (_, _) =>
                 {
-                    new TreeNode(AppString.ToolBar.Home),
-                    new TreeNode(AppString.ToolBar.Type),
-                    new TreeNode(AppString.ToolBar.Rule)
-                });
-
-                foreach (var item in TvItems)
+                    if (isUpdating) return;
+                    isUpdating = true;
+                    SetGroup(group, true);
+                    RefreshState(nodeMap, checkAll);
+                    isUpdating = false;
+                };
+                group.Parent.Unchecked += (_, _) =>
                 {
-                    var node = new TreeNode(item);
-                    if (BackupHelper.HomeBackupScenesText.Contains(item))
-                        treeView.Nodes[0].Nodes.Add(node);
-                    else if (BackupHelper.TypeBackupScenesText.Contains(item))
-                        treeView.Nodes[1].Nodes.Add(node);
-                    else if (BackupHelper.RuleBackupScenesText.Contains(item))
-                        treeView.Nodes[2].Nodes.Add(node);
-                }
-
-                for (var i = treeView.Nodes.Count - 1; i >= 0; i--)
+                    if (isUpdating) return;
+                    isUpdating = true;
+                    SetGroup(group, false);
+                    RefreshState(nodeMap, checkAll);
+                    isUpdating = false;
+                };
+                foreach (var child in group.Children)
                 {
-                    if (treeView.Nodes[i].Nodes.Count == 0)
-                        treeView.Nodes.RemoveAt(i);
-                }
-            }
-
-            private void TreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
-            {
-                if (e.Node == treeView.Nodes[0] && isFirst)
-                {
-                    e.Cancel = true;
-                    isFirst = false;
-                }
-            }
-
-            private void TreeView_AfterCheck(object sender, TreeViewEventArgs e)
-            {
-                if (e.Node == null || changeDone) return;
-
-                var node = e.Node;
-                changeDone = true;
-
-                if (node.Parent == null)
-                {
-                    foreach (TreeNode child in node.Nodes)
+                    child.Checked += (_, _) =>
                     {
-                        child.Checked = node.Checked;
-                        UpdateSelectedItems(child, node.Checked);
+                        if (isUpdating) return;
+                        isUpdating = true;
+                        RefreshState(nodeMap, checkAll);
+                        isUpdating = false;
+                    };
+                    child.Unchecked += (_, _) =>
+                    {
+                        if (isUpdating) return;
+                        isUpdating = true;
+                        RefreshState(nodeMap, checkAll);
+                        isUpdating = false;
+                    };
+                }
+            }
+
+            isUpdating = true;
+            RefreshState(nodeMap, checkAll);
+            isUpdating = false;
+
+            dialog.Content = new WpfStackPanel
+            {
+                Children =
+                {
+                    new WpfTextBlock { Text = TvTitle, Margin = new Thickness(0, 0, 0, 8) },
+                    checkAll,
+                    new WpfScrollViewer
+                    {
+                        Content = treePanel,
+                        VerticalScrollBarVisibility = WpfScrollBarVisibility.Auto,
+                        MaxHeight = 340
+                    },
+                    new WpfStackPanel
+                    {
+                        Orientation = WpfOrientation.Horizontal,
+                        Margin = new Thickness(0, 16, 0, 0),
+                        Children =
+                        {
+                            new WpfTextBlock
+                            {
+                                Text = CmbTitle,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                Margin = new Thickness(0, 0, 12, 0)
+                            },
+                            comboBox
+                        }
                     }
                 }
-                else
+            };
+
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            if (result != ContentDialogResult.Primary)
+            {
+                return false;
+            }
+
+            CmbSelectedIndex = comboBox.SelectedIndex;
+            CmbSelectedText = comboBox.SelectedItem as string ?? comboBox.Text;
+            TvSelectedItems = GetSortedSelection(nodeMap);
+            return true;
+        }
+
+        private static List<TreeGroup> CreateTreeNodes(string[] items)
+        {
+            var groups = new List<TreeGroup>
+            {
+                new(AppString.ToolBar.Home, BackupHelper.HomeBackupScenesText),
+                new(AppString.ToolBar.Type, BackupHelper.TypeBackupScenesText),
+                new(AppString.ToolBar.Rule, BackupHelper.RuleBackupScenesText)
+            };
+
+            foreach (var group in groups)
+            {
+                foreach (var item in items.Where(group.Match.Contains))
                 {
-                    UpdateParentNodeState(node.Parent);
-                    UpdateSelectedItems(node, node.Checked);
-                }
-
-                checkAll.Checked = tvSelectedItems.Count == tvValue.Length;
-                changeDone = false;
-            }
-
-            private void UpdateParentNodeState(TreeNode parent)
-            {
-                var anyChecked = parent.Nodes.Cast<TreeNode>().Any(n => n.Checked);
-                parent.Checked = anyChecked;
-            }
-
-            private void UpdateSelectedItems(TreeNode node, bool isChecked)
-            {
-                if (node.Parent == null) return;
-
-                if (isChecked && !tvSelectedItems.Contains(node.Text))
-                    tvSelectedItems.Add(node.Text);
-                else if (!isChecked)
-                    tvSelectedItems.Remove(node.Text);
-            }
-
-            private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
-            {
-                if (e.Node != null)
-                {
-                    e.Node.Checked = !e.Node.Checked;
-                    treeView.SelectedNode = null;
+                    group.AddChild(item);
                 }
             }
 
-            private void CheckAll_Click(object sender, EventArgs e)
+            return [.. groups.Where(g => g.Children.Count > 0)];
+        }
+
+        private static void SetAll(IEnumerable<TreeGroup> groups, bool isChecked)
+        {
+            foreach (var group in groups)
             {
-                var check = checkAll.Checked;
-                foreach (TreeNode parent in treeView.Nodes)
-                {
-                    parent.Checked = check;
-                    foreach (TreeNode child in parent.Nodes)
-                    {
-                        child.Checked = check;
-                        UpdateSelectedItems(child, check);
-                    }
-                }
+                SetGroup(group, isChecked);
+            }
+        }
+
+        private static void SetGroup(TreeGroup group, bool isChecked)
+        {
+            foreach (var child in group.Children)
+            {
+                child.IsChecked = isChecked;
+            }
+            group.Parent.IsChecked = isChecked;
+        }
+
+        private static void RefreshState(IEnumerable<TreeGroup> groups, WpfCheckBox checkAll)
+        {
+            foreach (var group in groups)
+            {
+                var allChecked = group.Children.All(x => x.IsChecked == true);
+                var anyChecked = group.Children.Any(x => x.IsChecked == true);
+                group.Parent.IsThreeState = false;
+                if (allChecked) group.Parent.IsChecked = true;
+                else if (anyChecked) group.Parent.IsChecked = null;
+                else group.Parent.IsChecked = false;
             }
 
-            private List<string> GetSortedTvSelectedItems()
+            var childNodes = groups.SelectMany(x => x.Children).ToArray();
+            checkAll.IsThreeState = false;
+            if (childNodes.Length > 0 && childNodes.All(x => x.IsChecked == true)) checkAll.IsChecked = true;
+            else if (childNodes.Any(x => x.IsChecked == true)) checkAll.IsChecked = null;
+            else checkAll.IsChecked = false;
+        }
+
+        private static List<string> GetSortedSelection(IEnumerable<TreeGroup> groups)
+        {
+            var selected = groups
+                .SelectMany(x => x.Children)
+                .Where(x => x.IsChecked == true)
+                .Select(x => x.Tag as string)
+                .Where(x => x != null)
+                .ToHashSet();
+
+            return BackupHelper.HomeBackupScenesText
+                .Concat(BackupHelper.TypeBackupScenesText)
+                .Concat(BackupHelper.RuleBackupScenesText)
+                .Where(selected.Contains)
+                .ToList();
+        }
+
+        private sealed class TreeGroup
+        {
+            public TreeGroup(string title, IEnumerable<string> match)
             {
-                var selected = treeView.Nodes
-                    .Cast<TreeNode>()
-                    .SelectMany(p => p.Nodes.Cast<TreeNode>())
-                    .Where(n => n.Checked)
-                    .Select(n => n.Text)
-                    .ToList();
-
-                var sorted = new List<string>();
-                var allItems = BackupHelper.HomeBackupScenesText
-                    .Concat(BackupHelper.TypeBackupScenesText)
-                    .Concat(BackupHelper.RuleBackupScenesText);
-
-                foreach (var item in allItems)
-                {
-                    if (selected.Contains(item))
-                        sorted.Add(item);
-                }
-
-                return sorted;
+                Match = [.. match];
+                Parent = new WpfCheckBox { Content = title, MinWidth = 0 };
+                ChildrenHost = new WpfStackPanel { Margin = new Thickness(24, 6, 0, 12) };
+                Panel = new WpfStackPanel();
+                Panel.Children.Add(Parent);
+                Panel.Children.Add(ChildrenHost);
             }
 
-            protected override void Dispose(bool disposing)
+            public string[] Match { get; }
+            public WpfCheckBox Parent { get; }
+            public WpfStackPanel ChildrenHost { get; }
+            public WpfStackPanel Panel { get; }
+            public List<WpfCheckBox> Children { get; } = [];
+
+            public void AddChild(string text)
             {
-                if (disposing) DarkModeHelper.ThemeChanged -= OnThemeChanged;
-                base.Dispose(disposing);
+                var child = new WpfCheckBox
+                {
+                    Content = text,
+                    Tag = text,
+                    Margin = new Thickness(0, 2, 0, 2),
+                    MinWidth = 0
+                };
+                Children.Add(child);
+                ChildrenHost.Children.Add(child);
             }
         }
     }

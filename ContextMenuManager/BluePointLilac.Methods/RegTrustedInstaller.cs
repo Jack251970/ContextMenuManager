@@ -4,7 +4,9 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
-namespace BluePointLilac.Methods
+#nullable enable
+
+namespace ContextMenuManager.Methods
 {
     /// 获取TrustedInstaller权限注册表项的所有权
     /// 代码作者：JPBlanc（原作者）、蓝点lilac（转载、修改）
@@ -134,7 +136,7 @@ namespace BluePointLilac.Methods
                 if (blRc == false) return false;
 
                 //恢复特权的唯一标识符空间
-                blRc = LookupPrivilegeValue(null, sPrivilege, ref luid);
+                blRc = LookupPrivilegeValue(null!, sPrivilege, ref luid);
                 if (blRc == false) return false;
 
                 //建立或取消特权
@@ -159,11 +161,14 @@ namespace BluePointLilac.Methods
         /// <param name="regPath">要获取权限的注册表完整路径</param>
         public static void TakeRegKeyOwnerShip(string regPath)
         {
-            if (regPath.IsNullOrWhiteSpace()) return;
-            RegistryKey key = null;
-            WindowsIdentity id = null;
+            if (string.IsNullOrWhiteSpace(regPath)) return;
+            RegistryKey? key = null;
+            WindowsIdentity? id = null;
             //利用试错判断是否有写入权限
-            try { key = RegistryEx.GetRegistryKey(regPath, true); }
+            try
+            {
+                key = RegistryEx.GetRegistryKey(regPath, true);
+            }
             catch
             {
                 try
@@ -182,11 +187,17 @@ namespace BluePointLilac.Methods
                     //打开没有权限的注册表路径
                     key = RegistryEx.GetRegistryKey(regPath, RegistryKeyPermissionCheck.ReadWriteSubTree, RegistryRights.TakeOwnership);
 
+                    if (key == null) throw new InvalidOperationException("Null registry key");
+
                     var security = key.GetAccessControl(AccessControlSections.All);
 
                     //得到真正所有者
                     //IdentityReference oldId = security.GetOwner(typeof(SecurityIdentifier));
                     //SecurityIdentifier siTrustedInstaller = new SecurityIdentifier(oldId.ToString());
+
+                    if (security == null) throw new InvalidOperationException("Null security");
+
+                    if (id.User is null) throw new InvalidOperationException("Null user");
 
                     //使进程用户成为所有者
                     security.SetOwner(id.User);
@@ -224,7 +235,7 @@ namespace BluePointLilac.Methods
         /// <param name="regPath">要获取权限的注册表完整路径</param>
         public static void TakeRegTreeOwnerShip(string regPath)
         {
-            if (regPath.IsNullOrWhiteSpace()) return;
+            if (string.IsNullOrWhiteSpace(regPath)) return;
             TakeRegKeyOwnerShip(regPath);
             try
             {

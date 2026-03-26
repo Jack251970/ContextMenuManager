@@ -1,94 +1,131 @@
-﻿using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
+using WpfButton = System.Windows.Controls.Button;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
+using WpfTextBox = System.Windows.Controls.TextBox;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class NewOpenWithDialog : CommonDialog
+    internal sealed class NewOpenWithDialog
     {
         public string RegPath { get; private set; }
-        public override void Reset() { }
 
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog()
         {
-            using var frm = new NewOpenWithForm();
-            frm.TopMost = true;
-            var flag = frm.ShowDialog() == DialogResult.OK;
-            if (flag) RegPath = frm.RegPath;
-            return flag;
+            return RunDialog(null);
         }
 
-        private sealed class NewOpenWithForm : NewItemForm
+        public bool RunDialog(MainWindow owner)
         {
-            public string RegPath { get; private set; }
+            var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
 
-            private string FilePath;
-            private string FileName => Path.GetFileName(FilePath);
-            private string AppRegPath => $@"{RegistryEx.CLASSES_ROOT}\Applications\{FileName}";
-            private string CommandPath => $@"{AppRegPath}\shell\open\command";
+            var txtText = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+            var txtFilePath = new WpfTextBox { Margin = new Thickness(0, 0, 0, 12) };
+            var txtArguments = new WpfTextBox { Text = "\"%1\"", Margin = new Thickness(0, 0, 0, 12) };
 
-            protected override void InitializeComponents()
+            var btnBrowse = new WpfButton
             {
-                base.InitializeComponents();
-                btnBrowse.Click += (sender, e) => BrowseFile();
-                btnOK.Click += (sender, e) =>
+                Content = AppString.Dialog.Browse,
+                Margin = new Thickness(0, 0, 0, 12),
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+
+            btnBrowse.Click += (sender, e) =>
+            {
+                var dlg = new OpenFileDialog
                 {
-                    if (string.IsNullOrEmpty(ItemText))
-                    {
-                        AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
-                        return;
-                    }
-                    if (ItemCommand.IsNullOrWhiteSpace())
-                    {
-                        AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
-                        return;
-                    }
-                    FilePath = ObjectPath.ExtractFilePath(base.ItemFilePath);
-                    using (var key = RegistryEx.GetRegistryKey(CommandPath))
-                    {
-                        var path = ObjectPath.ExtractFilePath(key?.GetValue("")?.ToString());
-                        var name = Path.GetFileName(path);
-                        if (FilePath != null && FilePath.Equals(path, StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppMessageBox.Show(AppString.Message.HasBeenAdded);
-                            return;
-                        }
-                        if (FileName == null || FileName.Equals(name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppMessageBox.Show(AppString.Message.UnsupportedFilename);
-                            return;
-                        }
-                    }
-                    AddNewItem();
-                    DialogResult = DialogResult.OK;
+                    Filter = $"{AppString.Dialog.Program}|*.exe"
                 };
+                if (dlg.ShowDialog() == true)
+                {
+                    txtFilePath.Text = dlg.FileName;
+                    txtArguments.Text = "\"%1\"";
+                    txtText.Text = FileVersionInfo.GetVersionInfo(dlg.FileName).FileDescription;
+                }
+            };
+
+            dialog.Content = new WpfStackPanel
+            {
+                Children =
+                {
+                    new WpfTextBlock { Text = AppString.Dialog.ItemText, Margin = new Thickness(0, 0, 0, 4) },
+                    txtText,
+                    new WpfTextBlock { Text = AppString.Dialog.ItemCommand, Margin = new Thickness(0, 0, 0, 4) },
+                    txtFilePath,
+                    btnBrowse,
+                    new WpfTextBlock { Text = AppString.Dialog.CommandArguments, Margin = new Thickness(0, 0, 0, 4) },
+                    txtArguments
+                }
+            };
+
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            if (result != ContentDialogResult.Primary)
+            {
+                return false;
             }
 
-            private void BrowseFile()
+            var itemText = txtText.Text;
+            var itemFilePath = txtFilePath.Text;
+            var arguments = txtArguments.Text;
+
+            if (string.IsNullOrEmpty(itemText))
             {
-                using var dlg = new OpenFileDialog();
-                dlg.Filter = $"{AppString.Dialog.Program}|*.exe";
-                if (dlg.ShowDialog() == DialogResult.OK)
+                AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
+                return false;
+            }
+
+            var itemCommand = GetItemCommand(itemFilePath, arguments);
+            if (string.IsNullOrWhiteSpace(itemCommand))
+            {
+                AppMessageBox.Show(AppString.Message.CommandCannotBeEmpty);
+                return false;
+            }
+
+            var filePath = ObjectPath.ExtractFilePath(itemFilePath);
+            var fileName = Path.GetFileName(filePath);
+            var appRegPath = $@"{RegistryEx.CLASSES_ROOT}\Applications\{fileName}";
+            var commandPath = $@"{appRegPath}\shell\open\command";
+
+            using (var key = RegistryEx.GetRegistryKey(commandPath))
+            {
+                var path = ObjectPath.ExtractFilePath(key?.GetValue("")?.ToString());
+                var name = Path.GetFileName(path);
+                if (filePath != null && filePath.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
-                    base.ItemFilePath = dlg.FileName;
-                    Arguments = "\"%1\"";
-                    ItemText = FileVersionInfo.GetVersionInfo(dlg.FileName).FileDescription;
+                    AppMessageBox.Show(AppString.Message.HasBeenAdded);
+                    return false;
+                }
+                if (fileName == null || fileName.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    AppMessageBox.Show(AppString.Message.UnsupportedFilename);
+                    return false;
                 }
             }
 
-            private void AddNewItem()
+            using (var key = RegistryEx.GetRegistryKey(appRegPath, true, true))
             {
-                using (var key = RegistryEx.GetRegistryKey(AppRegPath, true, true))
-                {
-                    key.SetValue("FriendlyAppName", ItemText);
-                }
-                using var cmdKey = RegistryEx.GetRegistryKey(CommandPath, true, true);
-                cmdKey.SetValue("", ItemCommand);
-                RegPath = cmdKey.Name;
+                key.SetValue("FriendlyAppName", itemText);
             }
+            using var cmdKey = RegistryEx.GetRegistryKey(commandPath, true, true);
+            cmdKey.SetValue("", itemCommand);
+            RegPath = cmdKey.Name;
+
+            return true;
+        }
+
+        private static string GetItemCommand(string filePath, string arguments)
+        {
+            if (string.IsNullOrWhiteSpace(arguments)) return filePath;
+            if (string.IsNullOrWhiteSpace(filePath)) return arguments;
+            if (filePath.Contains(' ')) filePath = $"\"{filePath}\"";
+            if (!arguments.Contains('\"')) arguments = $"\"{arguments}\"";
+            return $"{filePath} {arguments}";
         }
     }
 }

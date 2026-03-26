@@ -1,9 +1,8 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
 using System;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -16,25 +15,27 @@ namespace ContextMenuManager.Controls
         {
             foreach (var path in Directory.GetFileSystemEntries(SendToPath))
             {
-                if (Path.GetFileName(path).ToLower() == "desktop.ini") continue;
-                AddItem(new SendToItem(path));
+                if (Path.GetFileName(path).Equals("desktop.ini", StringComparison.CurrentCultureIgnoreCase)) continue;
+                AddItem(new SendToItem(this, path));
             }
             SortItemByText();
             AddNewItem();
             AddDirItem();   // 发送到右键菜单Ink文件的文件夹存放位置
-            AddItem(new VisibleRegRuleItem(VisibleRegRuleItem.SendToDrive));
-            AddItem(new VisibleRegRuleItem(VisibleRegRuleItem.DeferBuildSendTo));
+            AddItem(new VisibleRegRuleItem(this, VisibleRegRuleItem.SendToDrive));
+            AddItem(new VisibleRegRuleItem(this, VisibleRegRuleItem.DeferBuildSendTo));
         }
 
         private void AddNewItem()
         {
-            var newItem = new NewItem();
+            var newItem = new NewItem(this);
             InsertItem(newItem, 0);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new NewLnkFileDialog();
-                dlg.FileFilter = $"{AppString.Dialog.Program}|*.exe;*.bat;*.cmd;*.vbs;*.vbe;*.js;*.jse;*.wsf";
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                var dlg = new NewLnkFileDialog
+                {
+                    FileFilter = $"{AppString.Dialog.Program}|*.exe;*.bat;*.cmd;*.vbs;*.vbe;*.js;*.jse;*.wsf"
+                };
+                if (dlg.ShowDialog() != true) return;
                 var lnkPath = $@"{SendToPath}\{ObjectPath.RemoveIllegalChars(dlg.ItemText)}.lnk";
                 lnkPath = ObjectPath.GetNewPathWithIndex(lnkPath, ObjectPath.PathType.File);
                 using (var shellLink = new ShellLink(lnkPath))
@@ -45,29 +46,29 @@ namespace ContextMenuManager.Controls
                     shellLink.Save();
                 }
                 DesktopIni.SetLocalizedFileNames(lnkPath, dlg.ItemText);
-                InsertItem(new SendToItem(lnkPath), 2);
+                InsertItem(new SendToItem(this, lnkPath), 2);
             };
         }
 
         private void AddDirItem()
         {
-            var item = new MyListItem
+            var item = new MyListItem(this)
             {
                 Text = Path.GetFileNameWithoutExtension(SendToPath),
                 Image = ResourceIcon.GetFolderIcon(SendToPath).ToBitmap()
             };
             var btnPath = new PictureButton(AppImage.Open);
             ToolTipBox.SetToolTip(btnPath, AppString.Menu.FileLocation);
-            btnPath.MouseDown += (sender, e) => ExternalProgram.OpenDirectory(SendToPath);
+            btnPath.Click += (sender, e) => ExternalProgram.OpenDirectory(SendToPath);
             item.AddCtr(btnPath);
             InsertItem(item, 1);
-            item.ContextMenuStrip = new ContextMenuStrip();
+            item.Control.ContextMenu = new ContextMenu();
             var tsiRestoreDefault = new RToolStripMenuItem(AppString.Menu.RestoreDefault);
-            item.ContextMenuStrip.Items.Add(tsiRestoreDefault);
+            item.Control.ContextMenu.Items.Add(tsiRestoreDefault);
             tsiRestoreDefault.Enabled = Directory.Exists(DefaultSendToPath);
             tsiRestoreDefault.Click += (sender, e) =>
             {
-                if (AppMessageBox.Show(AppString.Message.RestoreDefault, MessageBoxButtons.OKCancel) == DialogResult.OK)
+                if (AppMessageBox.Show(AppString.Message.RestoreDefault, null, MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                 {
                     File.SetAttributes(SendToPath, FileAttributes.Normal);
                     Directory.Delete(SendToPath, true);

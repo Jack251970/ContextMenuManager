@@ -1,0 +1,75 @@
+<UserControl
+    x:Class="ContextMenuManager.Views.AboutAppView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    Background="Transparent">
+    <UserControl.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="24" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                <StackPanel HorizontalAlignment="Center">
+                    <Border
+                        Width="116"
+                        Height="116"
+                        Padding="16"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="1"
+                        CornerRadius="58">
+                        <Image x:Name="LogoImage" Stretch="Uniform" />
+                    </Border>
+
+                    <TextBlock
+                        x:Name="AppNameText"
+                        Margin="0,18,0,0"
+                        FontSize="30"
+                        FontWeight="Bold"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <ui:HyperlinkButton x:Name="GitHubLinkText" Margin="0,18,0,0" />
+
+                    <ui:HyperlinkButton x:Name="GiteeLinkText" Margin="0,10,0,0" />
+
+                    <Separator Margin="0,18,0,18" />
+
+                    <TextBlock
+                        x:Name="LicenseText"
+                        FontSize="14"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel
+                Grid.Row="2"
+                Margin="0,20,0,0"
+                HorizontalAlignment="Center">
+                <Button
+                    x:Name="CheckUpdateButton"
+                    MinWidth="210"
+                    Padding="18,9"
+                    Click="CheckUpdateButton_OnClick" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

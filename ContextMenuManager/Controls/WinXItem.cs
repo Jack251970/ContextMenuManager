@@ -1,25 +1,35 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Controls.Interfaces;
+﻿using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
     internal sealed class WinXItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, IBtnMoveUpDownItem, ITsiAdministratorItem,
         ITsiTextItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiDeleteItem, ITsiShortcutCommandItem
     {
-        public WinXItem(string filePath, FoldGroupItem group)
+        public ContextMenu ContextMenu
         {
-            InitializeComponents();
-            FoldGroupItem = group;
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
+        public new WinXList List;
+
+        public WinXItem(WinXList list, string filePath, FoldGroupItem group) : base(list)
+        {
+            List = list;
             FilePath = filePath;
+            FoldGroupItem = group;
             RefreshKeyPath();
-            Indent();
+            if (list != null)
+            {
+                InitializeComponents();
+                Indent();
+            }
         }
 
         private string filePath;
@@ -31,7 +41,7 @@ namespace ContextMenuManager.Controls
                 filePath = value;
                 ShellLink = new ShellLink(value);
                 Text = ItemText;
-                Image = ItemImage;
+                if (List != null) Image = ItemImage;
             }
         }
 
@@ -54,7 +64,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 var name = ShellLink.Description?.Trim();
-                if (name.IsNullOrWhiteSpace()) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
+                if (string.IsNullOrWhiteSpace(name)) name = DesktopIni.GetLocalizedFileNames(FilePath, true);
                 if (name == string.Empty) name = Path.GetFileNameWithoutExtension(FilePath);
                 return name;
             }
@@ -188,12 +198,12 @@ namespace ContextMenuManager.Controls
         public ShellLink ShellLink { get; private set; }
         public string SearchText => $"{AppString.SideBar.WinX} {Text}";
         public string FileName => Path.GetFileName(FilePath);
-        private Image ItemImage => ItemIcon?.ToBitmap() ?? AppImage.NotFound;
+        private System.Drawing.Image ItemImage => ItemIcon?.ToBitmap() ?? AppImage.NotFound;
 
         public bool ChkChecked
         {
-            get => ItemVisible;
-            set => ChkVisible.Checked = value;
+            get => ChkVisible.IsOn;
+            set => ChkVisible.IsOn = value;
         }
 
         public VisibleCheckBox ChkVisible { get; set; }
@@ -208,8 +218,8 @@ namespace ContextMenuManager.Controls
         public MoveButton BtnMoveUp { get; set; }
         public MoveButton BtnMoveDown { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
-        private readonly RToolStripMenuItem TsiChangeGroup = new(AppString.Menu.ChangeGroup);
+        private RToolStripMenuItem TsiDetails { get; set; }
+        private RToolStripMenuItem TsiChangeGroup { get; set; }
 
         private void InitializeComponents()
         {
@@ -224,17 +234,25 @@ namespace ContextMenuManager.Controls
             TsiFileLocation = new FileLocationMenuItem(this);
             TsiFileProperties = new FilePropertiesMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
+            TsiChangeGroup = new(AppString.Menu.ChangeGroup);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new RToolStripSeparator(),
+            foreach (var item in new Control[] { TsiChangeText, new RToolStripSeparator(),
                 TsiChangeGroup, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
-                TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
+                TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                Control.ContextMenu.Items.Add(item);
+            }
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch,
-                new RToolStripSeparator(), TsiChangeCommand, TsiFileProperties, TsiFileLocation });
+            foreach (var item in new Control[] { TsiSearch,
+                new RToolStripSeparator(), TsiChangeCommand, TsiFileProperties, TsiFileLocation })
+            {
+                TsiDetails.Items.Add(item);
+            }
 
             TsiChangeGroup.Click += (sender, e) => ChangeGroup();
-            BtnMoveDown.MouseDown += (sender, e) => MoveItem(false);
-            BtnMoveUp.MouseDown += (sender, e) => MoveItem(true);
+            BtnMoveDown.Click += (sender, e) => MoveItem(false);
+            BtnMoveUp.Click += (sender, e) => MoveItem(true);
             TsiChangeCommand.Click += (sender, e) =>
             {
                 if (TsiChangeCommand.ChangeCommand(ShellLink))
@@ -254,7 +272,8 @@ namespace ContextMenuManager.Controls
                 var meDirPath = $@"{(isWinX ? WinXList.WinXPath : WinXList.DefaultWinXPath)}\{selectText}";
 
                 var count = Directory.GetFiles(meDirPath, "*.lnk").Length;
-                var num = (count + 1).ToString().PadLeft(2, '0');    // TODO:修复本组内顺序的问题
+                // TODO: 修复本组内顺序的问题
+                var num = (count + 1).ToString().PadLeft(2, '0');
                 var partName = FileName;
                 var index = partName.IndexOf(" - ");
                 if (index > 0) partName = partName[(index + 3)..];
@@ -266,50 +285,48 @@ namespace ContextMenuManager.Controls
                 File.Move(meFilePath, lnkPath);
             }
 
-            using (var dlg = new SelectDialog())
+            var dlg = new SelectDialog
             {
-                dlg.Title = AppString.Dialog.SelectGroup;
-                dlg.Items = WinXList.GetGroupNames();
-                dlg.Selected = FoldGroupItem.Text;
-                if (dlg.ShowDialog() != DialogResult.OK) return;
-                if (dlg.Selected == FoldGroupItem.Text) return;
+                Title = AppString.Dialog.SelectGroup,
+                Items = WinXList.GetGroupNames(),
+                Selected = FoldGroupItem.Text
+            };
+            if (dlg.ShowDialog() != true) return;
+            if (dlg.Selected == FoldGroupItem.Text) return;
 
-                ChangeFileGroup(dlg.Selected, true, out var lnkPath);
-                if (WinOsVersion.Current >= WinOsVersion.Win11)
-                {
-                    ChangeFileGroup(dlg.Selected, false, out _);
-                }
-                FilePath = lnkPath;
-                RefreshKeyPath();
-
-                var list = (WinXList)Parent;
-                list.Controls.Remove(this);
-                for (var i = 0; i < list.Controls.Count; i++)
-                {
-                    if (list.Controls[i] is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
-                    {
-                        list.Controls.Add(this);
-                        list.SetItemIndex(this, i + 1);
-                        Visible = !groupItem.IsFold;
-                        ((WinXGroupItem)FoldGroupItem).RemoveWinXItem(this);
-                        FoldGroupItem = groupItem;
-                        groupItem.AddWinXItem(this);
-                        break;
-                    }
-                }
-                ExplorerRestarter.Show();
+            ChangeFileGroup(dlg.Selected, true, out var lnkPath);
+            if (WinOsVersion.Current >= WinOsVersion.Win11)
+            {
+                ChangeFileGroup(dlg.Selected, false, out _);
             }
+            FilePath = lnkPath;
+            RefreshKeyPath();
+
+            List.Controls.Remove(Control);
+            for (var i = 0; i < List.Controls.Count; i++)
+            {
+                if (List.Controls[i].Item is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
+                {
+                    List.Controls.Add(Control);
+                    List.SetItemIndex(this, i + 1);
+                    Visible = !groupItem.IsFold;
+                    ((WinXGroupItem)FoldGroupItem).RemoveWinXItem(this);
+                    FoldGroupItem = groupItem;
+                    groupItem.AddWinXItem(this);
+                    break;
+                }
+            }
+            ExplorerRestarter.Show();
         }
 
         private void MoveItem(bool isUp)
         {
-            var list = (WinXList)Parent;
-            var index = list.Controls.GetChildIndex(this);
-            if (index == list.Controls.Count - 1) return;
+            var index = List.Controls.IndexOf(Control);
+            if (index == List.Controls.Count - 1) return;
             index += isUp ? -1 : 1;
-            var ctr = list.Controls[index];
-            if (ctr is WinXGroupItem) return;
-            var item = (WinXItem)ctr;
+            var ctr = List.Controls[index];
+            if (ctr.Item is WinXGroupItem) return;
+            if (ctr.Item is not WinXItem item) throw new InvalidOperationException("The item to move must be a WinXItem.");
 
             MoveFileItem(item, true, out var path1, out var path2);
             if (WinOsVersion.Current >= WinOsVersion.Win11)
@@ -321,7 +338,7 @@ namespace ContextMenuManager.Controls
             RefreshKeyPath();
             item.FilePath = path2;
             item.RefreshKeyPath();
-            list.SetItemIndex(this, index);
+            List.SetItemIndex(this, index);
             ExplorerRestarter.Show();
         }
         private void MoveFileItem(WinXItem item, bool isWinX, out string path1, out string path2)

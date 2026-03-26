@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public static class DirectoryEx
     {

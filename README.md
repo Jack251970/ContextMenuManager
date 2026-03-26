@@ -26,8 +26,8 @@
   [GitHub Releases][GitHub Releases]<br>
   [Gitee Releases][Gitee Releases]<br>
 * 下载说明：在Assets文件列表里面下载zip（建议）或者直接下载exe
-* .NET版本说明：程序基于.NET9，适用于Win11、10、8.1、8、7<br>
-  如果您的设备不包含.NET9，则需要安装对应版本的[.NET SDK]
+* .NET版本说明：程序基于.NET10，适用于Win11、10、8.1、8、7。对于Windows 7、8、8.1请下载3.6.2.2以及之前的版本，最新版本不再保证兼容性。<br>
+  如果您的设备不包含.NET10，则需要安装对应版本的[.NET SDK]
 
 ## ⭐ 主要功能
 * 启用或禁用文件、文件夹、新建、发送到、打开方式、自定义文件格式、IE浏览器、WinX等右键菜单项目并对右键菜单进行备份和恢复
@@ -35,7 +35,7 @@
 * 对上述场景右键菜单自定义添加项目，自定义菜单命令
 
 ## 🖥️ 兼容性
-* 适用于 Windows 7、8、8.1、10、11
+* 适用于 Windows 7、8、8.1、10、11（对于Windows 7、8、8.1请下载3.6.2.2以及之前的版本）
 * 适用于 64位、32位 的系统
 * 适用于高分屏，最佳显示缩放比为150%
 * 程序支持国际化多语言显示，欢迎为此程序制作语言字典
@@ -77,7 +77,7 @@
   [Latest]: https://github.com/Jack251970/ContextMenuManager/releases/latest
   [GitHub Releases]: https://github.com/Jack251970/ContextMenuManager/releases
   [Gitee Releases]: https://gitee.com/Jack251970/ContextMenuManager/releases
-  [.NET SDK]: https://dotnet.microsoft.com/zh-cn/download/dotnet/9.0
+  [.NET SDK]: https://dotnet.microsoft.com/zh-cn/download/dotnet/10.0
 
 ## ❤️ 感谢
 

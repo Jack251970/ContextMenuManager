@@ -1,12 +1,11 @@
-﻿using BluePointLilac.Controls;
 using ContextMenuManager.Methods;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
     internal interface IBtnShowMenuItem
     {
-        ContextMenuStrip ContextMenuStrip { get; set; }
+        ContextMenu ContextMenu { get; set; }
         MenuButton BtnShowMenu { get; set; }
     }
 
@@ -14,14 +13,17 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         public MenuButton(IBtnShowMenuItem item) : base(AppImage.Setting)
         {
-            item.ContextMenuStrip = new ContextMenuStrip();
+            item.ContextMenu = new ContextMenu();
             ((MyListItem)item).AddCtr(this);
-            var isShow = false;
-            MouseDown += (sender, e) =>
+
+            Click += (sender, e) =>
             {
-                if (!isShow) item.ContextMenuStrip.Show(this, 0, Height);
-                else item.ContextMenuStrip.Close();
-                isShow = !isShow;
+                if (item.ContextMenu != null)
+                {
+                    item.ContextMenu.PlacementTarget = this;
+                    item.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                    item.ContextMenu.IsOpen = true;
+                }
             };
         }
     }

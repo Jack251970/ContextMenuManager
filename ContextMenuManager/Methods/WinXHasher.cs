@@ -96,7 +96,7 @@ namespace ContextMenuManager.Methods
 
             Guid GetCLSID(IntPtr key);
 
-            ComTypes.FILETIME GetFileTime(IntPtr key);
+            FILETIME GetFileTime(IntPtr key);
 
             int GetInt32(IntPtr key);
 
@@ -162,21 +162,21 @@ namespace ContextMenuManager.Methods
 
         public static void HashLnk(string lnkPath)
         {
-            SHCreateItemFromParsingName(lnkPath, null, typeof(IShellItem2).GUID, out var item);
+            SHCreateItemFromParsingName(lnkPath, null!, typeof(IShellItem2).GUID, out var item);
             var item2 = (IShellItem2)item;
             PSGetPropertyKeyFromName("System.Link.TargetParsingPath", out var pk);
             //shellPKey = PKEY_Link_TargetParsingPath
             //formatID = B9B4B3FC-2B51-4A42-B5D8-324146AFCF25, propID = 2
             string targetPath;
             try { targetPath = item2.GetString(pk); }
-            catch { targetPath = null; }
+            catch { targetPath = string.Empty; }
 
             PSGetPropertyKeyFromName("System.Link.Arguments", out pk);
             //shellPKey = PKEY_Link_Arguments
             //formatID = 436F2667-14E2-4FEB-B30A-146C53B5B674, propID = 100
             string arguments;
             try { arguments = item2.GetString(pk); }
-            catch { arguments = null; }
+            catch { arguments = string.Empty; }
 
             var blob = GetGeneralizePath(targetPath) + arguments;
             blob += "do not prehash links.  this should only be done by the user.";//特殊但必须存在的字符串

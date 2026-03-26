@@ -1,4 +1,4 @@
-﻿using BluePointLilac.Methods;
+﻿using ContextMenuManager.Properties;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -48,11 +48,11 @@ namespace ContextMenuManager.Methods
             }
 
             LoadDic(UwpModeItemsDic, AppConfig.WebUwpModeItemsDic,
-                AppConfig.UserUwpModeItemsDic, Properties.Resources.UwpModeItemsDic);
+                AppConfig.UserUwpModeItemsDic, AppResources.UwpModeItemsDic);
             LoadDic(EnhanceMenusDic, AppConfig.WebEnhanceMenusDic,
-                AppConfig.UserEnhanceMenusDic, Properties.Resources.EnhanceMenusDic);
+                AppConfig.UserEnhanceMenusDic, AppResources.EnhanceMenusDic);
             LoadDic(DetailedEditDic, AppConfig.WebDetailedEditDic,
-                AppConfig.UserDetailedEditDic, Properties.Resources.DetailedEditDic);
+                AppConfig.UserDetailedEditDic, AppResources.DetailedEditDic);
 
             EnhanceMenuPathDic.Clear();
             for (var i = 0; i < 2; i++)
@@ -73,7 +73,7 @@ namespace ContextMenuManager.Methods
                 if (doc?.DocumentElement == null) continue;
                 foreach (XmlNode guidXN in doc.SelectNodes("Data/Group/Guid"))
                 {
-                    if (GuidEx.TryParse(guidXN.InnerText, out var guid))
+                    if (Guid.TryParse(guidXN.InnerText, out var guid))
                     {
                         if (DetailedEditGuidDic.ContainsKey(guid)) continue;
                         DetailedEditGuidDic.Add(guid, i == 1);
@@ -120,11 +120,16 @@ namespace ContextMenuManager.Methods
             return true;
         }
 
-        public static bool JudgeCulture(XmlNode itemXN)
+        public static bool JudgeCulture(XmlNode itemXN, bool isBackup = false)
         {
-            //return true;//测试用
             var culture = itemXN.SelectSingleNode("Culture")?.InnerText;
             if (string.IsNullOrEmpty(culture)) return true;
+            if (isBackup)
+            {
+                // 备份时不区分语言，默认只备份en-US的项
+                if (culture.Equals("en-US", StringComparison.OrdinalIgnoreCase)) return true;
+                else return false;
+            }
             if (culture.Equals(AppConfig.Language, StringComparison.OrdinalIgnoreCase)) return true;
             if (culture.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase)) return true;
             return false;

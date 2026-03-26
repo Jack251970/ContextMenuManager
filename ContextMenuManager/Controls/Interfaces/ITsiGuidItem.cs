@@ -1,9 +1,14 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System;
-using System.Drawing;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
+using Image = System.Drawing.Image;
+using WpfButton = System.Windows.Controls.Button;
+using WpfImage = System.Windows.Controls.Image;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBox = System.Windows.Controls.TextBox;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -20,13 +25,16 @@ namespace ContextMenuManager.Controls.Interfaces
         public HandleGuidMenuItem(ITsiGuidItem item) : base(AppString.Menu.HandleGuid)
         {
             Item = item;
-            DropDownItems.AddRange(new ToolStripItem[] { TsiAddGuidDic,
-                new RToolStripSeparator(), TsiCopyGuid, TsiBlockGuid, TsiClsidLocation });
+            foreach (var dropDownItem in new Control[] { TsiAddGuidDic,
+                new RToolStripSeparator(), TsiCopyGuid, TsiBlockGuid, TsiClsidLocation })
+            {
+                Items.Add(dropDownItem);
+            }
             TsiCopyGuid.Click += (sender, e) => CopyGuid();
             TsiBlockGuid.Click += (sender, e) => BlockGuid();
             TsiAddGuidDic.Click += (sender, e) => AddGuidDic();
             TsiClsidLocation.Click += (sender, e) => OpenClsidPath();
-            ((MyListItem)item).ContextMenuStrip.Opening += (sender, e) => RefreshMenuItem();
+            ((MyListItem)item).Control.ContextMenu.Opened += (sender, e) => RefreshMenuItem();
         }
 
         private readonly RToolStripMenuItem TsiCopyGuid = new(AppString.Menu.CopyGuid);
@@ -40,8 +48,8 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             var guid = Item.Guid.ToString("B");
             Clipboard.SetText(guid);
-            AppMessageBox.Show($"{AppString.Message.CopiedToClipboard}\n{guid}",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AppMessageBox.Show($"{AppString.Message.CopiedToClipboard}\n{guid}", null,
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void BlockGuid()
@@ -56,8 +64,8 @@ namespace ContextMenuManager.Controls.Interfaces
                 {
                     if (Item.Guid.Equals(ShellExItem.LnkOpenGuid) && AppConfig.ProtectOpenItem)
                     {
-                        if (AppMessageBox.Show(AppString.Message.PromptIsOpenItem,
-                            MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+                        if (AppMessageBox.Show(AppString.Message.PromptIsOpenItem, null,
+                            MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
                     }
                     Microsoft.Win32.Registry.SetValue(path, Item.Guid.ToString("B"), string.Empty);
                 }
@@ -67,9 +75,11 @@ namespace ContextMenuManager.Controls.Interfaces
 
         private void AddGuidDic()
         {
-            using var dlg = new AddGuidDicDialog();
-            dlg.ItemText = GuidInfo.GetText(Item.Guid);
-            dlg.ItemIcon = GuidInfo.GetImage(Item.Guid);
+            var dlg = new AddGuidDicDialog
+            {
+                ItemText = GuidInfo.GetText(Item.Guid),
+                ItemIcon = GuidInfo.GetImage(Item.Guid)
+            };
             var location = GuidInfo.GetIconLocation(Item.Guid);
             dlg.ItemIconPath = location.IconPath;
             dlg.ItemIconIndex = location.IconIndex;
@@ -80,7 +90,7 @@ namespace ContextMenuManager.Controls.Interfaces
             };
             var section = Item.Guid.ToString();
             var listItem = (MyListItem)Item;
-            if (dlg.ShowDialog() != DialogResult.OK)
+            if (!dlg.ShowDialog())
             {
                 if (dlg.IsDelete)
                 {
@@ -91,13 +101,13 @@ namespace ContextMenuManager.Controls.Interfaces
                 }
                 return;
             }
-            if (dlg.ItemText.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(dlg.ItemText))
             {
                 AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
                 return;
             }
             dlg.ItemText = ResourceString.GetDirectString(dlg.ItemText);
-            if (dlg.ItemText.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(dlg.ItemText))
             {
                 AppMessageBox.Show(AppString.Message.StringParsingFailed);
                 return;
@@ -135,7 +145,7 @@ namespace ContextMenuManager.Controls.Interfaces
             }
         }
 
-        private sealed class AddGuidDicDialog : CommonDialog
+        private sealed class AddGuidDicDialog
         {
             public Image ItemIcon { get; set; }
             public string ItemText { get; set; }
@@ -151,131 +161,86 @@ namespace ContextMenuManager.Controls.Interfaces
                 }
             }
 
-            public override void Reset() { }
-
-            protected override bool RunDialog(IntPtr hwndOwner)
+            public bool ShowDialog()
             {
-                using var frm = new AddGuidDicForm();
-                frm.ItemText = ItemText;
-                frm.ItemIcon = ItemIcon;
-                frm.ItemIconPath = ItemIconPath;
-                frm.ItemIconIndex = ItemIconIndex;
-                frm.TopMost = true;
-                var flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag)
-                {
-                    ItemText = frm.ItemText;
-                    ItemIcon = frm.ItemIcon;
-                    ItemIconPath = frm.ItemIconPath;
-                    ItemIconIndex = frm.ItemIconIndex;
-                }
-                IsDelete = frm.IsDelete;
-                return flag;
+                return RunDialog(null);
             }
 
-            private sealed class AddGuidDicForm : RForm
+            public bool RunDialog(MainWindow owner)
             {
-                public AddGuidDicForm()
-                {
-                    AcceptButton = btnOK;
-                    CancelButton = btnCancel;
-                    Font = SystemFonts.MenuFont;
-                    Text = AppString.Dialog.AddGuidDic;
-                    ShowIcon = ShowInTaskbar = false;
-                    MaximizeBox = MinimizeBox = false;
-                    FormBorderStyle = FormBorderStyle.FixedSingle;
-                    StartPosition = FormStartPosition.CenterParent;
-                    InitializeComponents();
-                    InitTheme();
-                }
+                var dialog = ContentDialogHost.CreateDialog(AppString.Dialog.AddGuidDic, owner);
+                dialog.SecondaryButtonText = AppString.Dialog.DeleteGuidDic;
 
-                public string ItemText
-                {
-                    get => txtName.Text;
-                    set => txtName.Text = value;
-                }
-                public Image ItemIcon
-                {
-                    get => picIcon.Image;
-                    set => picIcon.Image = value;
-                }
-                public string ItemIconPath { get; set; }
-                public int ItemIconIndex { get; set; }
-                public bool IsDelete { get; private set; }
+                var stackPanel = new WpfStackPanel { MinWidth = 350 };
 
-                private readonly TextBox txtName = new();
-                private readonly Label lblName = new()
+                var txtName = new WpfTextBox
                 {
-                    Text = AppString.Dialog.ItemText,
-                    AutoSize = true
+                    Text = ItemText ?? string.Empty,
+                    Margin = new Thickness(0, 0, 0, 16)
                 };
-                private readonly Label lblIcon = new()
+                ControlHelper.SetHeader(txtName, AppString.Dialog.ItemText);
+                stackPanel.Children.Add(txtName);
+
+                var iconPanel = new WpfStackPanel { Orientation = Orientation.Horizontal };
+
+                var imgIcon = new WpfImage
                 {
-                    Text = AppString.Menu.ItemIcon,
-                    AutoSize = true
-                };
-                private readonly PictureBox picIcon = new()
-                {
-                    Size = SystemInformation.IconSize
-                };
-                private readonly Button btnBrowse = new()
-                {
-                    Text = AppString.Dialog.Browse,
-                    AutoSize = true
-                };
-                private readonly Button btnOK = new()
-                {
-                    Text = ResourceString.OK,
-                    DialogResult = DialogResult.OK,
-                    AutoSize = true
-                };
-                private readonly Button btnCancel = new()
-                {
-                    Text = ResourceString.Cancel,
-                    DialogResult = DialogResult.Cancel,
-                    AutoSize = true
-                };
-                private readonly Button btnDelete = new()
-                {
-                    Text = AppString.Dialog.DeleteGuidDic,
-                    DialogResult = DialogResult.Cancel,
-                    AutoSize = true
+                    Width = 32,
+                    Height = 32,
+                    Source = ItemIcon?.ToBitmapSource(),
+                    Margin = new Thickness(0, 0, 16, 0)
                 };
 
-                private void InitializeComponents()
+                var btnBrowse = new WpfButton
                 {
-                    Controls.AddRange(new Control[] { lblName, txtName, lblIcon, picIcon, btnBrowse, btnDelete, btnOK, btnCancel });
-                    var a = 20.DpiZoom();
-                    lblName.Left = lblName.Top = lblIcon.Left = btnDelete.Left = txtName.Top = a;
-                    txtName.Left = lblName.Right + a;
-                    btnOK.Left = btnDelete.Right + a;
-                    btnCancel.Left = btnOK.Right + a;
-                    txtName.Width = btnCancel.Right - txtName.Left;
-                    btnBrowse.Left = btnCancel.Right - btnBrowse.Width;
-                    picIcon.Left = btnOK.Left + (btnOK.Width - picIcon.Width) / 2;
-                    btnBrowse.Top = txtName.Bottom + a;
-                    picIcon.Top = btnBrowse.Top + (btnBrowse.Height - picIcon.Height) / 2;
-                    lblIcon.Top = btnBrowse.Top + (btnBrowse.Height - lblIcon.Height) / 2;
-                    btnDelete.Top = btnOK.Top = btnCancel.Top = btnBrowse.Bottom + a;
-                    ClientSize = new Size(btnCancel.Right + a, btnCancel.Bottom + a);
-                    ToolTipBox.SetToolTip(btnDelete, AppString.Tip.DeleteGuidDic);
-                    btnBrowse.Click += (sender, e) => SelectIcon();
-                    btnDelete.Click += (sender, e) => IsDelete = true;
+                    Content = AppString.Dialog.Browse,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                btnBrowse.Click += (s, e) =>
+                {
+                    var iconDlg = new IconDialog
+                    {
+                        IconPath = ItemIconPath,
+                        IconIndex = ItemIconIndex
+                    };
+                    if (iconDlg.ShowDialog())
+                    {
+                        using var icon = ResourceIcon.GetIcon(iconDlg.IconPath, iconDlg.IconIndex);
+                        ItemIcon = icon?.ToBitmap();
+                        if (ItemIcon != null)
+                        {
+                            imgIcon.Source = ItemIcon.ToBitmapSource();
+                            ItemIconPath = iconDlg.IconPath;
+                            ItemIconIndex = iconDlg.IconIndex;
+                        }
+                    }
+                };
+
+                var iconLabel = new Label { Content = AppString.Menu.ItemIcon, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
+
+                iconPanel.Children.Add(iconLabel);
+                iconPanel.Children.Add(imgIcon);
+                iconPanel.Children.Add(btnBrowse);
+
+                stackPanel.Children.Add(new Label { Content = AppString.Menu.ItemIcon, FontWeight = FontWeights.Bold });
+                stackPanel.Children.Add(iconPanel);
+
+                dialog.Content = stackPanel;
+
+                var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    ItemText = txtName.Text;
+                    return true;
+                }
+                else if (result == ContentDialogResult.Secondary)
+                {
+                    IsDelete = true;
+                    return false;
                 }
 
-                private void SelectIcon()
-                {
-                    using var dlg = new IconDialog();
-                    dlg.IconPath = ItemIconPath;
-                    dlg.IconIndex = ItemIconIndex;
-                    if (dlg.ShowDialog() != DialogResult.OK) return;
-                    using var icon = ResourceIcon.GetIcon(dlg.IconPath, dlg.IconIndex);
-                    Image image = icon?.ToBitmap();
-                    if (image == null) return;
-                    picIcon.Image = image;
-                    ItemIconPath = dlg.IconPath;
-                    ItemIconIndex = dlg.IconIndex;
-                }
+                return false;
             }
         }
     }
@@ -287,16 +252,16 @@ namespace ContextMenuManager.Controls.Interfaces
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);
             ToolTipBox.SetToolTip(this, AppString.SideBar.DetailedEdit);
-            listItem.ParentChanged += (sender, e) =>
+            listItem.Control.Loaded += (sender, e) =>
             {
-                if (listItem.IsDisposed) return;
-                if (listItem.Parent == null) return;
-                Visible = XmlDicHelper.DetailedEditGuidDic.ContainsKey(item.Guid);
+                Visibility = XmlDicHelper.DetailedEditGuidDic.ContainsKey(item.Guid) ? Visibility.Visible : Visibility.Collapsed;
             };
-            MouseDown += (sender, e) =>
+            Click += (sender, e) =>
             {
-                using var dlg = new DetailedEditDialog();
-                dlg.GroupGuid = item.Guid;
+                var dlg = new DetailedEditDialog
+                {
+                    GroupGuid = item.Guid
+                };
                 dlg.ShowDialog();
             };
         }

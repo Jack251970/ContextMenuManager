@@ -2,7 +2,7 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public static class ImageExtension
     {

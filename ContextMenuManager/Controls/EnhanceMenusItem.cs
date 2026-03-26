@@ -1,5 +1,4 @@
-﻿using BluePointLilac.Methods;
-using ContextMenuManager.Controls.Interfaces;
+﻿using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
@@ -30,10 +29,13 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public EnhanceShellItem()
+        public EnhanceShellItem(MyList list) : base(list)
         {
-            ChkVisible = new VisibleCheckBox(this);
-            Indent();
+            if (list != null)
+            {
+                ChkVisible = new VisibleCheckBox(this);
+                Indent();
+            }
         }
 
         private static void WriteAttributesValue(XmlNode valueXN, string regPath)
@@ -78,7 +80,7 @@ namespace ContextMenuManager.Controls
             if (!XmlDicHelper.JudgeCulture(keyXN)) return;
             if (!XmlDicHelper.JudgeOSVersion(keyXN)) return;
             var defaultValue = ((XmlElement)keyXN).GetAttribute("Default");
-            if (!defaultValue.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(defaultValue))
             {
                 defaultValue = Environment.ExpandEnvironmentVariables(defaultValue);
                 Registry.SetValue(regPath, "", defaultValue);
@@ -189,10 +191,13 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public EnhanceShellExItem()
+        public EnhanceShellExItem(MyList list) : base(list)
         {
-            ChkVisible = new VisibleCheckBox(this);
-            Indent();
+            if (list != null)
+            {
+                ChkVisible = new VisibleCheckBox(this);
+                Indent();
+            }
         }
     }
 }

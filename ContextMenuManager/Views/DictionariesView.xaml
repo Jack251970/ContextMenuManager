@@ -1,0 +1,147 @@
+<UserControl
+    x:Class="ContextMenuManager.Views.DictionariesView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+    <UserControl.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Padding" Value="18" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock
+                x:Name="PageTitleText"
+                FontSize="22"
+                FontWeight="SemiBold" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock
+                        x:Name="CurrentTabLabel"
+                        FontSize="15"
+                        FontWeight="SemiBold" />
+                    <TextBlock
+                        x:Name="CurrentTabHintText"
+                        Margin="0,4,0,0"
+                        FontSize="12"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button
+                        x:Name="OpenDirButton"
+                        Padding="14,7"
+                        Click="OpenDirButton_OnClick" />
+                    <Button
+                        x:Name="EditButton"
+                        Margin="12,0,0,0"
+                        Padding="14,7"
+                        Click="EditButton_OnClick" />
+                    <Button
+                        x:Name="SaveButton"
+                        Margin="12,0,0,0"
+                        Padding="14,7"
+                        Click="SaveButton_OnClick" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border
+            Grid.Row="2"
+            Margin="0,20,0,0"
+            Style="{StaticResource CardStyle}">
+            <TabControl x:Name="DictionaryTabControl" SelectionChanged="DictionaryTabControl_OnSelectionChanged">
+                <TabItem x:Name="DescriptionTab">
+                    <Grid Margin="12">
+                        <TextBox
+                            x:Name="DescriptionTextBox"
+                            AcceptsReturn="True"
+                            HorizontalScrollBarVisibility="Auto"
+                            IsReadOnly="True"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="AppLanguageTab">
+                    <Grid Margin="12">
+                        <TextBox
+                            x:Name="AppLanguageTextBox"
+                            AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
+                            IsReadOnly="True"
+                            TextWrapping="NoWrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="GuidInfoTab">
+                    <Grid Margin="12">
+                        <TextBox
+                            x:Name="GuidInfoTextBox"
+                            AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
+                            IsReadOnly="True"
+                            TextWrapping="NoWrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="DetailedEditTab">
+                    <Grid Margin="12">
+                        <TextBox
+                            x:Name="DetailedEditTextBox"
+                            AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
+                            IsReadOnly="True"
+                            TextWrapping="NoWrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="EnhanceMenusTab">
+                    <Grid Margin="12">
+                        <TextBox
+                            x:Name="EnhanceMenusTextBox"
+                            AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
+                            IsReadOnly="True"
+                            TextWrapping="NoWrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="UwpModeTab">
+                    <Grid Margin="12">
+                        <TextBox
+                            x:Name="UwpModeTextBox"
+                            AcceptsReturn="True"
+                            FontFamily="Consolas"
+                            HorizontalScrollBarVisibility="Auto"
+                            IsReadOnly="True"
+                            TextWrapping="NoWrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Border>
+    </Grid>
+</UserControl>

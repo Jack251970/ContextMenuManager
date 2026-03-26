@@ -1,29 +1,34 @@
-﻿using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class DetailedEditDialog : CommonDialog
+    internal sealed class DetailedEditDialog
     {
         public Guid GroupGuid { get; set; }
 
-        public override void Reset() { }
-
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog()
         {
-            using var frm = new SubItemsForm();
-            using var list = new DetailedEditList();
-            var location = GuidInfo.GetIconLocation(GroupGuid);
-            frm.Icon = ResourceIcon.GetIcon(location.IconPath, location.IconIndex);
-            frm.Text = AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid));
-            frm.TopMost = true;
-            frm.AddList(list);
-            list.GroupGuid = GroupGuid;
-            list.UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid];
+            return RunDialog(null);
+        }
+
+        public bool RunDialog(MainWindow owner)
+        {
+            var dialog = ContentDialogHost.CreateDialog(
+                AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid)),
+                owner);
+
+            var list = new DetailedEditList
+            {
+                GroupGuid = GroupGuid,
+                UseUserDic = XmlDicHelper.DetailedEditGuidDic[GroupGuid],
+                MinWidth = 500,
+                MinHeight = 400
+            };
             list.LoadItems();
-            frm.ShowDialog();
+
+            dialog.Content = list;
+            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }
     }

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     /* 获取文本文件编码类型
      * 代码参考：https://www.cnblogs.com/guyun/p/4262587.html (Napoléon)*/

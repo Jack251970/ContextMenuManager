@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            9.0.x
+            10.0.x
 
       # Restore dependencies
       - name: Restore dependencies
@@ -42,12 +42,12 @@ jobs:
       # Get package version
       - name: Get Package Version
         run: |
-         $version = [system.diagnostics.fileversioninfo]::getversioninfo("ContextMenuManager\bin\Release\net9.0-windows\ContextMenuManager.dll").fileversion
+         $version = [system.diagnostics.fileversioninfo]::getversioninfo("ContextMenuManager\bin\Release\net10.0-windows\ContextMenuManager.dll").fileversion
          echo "release_version=$version" | out-file -filepath $env:github_env -encoding utf-8 -append
 
       # Publish the project
       - name: Publish
-        run: dotnet publish ${{ env.Project_Path }} -p:PublishProfile=Net9.0-Win64.pubxml
+        run: dotnet publish ${{ env.Project_Path }} -p:PublishProfile=Net10.0-Win64.pubxml
 
       # Publish to GitHub releases
       - name: Publish

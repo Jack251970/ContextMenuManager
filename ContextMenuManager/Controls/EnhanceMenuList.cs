@@ -1,4 +1,3 @@
-using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System;
 using System.Drawing;
@@ -37,9 +36,9 @@ namespace ContextMenuManager.Controls
                     using (var icon = ResourceIcon.GetIcon(iconLocation))
                     {
                         image = icon?.ToBitmap();
-                        image = image ?? AppImage.NotFound;
+                        image ??= AppImage.NotFound;
                     }
-                    var groupItem = new FoldGroupItem(path, ObjectPath.PathType.Registry)
+                    var groupItem = new FoldGroupItem(this, path, ObjectPath.PathType.Registry)
                     {
                         Image = image,
                         Text = text
@@ -63,8 +62,8 @@ namespace ContextMenuManager.Controls
                 if (!XmlDicHelper.JudgeCulture(itemXE)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXE)) continue;
                 var keyName = itemXE.GetAttribute("KeyName");
-                if (keyName.IsNullOrWhiteSpace()) continue;
-                var item = new EnhanceShellItem()
+                if (string.IsNullOrWhiteSpace(keyName)) continue;
+                var item = new EnhanceShellItem(this)
                 {
                     RegPath = $@"{groupItem.GroupPath}\shell\{keyName}",
                     FoldGroupItem = groupItem,
@@ -101,8 +100,8 @@ namespace ContextMenuManager.Controls
                         icon?.Dispose();
                     }
                 }
-                if (item.Image == null) item.Image = AppImage.NotFound;
-                if (item.Text.IsNullOrWhiteSpace()) item.Text = keyName;
+                item.Image ??= AppImage.NotFound;
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = keyName;
                 var tip = "";
                 foreach (XmlElement tipXE in itemXE.SelectNodes("Tip"))
                 {
@@ -110,12 +109,10 @@ namespace ContextMenuManager.Controls
                 }
                 if (itemXE.GetElementsByTagName("CreateFile").Count > 0)
                 {
-                    if (!tip.IsNullOrWhiteSpace()) tip += "\n";
+                    if (!string.IsNullOrWhiteSpace(tip)) tip += "\n";
                     tip += AppString.Tip.CommandFiles;
                 }
                 ToolTipBox.SetToolTip(item.ChkVisible, tip);
-                var itemText = item.Text;
-                var itemVisible = item.ItemVisible;
                 AddItem(item);
             }
         }
@@ -127,8 +124,8 @@ namespace ContextMenuManager.Controls
                 if (!XmlDicHelper.FileExists(itemXN)) continue;
                 if (!XmlDicHelper.JudgeCulture(itemXN)) continue;
                 if (!XmlDicHelper.JudgeOSVersion(itemXN)) continue;
-                if (!GuidEx.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
-                var item = new EnhanceShellExItem
+                if (!Guid.TryParse(itemXN.SelectSingleNode("Guid")?.InnerText, out var guid)) continue;
+                var item = new EnhanceShellExItem(this)
                 {
                     FoldGroupItem = groupItem,
                     ShellExPath = $@"{groupItem.GroupPath}\ShellEx",
@@ -143,16 +140,14 @@ namespace ContextMenuManager.Controls
                         item.Text = ResourceString.GetDirectString(textXE.InnerText);
                     }
                 }
-                if (item.Text.IsNullOrWhiteSpace()) item.Text = GuidInfo.GetText(guid);
-                if (item.DefaultKeyName.IsNullOrWhiteSpace()) item.DefaultKeyName = guid.ToString("B");
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = GuidInfo.GetText(guid);
+                if (string.IsNullOrWhiteSpace(item.DefaultKeyName)) item.DefaultKeyName = guid.ToString("B");
                 var tip = "";
                 foreach (XmlElement tipXE in itemXN.SelectNodes("Tip"))
                 {
                     if (XmlDicHelper.JudgeCulture(tipXE)) tip = tipXE.GetAttribute("Text");
                 }
                 ToolTipBox.SetToolTip(item.ChkVisible, tip);
-                var itemText = item.Text;
-                var itemVisible = item.ItemVisible;
                 AddItem(item);
             }
         }

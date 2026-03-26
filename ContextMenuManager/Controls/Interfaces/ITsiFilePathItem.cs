@@ -1,14 +1,13 @@
-﻿using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
     internal interface ITsiFilePathItem
     {
         string ItemFilePath { get; }
-        ContextMenuStrip ContextMenuStrip { get; set; }
+        ContextMenu ContextMenu { get; set; }
         FileLocationMenuItem TsiFileLocation { get; set; }
         FilePropertiesMenuItem TsiFileProperties { get; set; }
     }
@@ -17,7 +16,7 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         public FileLocationMenuItem(ITsiFilePathItem item) : base(AppString.Menu.FileLocation)
         {
-            item.ContextMenuStrip.Opening += (sender, e) =>
+            item.ContextMenu.Opened += (sender, e) =>
             {
                 Visible = item.ItemFilePath != null;
             };
@@ -29,7 +28,7 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         public FilePropertiesMenuItem(ITsiFilePathItem item) : base(AppString.Menu.FileProperties)
         {
-            item.ContextMenuStrip.Opening += (sender, e) =>
+            item.ContextMenu.Opened += (sender, e) =>
             {
                 var path = item.ItemFilePath;
                 Visible = Directory.Exists(path) || File.Exists(path);

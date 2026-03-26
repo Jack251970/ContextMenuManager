@@ -1,0 +1,21 @@
+<ui:InfoBar
+    x:Class="ContextMenuManager.Controls.ExplorerRestarter"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+    IsClosable="False"
+    IsOpen="False"
+    Message="Restart computer to take effect">
+    <ui:InfoBar.ActionButton>
+        <Button
+            Width="32"
+            Height="32"
+            Padding="-4"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Click="RestartButton_OnClick">
+            <ui:FontIcon FontSize="14" Glyph="&#xF83E;" />
+        </Button>
+    </ui:InfoBar.ActionButton>
+</ui:InfoBar>
