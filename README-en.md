@@ -26,8 +26,8 @@
   [Github Releases][GitHub Releases]<br>
   [Gitee Releases][Gitee Releases]<br>
 * Note: Download the zip file (recommended) or the exe file in the Assets list
-* About .NET versions: This application is based on the the .Net 9, and it is compatible with Windows 7, 8, 8.1, 10, 11.<br>
- If your device does not include .Net 9, you may need to install the appropriate [.NET SDK].
+* About .NET versions: This application is based on the the .Net 10, and it is compatible with Windows 7, 8, 8.1, 10, 11. For Windows 7, 8 and 8.1, please download versions 3.6.2.2 and earlier. Compatibility is no longer guaranteed for the latest versions.<br>
+ If your device does not include .Net 10, you may need to install the appropriate [.NET SDK].
 
 ## ⭐ Features
 * Enable and disable context menu options for files, folders, submenus (e.g. open, send to), Internet Explorer, and Win+X, etc., and backup and restore right-click menus
