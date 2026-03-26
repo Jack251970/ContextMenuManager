@@ -57,8 +57,6 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
 	
   <ItemGroup>
 		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Management" Version="10.0.5" />
   </ItemGroup>
 	
   <ItemGroup>
