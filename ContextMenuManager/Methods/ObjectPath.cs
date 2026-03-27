@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+#nullable enable
+
 namespace ContextMenuManager.Methods
 {
     internal static class ObjectPath
@@ -22,9 +24,9 @@ namespace ContextMenuManager.Methods
         /// <remarks>fileName为Win+R、注册表等可直接使用的文件名</remarks>
         /// <param name="fileName">文件名</param>
         /// <returns>成功提取返回true, fullPath为现有文件路径; 否则返回false, fullPath为null</returns>
-        public static bool GetFullFilePath(string fileName, out string fullPath)
+        public static bool GetFullFilePath(string fileName, out string? fullPath)
         {
-            fullPath = string.Empty;
+            fullPath = null;
             if (string.IsNullOrWhiteSpace(fileName)) return false;
 
             foreach (var name in new[] { fileName, $"{fileName}.exe" })
@@ -37,25 +39,30 @@ namespace ContextMenuManager.Methods
                     if (File.Exists(fullPath)) return true;
                 }
 
-                fullPath = Registry.GetValue($@"{RegAppPath}\{name}", "", null)?.ToString() ?? string.Empty;
+                fullPath = Registry.GetValue($@"{RegAppPath}\{name}", "", null)?.ToString();
                 if (File.Exists(fullPath)) return true;
             }
-            fullPath = string.Empty;
+            fullPath = null;
             return false;
         }
 
-        public static readonly ConcurrentDictionary<string, string> FilePathDic = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, string?> FilePathDic = new(StringComparer.OrdinalIgnoreCase);
+
+        public static void ClearFilePathDic()
+        {
+            FilePathDic.Clear();
+        }
 
         /// <summary>从包含现有文件路径的命令语句中提取文件路径</summary>
         /// <param name="command">命令语句</param>
         /// <returns>成功提取返回现有文件路径，否则返回值为null</returns>
-        public static string ExtractFilePath(string command)
+        public static string? ExtractFilePath(string command)
         {
-            if (string.IsNullOrWhiteSpace(command)) return string.Empty;
+            if (string.IsNullOrWhiteSpace(command)) return null;
             if (FilePathDic.TryGetValue(command, out var value)) return value;
             else
             {
-                var filePath = string.Empty;
+                string? filePath;
                 var partCmd = Environment.ExpandEnvironmentVariables(command).Replace(@"\\", @"\");
                 if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
                 {
@@ -66,7 +73,7 @@ namespace ContextMenuManager.Methods
                         var fileName = arr[0];
                         if (GetFullFilePath(fileName, out filePath))
                         {
-                            FilePathDic.TryAdd(command, filePath);
+                            FilePathDic.TryAdd(command, null);
                             return filePath;
                         }
                         if (arr.Length > 1)
@@ -134,7 +141,7 @@ namespace ContextMenuManager.Methods
                     }
                     while (index != -1);
                 }
-                FilePathDic.TryAdd(command, string.Empty);
+                FilePathDic.TryAdd(command, null);
                 return null;
             }
         }

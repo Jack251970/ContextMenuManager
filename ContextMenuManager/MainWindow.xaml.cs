@@ -500,7 +500,7 @@ namespace ContextMenuManager
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            ObjectPath.FilePathDic.Clear();
+            ObjectPath.ClearFilePathDic();
             AppConfig.ReloadConfig();
             GuidInfo.ReloadDics();
             XmlDicHelper.ReloadDics();
