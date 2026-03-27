@@ -215,15 +215,7 @@ namespace ContextMenuManager.Methods
                     }
                 }
 
-                // 等待一小段时间确保所有进程已完全退出
-                Thread.Sleep(500);
-
-                // 启动新的 explorer.exe 进程
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    UseShellExecute = true
-                })?.Dispose();
+                // 无需启动新的 explorer.exe 进程，Windows 会自动重启它
             }
             catch (Exception ex) when (
                 ex is Win32Exception or
@@ -245,12 +237,8 @@ namespace ContextMenuManager.Methods
                     {
                         kill?.WaitForExit();
                     }
-                    Thread.Sleep(500);
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "explorer.exe",
-                        UseShellExecute = true
-                    })?.Dispose();
+
+                    // 无需启动新的 explorer.exe 进程，Windows 会自动重启它
                 }
                 catch (Exception ex1) when (
                     ex1 is Win32Exception or
