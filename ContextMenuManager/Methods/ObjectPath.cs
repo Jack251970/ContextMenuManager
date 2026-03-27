@@ -56,7 +56,7 @@ namespace ContextMenuManager.Methods
         /// <summary>从包含现有文件路径的命令语句中提取文件路径</summary>
         /// <param name="command">命令语句</param>
         /// <returns>成功提取返回现有文件路径，否则返回值为null</returns>
-        public static string? ExtractFilePath(string command)
+        public static string? ExtractFilePath(string? command)
         {
             if (string.IsNullOrWhiteSpace(command)) return null;
             if (FilePathDic.TryGetValue(command, out var value)) return value;
