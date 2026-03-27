@@ -35,6 +35,8 @@ namespace ContextMenuManager
             RegisterExitEvents();
 
             Current.MainWindow.Show();
+
+            Updater.PeriodicUpdate();
         }
 
         private void RegisterExitEvents()

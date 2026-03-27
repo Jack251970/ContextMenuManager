@@ -13,7 +13,6 @@ namespace ContextMenuManager
             {
                 // 初始化字符串、更新检查和XML字典
                 AppString.LoadStrings();
-                Updater.PeriodicUpdate();
                 XmlDicHelper.ReloadDics();
 
                 using var application = new App();
