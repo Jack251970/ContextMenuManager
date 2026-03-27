@@ -62,10 +62,6 @@ namespace ContextMenuManager.Views
                 BackupEntries.Remove(entry);
                 BackupEntries.Add(entry);
             }
-
-            SummaryHintText.Text = BackupEntries.Count == 0
-                ? "No backups found in the current backup store."
-                : $"Found {BackupEntries.Count} backup file(s) in {AppConfig.MenuBackupRootDir}.";
         }
 
         private void LoadLabels()
@@ -282,9 +278,6 @@ namespace ContextMenuManager.Views
             {
                 File.Delete(entry.FilePath);
                 BackupEntries.Remove(entry);
-                SummaryHintText.Text = BackupEntries.Count == 0
-                    ? "No backups found in the current backup store."
-                    : $"Found {BackupEntries.Count} backup file(s) in {AppConfig.MenuBackupRootDir}.";
             }
             catch (Exception ex)
             {
