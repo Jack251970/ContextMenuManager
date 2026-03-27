@@ -52,7 +52,7 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <ComboBox
                             x:Name="LanguageComboBox"
-                            MinWidth="240"
+                            MinWidth="180"
                             VerticalAlignment="Center"
                             SelectionChanged="LanguageComboBox_OnSelectionChanged" />
                         <Button

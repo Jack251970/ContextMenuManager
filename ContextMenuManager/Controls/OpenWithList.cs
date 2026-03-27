@@ -3,6 +3,8 @@ using Microsoft.Win32;
 using System;
 using System.Linq;
 
+#nullable enable
+
 namespace ContextMenuManager.Controls
 {
     internal sealed class OpenWithList : MyList // 主页 打开方式
@@ -24,6 +26,7 @@ namespace ContextMenuManager.Controls
         {
             using var root = Registry.ClassesRoot;
             using var appKey = root.OpenSubKey("Applications");
+            if (appKey == null) return;
             var subkeyNames = appKey.GetSubKeyNames();
             foreach (var appName in subkeyNames)
             {
@@ -37,12 +40,13 @@ namespace ContextMenuManager.Controls
                 var keyName = names.Find(name =>
                 {
                     using var cmdKey = shellKey.OpenSubKey(name);
-                    return cmdKey.GetValue("NeverDefault") == null;
+                    return cmdKey?.GetValue("NeverDefault") == null;
                 });
                 if (keyName == null) continue;
 
                 using var commandKey = shellKey.OpenSubKey($@"{keyName}\command");
-                var command = commandKey?.GetValue("")?.ToString();
+                if (commandKey == null) continue;
+                var command = commandKey.GetValue("")?.ToString();
                 if (ObjectPath.ExtractFilePath(command) != null)
                 {
                     var item = new OpenWithItem(this, commandKey.Name);

@@ -7,14 +7,17 @@ namespace ContextMenuManager.Methods
         public static MessageBoxResult Show(string text, string caption = null, MessageBoxButton button = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None)
         {
-            if (icon == MessageBoxImage.None)
+            return DispatcherHelper.Invoke(() =>
             {
-                return iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(text, caption ?? AppString.General.AppName, button);
-            }
-            else
-            {
-                return iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(text, caption ?? AppString.General.AppName, button, icon);
-            }
+                if (icon == MessageBoxImage.None)
+                {
+                    return iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(text, caption ?? AppString.General.AppName, button);
+                }
+                else
+                {
+                    return iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(text, caption ?? AppString.General.AppName, button, icon);
+                }
+            });
         }
     }
 }

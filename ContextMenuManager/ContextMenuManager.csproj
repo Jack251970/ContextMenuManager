@@ -2,58 +2,39 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <FileAlignment>512</FileAlignment>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ApplicationIcon>Properties\AppIcon.ico</ApplicationIcon>
-    <TargetZone>Custom</TargetZone>
-    <GenerateManifests>false</GenerateManifests>
-    <SignManifests>false</SignManifests>
-    <Win32Resource />
     <StartupObject>ContextMenuManager.Program</StartupObject>
-    <ManifestCertificateThumbprint>BEFE3AE42DB8F7604D715C01388001CABFF0FABF</ManifestCertificateThumbprint>
-    <ManifestKeyFile>ContextMenuManager_TemporaryKey.pfx</ManifestKeyFile>
     <ApplicationManifest>Properties\App.manifest</ApplicationManifest>
-    <!--<PostBuildEvent>mkdir $(TargetDir)\Config\Languages
-mkdir $(TargetDir)\Config\Dictionaries\Web
-xcopy $(ProjectDir)\Properties\Resources\Texts\AppLanguageDic.ini $(SolutionDir)\Languages\zh-CN.ini /y
-xcopy $(SolutionDir)\Languages $(TargetDir)\config\Languages /y
-xcopy $(ProjectDir)\Properties\Resources\Texts $(TargetDir)\Config\Dictionaries\Web /y
-del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);WFO1000;CA1416</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-	
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <ErrorReport>send</ErrorReport>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <DocumentationFile>
-    </DocumentationFile>
-    <FileAlignment>4096</FileAlignment>
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <FileAlignment>4096</FileAlignment>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-  </PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>portable</DebugType>
+		<Optimize>false</Optimize>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<UseVSHostingProcess>true</UseVSHostingProcess>
+		<Prefer32Bit>false</Prefer32Bit>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<DefineConstants>TRACE;RELEASE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<Prefer32Bit>false</Prefer32Bit>
+		<NoWarn>$(NoWarn);FLSG0007</NoWarn>
+	</PropertyGroup>
 	
   <ItemGroup>
 		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
@@ -67,5 +48,33 @@ del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
   <ItemGroup>
     <Page Include="App.xaml" />
   </ItemGroup>
+
+	<Target Name="CopyFilesAfterBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+		<MakeDir Directories="$(TargetDir)Config\Languages" />
+		<MakeDir Directories="$(TargetDir)Config\Dictionaries\Web" />
+
+		<Copy
+			SourceFiles="$(ProjectDir)Properties\Resources\Texts\AppLanguageDic.ini"
+			DestinationFiles="$(SolutionDir)Languages\zh-CN.ini"
+			OverwriteReadOnlyFiles="true" />
+
+		<ItemGroup>
+			<LanguageFiles Include="$(SolutionDir)Languages\*.*" />
+		</ItemGroup>
+		<Copy
+			SourceFiles="@(LanguageFiles)"
+			DestinationFolder="$(TargetDir)Config\Languages"
+			OverwriteReadOnlyFiles="true" />
+
+		<ItemGroup>
+			<WebDictFiles Include="$(ProjectDir)Properties\Resources\Texts\*.*" />
+		</ItemGroup>
+		<Copy
+			SourceFiles="@(WebDictFiles)"
+			DestinationFolder="$(TargetDir)Config\Dictionaries\Web"
+			OverwriteReadOnlyFiles="true" />
+
+		<Delete Files="$(TargetDir)Config\Dictionaries\Web\AppLanguageDic.ini" />
+	</Target>
 	
 </Project>
