@@ -25,7 +25,7 @@ namespace ContextMenuManager.Methods
         DragDrop, PublicReferences, InternetExplorer,
         // 其他规则——第三板块（不予备份）
         // 不予备份的场景
-        MenuAnalysis, CustomRegPath, CustomExtensionPerceivedType,
+        MenuAnalysis, CustomRegPath, CustomExtensionPerceivedType, GuidBlocked,
     };
 
     // 备份项目类型（新增备份类别处3）
@@ -50,6 +50,12 @@ namespace ContextMenuManager.Methods
         NotHandleNotOnList,     // 启用备份列表上可见的菜单项，禁用备份列表上不可见的菜单项，不处理不位于备份列表上的菜单项
         DisableNotOnList,       // 启用备份列表上可见的菜单项，禁用备份列表上不可见以及不位于备份列表上的菜单项
         EnableNotOnList,        // 启用备份列表上可见的菜单项以及不位于备份列表上的菜单项，禁用备份列表上不可见
+    }
+
+    // GUID阻止场景（用于兼容旧代码）
+    public enum GuidBlocked
+    {
+        GuidBlocked
     };
 
     // 定义一个类来表示备份数据
