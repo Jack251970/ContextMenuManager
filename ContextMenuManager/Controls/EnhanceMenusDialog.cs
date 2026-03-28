@@ -1,28 +1,31 @@
-﻿using ContextMenuManager.Methods;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
+using ContextMenuManager.Methods;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class EnhanceMenusDialog : CommonDialog
+    internal sealed class EnhanceMenusDialog
     {
         public string ScenePath { get; set; }
 
-        public override void Reset() { }
-
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog()
         {
-            using var frm = new SubItemsForm();
-            using var list = new EnhanceMenuList();
-            frm.Text = AppString.SideBar.EnhanceMenu;
-            frm.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            frm.TopMost = true;
-            frm.AddList(list);
-            list.ScenePath = ScenePath;
-            list.UseUserDic = XmlDicHelper.EnhanceMenuPathDic[ScenePath];
+            return RunDialog(null);
+        }
+
+        public bool RunDialog(MainWindow owner)
+        {
+            var dialog = ContentDialogHost.CreateDialog(AppString.SideBar.EnhanceMenu, owner);
+
+            var list = new EnhanceMenuList
+            {
+                ScenePath = ScenePath,
+                UseUserDic = XmlDicHelper.EnhanceMenuPathDic[ScenePath],
+                MinWidth = 500,
+                MinHeight = 400
+            };
             list.LoadItems();
-            frm.ShowDialog();
+
+            dialog.Content = list;
+            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
             return false;
         }
     }

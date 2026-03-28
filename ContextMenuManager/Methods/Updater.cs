@@ -1,9 +1,8 @@
-using BluePointLilac.Controls;
-using BluePointLilac.Methods;
+using ContextMenuManager.Controls;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows;
 using System.Xml;
 
 namespace ContextMenuManager.Methods
@@ -42,7 +41,7 @@ namespace ContextMenuManager.Methods
                 if (isManual)
                 {
                     if (AppMessageBox.Show(AppString.Message.WebDataReadFailed + "\r\n"
-                        + AppString.Message.OpenWebUrl, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+                        + AppString.Message.OpenWebUrl, null, MessageBoxButton.OKCancel) != MessageBoxResult.OK) return;
                     url = AppConfig.RequestUseGithub ? AppConfig.GithubLatest : AppConfig.GiteeReleases;
                     ExternalProgram.OpenWebUrl(url);
                 }
@@ -51,22 +50,21 @@ namespace ContextMenuManager.Methods
             var root = doc.FirstChild;
             var tagNameXN = root.SelectSingleNode("tag_name");
             var webVer = new Version(tagNameXN.InnerText);
-            var appVer = new Version(Application.ProductVersion);
+            var appVer = InfoHelper.ProductVersion;
 #if DEBUG
             appVer = new Version(0, 0, 0, 0);//测试用
 #endif
             if (appVer >= webVer)
             {
-                if (isManual) AppMessageBox.Show(AppString.Message.VersionIsLatest,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (isManual) AppMessageBox.Show(AppString.Message.VersionIsLatest, null,
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
                 var bodyXN = root.SelectSingleNode("body");
                 var info = AppString.Message.UpdateInfo.Replace("%v1", appVer.ToString()).Replace("%v2", webVer.ToString());
                 info += "\r\n\r\n" + MachinedInfo(bodyXN.InnerText);
-                if (MessageBox.Show(info, AppString.General.AppName,
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (AppMessageBox.Show(info, AppString.General.AppName, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     var assetsXN = root.SelectSingleNode("assets");
                     foreach (XmlNode itemXN in assetsXN.SelectNodes("item"))
@@ -75,14 +73,16 @@ namespace ContextMenuManager.Methods
                         if (nameXN != null && nameXN.InnerText.Contains(".exe"))
                         {
                             var urlXN = itemXN.SelectSingleNode("browser_download_url");
-                            using var dlg = new DownloadDialog();
-                            dlg.Url = urlXN?.InnerText;
-                            dlg.FilePath = $@"{AppConfig.AppDataDir}\{webVer}.exe";
-                            dlg.Text = AppString.General.AppName;
-                            if (dlg.ShowDialog() == DialogResult.OK)
+                            var dlg = new DownloadDialog
                             {
-                                AppMessageBox.Show(AppString.Message.UpdateSucceeded,
-                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                Url = urlXN?.InnerText,
+                                FilePath = $@"{AppConfig.AppDataDir}\{webVer}.exe",
+                                Text = AppString.General.AppName
+                            };
+                            if (dlg.ShowDialog() == true)
+                            {
+                                AppMessageBox.Show(AppString.Message.UpdateSucceeded, null,
+                                    MessageBoxButton.OK, MessageBoxImage.Information);
                                 SingleInstance.Restart(null, dlg.FilePath);
                             }
                         }
@@ -134,8 +134,8 @@ namespace ContextMenuManager.Methods
                 var failed = failed1 + failed2;
                 var succeeded = succeeded1 + succeeded2;
                 if (failed != "") AppMessageBox.Show(AppString.Message.WebDataReadFailed + failed);
-                if (succeeded != "") AppMessageBox.Show(AppString.Message.DicUpdateSucceeded + succeeded,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (succeeded != "") AppMessageBox.Show(AppString.Message.DicUpdateSucceeded + succeeded, null,
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -143,7 +143,7 @@ namespace ContextMenuManager.Methods
         private static string MachinedInfo(string info)
         {
             var str = string.Empty;
-            var lines = info.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            var lines = info.Split(["\r\n", "\n"], StringSplitOptions.None);
             for (var m = 0; m < lines.Length; m++)
             {
                 var line = lines[m];

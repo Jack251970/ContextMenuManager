@@ -1,8 +1,7 @@
-﻿using BluePointLilac.Controls;
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -13,13 +12,22 @@ namespace ContextMenuManager.Controls
 
     internal sealed class RestoreItem : MyListItem, IBtnShowMenuItem, ITsiFilePathItem, ITsiDeleteItem, ITsiRestoreItem
     {
-        public RestoreItem(ITsiRestoreFile item, string filePath, string deviceName, string creatTime)
+        public ContextMenu ContextMenu
         {
-            InitializeComponents();
-            restoreInterface = item;
-            FilePath = filePath;
-            Text = AppString.Other.RestoreItemText.Replace("%device", deviceName).Replace("%time", creatTime);
-            Image = AppImage.BackupItem;
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
+        public RestoreItem(MyList list, ITsiRestoreFile item, string filePath, string deviceName, string creatTime) : base(list)
+        {
+            if (list != null)
+            {
+                InitializeComponents();
+                restoreInterface = item;
+                FilePath = filePath;
+                Text = AppString.Other.RestoreItemText.Replace("%device", deviceName).Replace("%time", creatTime);
+                Image = AppImage.BackupItem;
+            }
         }
 
         // 恢复函数接口对象
@@ -40,7 +48,7 @@ namespace ContextMenuManager.Controls
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public RestoreMeMenuItem TsiRestoreMe { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
+        private RToolStripMenuItem TsiDetails { get; set; }
 
         private void InitializeComponents()
         {
@@ -49,13 +57,20 @@ namespace ContextMenuManager.Controls
             TsiFileProperties = new FilePropertiesMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
             TsiRestoreMe = new RestoreMeMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
 
             // 设置菜单：详细信息；删除备份；恢复备份
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiDetails, new RToolStripSeparator(),
-                TsiRestoreMe, new RToolStripSeparator(), TsiDeleteMe });
+            foreach (var item in new Control[] { TsiDetails, new RToolStripSeparator(),
+                TsiRestoreMe, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                ContextMenu.Items.Add(item);
+            }
 
             // 详细信息
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiFileProperties, TsiFileLocation });
+            foreach (var item in new Control[] { TsiFileProperties, TsiFileLocation })
+            {
+                TsiDetails.Items.Add(item);
+            }
         }
 
         public void DeleteMe()

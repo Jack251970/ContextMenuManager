@@ -1,320 +1,80 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <FileAlignment>512</FileAlignment>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Users\Lilac\Desktop\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ApplicationIcon>Properties\AppIcon.ico</ApplicationIcon>
-    <TargetZone>Custom</TargetZone>
-    <GenerateManifests>false</GenerateManifests>
-    <SignManifests>false</SignManifests>
-    <Win32Resource />
     <StartupObject>ContextMenuManager.Program</StartupObject>
-    <ManifestCertificateThumbprint>BEFE3AE42DB8F7604D715C01388001CABFF0FABF</ManifestCertificateThumbprint>
-    <ManifestKeyFile>ContextMenuManager_TemporaryKey.pfx</ManifestKeyFile>
     <ApplicationManifest>Properties\App.manifest</ApplicationManifest>
-    <!--<PostBuildEvent>mkdir $(TargetDir)\Config\Languages
-mkdir $(TargetDir)\Config\Dictionaries\Web
-xcopy $(ProjectDir)\Properties\Resources\Texts\AppLanguageDic.ini $(SolutionDir)\Languages\zh-CN.ini /y
-xcopy $(SolutionDir)\Languages $(TargetDir)\config\Languages /y
-xcopy $(ProjectDir)\Properties\Resources\Texts $(TargetDir)\Config\Dictionaries\Web /y
-del $(TargetDir)\Config\Dictionaries\Web\AppLanguageDic.ini</PostBuildEvent>-->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);WFO1000;CA1416</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <ErrorReport>send</ErrorReport>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <DocumentationFile>
-    </DocumentationFile>
-    <FileAlignment>4096</FileAlignment>
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <FileAlignment>4096</FileAlignment>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-  </PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>portable</DebugType>
+		<Optimize>false</Optimize>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<UseVSHostingProcess>true</UseVSHostingProcess>
+		<Prefer32Bit>false</Prefer32Bit>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<DefineConstants>TRACE;RELEASE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<Prefer32Bit>false</Prefer32Bit>
+		<NoWarn>$(NoWarn);FLSG0007</NoWarn>
+	</PropertyGroup>
+	
   <ItemGroup>
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Management" Version="10.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.2.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.2.1" />
+		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
   </ItemGroup>
+	
   <ItemGroup>
-    <Compile Update="BluePointLilac.Controls\BackupDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\BackupListBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\DetailedEditDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\DictionariesBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\RComboBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\RestoreListDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\DonateBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\EnhanceMenusDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\IBtnDeleteItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiRestoreItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\LanguagesBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\RestoreItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\RToolStripMenuItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\SwitchDicList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\ReadOnlyTextBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\MyToolBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\UAWebClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\DownloadDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\FileExtensionDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\EnhanceMenusItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\EnhanceMenuList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\IEItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\IEList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\IBtnMoveUpDownItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiAdministratorItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiGuidItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiShortcutCommandItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiRegExportItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\NewIEDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\NewLnkFileDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\SelectDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellExecuteDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellStoreDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\FoldSubItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiDeleteItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiCommandItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiFilePathItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiIconItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiTextItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiRegPathItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\IBtnShowMenuItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\IChkVisibleItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\Interfaces\ITsiWebSearchItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\NewItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\AppSettingBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\GuidBlockedItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\GuidBlockedList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\NewOpenWithDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\NewShellDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\OpenWithList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\RuleItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\OpenWithItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ExplorerRestarter.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\SendToItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\SendToList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellNewItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellNewList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\DetailedEditList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\UwpModeItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\WinXGroupItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\WinXItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\WinXList.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\IconDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\InputDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\MyCheckBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\MyListBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\MySideBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\MyStatusBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellSubMenuDialog.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="BluePointLilac.Controls\PictureButton.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellExItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Controls\ShellItem.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Content Include="Properties\Resources\Images\CheckUpdate.png" />
-    <Content Include="Properties\Resources\Images\DownLoad.png" />
-    <Content Include="Properties\Resources\Images\Enhance.png" />
-    <Content Include="Properties\Resources\Images\Jump.png" />
-    <Content Include="Properties\Resources\Images\Sort.png" />
-    <Content Include="Properties\Resources\Images\Translate.png" />
-    <Content Include="Properties\Resources\Images\User.png" />
-    <Content Include="Properties\Resources\Images\Web.png" />
-    <Content Include="Properties\Resources\ShellNew\0.c" />
-    <Content Include="Properties\Resources\ShellNew\0.html" />
-    <Content Include="Properties\Resources\ShellNew\0.xml" />
-    <Content Include="Properties\Resources\Texts\UwpModeItemsDic.xml" />
+    <Content Include="Properties\AppIcon.ico" />
+    <Resource Include="Properties\Resources\**\*.*" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Properties\AppIcon.ico" />
-    <Content Include="Properties\Resources\Images\Custom.png" />
-    <Content Include="Properties\Resources\Images\NewFolder.png" />
-    <Content Include="Properties\Resources\Images\Refresh.png" />
-    <Content Include="Properties\Resources\Texts\EnhanceMenusDic.xml" />
-    <Content Include="Properties\Resources\Images\About.png" />
-    <Content Include="Properties\Resources\Images\Add.png" />
-    <Content Include="Properties\Resources\Images\AddExisting.png" />
-    <Content Include="Properties\Resources\Images\AddSeparator.png" />
-    <Content Include="Properties\Resources\Images\Delete.png" />
-    <Content Include="Properties\Resources\Images\Home.png" />
-    <Content Include="Properties\Resources\Images\MicrosoftStore.png" />
-    <Content Include="Properties\Resources\Images\NewItem.png" />
-    <Content Include="Properties\Resources\Images\Open.png" />
-    <Content Include="Properties\Resources\Images\Setting.png" />
-    <Content Include="Properties\Resources\Images\Star.png" />
-    <Content Include="Properties\Resources\Images\SubItems.png" />
-    <Content Include="Properties\Resources\Images\Type.png" />
-    <Content Include="Properties\Resources\Images\Up.png" />
-    <Content Include="Properties\Resources\Images\Donate.png" />
-    <Content Include="Properties\Resources\Texts\DetailedEditDic.xml" />
+    <Page Include="App.xaml" />
   </ItemGroup>
+
+	<Target Name="CopyFilesAfterBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+		<MakeDir Directories="$(TargetDir)Config\Languages" />
+		<MakeDir Directories="$(TargetDir)Config\Dictionaries\Web" />
+
+		<Copy
+			SourceFiles="$(ProjectDir)Properties\Resources\Texts\AppLanguageDic.ini"
+			DestinationFiles="$(SolutionDir)Languages\zh-CN.ini"
+			OverwriteReadOnlyFiles="true" />
+
+		<ItemGroup>
+			<LanguageFiles Include="$(SolutionDir)Languages\*.*" />
+		</ItemGroup>
+		<Copy
+			SourceFiles="@(LanguageFiles)"
+			DestinationFolder="$(TargetDir)Config\Languages"
+			OverwriteReadOnlyFiles="true" />
+
+		<ItemGroup>
+			<WebDictFiles Include="$(ProjectDir)Properties\Resources\Texts\*.*" />
+		</ItemGroup>
+		<Copy
+			SourceFiles="@(WebDictFiles)"
+			DestinationFolder="$(TargetDir)Config\Dictionaries\Web"
+			OverwriteReadOnlyFiles="true" />
+
+		<Delete Files="$(TargetDir)Config\Dictionaries\Web\AppLanguageDic.ini" />
+	</Target>
+	
 </Project>

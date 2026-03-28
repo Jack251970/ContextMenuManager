@@ -1,14 +1,23 @@
-﻿using BluePointLilac.Methods;
-using System.Windows.Forms;
+﻿using System.Windows;
 
 namespace ContextMenuManager.Methods
 {
     public static class AppMessageBox
     {
-        public static DialogResult Show(string text, MessageBoxButtons buttons = MessageBoxButtons.OK,
-            MessageBoxIcon icon = MessageBoxIcon.Warning, string caption = null)
+        public static MessageBoxResult Show(string text, string caption = null, MessageBoxButton button = MessageBoxButton.OK,
+            MessageBoxImage icon = MessageBoxImage.None)
         {
-            return MessageBoxEx.Show(text, caption ?? AppString.General.AppName, buttons, icon);
+            return DispatcherHelper.Invoke(() =>
+            {
+                if (icon == MessageBoxImage.None)
+                {
+                    return iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(text, caption ?? AppString.General.AppName, button);
+                }
+                else
+                {
+                    return iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(text, caption ?? AppString.General.AppName, button, icon);
+                }
+            });
         }
     }
 }

@@ -1,145 +1,56 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Windows.Forms;
+using ContextMenuManager.Methods;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
-namespace BluePointLilac.Controls
+namespace ContextMenuManager.Controls
 {
-    public class PictureButton : PictureBox
+    public class PictureButton : Button
     {
-        private readonly Timer animationTimer;
-        private float currentOpacity = 0f;
-        private float targetOpacity = 0f;
-        private const float ANIMATION_SPEED = 0.1f;
+        public static readonly DependencyProperty BaseImageProperty =
+            DependencyProperty.Register("BaseImage", typeof(System.Drawing.Image), typeof(PictureButton),
+                new PropertyMetadata(null, OnBaseImageChanged));
 
-        public PictureButton(Image image)
+        public System.Drawing.Image BaseImage
         {
+            get => (System.Drawing.Image)GetValue(BaseImageProperty);
+            set => SetValue(BaseImageProperty, value);
+        }
+
+        private readonly Image innerImage = new()
+        {
+            Stretch = Stretch.Uniform,
+            Width = 27,
+            Height = 27
+        };
+
+        public PictureButton(System.Drawing.Image image)
+        {
+            Background = Brushes.Transparent;
+            BorderThickness = new Thickness(0);
+            Padding = new Thickness(0);
+            Width = 32;
+            Height = 32;
+            Content = innerImage;
+
             BaseImage = image;
-            SizeMode = PictureBoxSizeMode.AutoSize;
-            Cursor = Cursors.Hand;
-
-            // 监听主题变化
-            DarkModeHelper.ThemeChanged += OnThemeChanged;
-
-            // 初始化动画计时器
-            animationTimer = new Timer();
-            animationTimer.Interval = 16; // ~60 FPS
-            animationTimer.Tick += AnimationTimer_Tick;
         }
 
-        private Image baseImage;
-        public Image BaseImage
+        private static void OnBaseImageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get => baseImage;
-            set
+            ((PictureButton)d).UpdateImage();
+        }
+
+        private void UpdateImage()
+        {
+            if (BaseImage == null)
             {
-                baseImage = value;
-                // 初始状态为禁用效果
-                Image = CreateDisabledImage(value);
-            }
-        }
-
-        protected override void OnMouseEnter(EventArgs e)
-        {
-            base.OnMouseEnter(e);
-            targetOpacity = 1f; // 目标为完全不透明
-            animationTimer.Start();
-        }
-
-        protected override void OnMouseLeave(EventArgs e)
-        {
-            base.OnMouseLeave(e);
-            targetOpacity = 0f; // 目标为完全透明（禁用效果）
-            animationTimer.Start();
-        }
-
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left) base.OnMouseDown(e);
-        }
-
-        private void AnimationTimer_Tick(object sender, EventArgs e)
-        {
-            // 逐步接近目标不透明度
-            if (currentOpacity < targetOpacity)
-            {
-                currentOpacity += ANIMATION_SPEED;
-                if (currentOpacity > targetOpacity) currentOpacity = targetOpacity;
-            }
-            else if (currentOpacity > targetOpacity)
-            {
-                currentOpacity -= ANIMATION_SPEED;
-                if (currentOpacity < targetOpacity) currentOpacity = targetOpacity;
+                innerImage.Source = null;
             }
             else
             {
-                animationTimer.Stop();
-                return;
+                innerImage.Source = BaseImage.ToBitmapSource();
             }
-
-            // 创建混合图像
-            var normalImage = BaseImage;
-            var disabledImage = CreateDisabledImage(BaseImage);
-
-            // 创建一个临时位图来绘制混合效果
-            var mixedImage = new Bitmap(normalImage.Width, normalImage.Height);
-            using (var g = Graphics.FromImage(mixedImage))
-            {
-                // 先绘制禁用效果的图像
-                g.DrawImage(disabledImage, 0, 0);
-
-                // 然后根据当前不透明度绘制正常图像
-                var opacity = Math.Max(0, Math.Min(1, currentOpacity));
-                var matrix = new ColorMatrix();
-                matrix.Matrix33 = opacity; // 设置透明度
-                var attributes = new ImageAttributes();
-                attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-
-                g.DrawImage(
-                    normalImage,
-                    new Rectangle(0, 0, normalImage.Width, normalImage.Height),
-                    0, 0, normalImage.Width, normalImage.Height,
-                    GraphicsUnit.Pixel,
-                    attributes
-                );
-            }
-
-            // 更新显示的图像
-            if (Image != null && Image != disabledImage && Image != baseImage)
-                Image.Dispose();
-
-            Image = mixedImage;
-
-            // 清理资源
-            disabledImage.Dispose();
-        }
-
-        private Image CreateDisabledImage(Image image)
-        {
-            return ToolStripRenderer.CreateDisabledImage(image);
-        }
-
-        // 主题变化事件处理
-        private void OnThemeChanged(object sender, EventArgs e)
-        {
-            // 重新创建禁用效果的图像以适应主题变化
-            if (baseImage != null)
-            {
-                Image = CreateDisabledImage(baseImage);
-            }
-        }
-
-        // 添加资源清理
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                DarkModeHelper.ThemeChanged -= OnThemeChanged;
-
-                animationTimer?.Stop();
-                animationTimer?.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 }

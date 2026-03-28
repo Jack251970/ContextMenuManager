@@ -1,163 +1,111 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class ShellStoreDialog : CommonDialog
+    internal sealed partial class ShellStoreDialog
     {
         public string[] SelectedKeyNames { get; private set; }
         public Func<string, bool> Filter { get; set; }
         public string ShellPath { get; set; }
         public bool IsReference { get; set; }
 
-        public override void Reset() { }
-
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog()
         {
-            using var frm = new ShellStoreForm(ShellPath, Filter, IsReference);
-            frm.TopMost = true;
-            var flag = frm.ShowDialog() == DialogResult.OK;
-            if (flag) SelectedKeyNames = frm.SelectedKeyNames;
-            return flag;
+            return RunDialog(null);
         }
 
-        public sealed class ShellStoreForm : RForm
+        public bool RunDialog(MainWindow owner)
         {
-            public string ShellPath { get; private set; }
-            public Func<string, bool> Filter { get; private set; }
-            public string[] SelectedKeyNames { get; private set; }
-
-            public ShellStoreForm(string shellPath, Func<string, bool> filter, bool isReference)
+            var list = new MyList();
+            var chkSelectAll = new CheckBox
             {
-                SuspendLayout();
-                Filter = filter;
-                ShellPath = shellPath;
-                AcceptButton = btnOK;
-                CancelButton = btnCancel;
-                Font = SystemFonts.MessageBoxFont;
-                SizeGripStyle = SizeGripStyle.Hide;
-                ShowIcon = ShowInTaskbar = false;
-                MinimizeBox = MaximizeBox = false;
-                StartPosition = FormStartPosition.CenterParent;
-                MinimumSize = Size = new Size(652, 422).DpiZoom();
-                Text = isReference ? AppString.Dialog.CheckReference : AppString.Dialog.CheckCopy;
-                btnOK.Click += (sender, e) => GetSelectedItems();
-                chkSelectAll.Click += (sender, e) =>
+                Content = AppString.Dialog.SelectAll,
+                Margin = new Thickness(10, 10, 0, 10),
+                MinWidth = 0
+            };
+
+            var dialog = ContentDialogHost.CreateDialog(
+                IsReference ? AppString.Dialog.CheckReference : AppString.Dialog.CheckCopy,
+                owner);
+
+            var stackPanel = new StackPanel();
+            stackPanel.Children.Add(chkSelectAll);
+            list.MinHeight = 400;
+            list.MinWidth = 500;
+            stackPanel.Children.Add(list);
+            dialog.Content = stackPanel;
+
+            chkSelectAll.Click += (sender, e) =>
+            {
+                var flag = chkSelectAll.IsChecked == true;
+                foreach (var ctrl in list.Controls)
                 {
-                    var flag = chkSelectAll.Checked;
-                    foreach (StoreShellItem item in list.Controls)
-                    {
-                        item.IsSelected = flag;
-                    }
-                };
-                list.Owner = listBox;
-                InitializeComponents();
-                LoadItems(isReference);
-                ResumeLayout();
-                InitTheme();
-            }
-
-            private readonly MyList list = new();
-            private readonly MyListBox listBox = new();
-            private readonly Panel pnlBorder = new()
-            {
-                BackColor = DarkModeHelper.FormFore // 修改这里
-            };
-            private readonly Button btnOK = new()
-            {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                DialogResult = DialogResult.OK,
-                Text = ResourceString.OK,
-                AutoSize = true
-            };
-            private readonly Button btnCancel = new()
-            {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-                DialogResult = DialogResult.Cancel,
-                Text = ResourceString.Cancel,
-                AutoSize = true
-            };
-            private readonly CheckBox chkSelectAll = new()
-            {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
-                Text = AppString.Dialog.SelectAll,
-                Cursor = Cursors.Hand,
-                AutoSize = true
+                    if (ctrl.Item is StoreShellItem item) item.IsSelected = flag;
+                }
             };
 
-            private void InitializeComponents()
+            using (var shellKey = RegistryEx.GetRegistryKey(ShellPath))
             {
-                Controls.AddRange(new Control[] { listBox, pnlBorder, btnOK, btnCancel, chkSelectAll });
-                var a = 20.DpiZoom();
-                listBox.Location = new Point(a, a);
-                pnlBorder.Location = new Point(a - 1, a - 1);
-                chkSelectAll.Top = btnOK.Top = btnCancel.Top = ClientSize.Height - btnCancel.Height - a;
-                btnCancel.Left = ClientSize.Width - btnCancel.Width - a;
-                btnOK.Left = btnCancel.Left - btnOK.Width - a;
-                chkSelectAll.Left = a;
-                OnResize(null);
-            }
-
-            protected override void OnResize(EventArgs e)
-            {
-                base.OnResize(e);
-                listBox.Width = ClientSize.Width - 2 * listBox.Left;
-                listBox.Height = btnOK.Top - 2 * listBox.Top;
-                pnlBorder.Width = listBox.Width + 2;
-                pnlBorder.Height = listBox.Height + 2;
-            }
-
-            private void LoadItems(bool isReference)
-            {
-                using var shellKey = RegistryEx.GetRegistryKey(ShellPath);
                 foreach (var itemName in shellKey.GetSubKeyNames())
                 {
                     if (Filter != null && !Filter(itemName)) continue;
                     var regPath = $@"{ShellPath}\{itemName}";
-                    var item = new StoreShellItem(regPath, isReference);
+                    var item = new StoreShellItem(list, regPath, IsReference, true, true);
                     item.SelectedChanged += () =>
                     {
-                        foreach (StoreShellItem shellItem in list.Controls)
+                        var allSelected = true;
+                        foreach (var ctrl in list.Controls)
                         {
-                            if (!shellItem.IsSelected)
+                            if (ctrl.Item is StoreShellItem shellItem && !shellItem.IsSelected)
                             {
-                                chkSelectAll.Checked = false;
-                                return;
+                                allSelected = false;
+                                break;
                             }
                         }
-                        chkSelectAll.Checked = true;
+                        chkSelectAll.IsChecked = allSelected;
                     };
                     list.AddItem(item);
                 }
             }
 
-            private void GetSelectedItems()
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            if (result != ContentDialogResult.Primary) return false;
+
+            var names = new List<string>();
+            foreach (var ctrl in list.Controls)
             {
-                var names = new List<string>();
-                foreach (StoreShellItem item in list.Controls)
-                    if (item.IsSelected) names.Add(item.KeyName);
-                SelectedKeyNames = names.ToArray();
+                if (ctrl.Item is StoreShellItem item && item.IsSelected) names.Add(item.KeyName);
             }
+            SelectedKeyNames = [.. names];
+            return true;
         }
     }
 
     internal sealed class StoreShellItem : ShellItem
     {
-        public StoreShellItem(string regPath, bool isPublic, bool isSelect = true) : base(regPath)
+        public StoreShellItem(MyList list, string regPath, bool isPublic, bool isSelect, bool isShellStoreDialog) : base(list, regPath, isShellStoreDialog)
         {
             IsPublic = isPublic;
-            if (isSelect)
+            if (list != null)
             {
-                ContextMenuStrip = null;
-                AddCtr(chkSelected);
-                ChkVisible.Visible = BtnShowMenu.Visible = BtnSubItems.Visible = false;
-                MouseClick += (sender, e) => chkSelected.Checked = !chkSelected.Checked;
-                chkSelected.CheckedChanged += (sender, e) => SelectedChanged?.Invoke();
+                chkSelected = new()
+                {
+                    MinWidth = 0
+                };
+                if (isSelect)
+                {
+                    ContextMenu = null;
+                    AddCtr(chkSelected);
+                    ChkVisible.Visibility = BtnShowMenu.Visibility = BtnSubItems.Visibility = Visibility.Collapsed;
+                    Control.MouseLeftButtonUp += (sender, e) => chkSelected.IsChecked = !chkSelected.IsChecked;
+                    chkSelected.Checked += (sender, e) => SelectedChanged?.Invoke();
+                    chkSelected.Unchecked += (sender, e) => SelectedChanged?.Invoke();
+                }
             }
             RegTrustedInstaller.TakeRegTreeOwnerShip(regPath);
         }
@@ -165,22 +113,18 @@ namespace ContextMenuManager.Controls
         public bool IsPublic { get; set; }
         public bool IsSelected
         {
-            get => chkSelected.Checked;
-            set => chkSelected.Checked = value;
+            get => chkSelected.IsChecked == true;
+            set => chkSelected.IsChecked = value;
         }
 
-        private readonly CheckBox chkSelected = new()
-        {
-            Cursor = Cursors.Hand,
-            AutoSize = true
-        };
+        private readonly CheckBox chkSelected;
 
         public Action SelectedChanged;
 
         public override void DeleteMe()
         {
-            if (IsPublic && AppMessageBox.Show(AppString.Message.ConfirmDeleteReferenced,
-                MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+            if (IsPublic && AppMessageBox.Show(AppString.Message.ConfirmDeleteReferenced, null,
+                MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
             base.DeleteMe();
         }
     }

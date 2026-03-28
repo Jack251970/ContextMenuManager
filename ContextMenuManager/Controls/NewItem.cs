@@ -1,24 +1,25 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
 using System;
 
 namespace ContextMenuManager.Controls
 {
     internal class NewItem : MyListItem
     {
-        public NewItem() : this(AppString.Other.NewItem) { }
+        public NewItem(MyList list) : this(list, AppString.Other.NewItem) { }
 
-        public NewItem(string text)
+        public NewItem(MyList list, string text) : base(list)
         {
-            Text = text;
-            Image = AppImage.NewItem;
-            AddCtr(BtnAddNewItem);
-            ToolTipBox.SetToolTip(BtnAddNewItem, text);
-            BtnAddNewItem.MouseDown += (sender, e) => AddNewItem?.Invoke();
-            MouseDoubleClick += (sender, e) => AddNewItem?.Invoke();
-
+            if (list != null)
+            {
+                Text = text;
+                Image = AppImage.NewItem;
+                AddCtr(BtnAddNewItem);
+                ToolTipBox.SetToolTip(BtnAddNewItem, text);
+                BtnAddNewItem.Click += (sender, e) => AddNewItem?.Invoke();
+                Control.MouseDoubleClick += (sender, e) => AddNewItem?.Invoke();
+            }
         }
+
         public Action AddNewItem;
         private readonly PictureButton BtnAddNewItem = new(AppImage.AddNewItem);
     }

@@ -3,9 +3,8 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public static class ResourceIcon
     {
@@ -26,6 +25,15 @@ namespace BluePointLilac.Methods
 
         [DllImport("shell32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, FileInfoFlags uFlags);
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int nIndex);
+
+        // SM_CXICON = 11, SM_CYICON = 12
+        public static (int Width, int Height) IconSize => (
+            GetSystemMetrics(11),
+            GetSystemMetrics(12)
+        );
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private struct SHFILEINFO
@@ -110,7 +118,7 @@ namespace BluePointLilac.Methods
         public static Icon GetIcon(string iconLocation, out string iconPath, out int iconIndex)
         {
             iconIndex = 0; iconPath = null;
-            if (iconLocation.IsNullOrWhiteSpace()) return null;
+            if (string.IsNullOrWhiteSpace(iconLocation)) return null;
             iconLocation = Environment.ExpandEnvironmentVariables(iconLocation).Replace("\"", "");
             var index = iconLocation.LastIndexOf(',');
             if (index == -1) iconPath = iconLocation;
@@ -133,7 +141,7 @@ namespace BluePointLilac.Methods
         public static Icon GetIcon(string iconPath, int iconIndex)
         {
             Icon icon = null;
-            if (iconPath.IsNullOrWhiteSpace()) return icon;
+            if (string.IsNullOrWhiteSpace(iconPath)) return icon;
             iconPath = Environment.ExpandEnvironmentVariables(iconPath).Replace("\"", "");
 
             if (Path.GetFileName(iconPath).ToLower() == "shell32.dll")
@@ -149,7 +157,7 @@ namespace BluePointLilac.Methods
             if (iconIndex == -1)
             {
                 hInst = LoadLibrary(iconPath);
-                hIcons[0] = LoadImage(hInst, "#1", 1, SystemInformation.IconSize.Width, SystemInformation.IconSize.Height, 0);
+                hIcons[0] = LoadImage(hInst, "#1", 1, IconSize.Width, IconSize.Height, 0);
             }
             else ExtractIconEx(iconPath, iconIndex, hIcons, null, 1);
 

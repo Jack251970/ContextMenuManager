@@ -2,7 +2,9 @@
 using System;
 using System.Security.AccessControl;
 
-namespace BluePointLilac.Methods
+#nullable enable
+
+namespace ContextMenuManager.Methods
 {
     public static class RegistryEx
     {
@@ -18,16 +20,20 @@ namespace BluePointLilac.Methods
         public const string HKCC = "HKCC";
         public const string HKU = "HKU";
 
-        public static void CopyTo(this RegistryKey srcKey, RegistryKey dstKey)
+        public static void CopyTo(this RegistryKey? srcKey, RegistryKey? dstKey)
         {
-            foreach (var name in srcKey.GetValueNames())
+            if (srcKey == null) return;
+            foreach (var name in srcKey.GetValueNames() ?? [])
             {
-                dstKey.SetValue(name, srcKey.GetValue(name), srcKey.GetValueKind(name));
+                if (srcKey.GetValue(name) is not object value) continue;
+                dstKey?.SetValue(name, value, srcKey.GetValueKind(name));
             }
             foreach (var name in srcKey.GetSubKeyNames())
             {
                 using var srcSubKey = srcKey.OpenSubKey(name);
-                using var dstSubKey = dstKey.CreateSubKey(name, true);
+                if (srcSubKey == null) continue;
+                using var dstSubKey = dstKey?.CreateSubKey(name, true);
+                if (dstSubKey == null) continue;
                 srcSubKey.CopyTo(dstSubKey);
             }
         }
@@ -51,7 +57,7 @@ namespace BluePointLilac.Methods
             DeleteKeyTree(srcPath, true);
         }
 
-        public static RegistryKey CreateSubKey(this RegistryKey key, string subKeyName, bool writable)
+        public static RegistryKey? CreateSubKey(this RegistryKey key, string subKeyName, bool writable)
         {
             using (key.CreateSubKey(subKeyName))
                 return key.OpenSubKey(subKeyName, writable);
@@ -140,7 +146,32 @@ namespace BluePointLilac.Methods
         /// <param name="regPath">注册表项路径</param>
         /// <param name="writable">写入访问权限</param>
         /// <param name="create">是否创建新项</param>
-        public static RegistryKey GetRegistryKey(string regPath, bool writable = false, bool create = false)
+        public static RegistryKey? GetRegistryKey(string regPath, bool writable = false, bool create = false)
+        {
+            try
+            {
+                return GetRegistryKeyWithoutTakingOwnership(regPath, writable, create);
+            }
+            catch
+            {
+                return GetRegistryKeyWithTakingOwnership(regPath, writable, create);
+            }
+        }
+
+        private static RegistryKey? GetRegistryKeyWithoutTakingOwnership(string regPath, bool writable = false, bool create = false)
+        {
+            GetRootAndSubRegPath(regPath, out var root, out var keyPath);
+            using (root)
+            {
+                if (create) return root.CreateSubKey(keyPath, writable);
+                else
+                {
+                    return root.OpenSubKey(keyPath, writable);
+                }
+            }
+        }
+
+        private static RegistryKey? GetRegistryKeyWithTakingOwnership(string regPath, bool writable = false, bool create = false)
         {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root)
@@ -154,10 +185,13 @@ namespace BluePointLilac.Methods
             }
         }
 
-        public static RegistryKey GetRegistryKey(string regPath, RegistryKeyPermissionCheck check, RegistryRights rights)
+        public static RegistryKey? GetRegistryKey(string regPath, RegistryKeyPermissionCheck check, RegistryRights rights)
         {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
-            using (root) return root.OpenSubKey(keyPath, check, rights);
+            using (root)
+            {
+                return root.OpenSubKey(keyPath, check, rights);
+            }
         }
     }
 }

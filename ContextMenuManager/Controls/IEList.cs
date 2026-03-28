@@ -1,9 +1,7 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
+﻿using ContextMenuManager.Methods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace ContextMenuManager.Controls
 {
@@ -32,7 +30,7 @@ namespace ContextMenuManager.Controls
                     using var key = meKey.OpenSubKey(keyName);
                     if (!string.IsNullOrEmpty(key.GetValue("")?.ToString()))
                     {
-                        AddItem(new IEItem(key.Name));
+                        AddItem(new IEItem(this, key.Name));
                         names.Add(keyName);
                     }
                 }
@@ -41,13 +39,13 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem()
         {
-            var newItem = new NewItem();
+            var newItem = new NewItem(this);
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new NewIEDialog();
-                if (dlg.ShowDialog() != DialogResult.OK) return;
-                InsertItem(new IEItem(dlg.RegPath), 1);
+                var dlg = new NewIEDialog();
+                if (dlg.ShowDialog() != true) return;
+                InsertItem(new IEItem(this, dlg.RegPath), 1);
             };
         }
     }

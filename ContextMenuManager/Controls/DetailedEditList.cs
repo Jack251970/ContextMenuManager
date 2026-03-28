@@ -1,4 +1,3 @@
-using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
@@ -29,7 +28,7 @@ namespace ContextMenuManager.Controls
                     var guidList = groupXN.SelectNodes("Guid");
                     foreach (XmlNode guidXN in guidList)
                     {
-                        if (!GuidEx.TryParse(guidXN.InnerText, out var guid)) continue;
+                        if (!Guid.TryParse(guidXN.InnerText, out var guid)) continue;
                         if (!File.Exists(GuidInfo.GetFilePath(guid))) continue;
                         if (GroupGuid != Guid.Empty && GroupGuid != guid) continue;
                         guids.Add(guid);
@@ -41,32 +40,32 @@ namespace ContextMenuManager.Controls
                     var isIniGroup = groupXN.SelectSingleNode("IsIniGroup") != null;
                     var attribute = isIniGroup ? "FilePath" : "RegPath";
                     var pathType = isIniGroup ? ObjectPath.PathType.File : ObjectPath.PathType.Registry;
-                    groupItem = new FoldGroupItem(groupXN.SelectSingleNode(attribute)?.InnerText, pathType);
+                    groupItem = new FoldGroupItem(this, groupXN.SelectSingleNode(attribute)?.InnerText, pathType);
                     foreach (XmlElement textXE in groupXN.SelectNodes("Text"))
                     {
                         if (XmlDicHelper.JudgeCulture(textXE)) groupItem.Text = ResourceString.GetDirectString(textXE.GetAttribute("Value"));
                     }
                     if (guids.Count > 0)
                     {
-                        groupItem.Tag = guids;
-                        if (groupItem.Text.IsNullOrWhiteSpace()) groupItem.Text = GuidInfo.GetText(guids[0]);
+                        groupItem.Control.Tag = guids;
+                        if (string.IsNullOrWhiteSpace(groupItem.Text)) groupItem.Text = GuidInfo.GetText(guids[0]);
                         groupItem.Image = GuidInfo.GetImage(guids[0]);
                         var filePath = GuidInfo.GetFilePath(guids[0]);
                         var clsidPath = GuidInfo.GetClsidPath(guids[0]);
-                        if (filePath != null || clsidPath != null) groupItem.ContextMenuStrip.Items.Add(new RToolStripSeparator());
+                        if (filePath != null || clsidPath != null) groupItem.ContextMenu.Items.Add(new RToolStripSeparator());
                         if (filePath != null)
                         {
                             var tsi = new RToolStripMenuItem(AppString.Menu.FileLocation);
                             // 打开文件夹
                             tsi.Click += (sender, e) => ExternalProgram.JumpExplorer(filePath, AppConfig.OpenMoreExplorer);
-                            groupItem.ContextMenuStrip.Items.Add(tsi);
+                            groupItem.ContextMenu.Items.Add(tsi);
                         }
                         if (clsidPath != null)
                         {
                             var tsi = new RToolStripMenuItem(AppString.Menu.ClsidLocation);
                             // 打开注册表
                             tsi.Click += (sender, e) => ExternalProgram.JumpRegEdit(clsidPath, null, AppConfig.OpenMoreRegedit);
-                            groupItem.ContextMenuStrip.Items.Add(tsi);
+                            groupItem.ContextMenu.Items.Add(tsi);
                         }
                     }
                     var iconXN = groupXN.SelectSingleNode("Icon");
@@ -79,7 +78,7 @@ namespace ContextMenuManager.Controls
                     string GetRuleFullRegPath(string regPath)
                     {
                         if (string.IsNullOrEmpty(regPath)) regPath = groupItem.GroupPath;
-                        else if (regPath.StartsWith("\\")) regPath = groupItem.GroupPath + regPath;
+                        else if (regPath.StartsWith('\\')) regPath = groupItem.GroupPath + regPath;
                         return regPath;
                     }
                     ;
@@ -119,7 +118,7 @@ namespace ContextMenuManager.Controls
                             {
                                 var ruleXE = (XmlElement)itemXE.SelectSingleNode("Rule");
                                 var iniPath = ruleXE.GetAttribute("FilePath");
-                                if (iniPath.IsNullOrWhiteSpace()) iniPath = groupItem.GroupPath;
+                                if (string.IsNullOrWhiteSpace(iniPath)) iniPath = groupItem.GroupPath;
                                 var section = ruleXE.GetAttribute("Section");
                                 var keyName = ruleXE.GetAttribute("KeyName");
                                 if (itemXE.SelectSingleNode("IsNumberItem") != null)
@@ -133,7 +132,7 @@ namespace ContextMenuManager.Controls
                                         MaxValue = maxValue,
                                         MinValue = maxValue
                                     };
-                                    ruleItem = new NumberIniRuleItem(rule, info);
+                                    ruleItem = new NumberIniRuleItem(this, rule, info);
                                 }
                                 else if (itemXE.SelectSingleNode("IsStringItem") != null)
                                 {
@@ -143,7 +142,7 @@ namespace ContextMenuManager.Controls
                                         Secation = section,
                                         KeyName = keyName
                                     };
-                                    ruleItem = new StringIniRuleItem(rule, info);
+                                    ruleItem = new StringIniRuleItem(this, rule, info);
                                 }
                                 else
                                 {
@@ -155,7 +154,7 @@ namespace ContextMenuManager.Controls
                                         TurnOnValue = ruleXE.HasAttribute("On") ? ruleXE.GetAttribute("On") : null,
                                         TurnOffValue = ruleXE.HasAttribute("Off") ? ruleXE.GetAttribute("Off") : null,
                                     };
-                                    ruleItem = new VisbleIniRuleItem(rule, info);
+                                    ruleItem = new VisbleIniRuleItem(this, rule, info);
                                 }
                             }
                             else
@@ -172,7 +171,7 @@ namespace ContextMenuManager.Controls
                                         MaxValue = maxValue,
                                         MinValue = minValue
                                     };
-                                    ruleItem = new NumberRegRuleItem(rule, info);
+                                    ruleItem = new NumberRegRuleItem(this, rule, info);
                                 }
                                 else if (itemXE.SelectSingleNode("IsStringItem") != null)
                                 {
@@ -182,7 +181,7 @@ namespace ContextMenuManager.Controls
                                         RegPath = GetRuleFullRegPath(ruleXE.GetAttribute("RegPath")),
                                         ValueName = ruleXE.GetAttribute("ValueName"),
                                     };
-                                    ruleItem = new StringRegRuleItem(rule, info);
+                                    ruleItem = new StringRegRuleItem(this, rule, info);
                                 }
                                 else
                                 {
@@ -217,7 +216,7 @@ namespace ContextMenuManager.Controls
                                                 break;
                                         }
                                     }
-                                    ruleItem = new VisibleRegRuleItem(rules, info);
+                                    ruleItem = new VisibleRegRuleItem(this, rules, info);
                                 }
                             }
                             AddItem(ruleItem);

@@ -1,10 +1,9 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
 using System.Linq;
-using System.Windows.Forms;
+
+#nullable enable
 
 namespace ContextMenuManager.Controls
 {
@@ -18,7 +17,7 @@ namespace ContextMenuManager.Controls
             //Win8及以上版本系统才有在应用商店中查找应用
             if (WinOsVersion.Current >= WinOsVersion.Win8)
             {
-                var storeItem = new VisibleRegRuleItem(VisibleRegRuleItem.UseStoreOpenWith);
+                var storeItem = new VisibleRegRuleItem(this, VisibleRegRuleItem.UseStoreOpenWith);
                 InsertItem(storeItem, 1);
             }
         }
@@ -27,7 +26,9 @@ namespace ContextMenuManager.Controls
         {
             using var root = Registry.ClassesRoot;
             using var appKey = root.OpenSubKey("Applications");
-            foreach (var appName in appKey.GetSubKeyNames())
+            if (appKey == null) return;
+            var subkeyNames = appKey.GetSubKeyNames();
+            foreach (var appName in subkeyNames)
             {
                 if (!appName.Contains('.')) continue;//需要为有扩展名的文件名
                 using var shellKey = appKey.OpenSubKey($@"{appName}\shell");
@@ -39,15 +40,16 @@ namespace ContextMenuManager.Controls
                 var keyName = names.Find(name =>
                 {
                     using var cmdKey = shellKey.OpenSubKey(name);
-                    return cmdKey.GetValue("NeverDefault") == null;
+                    return cmdKey?.GetValue("NeverDefault") == null;
                 });
                 if (keyName == null) continue;
 
                 using var commandKey = shellKey.OpenSubKey($@"{keyName}\command");
-                var command = commandKey?.GetValue("")?.ToString();
+                if (commandKey == null) continue;
+                var command = commandKey.GetValue("")?.ToString();
                 if (ObjectPath.ExtractFilePath(command) != null)
                 {
-                    var item = new OpenWithItem(commandKey.Name);
+                    var item = new OpenWithItem(this, commandKey.Name);
                     AddItem(item);
                 }
             }
@@ -55,13 +57,13 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem()
         {
-            var newItem = new NewItem();
+            var newItem = new NewItem(this);
             InsertItem(newItem, 0);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new NewOpenWithDialog();
-                if (dlg.ShowDialog() == DialogResult.OK)
-                    InsertItem(new OpenWithItem(dlg.RegPath), 2);
+                var dlg = new NewOpenWithDialog();
+                if (dlg.ShowDialog() == true)
+                    InsertItem(new OpenWithItem(this, dlg.RegPath), 2);
             };
         }
     }

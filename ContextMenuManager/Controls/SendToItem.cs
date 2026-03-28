@@ -1,20 +1,19 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Controls.Interfaces;
+﻿using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
+using System;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
     internal sealed class SendToItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem, ITsiAdministratorItem,
         ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiDeleteItem, ITsiShortcutCommandItem
     {
-        public SendToItem(string filePath)
+        public SendToItem(MyList list, string filePath) : base(list)
         {
-            InitializeComponents();
+            if (list != null) InitializeComponents();
             FilePath = filePath;
         }
 
@@ -27,15 +26,21 @@ namespace ContextMenuManager.Controls
                 filePath = value;
                 if (IsShortcut) ShellLink = new ShellLink(value);
                 Text = ItemText;
-                Image = ItemImage;
+                if (List != null) Image = ItemImage;
             }
+        }
+
+        public ContextMenu ContextMenu
+        {
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
         }
 
         public ShellLink ShellLink { get; private set; }
         private string FileExtension => Path.GetExtension(FilePath);
-        private bool IsShortcut => FileExtension.ToLower() == ".lnk";
+        private bool IsShortcut => FileExtension.Equals(".lnk", StringComparison.CurrentCultureIgnoreCase);
         public string SearchText => $"{AppString.SideBar.SendTo} {Text}";
-        private Image ItemImage => ItemIcon?.ToBitmap() ?? AppImage.NotFound;
+        private System.Drawing.Image ItemImage => ItemIcon?.ToBitmap() ?? AppImage.NotFound;
         public string ItemFileName => Path.GetFileName(ItemFilePath);
 
         public string ItemFilePath
@@ -182,7 +187,7 @@ namespace ContextMenuManager.Controls
         public ShortcutCommandMenuItem TsiChangeCommand { get; set; }
         public RunAsAdministratorItem TsiAdministrator { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
+        private RToolStripMenuItem TsiDetails { get; set; }
 
         private void InitializeComponents()
         {
@@ -196,15 +201,22 @@ namespace ContextMenuManager.Controls
             TsiFileLocation = new FileLocationMenuItem(this);
             TsiFileProperties = new FilePropertiesMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText, new RToolStripSeparator(),
+            foreach (var item in new Control[] { TsiChangeText, new RToolStripSeparator(),
                 TsiChangeIcon, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
-                TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
+                TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                Control.ContextMenu.Items.Add(item);
+            }
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new RToolStripSeparator(),
-                TsiChangeCommand, TsiFileProperties, TsiFileLocation });
+            foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
+                TsiChangeCommand, TsiFileProperties, TsiFileLocation })
+            {
+                TsiDetails.Items.Add(item);
+            }
 
-            ContextMenuStrip.Opening += (sender, e) => TsiChangeCommand.Visible = IsShortcut;
+            Control.ContextMenu.Opened += (sender, e) => TsiChangeCommand.Visible = IsShortcut;
 
             TsiChangeCommand.Click += (sender, e) =>
             {

@@ -1,9 +1,11 @@
-﻿using BluePointLilac.Methods;
 using Microsoft.Win32;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+#nullable enable
 
 namespace ContextMenuManager.Methods
 {
@@ -13,18 +15,19 @@ namespace ContextMenuManager.Methods
         public enum PathType { File, Directory, Registry }
         private const string RegAppPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
         private const string ShellExecuteCommand = "mshta vbscript:createobject(\"shell.application\").shellexecute(\"";
+        private const string PowerShellCommandPrefix = "powershell -WindowStyle Hidden -Command \"Start-Process";
 
-        private static readonly char[] IllegalChars = { '/', '*', '?', '\"', '<', '>', '|' };
-        private static readonly List<string> IgnoreCommandParts = new() { "", "%1", "%v" };
+        private static readonly char[] IllegalChars = ['/', '*', '?', '\"', '<', '>', '|'];
+        private static readonly string[] IgnoreCommandParts = ["", "%1", "%v"];
 
         /// <summary>根据文件名获取完整的文件路径</summary>
         /// <remarks>fileName为Win+R、注册表等可直接使用的文件名</remarks>
         /// <param name="fileName">文件名</param>
         /// <returns>成功提取返回true, fullPath为现有文件路径; 否则返回false, fullPath为null</returns>
-        public static bool GetFullFilePath(string fileName, out string fullPath)
+        public static bool GetFullFilePath(string fileName, out string? fullPath)
         {
             fullPath = null;
-            if (fileName.IsNullOrWhiteSpace()) return false;
+            if (string.IsNullOrWhiteSpace(fileName)) return false;
 
             foreach (var name in new[] { fileName, $"{fileName}.exe" })
             {
@@ -43,29 +46,34 @@ namespace ContextMenuManager.Methods
             return false;
         }
 
+        private static readonly ConcurrentDictionary<string, string?> FilePathDic = new(StringComparer.OrdinalIgnoreCase);
 
-        public static readonly Dictionary<string, string> FilePathDic = new(StringComparer.OrdinalIgnoreCase);
+        public static void ClearFilePathDic()
+        {
+            FilePathDic.Clear();
+        }
+
         /// <summary>从包含现有文件路径的命令语句中提取文件路径</summary>
         /// <param name="command">命令语句</param>
         /// <returns>成功提取返回现有文件路径，否则返回值为null</returns>
-        public static string ExtractFilePath(string command)
+        public static string? ExtractFilePath(string? command)
         {
-            if (command.IsNullOrWhiteSpace()) return null;
-            if (FilePathDic.ContainsKey(command)) return FilePathDic[command];
+            if (string.IsNullOrWhiteSpace(command)) return null;
+            if (FilePathDic.TryGetValue(command, out var value)) return value;
             else
             {
-                string filePath = null;
+                string? filePath;
                 var partCmd = Environment.ExpandEnvironmentVariables(command).Replace(@"\\", @"\");
                 if (partCmd.StartsWith(ShellExecuteCommand, StringComparison.OrdinalIgnoreCase))
                 {
                     partCmd = partCmd[ShellExecuteCommand.Length..];
-                    var arr = partCmd.Split(new[] { "\",\"" }, StringSplitOptions.None);
+                    var arr = partCmd.Split(["\",\""], StringSplitOptions.None);
                     if (arr.Length > 0)
                     {
                         var fileName = arr[0];
                         if (GetFullFilePath(fileName, out filePath))
                         {
-                            FilePathDic.Add(command, filePath);
+                            FilePathDic.TryAdd(command, null);
                             return filePath;
                         }
                         if (arr.Length > 1)
@@ -73,6 +81,24 @@ namespace ContextMenuManager.Methods
                             var arguments = arr[1];
                             filePath = ExtractFilePath(arguments);
                             if (filePath != null) return filePath;
+                        }
+                    }
+                }
+                else if (partCmd.StartsWith(PowerShellCommandPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var idx = partCmd.IndexOf("-FilePath '", StringComparison.OrdinalIgnoreCase);
+                    if (idx != -1)
+                    {
+                        var start = idx + 11;
+                        var end = partCmd.IndexOf('\'', start);
+                        if (end != -1)
+                        {
+                            var fileName = partCmd[start..end].Replace("''", "'");
+                            if (GetFullFilePath(fileName, out filePath))
+                            {
+                                FilePathDic.TryAdd(command, filePath);
+                                return filePath;
+                            }
                         }
                     }
                 }
@@ -106,7 +132,7 @@ namespace ContextMenuManager.Methods
                         {
                             if (GetFullFilePath(path, out filePath))
                             {
-                                FilePathDic.Add(command, filePath);
+                                FilePathDic.TryAdd(command, filePath);
                                 return filePath;
                             }
                         }
@@ -115,7 +141,7 @@ namespace ContextMenuManager.Methods
                     }
                     while (index != -1);
                 }
-                FilePathDic.Add(command, null);
+                FilePathDic.TryAdd(command, null);
                 return null;
             }
         }

@@ -1,24 +1,27 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Controls.Interfaces;
+﻿using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
     internal sealed class OpenWithItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem,
         ITsiCommandItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem
     {
-
-        public OpenWithItem(string regPath)
+        public ContextMenu ContextMenu
         {
-            InitializeComponents();
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
+        public OpenWithItem(MyList list, string regPath) : base(list)
+        {
             RegPath = regPath;
+            if (list != null) InitializeComponents();
         }
 
         private string regPath;
@@ -30,7 +33,7 @@ namespace ContextMenuManager.Controls
                 regPath = value;
                 ItemFilePath = ObjectPath.ExtractFilePath(ItemCommand);
                 Text = ItemText;
-                Image = ItemIcon.ToBitmap();
+                if (List != null) Image = ItemIcon.ToBitmap();
             }
         }
         public string ValueName => null;
@@ -98,7 +101,7 @@ namespace ContextMenuManager.Controls
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public RegExportMenuItem TsiRegExport { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
+        private RToolStripMenuItem TsiDetails { get; set; }
 
         private void InitializeComponents()
         {
@@ -112,14 +115,21 @@ namespace ContextMenuManager.Controls
             TsiRegLocation = new RegLocationMenuItem(this);
             TsiRegExport = new RegExportMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
+            TsiDetails = new(AppString.Menu.Details);
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { TsiChangeText,
-                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
+            foreach (var item in new Control[] { TsiChangeText,
+                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                Control.ContextMenu.Items.Add(item);
+            }
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch, new RToolStripSeparator(),
-                TsiChangeCommand, TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport });
+            foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
+                TsiChangeCommand, TsiFileProperties, TsiFileLocation, TsiRegLocation, TsiRegExport })
+            {
+                TsiDetails.Items.Add(item);
+            }
 
-            ContextMenuStrip.Opening += (sender, e) => TsiChangeText.Enabled = NameEquals;
+            ContextMenu.Opened += (sender, e) => TsiChangeText.IsEnabled = NameEquals;
         }
 
         public void DeleteMe()

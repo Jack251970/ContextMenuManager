@@ -1,11 +1,9 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
+﻿using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
+using System.Windows;
 
 namespace ContextMenuManager.Controls
 {
@@ -13,7 +11,7 @@ namespace ContextMenuManager.Controls
     {
         public const string HKLMBLOCKED = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked";
         public const string HKCUBLOCKED = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked";
-        public static readonly string[] BlockedPaths = { HKLMBLOCKED, HKCUBLOCKED };
+        public static readonly string[] BlockedPaths = [HKLMBLOCKED, HKCUBLOCKED];
 
         public void LoadItems()
         {
@@ -31,7 +29,7 @@ namespace ContextMenuManager.Controls
                 foreach (var value in key.GetValueNames())
                 {
                     if (values.Contains(value, StringComparer.OrdinalIgnoreCase)) continue;
-                    AddItem(new GuidBlockedItem(value));
+                    AddItem(new GuidBlockedItem(this, value));
                     values.Add(value);
                 }
             }
@@ -39,29 +37,32 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem()
         {
-            var newItem = new NewItem(AppString.Other.AddGuidBlockedItem);
+            var newItem = new NewItem(this, AppString.Other.AddGuidBlockedItem);
             AddItem(newItem);
             newItem.AddNewItem += () =>
             {
-                using var dlg = new InputDialog { Title = AppString.Dialog.InputGuid };
-                if (GuidEx.TryParse(Clipboard.GetText(), out var guid)) dlg.Text = guid.ToString();
-                if (dlg.ShowDialog() != DialogResult.OK) return;
-                if (GuidEx.TryParse(dlg.Text, out guid))
+                var dlg = new InputDialog { Title = AppString.Dialog.InputGuid };
+                if (Guid.TryParse(Clipboard.GetText(), out var guid)) dlg.Text = guid.ToString();
+                if (dlg.ShowDialog() != true) return;
+                if (Guid.TryParse(dlg.Text, out guid))
                 {
                     var value = guid.ToString("B");
                     Array.ForEach(BlockedPaths, path => Registry.SetValue(path, value, ""));
                     for (var i = 1; i < Controls.Count; i++)
                     {
-                        if (((GuidBlockedItem)Controls[i]).Guid.Equals(guid))
+                        if (((GuidBlockedItem)Controls[i].Item).Guid.Equals(guid))
                         {
                             AppMessageBox.Show(AppString.Message.HasBeenAdded);
                             return;
                         }
                     }
-                    InsertItem(new GuidBlockedItem(value), 1);
+                    InsertItem(new GuidBlockedItem(this, value), 1);
                     ExplorerRestarter.Show();
                 }
-                else AppMessageBox.Show(AppString.Message.MalformedGuid);
+                else
+                {
+                    AppMessageBox.Show(AppString.Message.MalformedGuid);
+                }
             };
         }
     }

@@ -1,7 +1,4 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
-using ContextMenuManager.Methods;
-using System.Windows.Forms;
+﻿using ContextMenuManager.Methods;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -25,8 +22,8 @@ namespace ContextMenuManager.Controls.Interfaces
 
         private string ChangeText(string text)
         {
-            using var dlg = new InputDialog { Text = text, Title = AppString.Menu.ChangeText };
-            if (dlg.ShowDialog() != DialogResult.OK) return null;
+            var dlg = new InputDialog { Text = text, Title = AppString.Menu.ChangeText };
+            if (dlg.ShowDialog() != true) return null;
             if (dlg.Text.Length == 0)
             {
                 AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace BluePointLilac.Methods
+namespace ContextMenuManager.Methods
 {
     public sealed class IniReader
     {
@@ -28,10 +28,10 @@ namespace BluePointLilac.Methods
         public void LoadStringBuilder(StringBuilder sb)
         {
             RootDic.Clear();
-            if (sb.ToString().IsNullOrWhiteSpace()) return;
+            if (string.IsNullOrWhiteSpace(sb.ToString())) return;
             var lines = sb.ToString().Split(new[] { "\r\n", "\n" },
                 StringSplitOptions.RemoveEmptyEntries).ToList();//拆分为行
-            for (int i = 0; i < lines.Count; i++)
+            for (var i = 0; i < lines.Count; i++)
             {
                 lines[i] = lines[i].Trim();
             }
@@ -47,8 +47,8 @@ namespace BluePointLilac.Methods
             {
                 while (!reader.EndOfStream)
                 {
-                    var line = reader.ReadLine().Trim();
-                    if (line != string.Empty) lines.Add(line);
+                    var line = reader.ReadLine()?.Trim();
+                    if (!string.IsNullOrEmpty(line)) lines.Add(line);
                 }
             }
             ReadLines(lines);
@@ -75,7 +75,7 @@ namespace BluePointLilac.Methods
                 var startIndex = section.IndexOf('[') + 1;
                 var endIndex = section.IndexOf(']');
                 if (endIndex <= startIndex) continue;
-                section = section.Substring(startIndex, endIndex - startIndex).Trim();// 修剪section名称
+                section = section[startIndex..endIndex].Trim();// 修剪section名称
                 if (RootDic.ContainsKey(section)) continue;
                 var keyValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 RootDic.Add(section, keyValues);
@@ -108,7 +108,7 @@ namespace BluePointLilac.Methods
 
         public string[] GetSectionKeys(string section)
         {
-            if (!RootDic.ContainsKey(section)) return null;
+            if (!RootDic.ContainsKey(section)) return [];
             else return RootDic[section].Keys.ToArray();
         }
 
@@ -159,7 +159,7 @@ namespace BluePointLilac.Methods
                 }
                 lines.Add("");
             }
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException());
             var attributes = FileAttributes.Normal;
             var encoding = Encoding.Unicode;
             if (File.Exists(filePath))

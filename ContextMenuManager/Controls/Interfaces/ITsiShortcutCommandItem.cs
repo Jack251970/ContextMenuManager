@@ -1,9 +1,9 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
+using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
+using System.Windows.Controls;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBox = System.Windows.Controls.TextBox;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -11,14 +11,14 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         ShellLink ShellLink { get; }
         ShortcutCommandMenuItem TsiChangeCommand { get; set; }
-        ContextMenuStrip ContextMenuStrip { get; set; }
+        ContextMenu ContextMenu { get; set; }
     }
 
     internal sealed class ShortcutCommandMenuItem : RToolStripMenuItem
     {
         public ShortcutCommandMenuItem(ITsiShortcutCommandItem item) : base(AppString.Menu.ChangeCommand)
         {
-            item.ContextMenuStrip.Opening += (sender, e) =>
+            item.ContextMenu.Opened += (sender, e) =>
             {
                 Visible = !string.IsNullOrEmpty(item.ShellLink?.TargetPath);
             };
@@ -26,110 +26,63 @@ namespace ContextMenuManager.Controls.Interfaces
 
         public bool ChangeCommand(ShellLink shellLink)
         {
-            using var dlg = new CommandDialog();
-            dlg.Command = shellLink.TargetPath;
-            dlg.Arguments = shellLink.Arguments;
-            if (dlg.ShowDialog() != DialogResult.OK) return false;
+            var dlg = new CommandDialog
+            {
+                Command = shellLink.TargetPath,
+                Arguments = shellLink.Arguments
+            };
+            if (!dlg.ShowDialog()) return false;
             shellLink.TargetPath = dlg.Command;
             shellLink.Arguments = dlg.Arguments;
             shellLink.Save();
             return true;
         }
 
-        private sealed class CommandDialog : CommonDialog
+        private sealed class CommandDialog
         {
             public string Command { get; set; }
             public string Arguments { get; set; }
 
-            public override void Reset() { }
-
-            protected override bool RunDialog(IntPtr hwndOwner)
+            public bool ShowDialog()
             {
-                using var frm = new CommandForm();
-                frm.Command = Command;
-                frm.Arguments = Arguments;
-                frm.TopMost = true;
-                var flag = frm.ShowDialog() == DialogResult.OK;
-                if (flag)
-                {
-                    Command = frm.Command;
-                    Arguments = frm.Arguments;
-                }
-                return flag;
+                return RunDialog(null);
             }
 
-            private sealed class CommandForm : ResizeLimitedForm
+            public bool RunDialog(MainWindow owner)
             {
-                public CommandForm()
-                {
-                    AcceptButton = btnOK;
-                    CancelButton = btnCancel;
-                    VerticalResizable = false;
-                    Font = SystemFonts.MessageBoxFont;
-                    Text = AppString.Menu.ChangeCommand;
-                    SizeGripStyle = SizeGripStyle.Hide;
-                    StartPosition = FormStartPosition.CenterParent;
-                    MaximizeBox = MinimizeBox = ShowIcon = ShowInTaskbar = false;
-                    InitializeComponents();
-                }
+                var dialog = ContentDialogHost.CreateDialog(AppString.Menu.ChangeCommand, owner);
 
-                public string Command
+                var txtCommand = new WpfTextBox
                 {
-                    get => txtCommand.Text;
-                    set => txtCommand.Text = value;
-                }
+                    Text = Command ?? string.Empty,
+                    Margin = new System.Windows.Thickness(0, 0, 0, 16),
+                    MinWidth = 400
+                };
+                ControlHelper.SetHeader(txtCommand, AppString.Dialog.ItemCommand);
 
-                public string Arguments
+                var txtArguments = new WpfTextBox
                 {
-                    get => txtArguments.Text;
-                    set => txtArguments.Text = value;
-                }
+                    Text = Arguments ?? string.Empty
+                };
+                ControlHelper.SetHeader(txtArguments, AppString.Dialog.CommandArguments);
 
-                private readonly Label lblCommand = new()
+                dialog.Content = new WpfStackPanel
                 {
-                    Text = AppString.Dialog.ItemCommand,
-                    AutoSize = true
-                };
-                private readonly Label lblArguments = new()
-                {
-                    Text = AppString.Dialog.CommandArguments,
-                    AutoSize = true
-                };
-                private readonly TextBox txtCommand = new();
-                private readonly TextBox txtArguments = new();
-                private readonly Button btnOK = new()
-                {
-                    DialogResult = DialogResult.OK,
-                    Text = ResourceString.OK,
-                    AutoSize = true
-                };
-                private readonly Button btnCancel = new()
-                {
-                    DialogResult = DialogResult.Cancel,
-                    Text = ResourceString.Cancel,
-                    AutoSize = true
-                };
-
-                private void InitializeComponents()
-                {
-                    Controls.AddRange(new Control[] { lblCommand, lblArguments, txtCommand, txtArguments, btnOK, btnCancel });
-                    var a = 20.DpiZoom();
-                    lblArguments.Left = lblCommand.Left = lblCommand.Top = txtCommand.Top = a;
-                    lblArguments.Top = txtArguments.Top = txtCommand.Bottom + a;
-                    btnOK.Top = btnCancel.Top = txtArguments.Bottom + a;
-                    var b = Math.Max(lblCommand.Width, lblArguments.Width) + 3 * a;
-                    ClientSize = new Size(250.DpiZoom() + b, btnOK.Bottom + a);
-                    btnOK.Anchor = btnCancel.Anchor = AnchorStyles.Right | AnchorStyles.Top;
-                    btnCancel.Left = ClientSize.Width - btnCancel.Width - a;
-                    btnOK.Left = btnCancel.Left - btnOK.Width - a;
-                    Resize += (sender, e) =>
+                    Children =
                     {
-                        txtArguments.Width = txtCommand.Width = ClientSize.Width - b;
-                        txtArguments.Left = txtCommand.Left = btnCancel.Right - txtCommand.Width;
-                    };
-                    OnResize(null);
-                    MinimumSize = Size;
+                        txtCommand,
+                        txtArguments
+                    }
+                };
+
+                var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+                if (result == ContentDialogResult.Primary)
+                {
+                    Command = txtCommand.Text;
+                    Arguments = txtArguments.Text;
+                    return true;
                 }
+                return false;
             }
         }
     }

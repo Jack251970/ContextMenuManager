@@ -3,7 +3,9 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace BluePointLilac.Methods
+#nullable enable
+
+namespace ContextMenuManager.Methods
 {
     public static class FileExtension
     {
@@ -37,8 +39,9 @@ namespace BluePointLilac.Methods
             DDETopic
         }
 
-        [DllImport("shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [Out] StringBuilder pszOut, ref uint pcchOut);
+        [DllImport("shlwapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra,
+            [Out] StringBuilder sOut, [In][Out] ref uint nOut);
 
         public const string FILEEXTSPATH = @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts";
         private const string HKCRCLASSES = @"HKEY_CURRENT_USER\SOFTWARE\Classes";
@@ -47,32 +50,32 @@ namespace BluePointLilac.Methods
         public static string GetExtentionInfo(AssocStr assocStr, string extension)
         {
             uint pcchOut = 0;
-            AssocQueryString(AssocF.Verify, assocStr, extension, null, null, ref pcchOut);
+            AssocQueryString(AssocF.Verify, assocStr, extension, string.Empty, null!, ref pcchOut);
             var pszOut = new StringBuilder((int)pcchOut);
-            AssocQueryString(AssocF.Verify, assocStr, extension, null, pszOut, ref pcchOut);
+            AssocQueryString(AssocF.Verify, assocStr, extension, string.Empty, pszOut, ref pcchOut);
             return pszOut.ToString();
         }
 
         public static string GetOpenMode(string extension)
         {
-            if (string.IsNullOrEmpty(extension)) return null;
-            string mode;
+            if (string.IsNullOrEmpty(extension)) return string.Empty;
+            string? mode;
             bool CheckMode()
             {
-                if (mode.IsNullOrWhiteSpace()) return false;
+                if (string.IsNullOrWhiteSpace(mode)) return false;
                 if (mode.Length > 255) return false;
-                if (mode.ToLower().StartsWith(@"applications\")) return false;
+                if (mode.StartsWith(@"applications\", StringComparison.CurrentCultureIgnoreCase)) return false;
                 using var root = Registry.ClassesRoot;
                 using var key = root.OpenSubKey(mode);
                 return key != null;
             }
             mode = Registry.GetValue($@"{FILEEXTSPATH}\{extension}\UserChoice", "ProgId", null)?.ToString();
-            if (CheckMode()) return mode;
+            if (CheckMode()) return mode!;
             mode = Registry.GetValue($@"{HKLMCLASSES}\{extension}", "", null)?.ToString();
-            if (CheckMode()) return mode;
+            if (CheckMode()) return mode!;
             mode = Registry.GetValue($@"{HKCRCLASSES}\{extension}", "", null)?.ToString();
-            if (CheckMode()) return mode;
-            return null;
+            if (CheckMode()) return mode!;
+            return string.Empty;
         }
     }
 }

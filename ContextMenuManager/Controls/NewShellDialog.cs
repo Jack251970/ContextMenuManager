@@ -1,173 +1,198 @@
-﻿using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
+using Microsoft.Win32;
 using System;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
+using WpfCheckBox = System.Windows.Controls.CheckBox;
+using WpfOrientation = System.Windows.Controls.Orientation;
+using WpfRadioButton = System.Windows.Controls.RadioButton;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
 
 namespace ContextMenuManager.Controls
 {
-    internal sealed class NewShellDialog : CommonDialog
+    internal sealed class NewShellDialog : NewItemDialogBase
     {
         public string ShellPath { get; set; }//传入的Shell注册表路径
         public string ScenePath { get; set; }//菜单项所处环境注册表路径
         public string NewItemRegPath { get; private set; }//返回的新ShellItem的注册表路径
         public string NewItemKeyName => RegistryEx.GetKeyName(NewItemRegPath);
 
-        public override void Reset() { }
-
-        protected override bool RunDialog(IntPtr hwndOwner)
+        public bool ShowDialog()
         {
-            using var frm = new NewShellForm
-            {
-                ScenePath = ScenePath,
-                ShellPath = ShellPath
-            };
-            frm.TopMost = true;
-            var flag = frm.ShowDialog() == DialogResult.OK;
-            if (flag) NewItemRegPath = frm.NewItemRegPath;
-            return flag;
+            return RunDialog(null);
         }
 
-        private sealed class NewShellForm : NewItemForm
+        public bool RunDialog(MainWindow owner)
         {
-            public string ShellPath { get; set; }
-            public string NewItemRegPath { get; private set; }//返回的新建菜单项注册表路径
-            public string ScenePath { get; set; }//菜单所处环境路径，用于判断添加后缀
+            var dialog = ContentDialogHost.CreateDialog(AppString.Other.NewItem, owner);
 
-            private readonly RadioButton rdoSingle = new()
+            var stackPanel = new WpfStackPanel { MinWidth = 460 };
+            CreateCommonControls(stackPanel);
+
+            var rdoSingle = new WpfRadioButton
             {
-                Text = AppString.Dialog.SingleMenu,
-                AutoSize = true,
-                Checked = true
+                Content = AppString.Dialog.SingleMenu,
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 16, 0)
             };
-            private readonly RadioButton rdoMulti = new()
+            var rdoMulti = new WpfRadioButton
             {
-                Text = AppString.Dialog.MultiMenu,
-                AutoSize = true
+                Content = AppString.Dialog.MultiMenu,
+                Margin = new Thickness(0, 0, 16, 0)
             };
-            private readonly ShellExecuteCheckBox chkSE = new();
-
-            private static readonly string[] DirScenePaths = {
-                ShellList.MENUPATH_DIRECTORY,
-                ShellList.MENUPATH_BACKGROUND,
-                $@"{ShellList.SYSFILEASSPATH}\Directory."
-            };
-            private static readonly string[] FileObjectsScenePaths = {
-                ShellList.MENUPATH_FILE,
-                ShellList.MENUPATH_FOLDER,
-                ShellList.MENUPATH_ALLOBJECTS,
-                ShellList.SYSFILEASSPATH,
-                ShellList.MENUPATH_UNKNOWN,
-                ShellList.MENUPATH_UWPLNK
-            };
-
-            protected override void InitializeComponents()
+            var chkSE = new WpfCheckBox
             {
-                base.InitializeComponents();
-                Controls.AddRange(new Control[] { rdoSingle, rdoMulti, chkSE });
-                rdoSingle.Top = rdoMulti.Top = chkSE.Top = btnOK.Top + (btnOK.Height - rdoSingle.Height) / 2;
-                rdoSingle.Left = lblCommand.Left;
-                rdoMulti.Left = rdoSingle.Right + 20.DpiZoom();
-                chkSE.Left = rdoMulti.Right + 20.DpiZoom();
+                Content = "ShellExecute",
+                VerticalAlignment = VerticalAlignment.Center,
+                MinWidth = 0
+            };
+            // Logic for ShellExecute needs to be handled. Since ShellExecuteCheckBox was a WinForms control with its own dialog,
+            // we'll need to store its state here if it's checked.
+            string seVerb = null;
+            var seWindowStyle = 0;
 
-                rdoMulti.CheckedChanged += (sender, e) =>
+            chkSE.Click += (s, e) =>
+            {
+                if (chkSE.IsChecked == true)
                 {
-                    if (rdoMulti.Checked)
+                    var dlg = new ShellExecuteDialog();
+                    if (dlg.ShowDialog())
                     {
-                        chkSE.Checked = false;
-                        if (WinOsVersion.Current == WinOsVersion.Vista)
-                        {
-                            AppMessageBox.Show(AppString.Message.VistaUnsupportedMulti);
-                            rdoSingle.Checked = true;
-                            return;
-                        }
-                    }
-                    lblCommand.Enabled = txtFilePath.Enabled = lblArguments.Enabled
-                    = txtArguments.Enabled = btnBrowse.Enabled = chkSE.Enabled = !rdoMulti.Checked;
-                };
-
-                btnBrowse.Click += (sender, e) => BrowseFile();
-
-                btnOK.Click += (sender, e) =>
-                {
-                    if (txtText.Text.IsNullOrWhiteSpace())
-                    {
-                        AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
+                        seVerb = dlg.Verb;
+                        seWindowStyle = dlg.WindowStyle;
                     }
                     else
                     {
-                        AddNewItem();
-                        DialogResult = DialogResult.OK;
+                        chkSE.IsChecked = false;
                     }
-                };
+                }
+            };
+
+            rdoMulti.Checked += (s, e) =>
+            {
+                chkSE.IsChecked = false;
+                if (WinOsVersion.Current == WinOsVersion.Vista)
+                {
+                    AppMessageBox.Show(AppString.Message.VistaUnsupportedMulti);
+                    rdoSingle.IsChecked = true;
+                    return;
+                }
+                txtFilePath.IsEnabled = txtArguments.IsEnabled = chkSE.IsEnabled = false;
+            };
+            rdoMulti.Unchecked += (s, e) =>
+            {
+                txtFilePath.IsEnabled = txtArguments.IsEnabled = chkSE.IsEnabled = true;
+            };
+
+            var radioPanel = new WpfStackPanel
+            {
+                Orientation = WpfOrientation.Horizontal,
+                Margin = new Thickness(0, 12, 0, 0),
+                Children = { rdoSingle, rdoMulti, chkSE }
+            };
+            stackPanel.Children.Add(radioPanel);
+
+            dialog.Content = stackPanel;
+
+            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            if (result == ContentDialogResult.Primary)
+            {
+                if (string.IsNullOrWhiteSpace(txtText.Text))
+                {
+                    AppMessageBox.Show(AppString.Message.TextCannotBeEmpty);
+                    return RunDialog(owner); // Re-show if invalid
+                }
+                SyncData();
+                AddNewItem(rdoMulti.IsChecked == true, chkSE.IsChecked == true, seVerb, seWindowStyle);
+                return true;
             }
 
-            private void BrowseFile()
+            return false;
+        }
+
+        protected override void OnBrowseClick()
+        {
+            var dlg = new OpenFileDialog
             {
-                using var dlg = new OpenFileDialog();
-                dlg.DereferenceLinks = false;
-                dlg.Filter = $"{AppString.Dialog.Program}|*.exe|{AppString.Dialog.AllFiles}|*";
-                if (dlg.ShowDialog() != DialogResult.OK) return;
-                var filePath = dlg.FileName;
-                var arguments = "";
-                ItemText = Path.GetFileNameWithoutExtension(filePath);
-                var extension = Path.GetExtension(filePath).ToLower();
-                if (extension == ".lnk")
-                {
-                    using var shellLink = new ShellLink(filePath);
-                    filePath = shellLink.TargetPath;
-                    arguments = shellLink.Arguments;
-                    extension = Path.GetExtension(filePath);
-                }
-                var exePath = FileExtension.GetExtentionInfo(FileExtension.AssocStr.Executable, extension);
-                if (File.Exists(exePath))
-                {
-                    ItemFilePath = exePath;
-                    Arguments = filePath;
-                    if (!arguments.IsNullOrWhiteSpace()) Arguments += " " + arguments;
-                }
-                else
-                {
-                    ItemFilePath = filePath;
-                    Arguments = arguments;
-                }
-                if (Array.FindIndex(DirScenePaths, path
-                   => ScenePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)) != -1)
-                {
-                    if (ScenePath != ShellList.MENUPATH_BACKGROUND)
-                    {
-                        if (!Arguments.IsNullOrWhiteSpace()) Arguments += " ";
-                        Arguments += "\"%V\"";//自动加目录后缀
-                    }
-                }
-                else if (Array.FindIndex(FileObjectsScenePaths, path
-                   => ScenePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)) != -1)
-                {
-                    if (!Arguments.IsNullOrWhiteSpace()) Arguments += " ";
-                    Arguments += "\"%1\"";//自动加文件对象后缀
-                }
+                DereferenceLinks = false,
+                Filter = $"{AppString.Dialog.Program}|*.exe|{AppString.Dialog.AllFiles}|*"
+            };
+            if (dlg.ShowDialog() != true) return;
+            var filePath = dlg.FileName;
+            var arguments = "";
+            txtText.Text = Path.GetFileNameWithoutExtension(filePath);
+            var extension = Path.GetExtension(filePath).ToLower();
+            if (extension == ".lnk")
+            {
+                using var shellLink = new ShellLink(filePath);
+                filePath = shellLink.TargetPath;
+                arguments = shellLink.Arguments;
+                extension = Path.GetExtension(filePath);
+            }
+            var exePath = FileExtension.GetExtentionInfo(FileExtension.AssocStr.Executable, extension);
+            if (File.Exists(exePath))
+            {
+                txtFilePath.Text = exePath;
+                txtArguments.Text = filePath;
+                if (!string.IsNullOrWhiteSpace(arguments)) txtArguments.Text += " " + arguments;
+            }
+            else
+            {
+                txtFilePath.Text = filePath;
+                txtArguments.Text = arguments;
             }
 
-            private void AddNewItem()
+            if (Array.FindIndex(DirScenePaths, path
+               => ScenePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)) != -1)
             {
-                using var shellKey = RegistryEx.GetRegistryKey(ShellPath, true, true);
-                var keyName = "Item";
-                NewItemRegPath = ObjectPath.GetNewPathWithIndex($@"{ShellPath}\{keyName}", ObjectPath.PathType.Registry, 0);
-                keyName = RegistryEx.GetKeyName(NewItemRegPath);
-
-                using var key = shellKey.CreateSubKey(keyName, true);
-                key.SetValue("MUIVerb", ItemText);
-                if (rdoMulti.Checked)
-                    key.SetValue("SubCommands", "");
-                else
+                if (ScenePath != ShellList.MENUPATH_BACKGROUND)
                 {
-                    if (!ItemCommand.IsNullOrWhiteSpace())
-                    {
-                        string command;
-                        if (!chkSE.Checked) command = ItemCommand;
-                        else command = ShellExecuteDialog.GetCommand(ItemFilePath, Arguments, chkSE.Verb, chkSE.WindowStyle);
-                        key.CreateSubKey("command", true).SetValue("", command);
-                    }
+                    if (!string.IsNullOrWhiteSpace(txtArguments.Text)) txtArguments.Text += " ";
+                    txtArguments.Text += "\"%V\"";//自动加目录后缀
+                }
+            }
+            else if (Array.FindIndex(FileObjectsScenePaths, path
+               => ScenePath.StartsWith(path, StringComparison.OrdinalIgnoreCase)) != -1)
+            {
+                if (!string.IsNullOrWhiteSpace(txtArguments.Text)) txtArguments.Text += " ";
+                txtArguments.Text += "\"%1\"";//自动加文件对象后缀
+            }
+        }
+
+        private static readonly string[] DirScenePaths = {
+            ShellList.MENUPATH_DIRECTORY,
+            ShellList.MENUPATH_BACKGROUND,
+            $@"{ShellList.SYSFILEASSPATH}\Directory."
+        };
+        private static readonly string[] FileObjectsScenePaths = {
+            ShellList.MENUPATH_FILE,
+            ShellList.MENUPATH_FOLDER,
+            ShellList.MENUPATH_ALLOBJECTS,
+            ShellList.SYSFILEASSPATH,
+            ShellList.MENUPATH_UNKNOWN,
+            ShellList.MENUPATH_UWPLNK
+        };
+
+        private void AddNewItem(bool isMulti, bool isSE, string seVerb, int seWindowStyle)
+        {
+            using var shellKey = RegistryEx.GetRegistryKey(ShellPath, true, true);
+            var keyName = "Item";
+            NewItemRegPath = ObjectPath.GetNewPathWithIndex($@"{ShellPath}\{keyName}", ObjectPath.PathType.Registry, 0);
+            keyName = RegistryEx.GetKeyName(NewItemRegPath);
+
+            using var key = shellKey.CreateSubKey(keyName, true);
+            key.SetValue("MUIVerb", ItemText);
+            if (isMulti)
+                key.SetValue("SubCommands", "");
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(ItemCommand))
+                {
+                    string command;
+                    if (!isSE) command = ItemCommand;
+                    else command = ShellExecuteDialog.GetCommand(ItemFilePath, Arguments, seVerb, seWindowStyle);
+                    key.CreateSubKey("command", true).SetValue("", command);
                 }
             }
         }

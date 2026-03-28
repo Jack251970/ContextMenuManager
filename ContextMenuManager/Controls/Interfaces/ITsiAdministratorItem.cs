@@ -1,13 +1,12 @@
-﻿using BluePointLilac.Methods;
 using ContextMenuManager.Methods;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
     internal interface ITsiAdministratorItem
     {
-        ContextMenuStrip ContextMenuStrip { get; set; }
+        ContextMenu ContextMenu { get; set; }
         RunAsAdministratorItem TsiAdministrator { get; set; }
         ShellLink ShellLink { get; }
     }
@@ -16,7 +15,7 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         public RunAsAdministratorItem(ITsiAdministratorItem item) : base(AppString.Menu.RunAsAdministrator)
         {
-            item.ContextMenuStrip.Opening += (sender, e) =>
+            item.ContextMenu.Opened += (sender, e) =>
             {
                 if (item.ShellLink == null)
                 {

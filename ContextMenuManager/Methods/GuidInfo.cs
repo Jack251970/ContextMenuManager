@@ -1,6 +1,7 @@
-﻿using BluePointLilac.Methods;
+﻿using ContextMenuManager.Properties;
 using Microsoft.Win32;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -31,13 +32,13 @@ namespace ContextMenuManager.Methods
 
         private static readonly IniWriter UserDic = new(AppConfig.UserGuidInfosDic);
         private static readonly IniReader WebDic = new(AppConfig.WebGuidInfosDic);
-        private static readonly IniReader AppDic = new(new StringBuilder(Properties.Resources.GuidInfosDic));
+        private static readonly IniReader AppDic = new(new StringBuilder(AppResources.GuidInfosDic));
         private static readonly Dictionary<Guid, IconLocation> IconLocationDic = new();
-        private static readonly Dictionary<Guid, string> ItemTextDic = new();
-        private static readonly Dictionary<Guid, Image> ItemImageDic = new();
-        private static readonly Dictionary<Guid, string> FilePathDic = new();
-        private static readonly Dictionary<Guid, string> ClsidPathDic = new();
-        private static readonly Dictionary<Guid, string> UwpNameDic = new();
+        private static readonly ConcurrentDictionary<Guid, string> ItemTextDic = new();
+        private static readonly ConcurrentDictionary<Guid, Image> ItemImageDic = new();
+        private static readonly ConcurrentDictionary<Guid, string> FilePathDic = new();
+        private static readonly ConcurrentDictionary<Guid, string> ClsidPathDic = new();
+        private static readonly ConcurrentDictionary<Guid, string> UwpNameDic = new();
 
         /// <summary>重新加载字典</summary>
         public static void ReloadDics()
@@ -53,12 +54,12 @@ namespace ContextMenuManager.Methods
 
         public static void RemoveDic(Guid guid)
         {
-            IconLocationDic.Remove(guid);
-            ItemTextDic.Remove(guid);
-            ItemImageDic.Remove(guid);
-            FilePathDic.Remove(guid);
-            ClsidPathDic.Remove(guid);
-            UwpNameDic.Remove(guid);
+            IconLocationDic.Remove(guid, out _);
+            ItemTextDic.Remove(guid, out _);
+            ItemImageDic.Remove(guid, out _);
+            FilePathDic.Remove(guid, out _);
+            ClsidPathDic.Remove(guid, out _);
+            UwpNameDic.Remove(guid, out _);
         }
 
         private static bool TryGetValue(Guid guid, string key, out string value)
@@ -109,12 +110,12 @@ namespace ContextMenuManager.Methods
                         if (File.Exists(filePath))
                         {
                             if (ClsidPathDic.ContainsKey(guid)) ClsidPathDic[guid] = guidKey.Name;
-                            else ClsidPathDic.Add(guid, guidKey.Name);
+                            else ClsidPathDic.TryAdd(guid, guidKey.Name);
                             break;
                         }
                     }
                 }
-                FilePathDic.Add(guid, filePath);
+                FilePathDic.TryAdd(guid, filePath);
             }
             return filePath;
         }
@@ -142,17 +143,17 @@ namespace ContextMenuManager.Methods
                     itemText = GetAbsStr(guid, itemText, true);
                     itemText = ResourceString.GetDirectString(itemText);
                 }
-                if (itemText.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(itemText))
                 {
                     var uiText = CultureInfo.CurrentUICulture.Name + "-Text";
                     TryGetValue(guid, uiText, out itemText);
-                    if (itemText.IsNullOrWhiteSpace())
+                    if (string.IsNullOrWhiteSpace(itemText))
                     {
                         TryGetValue(guid, "Text", out itemText);
                         itemText = ResourceString.GetDirectString(itemText);
                     }
                 }
-                if (itemText.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(itemText))
                 {
                     foreach (var clsidPath in ClsidPaths)
                     {
@@ -160,25 +161,25 @@ namespace ContextMenuManager.Methods
                         {
                             itemText = Registry.GetValue($@"{clsidPath}\{guid:B}", value, null)?.ToString();
                             itemText = ResourceString.GetDirectString(itemText);
-                            if (!itemText.IsNullOrWhiteSpace()) break;
+                            if (!string.IsNullOrWhiteSpace(itemText)) break;
                         }
-                        if (!itemText.IsNullOrWhiteSpace()) break;
+                        if (!string.IsNullOrWhiteSpace(itemText)) break;
                     }
                 }
-                if (itemText.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(itemText))
                 {
                     var filePath = GetFilePath(guid);
                     if (File.Exists(filePath))
                     {
                         itemText = FileVersionInfo.GetVersionInfo(filePath).FileDescription;
-                        if (itemText.IsNullOrWhiteSpace())
+                        if (string.IsNullOrWhiteSpace(itemText))
                         {
                             itemText = Path.GetFileName(filePath);
                         }
                     }
                     else itemText = null;
                 }
-                ItemTextDic.Add(guid, itemText);
+                ItemTextDic.TryAdd(guid, itemText);
             }
             return itemText;
         }
@@ -192,7 +193,7 @@ namespace ContextMenuManager.Methods
             if (iconPath == null && iconIndex == 0) image = AppImage.SystemFile;
             else if (Path.GetFileName(iconPath).ToLower() == "shell32.dll" && iconIndex == 0) image = AppImage.SystemFile;
             else image = ResourceIcon.GetIcon(iconPath, iconIndex)?.ToBitmap() ?? AppImage.SystemFile;
-            ItemImageDic.Add(guid, image);
+            ItemImageDic.TryAdd(guid, image);
             return image;
         }
 
@@ -228,7 +229,7 @@ namespace ContextMenuManager.Methods
             else
             {
                 TryGetValue(guid, "UwpName", out uwpName);
-                UwpNameDic.Add(guid, uwpName);
+                UwpNameDic.TryAdd(guid, uwpName);
             }
             return uwpName;
         }

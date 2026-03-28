@@ -35,7 +35,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            9.0.x
+            10.0.x
 
       # Restore dependencies for entire solution
       - name: Restore dependencies
@@ -51,9 +51,9 @@ jobs:
 
       # Upload the Build package
       - name: Upload Build package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           retention-days: 7
           path: |
-            ContextMenuManager/bin/Release/net9.0-windows
+            ContextMenuManager/bin/Release/net10.0-windows
           compression-level: 0

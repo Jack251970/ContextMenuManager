@@ -1,5 +1,3 @@
-﻿using BluePointLilac.Controls;
-using BluePointLilac.Methods;
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
@@ -7,7 +5,8 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
@@ -37,19 +36,28 @@ namespace ContextMenuManager.Controls
     internal sealed class ShellNewItem : MyListItem, IChkVisibleItem, ITsiTextItem, IBtnShowMenuItem, IBtnMoveUpDownItem,
          ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, ITsiCommandItem
     {
-        public static readonly string[] SnParts = { "ShellNew", "-ShellNew" };
-        public static readonly string[] UnableSortExtensions = { "Folder", ".library-ms" };
-        public static readonly string[] DefaultBeforeSeparatorExtensions = { "Folder", ".library-ms", ".lnk" };
-        public static readonly string[] EffectValueNames = { "NullFile", "Data", "FileName", "Directory", "Command" };
-        private static readonly string[] UnableEditDataValues = { "Directory", "FileName", "Handler", "Command" };
-        private static readonly string[] UnableChangeCommandValues = { "Data", "Directory", "FileName", "Handler" };
+        public static readonly string[] SnParts = ["ShellNew", "-ShellNew"];
+        public static readonly string[] UnableSortExtensions = ["Folder", ".library-ms"];
+        public static readonly string[] DefaultBeforeSeparatorExtensions = ["Folder", ".library-ms", ".lnk"];
+        public static readonly string[] EffectValueNames = ["NullFile", "Data", "FileName", "Directory", "Command"];
+        private static readonly string[] UnableEditDataValues = ["Directory", "FileName", "Handler", "Command"];
+        private static readonly string[] UnableChangeCommandValues = ["Data", "Directory", "FileName", "Handler"];
 
-        public ShellNewItem(string regPath, ShellNewList list = null)
+        public ContextMenu ContextMenu
         {
-            Owner = list;
-            InitializeComponents();
+            get => Control.ContextMenu;
+            set => Control.ContextMenu = value;
+        }
+
+        public ShellNewItem(ShellNewList list, string regPath) : base(list)
+        {
+            List = list;
             RegPath = regPath;
-            SetSortabled(ShellNewList.ShellNewLockItem.IsLocked);
+            if (list != null)
+            {
+                InitializeComponents();
+                SetSortabled(ShellNewList.ShellNewLockItem.IsLocked);
+            }
         }
 
         private string regPath;
@@ -60,7 +68,7 @@ namespace ContextMenuManager.Controls
             {
                 regPath = value;
                 Text = ItemText;
-                Image = ItemIcon.ToBitmap();
+                if (List != null) Image = ItemIcon.ToBitmap();
             }
         }
 
@@ -92,7 +100,7 @@ namespace ContextMenuManager.Controls
                 }
                 using var cKey = oKey.OpenSubKey("CLSID");
                 var value = cKey?.GetValue("")?.ToString();
-                if (GuidEx.TryParse(value, out var guid))
+                if (Guid.TryParse(value, out var guid))
                 {
                     filePath = GuidInfo.GetFilePath(guid);
                     if (filePath != null) return filePath;
@@ -116,7 +124,7 @@ namespace ContextMenuManager.Controls
             get
             {
                 var name = Registry.GetValue(RegPath, "MenuText", null)?.ToString();
-                if (name != null && name.StartsWith("@"))
+                if (name != null && name.StartsWith('@'))
                 {
                     name = ResourceString.GetDirectString(name);
                     if (!string.IsNullOrEmpty(name)) return name;
@@ -141,9 +149,9 @@ namespace ContextMenuManager.Controls
             get
             {
                 var value = Registry.GetValue(RegPath, "IconPath", null)?.ToString();
-                if (!value.IsNullOrWhiteSpace()) return value;
+                if (!string.IsNullOrWhiteSpace(value)) return value;
                 value = Registry.GetValue($@"{OpenModePath}\DefaultIcon", "", null)?.ToString();
-                if (!value.IsNullOrWhiteSpace()) return value;
+                if (!string.IsNullOrWhiteSpace(value)) return value;
                 return ItemFilePath;
             }
             set => Registry.SetValue(RegPath, "IconPath", value);
@@ -154,12 +162,12 @@ namespace ContextMenuManager.Controls
             get
             {
                 var location = IconLocation;
-                if (location == null || location.StartsWith("@"))
+                if (location == null || location.StartsWith('@'))
                 {
                     return ResourceIcon.GetExtensionIcon(Extension);
                 }
                 var icon = ResourceIcon.GetIcon(location, out var path, out var index);
-                if (icon == null) icon = ResourceIcon.GetIcon(path = "imageres.dll", index = -2);
+                icon ??= ResourceIcon.GetIcon(path = "imageres.dll", index = -2);
                 IconPath = path; IconIndex = index;
                 return icon;
             }
@@ -179,7 +187,7 @@ namespace ContextMenuManager.Controls
             get => Registry.GetValue(RegPath, "Command", null)?.ToString();
             set
             {
-                if (value.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(value))
                 {
                     if (Registry.GetValue(RegPath, "NullFile", null) != null)
                     {
@@ -219,7 +227,7 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public ShellNewList Owner { get; private set; }
+        public new ShellNewList List;
         public MoveButton BtnMoveUp { get; set; }
         public MoveButton BtnMoveDown { get; set; }
         public MenuButton BtnShowMenu { get; set; }
@@ -234,10 +242,10 @@ namespace ContextMenuManager.Controls
         public RegExportMenuItem TsiRegExport { get; set; }
         public ChangeCommandMenuItem TsiChangeCommand { get; set; }
 
-        private readonly RToolStripMenuItem TsiDetails = new(AppString.Menu.Details);
-        private readonly RToolStripMenuItem TsiOtherAttributes = new(AppString.Menu.OtherAttributes);
-        private readonly RToolStripMenuItem TsiBeforeSeparator = new(AppString.Menu.BeforeSeparator);
-        private readonly RToolStripMenuItem TsiEditData = new(AppString.Menu.InitialData);
+        private RToolStripMenuItem TsiDetails;
+        private RToolStripMenuItem TsiOtherAttributes;
+        private RToolStripMenuItem TsiBeforeSeparator;
+        private RToolStripMenuItem TsiEditData;
 
         private void InitializeComponents()
         {
@@ -256,61 +264,74 @@ namespace ContextMenuManager.Controls
             TsiDeleteMe = new DeleteMeMenuItem(this);
             TsiChangeCommand.CommandCanBeEmpty = true;
 
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] {TsiChangeText,
+            TsiDetails = new(AppString.Menu.Details);
+            TsiOtherAttributes = new(AppString.Menu.OtherAttributes);
+            TsiBeforeSeparator = new(AppString.Menu.BeforeSeparator);
+            TsiEditData = new(AppString.Menu.InitialData);
+
+            foreach (var item in new Control[] {TsiChangeText,
                 new RToolStripSeparator(), TsiChangeIcon, new RToolStripSeparator(), TsiOtherAttributes,
-                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe });
+                new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                Control.ContextMenu.Items.Add(item);
+            }
 
-            TsiOtherAttributes.DropDownItems.AddRange(new[] { TsiBeforeSeparator, TsiEditData });
+            foreach (var item in new Control[] { TsiBeforeSeparator, TsiEditData })
+            {
+                TsiOtherAttributes.Items.Add(item);
+            }
 
-            TsiDetails.DropDownItems.AddRange(new ToolStripItem[] { TsiSearch,
+            foreach (var item in new Control[] { TsiSearch,
                 new RToolStripSeparator(), TsiChangeCommand, TsiFileProperties,
-                TsiFileLocation, TsiRegLocation, TsiRegExport });
+                TsiFileLocation, TsiRegLocation, TsiRegExport })
+            {
+                TsiDetails.Items.Add(item);
+            }
 
-            ContextMenuStrip.Opening += (sender, e) =>
+            Control.ContextMenu.Opened += (sender, e) =>
             {
                 TsiEditData.Visible = CanEditData;
                 TsiChangeCommand.Visible = CanChangeCommand;
-                TsiBeforeSeparator.Enabled = !DefaultBeforeSeparator;
-                TsiBeforeSeparator.Checked = BeforeSeparator;
+                TsiBeforeSeparator.IsEnabled = !DefaultBeforeSeparator;
+                TsiBeforeSeparator.IsChecked = BeforeSeparator;
             };
             TsiEditData.Click += (sender, e) => EditInitialData();
             TsiBeforeSeparator.Click += (sender, e) => MoveWithSeparator(!TsiBeforeSeparator.Checked);
-            BtnMoveUp.MouseDown += (sender, e) => Owner?.MoveItem(this, true);
-            BtnMoveDown.MouseDown += (sender, e) => Owner?.MoveItem(this, false);
+            BtnMoveUp.Click += (sender, e) => List?.MoveItem(this, true);
+            BtnMoveDown.Click += (sender, e) => List?.MoveItem(this, false);
         }
 
         private void EditInitialData()
         {
-            if (AppMessageBox.Show(AppString.Message.EditInitialData,
-                MessageBoxButtons.YesNo) != DialogResult.Yes) return;
-            using var dlg = new InputDialog
+            if (AppMessageBox.Show(AppString.Message.EditInitialData, null,
+                MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+            var dlg = new InputDialog
             {
                 Title = AppString.Menu.InitialData,
                 Text = InitialData?.ToString()
             };
-            if (dlg.ShowDialog() == DialogResult.OK) InitialData = dlg.Text;
+            if (dlg.ShowDialog() == true) InitialData = dlg.Text;
         }
 
         public void SetSortabled(bool isLocked)
         {
-            BtnMoveDown.Visible = BtnMoveUp.Visible = isLocked && CanSort;
+            BtnMoveDown.Visibility = BtnMoveUp.Visibility = (isLocked && CanSort) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void MoveWithSeparator(bool isBefore)
         {
             BeforeSeparator = isBefore;
-            var list = (ShellNewList)Parent;
-            var index = list.GetItemIndex(list.Separator);
-            list.SetItemIndex(this, index);
-            if (ShellNewList.ShellNewLockItem.IsLocked) list.SaveSorting();
+            var index = List.GetItemIndex(List.Separator);
+            List.SetItemIndex(this, index);
+            if (ShellNewList.ShellNewLockItem.IsLocked) List.SaveSorting();
         }
 
         public void DeleteMe()
         {
             RegistryEx.DeleteKeyTree(RegPath);
             RegistryEx.DeleteKeyTree(BackupPath);
-            Parent.Controls.Remove(this);
-            if (ShellNewList.ShellNewLockItem.IsLocked) Owner?.SaveSorting();
+            List.Controls.Remove(Control);
+            if (ShellNewList.ShellNewLockItem.IsLocked) List?.SaveSorting();
         }
     }
 }

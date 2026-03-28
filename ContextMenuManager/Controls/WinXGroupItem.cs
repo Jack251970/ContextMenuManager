@@ -1,18 +1,24 @@
-﻿using BluePointLilac.Methods;
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
 {
     internal sealed class WinXGroupItem : FoldGroupItem, IChkVisibleItem, ITsiDeleteItem, ITsiTextItem
     {
-        public WinXGroupItem(string groupPath) : base(groupPath, ObjectPath.PathType.Directory)
+        public new WinXList List;
+
+        public WinXGroupItem(WinXList list, string groupPath) : base(list, groupPath, ObjectPath.PathType.Directory)
         {
-            InitializeComponents();
+            List = list;
             RefreshKeyPath();
+            if (List != null)
+            {
+                InitializeComponents();
+            }
         }
 
         private string keyPath = null;
@@ -61,7 +67,7 @@ namespace ContextMenuManager.Controls
 
                     if (value)
                     {
-                        DeletePath(new string[] { BackupGroupPath });
+                        DeletePath([BackupGroupPath]);
                     }
                     if (flag) ExplorerRestarter.Show();
                 }
@@ -120,45 +126,47 @@ namespace ContextMenuManager.Controls
         }
         public void RemoveWinXItem(WinXItem item)
         {
-            if (winXItems.Contains(item))
-            {
-                winXItems.Remove(item);
-            }
+            winXItems.Remove(item);
         }
 
         public VisibleCheckBox ChkVisible { get; set; }
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public ChangeTextMenuItem TsiChangeText { get; set; }
-        private readonly RToolStripMenuItem TsiRestoreDefault = new(AppString.Menu.RestoreDefault);
+        private RToolStripMenuItem TsiRestoreDefault { get; set; }
 
         public bool ChkChecked
         {
-            get => ItemVisible;
-            set => ChkVisible.Checked = value;
+            get => ChkVisible.IsOn;
+            set => ChkVisible.IsOn = value;
         }
 
         private void InitializeComponents()
         {
+            TsiRestoreDefault = new(AppString.Menu.RestoreDefault);
             ChkVisible = new VisibleCheckBox(this);
-            SetCtrIndex(ChkVisible, 1);
+            SetCtrIndex(ChkVisible, 2);
             TsiDeleteMe = new DeleteMeMenuItem(this);
             TsiChangeText = new ChangeTextMenuItem(this);
-            ContextMenuStrip.Items.AddRange(new ToolStripItem[] { new RToolStripSeparator(),
-                TsiChangeText, TsiRestoreDefault, new RToolStripSeparator(), TsiDeleteMe });
-            ContextMenuStrip.Opening += (sender, e) => TsiRestoreDefault.Enabled = Directory.Exists(DefaultFolderPath);
+
+            foreach (var item in new Control[] { new RToolStripSeparator(),
+                TsiChangeText, TsiRestoreDefault, new RToolStripSeparator(), TsiDeleteMe })
+            {
+                ContextMenu.Items.Add(item);
+            }
+
+            ContextMenu.Opened += (sender, e) => TsiRestoreDefault.IsEnabled = Directory.Exists(DefaultFolderPath);
             TsiRestoreDefault.Click += (sender, e) => RestoreDefault();
         }
 
         private void RefreshList()
         {
-            var list = (WinXList)Parent;
-            list.ClearItems();
-            list.LoadItems();
+            List.ClearItems();
+            List.LoadItems();
         }
 
         private void RestoreDefault()
         {
-            if (AppMessageBox.Show(AppString.Message.RestoreDefault, MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (AppMessageBox.Show(AppString.Message.RestoreDefault, null, MessageBoxButton.OKCancel) == MessageBoxResult.OK)
             {
                 void RestoreDefaultFolder(bool isWinX)
                 {
@@ -181,7 +189,7 @@ namespace ContextMenuManager.Controls
                 {
                     // Win11需要将默认WinX菜单也恢复，同时删除备份WinX菜单
                     RestoreDefaultFolder(false);
-                    DeletePath(new string[] { BackupGroupPath });
+                    DeletePath([BackupGroupPath]);
                 }
 
                 RefreshList();
@@ -192,8 +200,8 @@ namespace ContextMenuManager.Controls
         public void DeleteMe()
         {
             var flag = Directory.GetFiles(GroupPath, "*.lnk").Length > 0;
-            if (flag && AppMessageBox.Show(AppString.Message.DeleteGroup, MessageBoxButtons.OKCancel) != DialogResult.OK) return;
-            DeletePath(new string[] { GroupPath, BackupGroupPath, DefaultGroupPath });
+            if (flag && AppMessageBox.Show(AppString.Message.DeleteGroup, null, MessageBoxButton.OKCancel) != MessageBoxResult.OK) return;
+            DeletePath([GroupPath, BackupGroupPath, DefaultGroupPath]);
             if (flag)
             {
                 RefreshList();
