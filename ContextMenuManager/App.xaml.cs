@@ -1,6 +1,7 @@
 using ContextMenuManager.Methods;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Common;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -26,8 +27,9 @@ namespace ContextMenuManager
         {
             Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
-            // 初始化主题管理器，使用系统主题设置
-            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
+            // 初始化主题管理器，根据系统主题设置应用主题
+            var isDarkMode = IsSystemDarkModeEnabled();
+            ThemeManager.Current.ApplicationTheme = isDarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light;
 
             RegisterAppDomainExceptions();
             RegisterDispatcherUnhandledException();
@@ -111,6 +113,30 @@ namespace ContextMenuManager
         {
             Current?.MainWindow.Show();
             Current?.MainWindow.Focus();
+        }
+
+        /// <summary>
+        /// 检测系统是否启用深色模式
+        /// </summary>
+        private static bool IsSystemDarkModeEnabled()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                if (key != null)
+                {
+                    var value = key.GetValue("AppsUseLightTheme");
+                    if (value is int intValue)
+                    {
+                        return intValue == 0; // 0 = Dark mode, 1 = Light mode
+                    }
+                }
+            }
+            catch
+            {
+                // 如果读取注册表失败，默认使用浅色模式
+            }
+            return false; // 默认浅色模式
         }
     }
 }
