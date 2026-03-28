@@ -1,4 +1,5 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Common;
 using System;
 using System.Diagnostics;
@@ -24,6 +25,9 @@ namespace ContextMenuManager
         protected override void OnStartup(StartupEventArgs e)
         {
             Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+            // 初始化主题管理器，使用系统主题设置
+            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
 
             RegisterAppDomainExceptions();
             RegisterDispatcherUnhandledException();

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
@@ -55,16 +55,12 @@
 
 		<Copy
 			SourceFiles="$(ProjectDir)Properties\Resources\Texts\AppLanguageDic.ini"
-			DestinationFiles="$(SolutionDir)Languages\zh-CN.ini"
+			DestinationFiles="$(TargetDir)Config\Languages\zh-CN.ini"
 			OverwriteReadOnlyFiles="true" />
 
 		<ItemGroup>
-			<LanguageFiles Include="$(SolutionDir)Languages\*.*" />
+			<LanguageFiles Include="$(TargetDir)Config\Languages\*.*" />
 		</ItemGroup>
-		<Copy
-			SourceFiles="@(LanguageFiles)"
-			DestinationFolder="$(TargetDir)Config\Languages"
-			OverwriteReadOnlyFiles="true" />
 
 		<ItemGroup>
 			<WebDictFiles Include="$(ProjectDir)Properties\Resources\Texts\*.*" />
