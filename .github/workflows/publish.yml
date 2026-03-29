@@ -42,7 +42,7 @@ jobs:
       # Get package version
       - name: Get Package Version
         run: |
-         $version = [system.diagnostics.fileversioninfo]::getversioninfo("ContextMenuManager\bin\Release\net10.0-windows10.0.19041.0\ContextMenuManager.dll").fileversion
+         $version = [system.diagnostics.fileversioninfo]::getversioninfo("ContextMenuManager\bin\Release\ContextMenuManager.dll").fileversion
          echo "release_version=$version" | out-file -filepath $env:github_env -encoding utf-8 -append
 
       # Publish the project
