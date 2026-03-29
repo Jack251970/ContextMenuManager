@@ -2,6 +2,7 @@ using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace ContextMenuManager.Controls
      */
 
     internal sealed class ShellNewItem : MyListItem, IChkVisibleItem, ITsiTextItem, IBtnShowMenuItem, IBtnMoveUpDownItem,
-         ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, ITsiCommandItem
+         ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, ITsiCommandItem, ISearchable
     {
         public static readonly string[] SnParts = ["ShellNew", "-ShellNew"];
         public static readonly string[] UnableSortExtensions = ["Folder", ".library-ms"];
@@ -332,6 +333,43 @@ namespace ContextMenuManager.Controls
             RegistryEx.DeleteKeyTree(BackupPath);
             List.Controls.Remove(Control);
             if (ShellNewList.ShellNewLockItem.IsLocked) List?.SaveSorting();
+        }
+
+        public string[] GetSearchKeywords()
+        {
+            var keywords = new List<string>();
+
+            if (!string.IsNullOrEmpty(Extension))
+            {
+                keywords.Add(Extension);
+            }
+
+            if (!string.IsNullOrEmpty(RegPath))
+            {
+                keywords.Add(RegPath);
+            }
+
+            if (!string.IsNullOrEmpty(ItemFilePath))
+            {
+                keywords.Add(ItemFilePath);
+                var fileName = Path.GetFileName(ItemFilePath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    keywords.Add(fileName);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(OpenMode))
+            {
+                keywords.Add(OpenMode);
+            }
+
+            return keywords.ToArray();
+        }
+
+        public int GetSearchPriority()
+        {
+            return ItemVisible ? 10 : 0;
         }
     }
 }
