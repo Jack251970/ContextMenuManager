@@ -59,8 +59,12 @@
 			OverwriteReadOnlyFiles="true" />
 
 		<ItemGroup>
-			<LanguageFiles Include="$(TargetDir)Config\Languages\*.*" />
+			<LanguageFiles Include="$(SolutionDir)Languages\*.*" />
 		</ItemGroup>
+		<Copy
+			SourceFiles="@(LanguageFiles)"
+			DestinationFolder="$(TargetDir)Config\Languages"
+			OverwriteReadOnlyFiles="true" />
 
 		<ItemGroup>
 			<WebDictFiles Include="$(ProjectDir)Properties\Resources\Texts\*.*" />
