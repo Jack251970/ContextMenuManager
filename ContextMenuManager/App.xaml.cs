@@ -28,8 +28,10 @@ namespace ContextMenuManager
             Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
             // 初始化主题管理器，根据系统主题设置应用主题
-            var isDarkMode = IsSystemDarkModeEnabled();
-            ThemeManager.Current.ApplicationTheme = isDarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light;
+            UpdateApplicationTheme();
+
+            // 监听系统主题变化
+            SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
 
             RegisterAppDomainExceptions();
             RegisterDispatcherUnhandledException();
@@ -43,6 +45,20 @@ namespace ContextMenuManager
             Current.MainWindow.Show();
 
             Updater.PeriodicUpdate();
+        }
+
+        private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        {
+            if (e.Category == UserPreferenceCategory.General)
+            {
+                UpdateApplicationTheme();
+            }
+        }
+
+        private static void UpdateApplicationTheme()
+        {
+            var isDarkMode = IsSystemDarkModeEnabled();
+            ThemeManager.Current.ApplicationTheme = isDarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light;
         }
 
         private void RegisterExitEvents()
@@ -98,6 +114,9 @@ namespace ContextMenuManager
 
                 _disposed = true;
             }
+
+            // 取消注册系统主题变化监听器
+            SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
 
             AppConfig.CleanDirectory();
         }
