@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
@@ -11,6 +11,7 @@
     <NoWarn>$(NoWarn);WFO1000;CA1416</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -55,7 +56,7 @@
 
 		<Copy
 			SourceFiles="$(ProjectDir)Properties\Resources\Texts\AppLanguageDic.ini"
-			DestinationFiles="$(SolutionDir)Languages\zh-CN.ini"
+			DestinationFiles="$(TargetDir)Config\Languages\zh-CN.ini"
 			OverwriteReadOnlyFiles="true" />
 
 		<ItemGroup>

@@ -1,5 +1,7 @@
-﻿using ContextMenuManager.Methods;
+using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Common;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -25,6 +27,12 @@ namespace ContextMenuManager
         {
             Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
+            // 初始化主题管理器，根据系统主题设置应用主题
+            UpdateApplicationTheme();
+
+            // 监听系统主题变化
+            SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+
             RegisterAppDomainExceptions();
             RegisterDispatcherUnhandledException();
 
@@ -37,6 +45,20 @@ namespace ContextMenuManager
             Current.MainWindow.Show();
 
             Updater.PeriodicUpdate();
+        }
+
+        private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        {
+            if (e.Category == UserPreferenceCategory.General)
+            {
+                UpdateApplicationTheme();
+            }
+        }
+
+        private static void UpdateApplicationTheme()
+        {
+            var isDarkMode = IsSystemDarkModeEnabled();
+            ThemeManager.Current.ApplicationTheme = isDarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light;
         }
 
         private void RegisterExitEvents()
@@ -93,6 +115,9 @@ namespace ContextMenuManager
                 _disposed = true;
             }
 
+            // 取消注册系统主题变化监听器
+            SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+
             AppConfig.CleanDirectory();
         }
 
@@ -107,6 +132,30 @@ namespace ContextMenuManager
         {
             Current?.MainWindow.Show();
             Current?.MainWindow.Focus();
+        }
+
+        /// <summary>
+        /// 检测系统是否启用深色模式
+        /// </summary>
+        private static bool IsSystemDarkModeEnabled()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                if (key != null)
+                {
+                    var value = key.GetValue("AppsUseLightTheme");
+                    if (value is int intValue)
+                    {
+                        return intValue == 0; // 0 = Dark mode, 1 = Light mode
+                    }
+                }
+            }
+            catch
+            {
+                // 如果读取注册表失败，默认使用浅色模式
+            }
+            return false; // 默认浅色模式
         }
     }
 }
