@@ -209,11 +209,11 @@ namespace ContextMenuManager.Methods
                 var xmlFiles = Directory.GetFiles(deviceDir, "*.xml");
                 foreach (var xmlFile in xmlFiles)
                 {
-                    // 加载项目元数据
-                    LoadBackupDataMetaData(xmlFile);
-                    // 如果备份版本号小于等于最高弃用备份版本号，则删除该备份
+                    // 加载项目元数据，如果加载失败（文件损坏或为空）则删除该备份
                     try
                     {
+                        LoadBackupDataMetaData(xmlFile);
+                        // 如果备份版本号小于等于最高弃用备份版本号，则删除该备份
                         if (metaData.Version <= DeprecatedBackupVersion)
                         {
                             File.Delete(xmlFile);
