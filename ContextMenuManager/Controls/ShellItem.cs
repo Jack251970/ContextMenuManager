@@ -1,4 +1,4 @@
-﻿using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
@@ -11,7 +11,7 @@ using System.Windows.Controls;
 namespace ContextMenuManager.Controls
 {
     internal class ShellItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem, ITsiCommandItem, IProtectOpenItem,
-        ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem
+        ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, ISearchable
     {
         /// <summary>Shell公共引用子菜单注册表项路径</summary>
         public const string CommandStorePath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell";
@@ -582,6 +582,49 @@ namespace ContextMenuManager.Controls
         public virtual void DeleteMe()
         {
             RegistryEx.DeleteKeyTree(RegPath, true);
+        }
+
+        public virtual string[] GetSearchKeywords()
+        {
+            var keywords = new List<string>();
+
+            if (!string.IsNullOrEmpty(RegPath))
+            {
+                keywords.Add(RegPath);
+                keywords.Add(KeyName);
+            }
+
+            if (!string.IsNullOrEmpty(ItemFilePath))
+            {
+                keywords.Add(ItemFilePath);
+                var fileName = Path.GetFileName(ItemFilePath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    keywords.Add(fileName);
+                    var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                    if (!string.IsNullOrEmpty(fileNameWithoutExt))
+                    {
+                        keywords.Add(fileNameWithoutExt);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(IconLocation))
+            {
+                keywords.Add(IconLocation);
+            }
+
+            if (!string.IsNullOrEmpty(ItemCommand))
+            {
+                keywords.Add(ItemCommand);
+            }
+
+            return keywords.ToArray();
+        }
+
+        public virtual int GetSearchPriority()
+        {
+            return ItemVisible ? 10 : 0;
         }
     }
 }

@@ -9,7 +9,7 @@ using System.Windows.Controls;
 namespace ContextMenuManager.Controls
 {
     internal sealed class ShellExItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, ITsiGuidItem,
-        ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, IProtectOpenItem
+        ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, IProtectOpenItem, ISearchable
     {
         public static Dictionary<string, Guid> GetPathAndGuids(string shellExPath, bool isDragDrop = false)
         {
@@ -166,6 +166,37 @@ namespace ContextMenuManager.Controls
         {
             RegistryEx.DeleteKeyTree(RegPath, true);
             RegistryEx.DeleteKeyTree(BackupPath);
+        }
+
+        public string[] GetSearchKeywords()
+        {
+            var keywords = new List<string>();
+
+            if (!string.IsNullOrEmpty(RegPath))
+            {
+                keywords.Add(RegPath);
+                keywords.Add(KeyName);
+            }
+
+            if (!string.IsNullOrEmpty(ItemFilePath))
+            {
+                keywords.Add(ItemFilePath);
+                var fileName = System.IO.Path.GetFileName(ItemFilePath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    keywords.Add(fileName);
+                }
+            }
+
+            keywords.Add(Guid.ToString());
+            keywords.Add(Guid.ToString("B"));
+
+            return keywords.ToArray();
+        }
+
+        public int GetSearchPriority()
+        {
+            return ItemVisible ? 10 : 0;
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿using ContextMenuManager.Controls.Interfaces;
+using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Controls;
@@ -9,7 +10,7 @@ using System.Windows.Controls;
 namespace ContextMenuManager.Controls
 {
     internal sealed class SendToItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem, ITsiAdministratorItem,
-        ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiDeleteItem, ITsiShortcutCommandItem
+        ITsiIconItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiDeleteItem, ITsiShortcutCommandItem, ISearchable
     {
         public SendToItem(MyList list, string filePath) : base(list)
         {
@@ -232,6 +233,48 @@ namespace ContextMenuManager.Controls
             File.Delete(FilePath);
             DesktopIni.DeleteLocalizedFileNames(FilePath);
             ShellLink?.Dispose();
+        }
+
+        public string[] GetSearchKeywords()
+        {
+            var keywords = new List<string>();
+
+            if (!string.IsNullOrEmpty(FilePath))
+            {
+                keywords.Add(FilePath);
+                var fileName = Path.GetFileName(FilePath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    keywords.Add(fileName);
+                    var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                    if (!string.IsNullOrEmpty(fileNameWithoutExt))
+                    {
+                        keywords.Add(fileNameWithoutExt);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(ItemFilePath))
+            {
+                keywords.Add(ItemFilePath);
+                var itemFileName = Path.GetFileName(ItemFilePath);
+                if (!string.IsNullOrEmpty(itemFileName))
+                {
+                    keywords.Add(itemFileName);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(IconLocation))
+            {
+                keywords.Add(IconLocation);
+            }
+
+            return keywords.ToArray();
+        }
+
+        public int GetSearchPriority()
+        {
+            return ItemVisible ? 10 : 0;
         }
     }
 }

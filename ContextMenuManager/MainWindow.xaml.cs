@@ -38,8 +38,7 @@ namespace ContextMenuManager
         private UIElement currentListControl;
         private string currentTag;
 
-        // Saved items for search restore (mirrors MainForm logic)
-        private readonly List<UIElement> originalListItems = [];
+        private readonly SearchService searchService = new();
 
         public MainWindow()
         {
@@ -203,7 +202,7 @@ namespace ContextMenuManager
             {
                 NavView.Header = item.Content;
                 SearchBox.Text = string.Empty;
-                originalListItems.Clear();
+                searchService.Clear();
                 NavigateTo(tag);
             }
         }
@@ -516,82 +515,47 @@ namespace ContextMenuManager
 
         private void FilterItems(string filterText)
         {
+            if (currentListControl is not MyList myList) return;
+
             if (string.IsNullOrWhiteSpace(filterText))
             {
                 RestoreOriginalListItems();
-                UpdateStatusText(DefaultText);
+                UpdateStatusText(GetStatusText(currentTag));
                 return;
             }
 
-            var searchText = filterText.ToLower();
-
-            if (currentListControl is MyList myList)
+            if (!searchService.HasOriginalItems)
             {
-                if (originalListItems.Count == 0)
-                {
-                    foreach (var ctrl in myList.Controls)
-                    {
-                        originalListItems.Add(ctrl);
-                    }
-                }
-
-                FilterListItems(myList, searchText);
+                var items = myList.Controls.Select(c => c.Item).ToList();
+                searchService.Initialize(items);
             }
+
+            var searchResults = searchService.Search(filterText);
+
+            myList.ClearItems();
+            foreach (var result in searchResults)
+            {
+                myList.AddItem(result.Item);
+            }
+
+            UpdateSearchStatus(searchResults.Count);
         }
 
         private void RestoreOriginalListItems()
         {
-            if (currentListControl is MyList myList && originalListItems.Count > 0)
+            if (currentListControl is MyList myList && searchService.HasOriginalItems)
             {
                 myList.ClearItems();
-                foreach (var item in originalListItems)
+                foreach (var item in searchService.GetOriginalItems())
                 {
-                    myList.AddItem(((MyUserControl)item).Item);
+                    myList.AddItem(item);
                 }
-                originalListItems.Clear();
+                searchService.Clear();
             }
         }
 
-        private void FilterListItems(MyList listControl, string searchText)
+        private void UpdateSearchStatus(int visibleCount)
         {
-            var itemsToShow = new List<MyListItem>();
-            foreach (var control in originalListItems)
-            {
-                if (((MyUserControl)control).Item is not MyListItem item)
-                {
-                    continue;
-                }
-
-                var matches = item.Text?.ToLower().Contains(searchText, StringComparison.CurrentCultureIgnoreCase) == true
-                    || item.SubText?.ToLower().Contains(searchText, StringComparison.CurrentCultureIgnoreCase) == true;
-
-                if (!matches)
-                {
-                    foreach (var prop in item.GetType().GetProperties())
-                    {
-                        if (prop.PropertyType == typeof(string) && prop.Name is not "Text" and not "SubText")
-                        {
-                            if (prop.GetValue(item) is string val && val.Contains(searchText, StringComparison.CurrentCultureIgnoreCase))
-                            {
-                                matches = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (matches)
-                {
-                    itemsToShow.Add(item);
-                }
-            }
-
-            listControl.ClearItems();
-            foreach (var item in itemsToShow)
-            {
-                listControl.AddItem(item);
-            }
-
             if (string.IsNullOrEmpty(SearchBox.Text))
             {
                 UpdateStatusText(GetStatusText(currentTag));
@@ -600,8 +564,8 @@ namespace ContextMenuManager
             {
                 var statusMsg = AppString.Other.StatusSearch ?? "Search '%searchText' - Find %visibleCount items (%totalCount items in total)";
                 statusMsg = statusMsg.Replace("%searchText", SearchBox.Text)
-                    .Replace("%visibleCount", itemsToShow.Count.ToString())
-                    .Replace("%totalCount", originalListItems.Count.ToString());
+                    .Replace("%visibleCount", visibleCount.ToString())
+                    .Replace("%totalCount", searchService.TotalItemCount.ToString());
                 UpdateStatusText(statusMsg);
             }
         }
