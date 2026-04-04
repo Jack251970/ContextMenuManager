@@ -1,6 +1,5 @@
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
-using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -159,7 +158,7 @@ namespace ContextMenuManager.Views
             {
                 Title = AppString.Dialog.RestoreBackupItem,
                 TvTitle = AppString.Dialog.RestoreContent,
-                TvItems = helper.GetBackupRestoreScenesText(BackupList.metaData.BackupScenes),
+                TvItems = BackupHelper.GetBackupRestoreScenesText(BackupList.metaData.BackupScenes),
                 CmbTitle = AppString.Dialog.RestoreMode,
                 CmbItems = [AppString.Dialog.RestoreMode1, AppString.Dialog.RestoreMode2, AppString.Dialog.RestoreMode3]
             };

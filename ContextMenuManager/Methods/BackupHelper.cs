@@ -130,14 +130,14 @@ namespace ContextMenuManager.Methods
         }
 
         // 获取备份恢复场景文字
-        public string[] GetBackupRestoreScenesText(List<Scenes> scenes)
+        public static string[] GetBackupRestoreScenesText(List<Scenes> scenes)
         {
             List<string> scenesTextList = [];
             foreach (var scene in scenes)
             {
                 scenesTextList.Add(BackupScenesText[(int)scene]);
             }
-            return scenesTextList.ToArray();
+            return [.. scenesTextList];
         }
 
         // 备份指定场景内容
@@ -192,7 +192,7 @@ namespace ContextMenuManager.Methods
         /*******************************内部变量、函数************************************/
 
         // 目前备份恢复场景
-        private readonly List<Scenes> currentScenes = new();
+        private readonly List<Scenes> currentScenes = [];
 
         private bool backup;                // 目前备份还是恢复
         private Scenes currentScene;        // 目前处理场景
@@ -200,7 +200,7 @@ namespace ContextMenuManager.Methods
         private RestoreMode restoreMode;    // 目前恢复模式
 
         // 删除弃用版本的备份
-        private void CheckDeprecatedBackup()
+        private static void CheckDeprecatedBackup()
         {
             var rootPath = AppConfig.MenuBackupRootDir;
             var deviceDirs = Directory.GetDirectories(rootPath);
@@ -209,19 +209,20 @@ namespace ContextMenuManager.Methods
                 var xmlFiles = Directory.GetFiles(deviceDir, "*.xml");
                 foreach (var xmlFile in xmlFiles)
                 {
-                    // 加载项目元数据
-                    LoadBackupDataMetaData(xmlFile);
-                    // 如果备份版本号小于等于最高弃用备份版本号，则删除该备份
+                    // 加载项目元数据，如果加载失败（文件损坏或为空）则删除该备份
                     try
                     {
+                        LoadBackupDataMetaData(xmlFile);
+                        // 如果备份版本号小于等于最高弃用备份版本号，则将该备份改成后缀为.deprecated的文件（而不是直接删除），以免误删用户重要的备份文件
                         if (metaData.Version <= DeprecatedBackupVersion)
                         {
-                            File.Delete(xmlFile);
+                            ChangeToDeprecated(xmlFile);
                         }
                     }
                     catch
                     {
-                        File.Delete(xmlFile);
+                        // 如果出现异常，则将该备份改成后缀为.deprecated的文件（而不是直接删除），以免误删用户重要的备份文件
+                        ChangeToDeprecated(xmlFile);
                     }
                 }
                 // 如果设备目录为空且不为本机目录，则删除该设备目录
@@ -230,6 +231,35 @@ namespace ContextMenuManager.Methods
                 {
                     Directory.Delete(deviceDir);
                 }
+            }
+        }
+
+        private static void ChangeToDeprecated(string filePath)
+        {
+            // 1. 检查源文件是否存在
+            if (!File.Exists(filePath))
+            {
+                return;
+            }
+
+            var deprecatedFilePath = $"{filePath}.deprecated";
+            var value = 1;
+
+            // 2. 寻找可用的文件名
+            while (File.Exists(deprecatedFilePath))
+            {
+                deprecatedFilePath = $"{filePath}.deprecated{value}";
+                value++;
+            }
+
+            // 3. 执行移动操作
+            try
+            {
+                File.Move(filePath, deprecatedFilePath);
+            }
+            catch (Exception)
+            {
+                return;
             }
         }
 
@@ -552,7 +582,7 @@ namespace ContextMenuManager.Methods
                         var restoreItemData = restoreItem.ItemData;
                         if (restoreItemData != itemData)
                         {
-                            int.TryParse(restoreItem.KeyName, out var itemDataIndex);
+                            _ = int.TryParse(restoreItem.KeyName, out var itemDataIndex);
                             switch (currentScene)
                             {
                                 case Scenes.DragDrop:
