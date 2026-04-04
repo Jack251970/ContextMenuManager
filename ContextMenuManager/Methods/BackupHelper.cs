@@ -130,14 +130,14 @@ namespace ContextMenuManager.Methods
         }
 
         // 获取备份恢复场景文字
-        public string[] GetBackupRestoreScenesText(List<Scenes> scenes)
+        public static string[] GetBackupRestoreScenesText(List<Scenes> scenes)
         {
             List<string> scenesTextList = [];
             foreach (var scene in scenes)
             {
                 scenesTextList.Add(BackupScenesText[(int)scene]);
             }
-            return scenesTextList.ToArray();
+            return [.. scenesTextList];
         }
 
         // 备份指定场景内容
@@ -200,7 +200,7 @@ namespace ContextMenuManager.Methods
         private RestoreMode restoreMode;    // 目前恢复模式
 
         // 删除弃用版本的备份
-        private void CheckDeprecatedBackup()
+        private static void CheckDeprecatedBackup()
         {
             var rootPath = AppConfig.MenuBackupRootDir;
             var deviceDirs = Directory.GetDirectories(rootPath);
