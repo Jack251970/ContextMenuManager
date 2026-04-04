@@ -81,23 +81,23 @@ namespace ContextMenuManager.Methods
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return originalItems.Select(item => new SearchResult
+                return [.. originalItems.Select(item => new SearchResult
                 {
                     Item = item,
                     Score = 0,
                     MatchedKeywords = []
-                }).ToList();
+                })];
             }
 
             var searchTerms = ParseSearchTerms(query.ToLower());
             if (searchTerms.Count == 0)
             {
-                return originalItems.Select(item => new SearchResult
+                return [.. originalItems.Select(item => new SearchResult
                 {
                     Item = item,
                     Score = 0,
                     MatchedKeywords = []
-                }).ToList();
+                })];
             }
 
             var results = new List<SearchResult>();
@@ -131,7 +131,7 @@ namespace ContextMenuManager.Methods
                 }
             }
 
-            return results.OrderByDescending(r => r.Score).ToList();
+            return [.. results.OrderByDescending(r => r.Score)];
         }
 
         private static List<string> ParseSearchTerms(string query)
@@ -150,7 +150,7 @@ namespace ContextMenuManager.Methods
                 {
                     if (currentTerm.Count > 0)
                     {
-                        terms.Add(new string(currentTerm.ToArray()));
+                        terms.Add(new string([.. currentTerm]));
                         currentTerm.Clear();
                     }
                 }
@@ -162,13 +162,13 @@ namespace ContextMenuManager.Methods
 
             if (currentTerm.Count > 0)
             {
-                terms.Add(new string(currentTerm.ToArray()));
+                terms.Add(new string([.. currentTerm]));
             }
 
             return terms;
         }
 
-        private int CalculateMatchScore(SearchableContent content, List<string> searchTerms, out HashSet<string> matchedKeywords)
+        private static int CalculateMatchScore(SearchableContent content, List<string> searchTerms, out HashSet<string> matchedKeywords)
         {
             matchedKeywords = [];
             var totalScore = 0;
