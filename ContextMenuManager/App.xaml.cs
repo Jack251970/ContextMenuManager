@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace ContextMenuManager
 {
@@ -21,6 +22,17 @@ namespace ContextMenuManager
         {
             InitializeComponent();
             ShadowAssist.UseBitmapCache = false;
+            EventManager.RegisterClassHandler(typeof(ContextMenu), ContextMenu.OpenedEvent, new RoutedEventHandler(OnContextMenuOpened));
+        }
+
+        private static void OnContextMenuOpened(object sender, RoutedEventArgs e)
+        {
+            if (sender is ContextMenu contextMenu)
+            {
+                var elementTheme = ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark
+                    ? ElementTheme.Dark : ElementTheme.Light;
+                ThemeManager.SetRequestedTheme(contextMenu, elementTheme);
+            }
         }
 
         protected override void OnStartup(StartupEventArgs e)
