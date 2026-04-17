@@ -4,6 +4,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
@@ -11,11 +12,7 @@ namespace ContextMenuManager.Controls
     internal sealed class WinXItem : FoldSubItem, IChkVisibleItem, IBtnShowMenuItem, IBtnMoveUpDownItem, ITsiAdministratorItem,
         ITsiTextItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiDeleteItem, ITsiShortcutCommandItem
     {
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public new WinXList List;
 
@@ -241,7 +238,7 @@ namespace ContextMenuManager.Controls
                 TsiChangeGroup, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
                 TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                Control.ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch,

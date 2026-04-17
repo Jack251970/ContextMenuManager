@@ -227,8 +227,8 @@ namespace ContextMenuManager.Controls
                         TsiDeleteRef = new(AppString.Menu.DeleteReference);
                         BtnMoveUp.Click += (sender, e) => List.MoveItem(this, true);
                         BtnMoveDown.Click += (sender, e) => List.MoveItem(this, false);
-                        ContextMenu.Items.Remove(TsiDeleteMe);
-                        ContextMenu.Items.Add(TsiDeleteRef);
+                        Flyout.Items.Remove(TsiDeleteMe);
+                        Flyout.Items.Add(TsiDeleteRef);
                         TsiDeleteRef.Click += (sender, e) => DeleteReference();
                     }
                 }

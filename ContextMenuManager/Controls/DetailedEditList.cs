@@ -52,20 +52,20 @@ namespace ContextMenuManager.Controls
                         groupItem.Image = GuidInfo.GetImage(guids[0]);
                         var filePath = GuidInfo.GetFilePath(guids[0]);
                         var clsidPath = GuidInfo.GetClsidPath(guids[0]);
-                        if (filePath != null || clsidPath != null) groupItem.ContextMenu.Items.Add(new RToolStripSeparator());
+                        if (filePath != null || clsidPath != null) groupItem.Flyout.Items.Add(new RToolStripSeparator());
                         if (filePath != null)
                         {
                             var tsi = new RToolStripMenuItem(AppString.Menu.FileLocation);
                             // 打开文件夹
                             tsi.Click += (sender, e) => ExternalProgram.JumpExplorer(filePath, AppConfig.OpenMoreExplorer);
-                            groupItem.ContextMenu.Items.Add(tsi);
+                            groupItem.Flyout.Items.Add(tsi);
                         }
                         if (clsidPath != null)
                         {
                             var tsi = new RToolStripMenuItem(AppString.Menu.ClsidLocation);
                             // 打开注册表
                             tsi.Click += (sender, e) => ExternalProgram.JumpRegEdit(clsidPath, null, AppConfig.OpenMoreRegedit);
-                            groupItem.ContextMenu.Items.Add(tsi);
+                            groupItem.Flyout.Items.Add(tsi);
                         }
                     }
                     var iconXN = groupXN.SelectSingleNode("Icon");

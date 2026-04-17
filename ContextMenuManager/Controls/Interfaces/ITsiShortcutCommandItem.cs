@@ -11,14 +11,14 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         ShellLink ShellLink { get; }
         ShortcutCommandMenuItem TsiChangeCommand { get; set; }
-        ContextMenu ContextMenu { get; set; }
+        MenuFlyout Flyout { get; set; }
     }
 
     internal sealed class ShortcutCommandMenuItem : RToolStripMenuItem
     {
         public ShortcutCommandMenuItem(ITsiShortcutCommandItem item) : base(AppString.Menu.ChangeCommand)
         {
-            item.ContextMenu.Opened += (sender, e) =>
+            item.Flyout.Opened += (sender, e) =>
             {
                 Visible = !string.IsNullOrEmpty(item.ShellLink?.TargetPath);
             };

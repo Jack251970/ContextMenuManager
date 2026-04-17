@@ -1,11 +1,12 @@
 using ContextMenuManager.Methods;
-using System.Windows.Controls;
+using iNKORE.UI.WPF.Modern.Controls;
+using System.Windows;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
     internal interface IBtnShowMenuItem
     {
-        ContextMenu ContextMenu { get; set; }
+        MenuFlyout Flyout { get; set; }
         MenuButton BtnShowMenu { get; set; }
     }
 
@@ -13,17 +14,19 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         public MenuButton(IBtnShowMenuItem item) : base(AppImage.Setting)
         {
-            item.ContextMenu = new ContextMenu();
-            ((MyListItem)item).AddCtr(this);
+            item.Flyout = new MenuFlyout();
+            var listItem = (MyListItem)item;
+            listItem.AddCtr(this);
 
             Click += (sender, e) =>
             {
-                if (item.ContextMenu != null)
-                {
-                    item.ContextMenu.PlacementTarget = this;
-                    item.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-                    item.ContextMenu.IsOpen = true;
-                }
+                item.Flyout?.ShowAt(this);
+            };
+
+            listItem.Control.MouseRightButtonUp += (sender, e) =>
+            {
+                item.Flyout?.ShowAt(listItem.Control);
+                e.Handled = true;
             };
         }
     }

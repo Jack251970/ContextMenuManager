@@ -1,5 +1,6 @@
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.IO;
 using System.Windows;
@@ -43,11 +44,7 @@ namespace ContextMenuManager.Controls
         public PathType PathType { get; set; }
 
         public MenuButton BtnShowMenu { get; set; }
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         private readonly PictureButton btnFold;
         private readonly PictureButton btnOpenPath;
@@ -103,7 +100,7 @@ namespace ContextMenuManager.Controls
                 AddCtrs([btnFold, btnOpenPath]);
                 foreach (var item in new Control[] { tsiFoldAll, tsiUnfoldAll })
                 {
-                    Control.ContextMenu.Items.Add(item);
+                    Flyout.Items.Add(item);
                 }
 
                 Control.MouseLeftButtonDown += (s, e) => Fold();

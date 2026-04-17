@@ -1,9 +1,9 @@
 ﻿using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
@@ -11,7 +11,7 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         string Text { get; set; }
         string RegPath { get; }
-        ContextMenu ContextMenu { get; set; }
+        MenuFlyout Flyout { get; set; }
         RegExportMenuItem TsiRegExport { get; set; }
     }
 
@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         public RegExportMenuItem(ITsiRegExportItem item) : base(AppString.Menu.ExportRegistry)
         {
-            item.ContextMenu.Opened += (sender, e) =>
+            item.Flyout.Opened += (sender, e) =>
             {
                 using var key = RegistryEx.GetRegistryKey(item.RegPath);
                 Visibility = key != null ? Visibility.Visible : Visibility.Collapsed;

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
@@ -31,11 +32,7 @@ namespace ContextMenuManager.Controls
             }
         }
 
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public ShellLink ShellLink { get; private set; }
         private string FileExtension => Path.GetExtension(FilePath);
@@ -208,7 +205,7 @@ namespace ContextMenuManager.Controls
                 TsiChangeIcon, new RToolStripSeparator(), TsiAdministrator, new RToolStripSeparator(),
                 TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                Control.ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
@@ -217,7 +214,7 @@ namespace ContextMenuManager.Controls
                 TsiDetails.Items.Add(item);
             }
 
-            Control.ContextMenu.Opened += (sender, e) => TsiChangeCommand.Visible = IsShortcut;
+            Flyout.Opened += (sender, e) => TsiChangeCommand.Visible = IsShortcut;
 
             TsiChangeCommand.Click += (sender, e) =>
             {

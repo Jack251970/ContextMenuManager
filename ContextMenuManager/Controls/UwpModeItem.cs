@@ -2,6 +2,7 @@
 using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
@@ -9,11 +10,7 @@ namespace ContextMenuManager.Controls
     internal sealed class UwpModeItem : MyListItem, IChkVisibleItem, ITsiRegPathItem, ITsiFilePathItem,
         IBtnShowMenuItem, ITsiWebSearchItem, ITsiRegExportItem, ITsiRegDeleteItem, ITsiGuidItem
     {
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public UwpModeItem(MyList list, string uwpName, Guid guid) : base(list)
         {
@@ -96,7 +93,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiHandleGuid,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),

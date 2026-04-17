@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
@@ -41,11 +42,7 @@ namespace ContextMenuManager.Controls
 
         public new ShellList List;
 
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public ShellExItem(ShellList list, Guid guid, string regPath) : base(list)
         {
@@ -143,7 +140,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiHandleGuid, new RToolStripSeparator(),
                 TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
@@ -152,7 +149,7 @@ namespace ContextMenuManager.Controls
                 TsiDetails.Items.Add(item);
             }
 
-            ContextMenu.Opened += (sender, e) => TsiDeleteMe.IsEnabled = !(Guid.Equals(LnkOpenGuid) && AppConfig.ProtectOpenItem);
+            Flyout.Opened += (sender, e) => TsiDeleteMe.IsEnabled = !(Guid.Equals(LnkOpenGuid) && AppConfig.ProtectOpenItem);
             ChkVisible.PreCheckChanging += TryProtectOpenItem;
         }
 

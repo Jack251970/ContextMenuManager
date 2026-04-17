@@ -20,16 +20,11 @@ namespace ContextMenuManager.Controls
                 Image = info.Image;
                 BtnShowMenu = new MenuButton(this);
                 TsiSearch = new WebSearchMenuItem(this);
-                Control.ContextMenu = new ContextMenu();
-                Control.ContextMenu.Items.Add(TsiSearch);
+                Flyout.Items.Add(TsiSearch);
             }
         }
 
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public WebSearchMenuItem TsiSearch { get; set; }
         public MenuButton BtnShowMenu { get; set; }
@@ -87,7 +82,7 @@ namespace ContextMenuManager.Controls
                 TsiRegLocation = new RegLocationMenuItem(this);
                 foreach (var item in new Control[] { new RToolStripSeparator(), TsiRegLocation })
                 {
-                    ContextMenu.Items.Add(item);
+                    Flyout.Items.Add(item);
                 }
             }
         }
@@ -272,7 +267,7 @@ namespace ContextMenuManager.Controls
                 TsiRegLocation = new RegLocationMenuItem(this);
                 foreach (var item in new Control[] { new RToolStripSeparator(), TsiRegLocation })
                 {
-                    ContextMenu.Items.Add(item);
+                    Flyout.Items.Add(item);
                 }
                 NudValue.Maximum = rule.MaxValue;
                 NudValue.Minimum = rule.MinValue;
@@ -342,7 +337,7 @@ namespace ContextMenuManager.Controls
                 TsiRegLocation = new RegLocationMenuItem(this);
                 foreach (var item in new Control[] { new RToolStripSeparator(), TsiRegLocation })
                 {
-                    ContextMenu.Items.Add(item);
+                    Flyout.Items.Add(item);
                 }
                 LblValue.Content = ItemValue;
                 LblValue.MouseDown += (sender, e) =>

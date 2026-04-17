@@ -9,6 +9,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 using System.Xml;
 
@@ -203,11 +204,7 @@ namespace ContextMenuManager.Controls
 
         public sealed class ShellNewLockItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiWebSearchItem, ITsiRegPathItem
         {
-            public ContextMenu ContextMenu
-            {
-                get => Control.ContextMenu;
-                set => Control.ContextMenu = value;
-            }
+            public MenuFlyout Flyout { get; set; }
 
             public ShellNewLockItem(ShellNewList list) : base(list)
             {
@@ -223,7 +220,7 @@ namespace ContextMenuManager.Controls
                     TsiRegLocation = new RegLocationMenuItem(this);
                     foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(), TsiRegLocation })
                     {
-                        ContextMenu.Items.Add(item);
+                        Flyout.Items.Add(item);
                     }
                 }
             }

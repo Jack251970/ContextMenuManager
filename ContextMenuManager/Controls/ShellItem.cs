@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
@@ -425,7 +426,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiChangeText, new RToolStripSeparator(), TsiItemIcon,
                 TsiPosition, TsiOtherAttributes, new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe})
             {
-                Control.ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiChangeIcon, TsiDeleteIcon, TsiShieldIcon })
@@ -461,18 +462,14 @@ namespace ContextMenuManager.Controls
             TsiShowAsDisabled.Click += (sender, e) => ShowAsDisabledIfHidden = !TsiShowAsDisabled.Checked;
             TsiClsidLocation.Click += (sender, e) => ExternalProgram.JumpRegEdit(GuidInfo.GetClsidPath(Guid), null, AppConfig.OpenMoreRegedit);
             ChkVisible.PreCheckChanging += () => !ChkVisible.IsOn || TryProtectOpenItem();
-            Control.ContextMenu.Opened += (sender, e) => RefreshMenuItem();
+            Flyout.Opened += (sender, e) => RefreshMenuItem();
             BtnSubItems.Click += (sender, e) => ShowSubItems();
             TsiShieldIcon.Click += (sender, e) => UseShieldIcon();
             ToolTipBox.SetToolTip(BtnSubItems, AppString.Tip.EditSubItems);
             AddCtr(BtnSubItems);
         }
 
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         private void DeleteIcon()
         {

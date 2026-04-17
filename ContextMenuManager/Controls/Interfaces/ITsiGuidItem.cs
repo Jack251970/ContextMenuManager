@@ -34,7 +34,7 @@ namespace ContextMenuManager.Controls.Interfaces
             TsiBlockGuid.Click += (sender, e) => BlockGuid();
             TsiAddGuidDic.Click += (sender, e) => AddGuidDic();
             TsiClsidLocation.Click += (sender, e) => OpenClsidPath();
-            ((MyListItem)item).Control.ContextMenu.Opened += (sender, e) => RefreshMenuItem();
+            ((IBtnShowMenuItem)item).Flyout.Opened += (sender, e) => RefreshMenuItem();
         }
 
         private readonly RToolStripMenuItem TsiCopyGuid = new(AppString.Menu.CopyGuid);

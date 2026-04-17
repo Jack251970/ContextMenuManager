@@ -1,12 +1,12 @@
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.IO;
-using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls.Interfaces
 {
     internal interface ITsiAdministratorItem
     {
-        ContextMenu ContextMenu { get; set; }
+        MenuFlyout Flyout { get; set; }
         RunAsAdministratorItem TsiAdministrator { get; set; }
         ShellLink ShellLink { get; }
     }
@@ -15,7 +15,7 @@ namespace ContextMenuManager.Controls.Interfaces
     {
         public RunAsAdministratorItem(ITsiAdministratorItem item) : base(AppString.Menu.RunAsAdministrator)
         {
-            item.ContextMenu.Opened += (sender, e) =>
+            item.Flyout.Opened += (sender, e) =>
             {
                 if (item.ShellLink == null)
                 {

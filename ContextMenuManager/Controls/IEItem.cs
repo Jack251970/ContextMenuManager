@@ -3,6 +3,7 @@ using ContextMenuManager.Methods;
 using Microsoft.Win32;
 using System;
 using System.Drawing;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
@@ -12,11 +13,7 @@ namespace ContextMenuManager.Controls
     {
         public static readonly string[] MeParts = { "MenuExt", "-MenuExt" };
 
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public IEItem(MyList list, string regPath) : base(list)
         {
@@ -113,7 +110,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiChangeText,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                Control.ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),

@@ -1,5 +1,6 @@
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Linq;
 using System.Windows;
@@ -9,11 +10,7 @@ namespace ContextMenuManager.Controls
 {
     internal class GuidBlockedItem : MyListItem, IBtnShowMenuItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiGuidItem, ITsiRegPathItem
     {
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public new GuidBlockedList List;
 
@@ -98,7 +95,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] {TsiHandleGuid,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDelete })
             {
-                Control.ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch,

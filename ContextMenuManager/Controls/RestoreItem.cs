@@ -1,5 +1,6 @@
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.IO;
 using System.Windows.Controls;
 
@@ -12,11 +13,7 @@ namespace ContextMenuManager.Controls
 
     internal sealed class RestoreItem : MyListItem, IBtnShowMenuItem, ITsiFilePathItem, ITsiDeleteItem, ITsiRestoreItem
     {
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public RestoreItem(MyList list, ITsiRestoreFile item, string filePath, string deviceName, string creatTime) : base(list)
         {
@@ -63,7 +60,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiDetails, new RToolStripSeparator(),
                 TsiRestoreMe, new RToolStripSeparator(), TsiDeleteMe })
             {
-                ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             // 详细信息

@@ -1,5 +1,6 @@
 using ContextMenuManager.Controls.Interfaces;
 using ContextMenuManager.Methods;
+using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -13,11 +14,7 @@ namespace ContextMenuManager.Controls
     internal sealed class OpenWithItem : MyListItem, IChkVisibleItem, IBtnShowMenuItem, ITsiTextItem,
         ITsiCommandItem, ITsiWebSearchItem, ITsiFilePathItem, ITsiRegPathItem, ITsiRegDeleteItem, ITsiRegExportItem, ISearchable
     {
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public OpenWithItem(MyList list, string regPath) : base(list)
         {
@@ -121,7 +118,7 @@ namespace ContextMenuManager.Controls
             foreach (var item in new Control[] { TsiChangeText,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                Control.ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiSearch, new RToolStripSeparator(),
@@ -130,7 +127,7 @@ namespace ContextMenuManager.Controls
                 TsiDetails.Items.Add(item);
             }
 
-            ContextMenu.Opened += (sender, e) => TsiChangeText.IsEnabled = NameEquals;
+            Flyout.Opened += (sender, e) => TsiChangeText.IsEnabled = NameEquals;
         }
 
         public void DeleteMe()

@@ -99,7 +99,7 @@ namespace ContextMenuManager.Controls
                 };
                 if (isSelect)
                 {
-                    ContextMenu = null;
+                    Flyout = null;
                     AddCtr(chkSelected);
                     ChkVisible.Visibility = BtnShowMenu.Visibility = BtnSubItems.Visibility = Visibility.Collapsed;
                     Control.MouseLeftButtonUp += (sender, e) => chkSelected.IsChecked = !chkSelected.IsChecked;

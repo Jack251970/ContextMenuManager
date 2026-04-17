@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using iNKORE.UI.WPF.Modern.Controls;
 using System.Windows.Controls;
 
 namespace ContextMenuManager.Controls
@@ -44,11 +45,7 @@ namespace ContextMenuManager.Controls
         private static readonly string[] UnableEditDataValues = ["Directory", "FileName", "Handler", "Command"];
         private static readonly string[] UnableChangeCommandValues = ["Data", "Directory", "FileName", "Handler"];
 
-        public ContextMenu ContextMenu
-        {
-            get => Control.ContextMenu;
-            set => Control.ContextMenu = value;
-        }
+        public MenuFlyout Flyout { get; set; }
 
         public ShellNewItem(ShellNewList list, string regPath) : base(list)
         {
@@ -274,7 +271,7 @@ namespace ContextMenuManager.Controls
                 new RToolStripSeparator(), TsiChangeIcon, new RToolStripSeparator(), TsiOtherAttributes,
                 new RToolStripSeparator(), TsiDetails, new RToolStripSeparator(), TsiDeleteMe })
             {
-                Control.ContextMenu.Items.Add(item);
+                Flyout.Items.Add(item);
             }
 
             foreach (var item in new Control[] { TsiBeforeSeparator, TsiEditData })
@@ -289,7 +286,7 @@ namespace ContextMenuManager.Controls
                 TsiDetails.Items.Add(item);
             }
 
-            Control.ContextMenu.Opened += (sender, e) =>
+            Flyout.Opened += (sender, e) =>
             {
                 TsiEditData.Visible = CanEditData;
                 TsiChangeCommand.Visible = CanChangeCommand;
