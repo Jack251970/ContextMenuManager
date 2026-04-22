@@ -40,8 +40,8 @@ namespace ContextMenuManager.Views
             OpenMoreExplorerCheckBox.IsOn = AppConfig.OpenMoreExplorer;
             HideDisabledItemsCheckBox.IsOn = AppConfig.HideDisabledItems;
             HideSysStoreItemsCheckBox.IsOn = AppConfig.HideSysStoreItems;
-            DimInferredIconsCheckBox.IsOn = AppConfig.DimInferredIcons;
             StripMenuMnemonicsCheckBox.IsOn = AppConfig.StripMenuMnemonics;
+            DimInferredIconsCheckBox.IsOn = AppConfig.DimInferredIcons;
 
             var showHideSysStore = WinOsVersion.Current >= WinOsVersion.Win7;
             HideSysStoreRow.Visibility = showHideSysStore ? Visibility.Visible : Visibility.Collapsed;
@@ -112,9 +112,9 @@ namespace ContextMenuManager.Views
 
             HideSysStoreItemsLabel.Text = AppString.Other.HideSysStoreItems;
 
-            DimInferredIconsLabel.Text = AppString.Other.DimInferredIcons;
-
             StripMenuMnemonicsLabel.Text = AppString.Other.StripMenuMnemonics;
+
+            DimInferredIconsLabel.Text = AppString.Other.DimInferredIcons;
 
             LoadDynamicOptions();
         }
@@ -288,19 +288,19 @@ namespace ContextMenuManager.Views
             }
         }
 
-        private void DimInferredIconsCheckBox_OnChanged(object sender, RoutedEventArgs e)
-        {
-            if (!isLoading)
-            {
-                AppConfig.DimInferredIcons = DimInferredIconsCheckBox.IsOn;
-            }
-        }
-
         private void StripMenuMnemonicsCheckBox_OnChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoading)
             {
                 AppConfig.StripMenuMnemonics = StripMenuMnemonicsCheckBox.IsOn;
+            }
+        }
+
+        private void DimInferredIconsCheckBox_OnChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoading)
+            {
+                AppConfig.DimInferredIcons = DimInferredIconsCheckBox.IsOn;
             }
         }
 
