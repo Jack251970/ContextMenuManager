@@ -52,7 +52,7 @@ namespace ContextMenuManager.Controls
                 if (List != null)
                 {
                     Image = ItemIcon.ToBitmap();
-                    if (!HasIcon) Image = Image.ToTransparent();
+                    if (!HasIcon) Image = Image.ToInferredIcon();
                     BtnSubItems.Visibility = IsMultiItem ? Visibility.Visible : Visibility.Collapsed;
                 }
             }
@@ -291,7 +291,7 @@ namespace ContextMenuManager.Controls
             {
                 if (!TryProtectOpenItem()) return;
                 Registry.SetValue(CommandPath, "", value);
-                if (!HasIcon) Image = ItemIcon.ToBitmap().ToTransparent();
+                if (!HasIcon) Image = ItemIcon.ToBitmap().ToInferredIcon();
             }
         }
 
@@ -478,7 +478,7 @@ namespace ContextMenuManager.Controls
         {
             IconLocation = null;
             HasLUAShield = false;
-            Image = Image.ToTransparent();
+            Image = Image.ToInferredIcon();
         }
 
         private void UseShieldIcon()
@@ -494,7 +494,7 @@ namespace ContextMenuManager.Controls
                 }
                 else
                 {
-                    Image = Image.ToTransparent();
+                    Image = Image.ToInferredIcon();
                 }
             }
         }

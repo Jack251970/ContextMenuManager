@@ -291,6 +291,12 @@ namespace ContextMenuManager.Methods
             set => SetGeneralValue("StripMenuMnemonics", value ? 1 : 0);
         }
 
+        public static bool DimInferredIcons
+        {
+            get => GetGeneralValue("DimInferredIcons") != "0";
+            set => SetGeneralValue("DimInferredIcons", value ? 1 : 0);
+        }
+
         public static bool RequestUseGithub
         {
             get

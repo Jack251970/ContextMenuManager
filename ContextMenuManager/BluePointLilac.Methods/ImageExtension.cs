@@ -20,6 +20,11 @@ namespace ContextMenuManager.Methods
             return bitmap;
         }
 
+        public static Image ToInferredIcon(this Image image, float opacity = 0.5F)
+        {
+            return AppConfig.DimInferredIcons ? image.ToTransparent(opacity) : image;
+        }
+
         public static Image ResizeImage(this Image image, int width, int height)
         {
             //return image.GetThumbnailImage(width, height, null, System.IntPtr.Zero);//质量稍微低一点
