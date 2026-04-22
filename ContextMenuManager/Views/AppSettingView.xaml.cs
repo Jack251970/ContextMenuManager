@@ -40,6 +40,7 @@ namespace ContextMenuManager.Views
             OpenMoreExplorerCheckBox.IsOn = AppConfig.OpenMoreExplorer;
             HideDisabledItemsCheckBox.IsOn = AppConfig.HideDisabledItems;
             HideSysStoreItemsCheckBox.IsOn = AppConfig.HideSysStoreItems;
+            DimInferredIconsCheckBox.IsOn = AppConfig.DimInferredIcons;
 
             var showHideSysStore = WinOsVersion.Current >= WinOsVersion.Win7;
             HideSysStoreRow.Visibility = showHideSysStore ? Visibility.Visible : Visibility.Collapsed;
@@ -109,6 +110,8 @@ namespace ContextMenuManager.Views
             HideDisabledItemsLabel.Text = AppString.Other.HideDisabledItems;
 
             HideSysStoreItemsLabel.Text = AppString.Other.HideSysStoreItems;
+
+            DimInferredIconsLabel.Text = AppString.Other.DimInferredIcons;
 
             LoadDynamicOptions();
         }
@@ -279,6 +282,14 @@ namespace ContextMenuManager.Views
             if (!isLoading)
             {
                 AppConfig.HideSysStoreItems = HideSysStoreItemsCheckBox.IsOn;
+            }
+        }
+
+        private void DimInferredIconsCheckBox_OnChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoading)
+            {
+                AppConfig.DimInferredIcons = DimInferredIconsCheckBox.IsOn;
             }
         }
 
