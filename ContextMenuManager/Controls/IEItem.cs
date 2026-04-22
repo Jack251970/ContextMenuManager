@@ -31,7 +31,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 regPath = value;
-                Text = ItemText;
+                Text = ResourceString.StripMnemonics(ItemText);
                 if (List != null) Image = ItemImage;
             }
         }

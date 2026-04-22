@@ -38,7 +38,7 @@ namespace ContextMenuManager.Controls
                 if (list != null) Image = AppImage.SystemFile;
             }
 
-            Text = ItemText;
+            Text = ResourceString.StripMnemonics(ItemText);
         }
 
         public string Value { get; set; }

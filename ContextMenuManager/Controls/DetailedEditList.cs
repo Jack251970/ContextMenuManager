@@ -43,12 +43,12 @@ namespace ContextMenuManager.Controls
                     groupItem = new FoldGroupItem(this, groupXN.SelectSingleNode(attribute)?.InnerText, pathType);
                     foreach (XmlElement textXE in groupXN.SelectNodes("Text"))
                     {
-                        if (XmlDicHelper.JudgeCulture(textXE)) groupItem.Text = ResourceString.GetDirectString(textXE.GetAttribute("Value"));
+                        if (XmlDicHelper.JudgeCulture(textXE)) groupItem.Text = ResourceString.StripMnemonics(ResourceString.GetDirectString(textXE.GetAttribute("Value")));
                     }
                     if (guids.Count > 0)
                     {
                         groupItem.Control.Tag = guids;
-                        if (string.IsNullOrWhiteSpace(groupItem.Text)) groupItem.Text = GuidInfo.GetText(guids[0]);
+                        if (string.IsNullOrWhiteSpace(groupItem.Text)) groupItem.Text = ResourceString.StripMnemonics(GuidInfo.GetText(guids[0]));
                         groupItem.Image = GuidInfo.GetImage(guids[0]);
                         var filePath = GuidInfo.GetFilePath(guids[0]);
                         var clsidPath = GuidInfo.GetClsidPath(guids[0]);
@@ -95,7 +95,7 @@ namespace ContextMenuManager.Controls
                             // 获取文本、提示文本
                             foreach (XmlElement textXE in itemXE.SelectNodes("Text"))
                             {
-                                if (XmlDicHelper.JudgeCulture(textXE)) info.Text = ResourceString.GetDirectString(textXE.GetAttribute("Value"));
+                                if (XmlDicHelper.JudgeCulture(textXE)) info.Text = ResourceString.StripMnemonics(ResourceString.GetDirectString(textXE.GetAttribute("Value")));
                             }
                             foreach (XmlElement tipXE in itemXE.SelectNodes("Tip"))
                             {

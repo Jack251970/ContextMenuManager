@@ -26,7 +26,7 @@ namespace ContextMenuManager.Controls
             {
                 filePath = value;
                 if (IsShortcut) ShellLink = new ShellLink(value);
-                Text = ItemText;
+                Text = ResourceString.StripMnemonics(ItemText);
                 if (List != null) Image = ItemImage;
             }
         }
@@ -90,7 +90,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 DesktopIni.SetLocalizedFileNames(FilePath, value);
-                Text = ResourceString.GetDirectString(value);
+                Text = ResourceString.StripMnemonics(ResourceString.GetDirectString(value));
                 ExplorerRestarter.Show();
             }
         }

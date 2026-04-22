@@ -296,7 +296,7 @@
 
                     <Separator x:Name="HideSysStoreSeparator" Margin="0,0,0,16" />
 
-                    <Grid x:Name="HideSysStoreRow">
+                    <Grid x:Name="HideSysStoreRow" Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -313,6 +313,27 @@
                             OffContent=""
                             OnContent=""
                             Toggled="HideSysStoreItemsCheckBox_OnChanged" />
+                    </Grid>
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,20,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="StripMenuMnemonicsLabel" Style="{StaticResource SettingNameStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch
+                            x:Name="StripMenuMnemonicsCheckBox"
+                            Grid.Column="1"
+                            MinWidth="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            OffContent=""
+                            OnContent=""
+                            Toggled="StripMenuMnemonicsCheckBox_OnChanged" />
                     </Grid>
                 </StackPanel>
             </Border>

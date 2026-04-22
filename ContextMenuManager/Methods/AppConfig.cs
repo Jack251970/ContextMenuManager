@@ -285,6 +285,12 @@ namespace ContextMenuManager.Methods
             set => SetGeneralValue("HideSysStoreItems", value ? 1 : 0);
         }
 
+        public static bool StripMenuMnemonics
+        {
+            get => GetGeneralValue("StripMenuMnemonics") == "1";
+            set => SetGeneralValue("StripMenuMnemonics", value ? 1 : 0);
+        }
+
         public static bool RequestUseGithub
         {
             get

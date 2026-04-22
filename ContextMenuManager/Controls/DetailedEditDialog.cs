@@ -15,7 +15,7 @@ namespace ContextMenuManager.Controls
         public bool RunDialog(MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(
-                AppString.Dialog.DetailedEdit.Replace("%s", GuidInfo.GetText(GroupGuid)),
+                AppString.Dialog.DetailedEdit.Replace("%s", ResourceString.StripMnemonics(GuidInfo.GetText(GroupGuid))),
                 owner);
 
             var list = new DetailedEditList
