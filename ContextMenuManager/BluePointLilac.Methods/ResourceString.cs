@@ -24,5 +24,33 @@ namespace ContextMenuManager.Methods
             SHLoadIndirectString(resStr, outBuff, 1024, IntPtr.Zero);
             return outBuff.ToString();
         }
+
+        /// <summary>Strips Win32 menu access-key markers so the list matches what Explorer actually renders.</summary>
+        /// <param name="text">The raw menu text, typically read from the registry.</param>
+        /// <returns>The input unchanged when the setting is off or no '&amp;' is present; otherwise the text with single '&amp;' removed and '&amp;&amp;' collapsed to a literal '&amp;'.</returns>
+        /// <remarks>Leaving the setting off preserves the raw registry text for power users who want to see the mnemonic markers.</remarks>
+        public static string StripMnemonics(string text)
+        {
+            if (string.IsNullOrEmpty(text) || !AppConfig.StripMenuMnemonics) return text;
+            if (text.IndexOf('&') < 0) return text;
+
+            var sb = new StringBuilder(text.Length);
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '&')
+                {
+                    if (i + 1 < text.Length && text[i + 1] == '&')
+                    {
+                        sb.Append('&');
+                        i++;
+                    }
+                }
+                else
+                {
+                    sb.Append(text[i]);
+                }
+            }
+            return sb.ToString();
+        }
     }
 }

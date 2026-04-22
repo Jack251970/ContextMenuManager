@@ -68,7 +68,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 regPath = value;
-                Text = ItemText;
+                Text = ResourceString.StripMnemonics(ItemText);
                 if (List != null) Image = ItemIcon.ToBitmap();
             }
         }
@@ -141,7 +141,7 @@ namespace ContextMenuManager.Controls
             {
                 RegistryEx.DeleteValue(RegPath, "MenuText");
                 Registry.SetValue(DefaultOpenModePath, "FriendlyTypeName", value);
-                Text = ResourceString.GetDirectString(value);
+                Text = ResourceString.StripMnemonics(ResourceString.GetDirectString(value));
             }
         }
 

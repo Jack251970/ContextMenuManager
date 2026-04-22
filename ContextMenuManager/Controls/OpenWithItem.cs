@@ -33,7 +33,7 @@ namespace ContextMenuManager.Controls
             {
                 regPath = value;
                 ItemFilePath = ObjectPath.ExtractFilePath(ItemCommand);
-                Text = ItemText;
+                Text = ResourceString.StripMnemonics(ItemText);
                 if (List != null) Image = ItemIcon.ToBitmap();
             }
         }
@@ -60,7 +60,7 @@ namespace ContextMenuManager.Controls
             set
             {
                 Registry.SetValue(AppPath, "FriendlyAppName", value);
-                Text = ResourceString.GetDirectString(value);
+                Text = ResourceString.StripMnemonics(ResourceString.GetDirectString(value));
             }
         }
 

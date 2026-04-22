@@ -26,7 +26,7 @@ namespace ContextMenuManager.Controls
                     {
                         if (XmlDicHelper.JudgeCulture(textXE))
                         {
-                            text = ResourceString.GetDirectString(textXE.GetAttribute("Value"));
+                            text = ResourceString.StripMnemonics(ResourceString.GetDirectString(textXE.GetAttribute("Value")));
                         }
                     }
                     if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(text)) continue;
@@ -72,7 +72,7 @@ namespace ContextMenuManager.Controls
                 foreach (XmlElement szXE in itemXE.SelectNodes("Value/REG_SZ"))
                 {
                     if (!XmlDicHelper.JudgeCulture(szXE)) continue;
-                    if (szXE.HasAttribute("MUIVerb")) item.Text = ResourceString.GetDirectString(szXE.GetAttribute("MUIVerb"));
+                    if (szXE.HasAttribute("MUIVerb")) item.Text = ResourceString.StripMnemonics(ResourceString.GetDirectString(szXE.GetAttribute("MUIVerb")));
                     if (szXE.HasAttribute("Icon")) item.Image = ResourceIcon.GetIcon(szXE.GetAttribute("Icon"))?.ToBitmap();
                     else if (szXE.HasAttribute("HasLUAShield")) item.Image = AppImage.Shield;
                 }
@@ -101,7 +101,7 @@ namespace ContextMenuManager.Controls
                     }
                 }
                 item.Image ??= AppImage.NotFound;
-                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = keyName;
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = ResourceString.StripMnemonics(keyName);
                 var tip = "";
                 foreach (XmlElement tipXE in itemXE.SelectNodes("Tip"))
                 {
@@ -137,10 +137,10 @@ namespace ContextMenuManager.Controls
                 {
                     if (XmlDicHelper.JudgeCulture(textXE))
                     {
-                        item.Text = ResourceString.GetDirectString(textXE.InnerText);
+                        item.Text = ResourceString.StripMnemonics(ResourceString.GetDirectString(textXE.InnerText));
                     }
                 }
-                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = GuidInfo.GetText(guid);
+                if (string.IsNullOrWhiteSpace(item.Text)) item.Text = ResourceString.StripMnemonics(GuidInfo.GetText(guid));
                 if (string.IsNullOrWhiteSpace(item.DefaultKeyName)) item.DefaultKeyName = guid.ToString("B");
                 var tip = "";
                 foreach (XmlElement tipXE in itemXN.SelectNodes("Tip"))

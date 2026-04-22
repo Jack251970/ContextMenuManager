@@ -19,7 +19,7 @@ namespace ContextMenuManager.Controls
         {
             Guid = guid;
             UwpName = uwpName;
-            Text = ItemText;
+            Text = ResourceString.StripMnemonics(ItemText);
             if (list != null)
             {
                 InitializeComponents();

@@ -378,6 +378,7 @@ namespace ContextMenuManager.Methods
             public static string OpenMoreExplorer { get; set; }
             public static string HideDisabledItems { get; set; }
             public static string HideSysStoreItems { get; set; }
+            public static string StripMenuMnemonics { get; set; }
             public static string DimInferredIcons { get; set; }
             public static string SetPerceivedType { get; set; }
             public static string SetDefaultDropEffect { get; set; }

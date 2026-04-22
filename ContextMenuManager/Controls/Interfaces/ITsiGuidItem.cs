@@ -96,7 +96,7 @@ namespace ContextMenuManager.Controls.Interfaces
                 {
                     writer.DeleteSection(section);
                     GuidInfo.RemoveDic(Item.Guid);
-                    listItem.Text = Item.ItemText;
+                    listItem.Text = ResourceString.StripMnemonics(Item.ItemText);
                     listItem.Image = GuidInfo.GetImage(Item.Guid);
                 }
                 return;
@@ -117,7 +117,7 @@ namespace ContextMenuManager.Controls.Interfaces
                 GuidInfo.RemoveDic(Item.Guid);
                 writer.SetValue(section, "Text", dlg.ItemText);
                 writer.SetValue(section, "Icon", dlg.ItemIconLocation);
-                listItem.Text = dlg.ItemText;
+                listItem.Text = ResourceString.StripMnemonics(dlg.ItemText);
                 listItem.Image = dlg.ItemIcon;
             }
         }

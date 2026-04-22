@@ -16,7 +16,7 @@ namespace ContextMenuManager.Controls
             RestartExplorer = info.RestartExplorer;
             if (list != null)
             {
-                Text = info.Text;
+                Text = ResourceString.StripMnemonics(info.Text);
                 Image = info.Image;
                 BtnShowMenu = new MenuButton(this);
                 TsiSearch = new WebSearchMenuItem(this);

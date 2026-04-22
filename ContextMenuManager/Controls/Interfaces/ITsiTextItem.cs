@@ -15,7 +15,7 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             Click += (sender, e) =>
             {
-                var name = ChangeText(item.Text);
+                var name = ChangeText(item.ItemText ?? item.Text);
                 if (name != null) item.ItemText = name;
             };
         }
