@@ -47,13 +47,6 @@
   <img alt="运行截图" src="./Screenshot/Screenshot.png">
 </picture>
 
-## 🔣 资源引用
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./Screenshot/AppImage-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="./Screenshot/AppImage.png">
-  <img alt="资源引用" src="./Screenshot/AppImage.png">
-</picture>
-
 ## 🪧 温馨提示
 * 程序需要对大量的注册表项和文件进行读写删改操作，这些行为比较敏感，可能会被 Windows Defender 等误报为病毒，如发生此情况请自行添加进白名单。
 
