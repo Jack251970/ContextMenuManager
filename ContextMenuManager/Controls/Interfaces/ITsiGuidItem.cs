@@ -245,9 +245,9 @@ namespace ContextMenuManager.Controls.Interfaces
         }
     }
 
-    internal sealed class DetailedEditButton : PictureButton
+    internal sealed class DetailedEditButton : GlyphButton
     {
-        public DetailedEditButton(ITsiGuidItem item) : base(AppImage.SubItems)
+        public DetailedEditButton(ITsiGuidItem item) : base(AppGlyphs.SubItems)
         {
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);

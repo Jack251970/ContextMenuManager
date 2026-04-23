@@ -1,10 +1,14 @@
 using ContextMenuManager.Methods;
+using FluentIcons.Common;
+using FluentIcons.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
+using WpfImage = System.Windows.Controls.Image;
 
 namespace ContextMenuManager.Controls
 {
@@ -124,7 +128,7 @@ namespace ContextMenuManager.Controls
         public MyUserControl Control { get; protected set; }
 
         protected readonly Grid grid;
-        protected readonly Image imgIcon;
+        protected readonly Border iconHost;
         protected readonly TextBlock txtTitle;
         protected readonly StackPanel flpControls;
 
@@ -141,7 +145,7 @@ namespace ContextMenuManager.Controls
                 };
 
                 grid = new();
-                imgIcon = new() { Width = 32, Height = 32, Margin = new Thickness(20, 0, 10, 0) };
+                iconHost = new() { Width = 32, Height = 32, Margin = new Thickness(20, 0, 10, 0) };
                 txtTitle = new() { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) };
                 flpControls = new() { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 20, 0) };
 
@@ -150,11 +154,11 @@ namespace ContextMenuManager.Controls
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-                Grid.SetColumn(imgIcon, 0);
+                Grid.SetColumn(iconHost, 0);
                 Grid.SetColumn(txtTitle, 1);
                 Grid.SetColumn(flpControls, 2);
 
-                grid.Children.Add(imgIcon);
+                grid.Children.Add(iconHost);
                 grid.Children.Add(txtTitle);
                 grid.Children.Add(flpControls);
 
@@ -172,8 +176,35 @@ namespace ContextMenuManager.Controls
             set
             {
                 _image = value;
-                if (value != null) imgIcon.Source = value.ToBitmapSource();
-                else imgIcon.Source = null;
+                _glyph = null;
+                if (value != null) iconHost.Child = new WpfImage { Source = value.ToBitmapSource(), Stretch = Stretch.Uniform };
+                else iconHost.Child = null;
+            }
+        }
+
+        private Icon? _glyph;
+        public Icon? Glyph
+        {
+            get => _glyph;
+            set
+            {
+                _glyph = value;
+                _image = null;
+                if (value.HasValue)
+                {
+                    var icon = new FluentIcon
+                    {
+                        Icon = value.Value,
+                        IconSize = IconSize.Size24,
+                        FontSize = 28,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                    };
+                    icon.SetBinding(System.Windows.Controls.Control.ForegroundProperty, new Binding(nameof(TextBlock.Foreground)) { Source = txtTitle });
+                    iconHost.Child = icon;
+                }
+                else
+                    iconHost.Child = null;
             }
         }
 
@@ -205,8 +236,8 @@ namespace ContextMenuManager.Controls
 
         public bool HasImage
         {
-            get => imgIcon.Visibility == Visibility.Visible;
-            set => imgIcon.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+            get => iconHost.Visibility == Visibility.Visible;
+            set => iconHost.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void Dispose()

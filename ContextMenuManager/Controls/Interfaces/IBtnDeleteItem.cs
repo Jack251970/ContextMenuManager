@@ -9,9 +9,9 @@ namespace ContextMenuManager.Controls.Interfaces
         void DeleteMe();
     }
 
-    internal sealed class DeleteButton : PictureButton
+    internal sealed class DeleteButton : GlyphButton
     {
-        public DeleteButton(IBtnDeleteItem item) : base(AppImage.Delete)
+        public DeleteButton(IBtnDeleteItem item) : base(AppGlyphs.Delete)
         {
             var listItem = (MyListItem)item;
             listItem.AddCtr(this);

@@ -374,7 +374,7 @@ namespace ContextMenuManager.Controls
         public DeleteMeMenuItem TsiDeleteMe { get; set; }
         public RegExportMenuItem TsiRegExport { get; set; }
 
-        protected PictureButton BtnSubItems;
+        protected GlyphButton BtnSubItems;
         protected RToolStripMenuItem TsiOtherAttributes;
         private RToolStripMenuItem TsiItemIcon;
         private RToolStripMenuItem TsiDeleteIcon;
@@ -405,7 +405,7 @@ namespace ContextMenuManager.Controls
             TsiRegExport = new RegExportMenuItem(this);
             TsiDeleteMe = new DeleteMeMenuItem(this);
 
-            BtnSubItems = new(AppImage.SubItems);
+            BtnSubItems = new(AppGlyphs.SubItems);
             TsiOtherAttributes = new(AppString.Menu.OtherAttributes);
             TsiItemIcon = new(AppString.Menu.ItemIcon);
             TsiDeleteIcon = new(AppString.Menu.DeleteIcon);

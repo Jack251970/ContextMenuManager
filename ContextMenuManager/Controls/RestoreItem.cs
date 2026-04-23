@@ -26,7 +26,7 @@ namespace ContextMenuManager.Controls
                 restoreInterface = item;
                 FilePath = filePath;
                 Text = AppString.Other.RestoreItemText.Replace("%device", deviceName).Replace("%time", creatTime);
-                Image = AppImage.BackupItem;
+                Glyph = AppGlyphs.BackupItem;
             }
         }
 

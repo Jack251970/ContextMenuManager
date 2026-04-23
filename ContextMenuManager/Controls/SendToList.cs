@@ -57,7 +57,7 @@ namespace ContextMenuManager.Controls
                 Text = Path.GetFileNameWithoutExtension(SendToPath),
                 Image = ResourceIcon.GetFolderIcon(SendToPath).ToBitmap()
             };
-            var btnPath = new PictureButton(AppImage.Open);
+            var btnPath = new GlyphButton(AppGlyphs.Open);
             ToolTipBox.SetToolTip(btnPath, AppString.Menu.FileLocation);
             btnPath.Click += (sender, e) => ExternalProgram.OpenDirectory(SendToPath);
             item.AddCtr(btnPath);
