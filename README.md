@@ -1,7 +1,7 @@
 **简体中文** | **[English](README-en.md)**
 
 <div align="center">
-    <img width="700" src="/Logo/Logo.png"></img>
+    <img width="700" src="./Logo/Logo.png"></img>
 </div>
 <h1 align="center">ContextMenuManager</h1>
 <h4 align="center">一个纯粹的Windows右键菜单管理器，支持 Windows 7 ~ 11</h4>
@@ -19,7 +19,6 @@
 
 ## 💕 特别感谢
 * 本项目基于 [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager) 进行开发，感谢作者 [蓝点lilac](https://github.com/BluePointLilac)！
-* 感谢由 [澜芸](https://github.com/LanYun2022) 制作的的新图标！
 
 ## 🚀 程序下载
 * [最新版本][Latest]<br>

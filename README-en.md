@@ -1,7 +1,7 @@
 **[简体中文](README.md)** | **English**
 
 <div align="center">
-    <img width="700" src="/Logo/Logo.png"></img>
+    <img width="700" src="./Logo/Logo-en.png"></img>
 </div>
 <h1 align="center">ContextMenuManager</h1>
 <h4 align="center">A program to manage the Windows right-click context menu with support of Windows 7 - 11</h4>
@@ -19,7 +19,6 @@
 
 ## 💕 Thanks
 * This project is based on [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager), thanks to [蓝点lilac](https://github.com/BluePointLilac)!
-* Thanks to [澜芸](https://github.com/LanYun2022) for new icons!
 
 ## 🚀 Download
 * [Latest Version][Latest]<br>

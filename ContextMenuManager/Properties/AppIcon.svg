@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- Base mouse body gradient -->
+    <linearGradient id="bodyGrad" x1="0%" y1="40%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B00" />
+      <stop offset="100%" stop-color="#A32900" />
+    </linearGradient>
+
+    <!-- Left button gradient (Main click - standard orange) -->
+    <linearGradient id="leftBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9B3D" />
+      <stop offset="100%" stop-color="#FF6B00" />
+    </linearGradient>
+
+    <!-- Right button gradient (Context Menu Trigger - vibrant yellow-orange) -->
+    <linearGradient id="rightBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD659" />
+      <stop offset="100%" stop-color="#FF8C00" />
+    </linearGradient>
+
+    <!-- Scroll wheel gradient -->
+    <linearGradient id="wheelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#FFE8D6" />
+      <stop offset="100%" stop-color="#FFB380" />
+    </linearGradient>
+    <clipPath id="mouseClip">
+      <rect x="68" y="38" width="120" height="180" rx="60" />
+    </clipPath>
+  </defs>
+
+  <g transform="scale(1.4222222) translate(-38, -38)">
+    <!-- Mouse Base -->
+    <rect x="68" y="38" width="120" height="180" rx="60" fill="url(#bodyGrad)" />
+
+    <!-- Grooves for buttons (Dark Orange) -->
+    <g clip-path="url(#mouseClip)">
+      <line x1="128" y1="20" x2="128" y2="113" stroke="#8A2200" stroke-width="6" />
+      <line x1="68" y1="113" x2="188" y2="113" stroke="#8A2200" stroke-width="6" />
+    </g>
+    
+    <!-- Left Button -->
+    <path d="M 125 38.08 A 60 60 0 0 0 68 98 V 110 H 125 Z" fill="url(#leftBtnGrad)" />
+
+    <!-- Right Button -->
+    <path d="M 131 38.08 A 60 60 0 0 1 188 98 V 110 H 131 Z" fill="url(#rightBtnGrad)" />
+
+    <!-- Scroll Wheel Hole -->
+    <rect x="120" y="52" width="16" height="38" rx="8" fill="#5A1500" />
+
+    <!-- Scroll Wheel -->
+    <rect x="123" y="56" width="10" height="30" rx="5" fill="url(#wheelGrad)" />
+  </g>
+</svg>
