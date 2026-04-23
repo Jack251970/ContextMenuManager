@@ -34,7 +34,7 @@ namespace ContextMenuManager.Controls
             {
                 cmbDic = new()
                 {
-                    Width = 120
+                    MinWidth = 120
                 };
 
                 Text = AppString.Other.SwitchDictionaries;

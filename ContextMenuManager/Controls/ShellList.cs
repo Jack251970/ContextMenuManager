@@ -1025,7 +1025,7 @@ namespace ContextMenuManager.Controls
 
             private readonly ComboBox cmbDic = new()
             {
-                Width = 220
+                MinWidth = 220
             };
         }
     }
