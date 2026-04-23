@@ -49,13 +49,6 @@
   <img alt="Screenshots" src="./Screenshot/Screenshot-en.png">
 </picture>
 
-## 🔣 Resources
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./Screenshot/AppImage-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="./Screenshot/AppImage.png">
-  <img alt="Resources" src="./Screenshot/AppImage.png">
-</picture>
-
 ## 🪧 Notices
 * The program needs to read, write and delete a lot of registry entries and files, these behaviours are sensitive and may be mistakenly reported as viruses by Windows Defender, etc. If this happens, please add it to the whitelist by yourself.
 
