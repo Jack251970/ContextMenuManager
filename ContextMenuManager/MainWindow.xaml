@@ -32,7 +32,6 @@
             AlwaysShowHeader="False"
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
-            OpenPaneLength="185"
             SelectionChanged="NavView_SelectionChanged">
 
             <!--  Main content area  -->

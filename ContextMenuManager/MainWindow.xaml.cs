@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using DrawingSize = System.Drawing.Size;
 
 namespace ContextMenuManager
@@ -63,6 +64,7 @@ namespace ContextMenuManager
 
             // Populate navigation items from AppString
             BuildNavigation();
+            AdjustPaneWidthToContent();
 
             // First-run language download prompt
             Loaded += (_, _) => FirstRunDownloadLanguage();
@@ -147,6 +149,50 @@ namespace ContextMenuManager
             {
                 NavView.SelectedItem = item;
             }
+        }
+
+        // Sizes OpenPaneLength to fit the widest item label so translations don't get clipped.
+        // Chrome values are measured against iNKORE.UI.WPF.Modern v0.10.2's NavigationViewItem template
+        // (Segoe UI 14pt): an item's rendered width = LPad + content + RPad, where LPad/RPad depend
+        // on whether the item has an icon or an expand chevron.
+        private void AdjustPaneWidthToContent()
+        {
+            const double chevronChrome = 100;  // expandable parent (icon + chevron slot)
+            const double iconChrome = 74;      // leaf with icon (footer items)
+            const double plainChrome = 67;     // nested leaf, no icon
+            const double minPaneLength = 185;
+            const double maxPaneLength = 400;
+
+            var typeface = new Typeface(NavView.FontFamily, NavView.FontStyle, NavView.FontWeight, NavView.FontStretch);
+            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            var fontSize = NavView.FontSize > 0 ? NavView.FontSize : 14;
+
+            double maxRequired = 0;
+            foreach (var item in EnumerateNavigationItems())
+            {
+                if (item.Content is not string text || text.Length == 0) continue;
+
+                double chrome = item.MenuItems.Count > 0 ? chevronChrome
+                              : item.Icon != null ? iconChrome
+                              : plainChrome;
+
+                var ft = new FormattedText(
+                    text,
+                    CultureInfo.CurrentUICulture,
+                    FlowDirection.LeftToRight,
+                    typeface,
+                    fontSize,
+                    Brushes.Black,
+                    pixelsPerDip);
+
+                double required = ft.Width + chrome;
+                if (required > maxRequired) maxRequired = required;
+            }
+
+            NavView.OpenPaneLength = Math.Clamp(
+                Math.Ceiling(maxRequired),
+                minPaneLength,
+                maxPaneLength);
         }
 
         private static NavigationViewItem MakeSectionItem(string content, string glyph)
