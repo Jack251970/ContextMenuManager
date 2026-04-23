@@ -9,9 +9,9 @@ namespace ContextMenuManager.Controls.Interfaces
         MenuButton BtnShowMenu { get; set; }
     }
 
-    internal sealed class MenuButton : PictureButton
+    internal sealed class MenuButton : GlyphButton
     {
-        public MenuButton(IBtnShowMenuItem item) : base(AppImage.Setting)
+        public MenuButton(IBtnShowMenuItem item) : base(AppGlyphs.Setting)
         {
             item.ContextMenu = new ContextMenu();
             ((MyListItem)item).AddCtr(this);

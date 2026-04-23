@@ -493,7 +493,7 @@ namespace ContextMenuManager.Controls
                 Scene = scene;
                 if (list != null)
                 {
-                    BtnSelect = new(AppImage.Select);
+                    BtnSelect = new(AppGlyphs.Select);
                     AddCtr(BtnSelect);
                     SetTextAndTip();
                     SetImage();
@@ -502,7 +502,7 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            private readonly PictureButton BtnSelect;
+            private readonly GlyphButton BtnSelect;
 
             public Scenes Scene { get; private set; }
             public string SelectedPath { get; set; }
@@ -563,7 +563,7 @@ namespace ContextMenuManager.Controls
                             Image = icon?.ToBitmap();
                         break;
                 }
-                Image ??= AppImage.Custom;
+                if (Image == null) Glyph = AppGlyphs.Custom;
             }
 
             private void ShowSelectDialog()
@@ -708,7 +708,7 @@ namespace ContextMenuManager.Controls
             {
                 if (list != null)
                 {
-                    btnJump = new(AppImage.Jump);
+                    btnJump = new(AppGlyphs.Jump);
 
                     System.Drawing.Image image = null;
                     string[] txts = null;
@@ -782,7 +782,7 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            private readonly PictureButton btnJump;
+            private readonly GlyphButton btnJump;
 
             public static string Extension = null;
             public static string PerceivedType = null;
@@ -794,8 +794,8 @@ namespace ContextMenuManager.Controls
             if (scenePath == null) return;
             var shellPath = GetShellPath(scenePath);
             var newItem = new NewItem(this);
-            var btnAddExisting = new PictureButton(AppImage.AddExisting);
-            var btnEnhanceMenu = new PictureButton(AppImage.Enhance);
+            var btnAddExisting = new GlyphButton(AppGlyphs.AddExisting);
+            var btnEnhanceMenu = new GlyphButton(AppGlyphs.Enhance);
             ToolTipBox.SetToolTip(btnAddExisting, AppString.Tip.AddFromPublic);
             ToolTipBox.SetToolTip(btnEnhanceMenu, AppString.StatusBar.EnhanceMenu);
             if (Scene == Scenes.DragDrop || ShellItem.CommandStorePath.Equals(shellPath,
@@ -978,7 +978,7 @@ namespace ContextMenuManager.Controls
                 if (list != null)
                 {
                     Text = AppString.Menu.SwitchUserContextMenuStyle;
-                    Image = AppImage.ContextMenuStyle;
+                    Glyph = AppGlyphs.ContextMenuStyle;
                     AddCtr(cmbDic);
 
                     cmbDic.Items.Add(AppString.Menu.Win11DefaultContextMenuStyle);

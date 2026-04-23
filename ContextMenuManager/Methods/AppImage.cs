@@ -5,48 +5,8 @@ namespace ContextMenuManager.Methods
 {
     internal static class AppImage
     {
-        ///<summary>设置按钮</summary>
-        public static readonly Image Setting = AppResources.Setting;
-        ///<summary>编辑子项</summary>
-        public static readonly Image SubItems = AppResources.SubItems;
-        ///<summary>删除</summary>
-        public static readonly Image Delete = AppResources.Delete;
-        ///<summary>添加</summary>
-        public static readonly Image AddNewItem = AppResources.Add;
-        ///<summary>添加已有项目</summary>
-        public static readonly Image AddExisting = AppResources.AddExisting;
-        ///<summary>添加分割线</summary>
-        public static readonly Image AddSeparator = AppResources.AddSeparator;
-        ///<summary>添加增强菜单</summary>
-        public static readonly Image Enhance = AppResources.Enhance;
-        ///<summary>打开</summary>
-        public static readonly Image Open = AppResources.Open;
-        ///<summary>菜单风格</summary>
-        public static readonly Image ContextMenuStyle = AppResources.ContextMenuStyle;
-        ///<summary>排序</summary>
-        public static readonly Image Sort = AppResources.Sort;
-        ///<summary>上</summary>
-        public static readonly Image Up = AppResources.Up;
-        ///<summary>下</summary>
-        public static readonly Image Down = AppResources.Down;
-        ///<summary>新建项目</summary>
-        public static readonly Image NewItem = AppResources.NewItem;
-        ///<summary>备份项目</summary>
-        public static readonly Image BackupItem = AppResources.BackupItem;
-        ///<summary>新建文件夹</summary>
-        public static readonly Image NewFolder = AppResources.NewFolder;
-        ///<summary>自定义</summary>
-        public static readonly Image Custom = AppResources.Custom;
-        ///<summary>选择</summary>
-        public static readonly Image Select = AppResources.Select;
-        ///<summary>跳转</summary>
-        public static readonly Image Jump = AppResources.Jump;
         ///<summary>Microsoft Store</summary>
         public static readonly Image MicrosoftStore = AppResources.MicrosoftStore;
-        ///<summary>用户</summary>
-        public static readonly Image User = AppResources.User;
-        ///<summary>网络</summary>
-        public static readonly Image Web = AppResources.Web;
         ///<summary>系统文件</summary>
         public static readonly Image SystemFile = GetIconImage("imageres.dll", -67);
         ///<summary>资源不存在</summary>

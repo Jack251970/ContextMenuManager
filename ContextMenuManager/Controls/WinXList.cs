@@ -194,7 +194,7 @@ namespace ContextMenuManager.Controls
         {
             var newItem = new NewItem(this);
             AddItem(newItem);
-            var btnCreateDir = new PictureButton(AppImage.NewFolder);
+            var btnCreateDir = new GlyphButton(AppGlyphs.NewFolder);
             ToolTipBox.SetToolTip(btnCreateDir, AppString.Tip.CreateGroup);
             newItem.AddCtr(btnCreateDir);
             btnCreateDir.Click += (sender, e) => CreateNewGroup();
@@ -305,7 +305,7 @@ namespace ContextMenuManager.Controls
                     chkWinXSortable = new();
 
                     Text = AppString.Other.WinXSortable;
-                    Image = AppImage.Sort;
+                    Glyph = AppGlyphs.Sort;
                     AddCtr(chkWinXSortable);
                     chkWinXSortable.IsOn = AppConfig.WinXSortable;
 

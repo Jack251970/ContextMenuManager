@@ -20,7 +20,7 @@ namespace ContextMenuManager.Controls
         public override void Indent()
         {
             var w = 40;
-            if (HasImage) imgIcon.Margin = new Thickness(imgIcon.Margin.Left + w, imgIcon.Margin.Top, imgIcon.Margin.Right, imgIcon.Margin.Bottom);
+            if (HasImage) iconHost.Margin = new Thickness(iconHost.Margin.Left + w, iconHost.Margin.Top, iconHost.Margin.Right, iconHost.Margin.Bottom);
             else txtTitle.Margin = new Thickness(txtTitle.Margin.Left + w, txtTitle.Margin.Top, txtTitle.Margin.Right, txtTitle.Margin.Bottom);
         }
     }
@@ -49,8 +49,8 @@ namespace ContextMenuManager.Controls
             set => Control.ContextMenu = value;
         }
 
-        private readonly PictureButton btnFold;
-        private readonly PictureButton btnOpenPath;
+        private readonly GlyphButton btnFold;
+        private readonly GlyphButton btnOpenPath;
         private readonly RToolStripMenuItem tsiFoldAll;
         private readonly RToolStripMenuItem tsiUnfoldAll;
 
@@ -58,9 +58,9 @@ namespace ContextMenuManager.Controls
         {
             if (list != null)
             {
-                btnFold = new PictureButton(AppImage.Up);
+                btnFold = new GlyphButton(AppGlyphs.Up);
                 BtnShowMenu = new MenuButton(this);
-                btnOpenPath = new PictureButton(AppImage.Open);
+                btnOpenPath = new GlyphButton(AppGlyphs.Open);
 
                 tsiFoldAll = new(AppString.Menu.FoldAll);
                 tsiUnfoldAll = new(AppString.Menu.UnfoldAll);
@@ -137,7 +137,7 @@ namespace ContextMenuManager.Controls
 
         private void FoldMe(bool isFold)
         {
-            btnFold.BaseImage = isFold ? AppImage.Down : AppImage.Up;
+            btnFold.Icon = isFold ? AppGlyphs.Down : AppGlyphs.Up;
             foreach (var ctr in List.Controls)
             {
                 if (ctr.Item is FoldSubItem item && item.FoldGroupItem == this) item.Visible = !isFold;

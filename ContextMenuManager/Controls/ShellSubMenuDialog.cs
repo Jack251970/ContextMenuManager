@@ -564,8 +564,8 @@ namespace ContextMenuManager.Controls
             {
                 if (list != null)
                 {
-                    btnAddExisting = new(AppImage.AddExisting);
-                    btnAddSeparator = new(AppImage.AddSeparator);
+                    btnAddExisting = new(AppGlyphs.AddExisting);
+                    btnAddSeparator = new(AppGlyphs.AddSeparator);
 
                     AddCtrs([btnAddExisting, btnAddSeparator]);
                     ToolTipBox.SetToolTip(btnAddExisting, isPublic ? AppString.Tip.AddReference : AppString.Tip.AddFromParentMenu);
@@ -576,8 +576,8 @@ namespace ContextMenuManager.Controls
 
             }
 
-            private readonly PictureButton btnAddExisting;
-            private readonly PictureButton btnAddSeparator;
+            private readonly GlyphButton btnAddExisting;
+            private readonly GlyphButton btnAddSeparator;
 
             public Action AddExisting;
             public Action AddSeparator;

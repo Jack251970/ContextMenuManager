@@ -12,7 +12,7 @@ namespace ContextMenuManager.Controls
             if (list != null)
             {
                 Text = text;
-                Image = AppImage.NewItem;
+                Glyph = AppGlyphs.NewItem;
                 AddCtr(BtnAddNewItem);
                 ToolTipBox.SetToolTip(BtnAddNewItem, text);
                 BtnAddNewItem.Click += (sender, e) => AddNewItem?.Invoke();
@@ -21,6 +21,6 @@ namespace ContextMenuManager.Controls
         }
 
         public Action AddNewItem;
-        private readonly PictureButton BtnAddNewItem = new(AppImage.AddNewItem);
+        private readonly GlyphButton BtnAddNewItem = new(AppGlyphs.Add);
     }
 }

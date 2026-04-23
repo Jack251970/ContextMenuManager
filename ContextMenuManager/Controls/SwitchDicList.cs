@@ -60,7 +60,7 @@ namespace ContextMenuManager.Controls
                 if (useUserDic == value) return;
                 var flag = useUserDic == null;
                 useUserDic = value;
-                Image = UseUserDic ? AppImage.User : AppImage.Web;
+                Glyph = UseUserDic ? AppGlyphs.User : AppGlyphs.Web;
                 cmbDic?.SelectedIndex = value ? 1 : 0;
                 if (!flag) UseDicChanged?.Invoke();
             }
