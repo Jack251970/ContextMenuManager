@@ -19,6 +19,7 @@
 
 ## 💕 特别感谢
 * 本项目基于 [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager) 进行开发，感谢作者 [蓝点lilac](https://github.com/BluePointLilac)！
+* 感谢由 [澜芸](https://github.com/LanYun2022) 与 [KamilDev](https://github.com/KamilDev) 制作的的新图标！
 
 ## 🚀 程序下载
 * [最新版本][Latest]<br>

@@ -19,6 +19,7 @@
 
 ## 💕 Thanks
 * This project is based on [https://github.com/BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager), thanks to [蓝点lilac](https://github.com/BluePointLilac)!
+* Thanks to [澜芸](https://github.com/LanYun2022) and [KamilDev](https://github.com/KamilDev) for new icons!
 
 ## 🚀 Download
 * [Latest Version][Latest]<br>
