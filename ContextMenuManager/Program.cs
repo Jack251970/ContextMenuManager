@@ -1,7 +1,6 @@
 using ContextMenuManager.Controls;
 using ContextMenuManager.Methods;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace ContextMenuManager
@@ -44,20 +43,22 @@ namespace ContextMenuManager
                 var restoreMode = (RestoreMode)AppConfig.LogonRestoreMode;
 
                 if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-                    return;
+                    throw new FileNotFoundException("Logon restore file not found.", filePath);
 
                 var sceneTexts = LogonTaskHelper.ParseSceneTexts(scenesStr);
                 if (sceneTexts.Count == 0)
-                    return;
+                    throw new InvalidDataException("No valid scenes specified for logon restore.");
 
                 BackupList.LoadBackupDataMetaData(filePath);
                 if (BackupList.metaData == null
                     || BackupList.metaData.Version <= BackupHelper.DeprecatedBackupVersion)
-                    return;
+                    throw new InvalidDataException("Backup file is of an unsupported version.");
 
                 var helper = new BackupHelper();
                 var silentReporter = new LoadingDialogInterface();
                 helper.RestoreItems(filePath, sceneTexts, restoreMode, silentReporter);
+
+                var restoreList = helper.restoreList ?? throw new InvalidDataException("Failed to parse restore items from backup file.");
             }
             catch
             {
