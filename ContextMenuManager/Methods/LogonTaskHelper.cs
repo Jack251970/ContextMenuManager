@@ -1,5 +1,7 @@
+using Microsoft.Win32.TaskScheduler;
 using System;
 using System.Diagnostics;
+using System.Security.Principal;
 
 namespace ContextMenuManager.Methods
 {
@@ -8,23 +10,22 @@ namespace ContextMenuManager.Methods
     {
         public const string TaskName = "ContextMenuManager_LogonRestore";
         public const string LogonRestoreArg = "/logon-restore";
+        private const string LogonTaskDesc = "Restores the context menu backup automatically when the user logs on.";
+
+        /// <summary>Returns true if the current process is running with administrator privileges.</summary>
+        public static bool IsAdministrator()
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
 
         /// <summary>Returns true if the logon-restore scheduled task currently exists.</summary>
         public static bool IsTaskEnabled()
         {
             try
             {
-                using var process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "schtasks.exe",
-                    Arguments = $"/query /tn \"{TaskName}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                });
-                process?.WaitForExit();
-                return process?.ExitCode == 0;
+                return TaskService.Instance.FindTask(TaskName) != null;
             }
             catch
             {
@@ -32,7 +33,7 @@ namespace ContextMenuManager.Methods
             }
         }
 
-        /// <summary>Creates the logon-restore scheduled task that runs this executable on user logon.</summary>
+        /// <summary>Creates (or replaces) the logon-restore scheduled task.</summary>
         public static bool EnableTask()
         {
             try
@@ -40,21 +41,28 @@ namespace ContextMenuManager.Methods
                 var appPath = Process.GetCurrentProcess().MainModule?.FileName;
                 if (string.IsNullOrEmpty(appPath)) return false;
 
-                // Build the task command – the path is quoted in case it contains spaces.
-                var taskCommand = $"\\\"{appPath}\\\" {LogonRestoreArg}";
-                var arguments = $"/create /tn \"{TaskName}\" /tr \"{taskCommand}\" /sc ONLOGON /rl HIGHEST /f";
-
-                using var process = Process.Start(new ProcessStartInfo
+                using var td = TaskService.Instance.NewTask();
+                td.RegistrationInfo.Description = LogonTaskDesc;
+                td.Triggers.Add(new LogonTrigger
                 {
-                    FileName = "schtasks.exe",
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    UserId = WindowsIdentity.GetCurrent().Name,
+                    Delay = TimeSpan.FromSeconds(2)
                 });
-                process?.WaitForExit();
-                return process?.ExitCode == 0;
+                td.Actions.Add(new ExecAction(appPath, LogonRestoreArg));
+
+                // Only set highest run-level when already running as administrator.
+                if (IsAdministrator())
+                {
+                    td.Principal.RunLevel = TaskRunLevel.Highest;
+                }
+
+                td.Settings.StopIfGoingOnBatteries = false;
+                td.Settings.DisallowStartIfOnBatteries = false;
+                td.Settings.ExecutionTimeLimit = TimeSpan.Zero;
+                td.Settings.Priority = ProcessPriorityClass.Normal;
+
+                TaskService.Instance.RootFolder.RegisterTaskDefinition(TaskName, td);
+                return true;
             }
             catch
             {
@@ -67,17 +75,9 @@ namespace ContextMenuManager.Methods
         {
             try
             {
-                using var process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "schtasks.exe",
-                    Arguments = $"/delete /tn \"{TaskName}\" /f",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                });
-                process?.WaitForExit();
-                return process?.ExitCode == 0;
+                // exceptionOnNotExists = false: silently succeed if the task no longer exists.
+                TaskService.Instance.RootFolder.DeleteTask(TaskName, false);
+                return true;
             }
             catch
             {
