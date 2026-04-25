@@ -289,6 +289,7 @@ namespace ContextMenuManager.Views
                 if (AppConfig.LogonRestoreFilePath == entry.FilePath)
                 {
                     DisableLogonRestoreTask();
+                    RefreshLogonRestoreCard();
                 }
 
                 File.Delete(entry.FilePath);
@@ -486,7 +487,7 @@ namespace ContextMenuManager.Views
             return true;
         }
 
-        private void DisableLogonRestoreTask()
+        private static void DisableLogonRestoreTask()
         {
             LogonTaskHelper.DisableTask();
             AppConfig.LogonRestoreFilePath = "";
