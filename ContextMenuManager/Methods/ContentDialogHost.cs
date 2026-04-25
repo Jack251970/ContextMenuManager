@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace ContextMenuManager.Methods
@@ -31,10 +32,39 @@ namespace ContextMenuManager.Methods
                 return dispatcher.Invoke(() => RunBlocking(action, owner));
             }
 
-            var task = action(ResolveOwner(owner));
+            var ownerWindow = ResolveOwner(owner);
+
+            // If the resolved owner window already has an open ContentDialog, create a
+            // temporary transparent helper window to host the nested dialog, since
+            // ContentDialog does not support multiple open dialogs on the same window.
+            Window helperWindow = null;
+            if (ownerWindow != null && ContentDialog.GetOpenDialog(ownerWindow) != null)
+            {
+                helperWindow = CreateHelperWindow(ownerWindow);
+                ownerWindow = helperWindow;
+            }
+
+            Task<T> task;
+            try
+            {
+                task = action(ownerWindow);
+            }
+            catch
+            {
+                helperWindow?.Close();
+                throw;
+            }
+
             if (task.IsCompleted)
             {
-                return task.GetAwaiter().GetResult();
+                try
+                {
+                    return task.GetAwaiter().GetResult();
+                }
+                finally
+                {
+                    helperWindow?.Close();
+                }
             }
 
             Exception exception = null;
@@ -56,6 +86,7 @@ namespace ContextMenuManager.Methods
                     result = t.Result;
                 }
 
+                helperWindow?.Close();
                 frame.Continue = false;
             }, TaskScheduler.FromCurrentSynchronizationContext());
 
@@ -91,6 +122,51 @@ namespace ContextMenuManager.Methods
             return Application.Current?.MainWindow
                 ?? windows.FirstOrDefault(w => w.IsActive)
                 ?? windows.FirstOrDefault();
+        }
+
+        private static Window CreateHelperWindow(Window parentWindow)
+        {
+            var helperWindow = new Window
+            {
+                WindowStyle = WindowStyle.None,
+                ResizeMode = ResizeMode.NoResize,
+                ShowInTaskbar = false,
+                AllowsTransparency = true,
+                Background = Brushes.Transparent,
+                Width = parentWindow.ActualWidth,
+                Height = parentWindow.ActualHeight,
+                Left = parentWindow.Left,
+                Top = parentWindow.Top,
+                Owner = parentWindow
+            };
+
+            void SyncPosition(object s, EventArgs e)
+            {
+                helperWindow.Left = parentWindow.Left;
+                helperWindow.Top = parentWindow.Top;
+            }
+
+            void SyncSize(object s, SizeChangedEventArgs e)
+            {
+                helperWindow.Width = parentWindow.ActualWidth;
+                helperWindow.Height = parentWindow.ActualHeight;
+            }
+
+            void Unsubscribe(object s, EventArgs e)
+            {
+                parentWindow.LocationChanged -= SyncPosition;
+                parentWindow.SizeChanged -= SyncSize;
+                parentWindow.Closed -= Unsubscribe;
+                helperWindow.Closed -= Unsubscribe;
+            }
+
+            parentWindow.LocationChanged += SyncPosition;
+            parentWindow.SizeChanged += SyncSize;
+            parentWindow.Closed += Unsubscribe;
+            helperWindow.Closed += Unsubscribe;
+
+            helperWindow.Show();
+            return helperWindow;
         }
     }
 }
