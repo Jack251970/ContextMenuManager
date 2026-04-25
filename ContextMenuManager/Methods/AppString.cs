@@ -248,6 +248,8 @@ namespace ContextMenuManager.Methods
             public static string RestoredValue { get; set; }
             public static string Enabled { get; set; }
             public static string Disabled { get; set; }
+            public static string SetLogonRestore { get; set; }
+            public static string SelectLogonRestoreBackup { get; set; }
         }
 
         /// <summary>消息</summary>
@@ -296,6 +298,11 @@ namespace ContextMenuManager.Methods
             public static string DeprecatedBackupVersion { get; set; }
             public static string NotChooseAnyBackup { get; set; }
             public static string NotChooseAnyRestore { get; set; }
+            public static string LogonRestoreEnabled { get; set; }
+            public static string LogonRestoreDisabled { get; set; }
+            public static string LogonRestoreFailed { get; set; }
+            public static string LogonRestoreNoBackup { get; set; }
+            public static string ConfirmDisableLogonRestore { get; set; }
         }
 
         /// <summary>提示文本</summary>
@@ -362,6 +369,9 @@ namespace ContextMenuManager.Methods
             public static string AppDataDir { get; set; }
             public static string AppDir { get; set; }
             public static string AutoBackup { get; set; }
+            public static string LogonRestore { get; set; }
+            public static string LogonRestoreBackup { get; set; }
+            public static string LogonRestoreSettings { get; set; }
             public static string SetUpdateFrequency { get; set; }
             public static string OnceAWeek { get; set; }
             public static string OnceAMonth { get; set; }

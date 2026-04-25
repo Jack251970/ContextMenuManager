@@ -14,6 +14,7 @@ namespace ContextMenuManager.Views
     public partial class BackupView : UserControl
     {
         private readonly BackupHelper helper = new();
+        private bool isLogonRestoreLoading;
 
         public ObservableCollection<BackupEntry> BackupEntries { get; } = [];
 
@@ -61,6 +62,8 @@ namespace ContextMenuManager.Views
                 BackupEntries.Remove(entry);
                 BackupEntries.Add(entry);
             }
+
+            RefreshLogonRestoreCard();
         }
 
         private void LoadLabels()
@@ -72,7 +75,12 @@ namespace ContextMenuManager.Views
             OpenBackupFolderButton.Content = AppString.Menu.FileLocation ?? "Open";
             RefreshButton.Content = AppString.ToolBar.Refresh ?? "Refresh";
             BackupsHeaderText.Text = AppString.SideBar.BackupRestore ?? "Backups";
+
+            LogonRestoreLabel.Text = AppString.Other.LogonRestore ?? "Auto-restore on startup";
+            LogonRestoreConfigButton.Content = AppString.Other.LogonRestoreSettings ?? "Configure";
         }
+
+        // ── Backup folder / refresh / new backup ─────────────────────────────
 
         private void OpenBackupFolderButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -132,6 +140,8 @@ namespace ContextMenuManager.Views
                 AppString.Message.BackupSucceeded.Replace("%s", helper.backupCount.ToString()),
                 AppString.General.AppName);
         }
+
+        // ── Restore / delete individual backup ───────────────────────────────
 
         private async void RestoreBackupButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -275,6 +285,12 @@ namespace ContextMenuManager.Views
 
             try
             {
+                // If the deleted backup was the configured logon-restore backup, clean up config
+                if (AppConfig.LogonRestoreFilePath == entry.FilePath)
+                {
+                    DisableLogonRestoreTask();
+                }
+
                 File.Delete(entry.FilePath);
                 BackupEntries.Remove(entry);
             }
@@ -283,6 +299,202 @@ namespace ContextMenuManager.Views
                 AppMessageBox.Show(ex.Message, AppString.General.AppName);
             }
         }
+
+        // ── Logon restore section ─────────────────────────────────────────────
+
+        /// <summary>Updates the logon-restore card to reflect the current configuration.</summary>
+        private void RefreshLogonRestoreCard()
+        {
+            isLogonRestoreLoading = true;
+            try
+            {
+                var enabled = LogonTaskHelper.IsTaskEnabled();
+                LogonRestoreToggle.IsOn = enabled;
+                LogonRestoreConfigButton.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+                UpdateLogonRestoreHintText(enabled);
+            }
+            finally
+            {
+                isLogonRestoreLoading = false;
+            }
+        }
+
+        private void UpdateLogonRestoreHintText(bool enabled)
+        {
+            if (!enabled)
+            {
+                LogonRestoreHintText.Text = null;
+                return;
+            }
+
+            var filePath = AppConfig.LogonRestoreFilePath;
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                LogonRestoreHintText.Text = null;
+                return;
+            }
+
+            try
+            {
+                BackupList.LoadBackupDataMetaData(filePath);
+                var device = BackupList.metaData?.Device ?? AppString.Other.Unknown;
+                var time = (BackupList.metaData?.CreateTime ?? File.GetCreationTime(filePath)).ToString("G");
+                var backupText = AppString.Other.RestoreItemText
+                    ?.Replace("%device", device)
+                    .Replace("%time", time) ?? $"{device}  {time}";
+
+                var modeText = AppConfig.LogonRestoreMode switch
+                {
+                    1 => AppString.Dialog.RestoreMode2,
+                    2 => AppString.Dialog.RestoreMode3,
+                    _ => AppString.Dialog.RestoreMode1
+                };
+
+                LogonRestoreHintText.Text = $"{AppString.Other.LogonRestoreBackup ?? "Backup"}: {backupText}";
+            }
+            catch
+            {
+                LogonRestoreHintText.Text = null;
+            }
+        }
+
+        private void LogonRestoreToggle_OnToggled(object sender, RoutedEventArgs e)
+        {
+            if (isLogonRestoreLoading) return;
+
+            if (LogonRestoreToggle.IsOn)
+            {
+                // Turning ON: open configuration dialog
+                if (!OpenLogonRestoreDialog(isNew: true))
+                {
+                    // User cancelled – revert toggle
+                    isLogonRestoreLoading = true;
+                    LogonRestoreToggle.IsOn = false;
+                    isLogonRestoreLoading = false;
+                    LogonRestoreConfigButton.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    LogonRestoreConfigButton.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                // Turning OFF: confirm and disable
+                var result = AppMessageBox.Show(
+                    AppString.Message.ConfirmDisableLogonRestore ?? "Are you sure you want to disable logon restore?",
+                    AppString.General.AppName,
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                {
+                    // Revert toggle
+                    isLogonRestoreLoading = true;
+                    LogonRestoreToggle.IsOn = true;
+                    isLogonRestoreLoading = false;
+                    return;
+                }
+
+                DisableLogonRestoreTask();
+                LogonRestoreConfigButton.Visibility = Visibility.Collapsed;
+                UpdateLogonRestoreHintText(false);
+            }
+        }
+
+        private void LogonRestoreConfigButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenLogonRestoreDialog(isNew: false);
+        }
+
+        /// <summary>Opens the logon-restore configuration dialog.
+        /// Returns true if the user confirmed a valid configuration.</summary>
+        private bool OpenLogonRestoreDialog(bool isNew)
+        {
+            if (BackupEntries.Count == 0)
+            {
+                AppMessageBox.Show(
+                    AppString.Message.LogonRestoreNoBackup ?? "No backups available. Create a backup first.",
+                    AppString.General.AppName);
+                return false;
+            }
+
+            // Build the entries list for the dialog
+            var dialogEntries = BackupEntries
+                .Select(e => new LogonRestoreDialog.BackupEntry
+                {
+                    FilePath = e.FilePath,
+                    DisplayText = e.DisplayText
+                })
+                .ToList();
+
+            // Resolve pre-selected scenes from stored indices
+            List<string> preSelectedScenes = null;
+            if (!isNew)
+            {
+                var storedScenes = LogonTaskHelper.ParseSceneTexts(AppConfig.LogonRestoreScenes);
+                if (storedScenes.Count > 0)
+                    preSelectedScenes = storedScenes;
+            }
+
+            var dlg = new LogonRestoreDialog
+            {
+                Title = AppString.Dialog.SetLogonRestore ?? "Configure logon restore",
+                BackupEntries = dialogEntries,
+                SelectedFilePath = isNew ? null : AppConfig.LogonRestoreFilePath,
+                SelectedScenes = preSelectedScenes,
+                SelectedModeIndex = isNew ? 0 : AppConfig.LogonRestoreMode
+            };
+
+            if (!dlg.ShowDialog())
+                return false;
+
+            if (string.IsNullOrEmpty(dlg.ResultFilePath))
+            {
+                AppMessageBox.Show(
+                    AppString.Message.LogonRestoreNoBackup ?? "No backup selected.",
+                    AppString.General.AppName);
+                return false;
+            }
+
+            if (dlg.ResultScenes == null || dlg.ResultScenes.Count == 0)
+            {
+                AppMessageBox.Show(AppString.Message.NotChooseAnyRestore, AppString.General.AppName);
+                return false;
+            }
+
+            // Save config
+            AppConfig.LogonRestoreFilePath = dlg.ResultFilePath;
+            AppConfig.LogonRestoreScenes = LogonTaskHelper.BuildScenesString(dlg.ResultScenes);
+            AppConfig.LogonRestoreMode = dlg.ResultModeIndex;
+
+            // Create / update the scheduled task
+            var ok = LogonTaskHelper.EnableTask();
+            if (!ok)
+            {
+                AppMessageBox.Show(
+                    AppString.Message.LogonRestoreFailed ?? "Failed to create the scheduled task!",
+                    AppString.General.AppName);
+                return false;
+            }
+
+            AppMessageBox.Show(
+                AppString.Message.LogonRestoreEnabled ?? "Logon restore task enabled successfully!",
+                AppString.General.AppName);
+
+            UpdateLogonRestoreHintText(true);
+            return true;
+        }
+
+        private void DisableLogonRestoreTask()
+        {
+            LogonTaskHelper.DisableTask();
+            AppConfig.LogonRestoreFilePath = "";
+            AppConfig.LogonRestoreScenes = "";
+            AppConfig.LogonRestoreMode = 0;
+        }
+
+        // ── Inner types ───────────────────────────────────────────────────────
 
         public sealed class BackupEntry
         {

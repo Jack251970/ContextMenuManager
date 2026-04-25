@@ -91,21 +91,31 @@ namespace ContextMenuManager.Controls
     public sealed class LoadingDialogInterface
     {
         private readonly LoadingDialog dialog;
+        private readonly bool silent;
 
         internal LoadingDialogInterface(LoadingDialog dialog)
         {
             this.dialog = dialog;
+            this.silent = false;
+        }
+
+        /// <summary>Creates a silent (no-UI) progress reporter for headless/background operations.</summary>
+        internal LoadingDialogInterface()
+        {
+            this.silent = true;
         }
 
         public bool IsCancelled { get; internal set; }
 
         public void CloseDialog()
         {
+            if (silent) return;
             dialog.dialog.Dispatcher.BeginInvoke(new Action(() => dialog.dialog.Hide()));
         }
 
         public void SetMaximum(int value)
         {
+            if (silent) return;
             dialog.progressBar.Dispatcher.Invoke(() =>
             {
                 dialog.progressBar.IsIndeterminate = false;
@@ -115,6 +125,7 @@ namespace ContextMenuManager.Controls
 
         public void SetMinimum(int value)
         {
+            if (silent) return;
             dialog.progressBar.Dispatcher.Invoke(() =>
             {
                 dialog.progressBar.IsIndeterminate = false;
@@ -124,6 +135,7 @@ namespace ContextMenuManager.Controls
 
         public void SetProgress(int value, string description = "...")
         {
+            if (silent) return;
             try
             {
                 dialog.progressBar.Dispatcher.Invoke(() =>
@@ -153,11 +165,13 @@ namespace ContextMenuManager.Controls
 
         public void SetTitle(string newTitle)
         {
+            if (silent) return;
             dialog.dialog.Dispatcher.Invoke(() => dialog.dialog.Title = newTitle);
         }
 
         internal void WaitTillDialogIsReady()
         {
+            if (silent) return;
             dialog.readyEvent.Wait();
         }
     }
