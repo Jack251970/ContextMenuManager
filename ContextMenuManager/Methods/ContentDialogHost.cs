@@ -152,13 +152,18 @@ namespace ContextMenuManager.Methods
                 helperWindow.Height = parentWindow.ActualHeight;
             }
 
-            parentWindow.LocationChanged += SyncPosition;
-            parentWindow.SizeChanged += SyncSize;
-            helperWindow.Closed += (s, e) =>
+            void Unsubscribe(object s, EventArgs e)
             {
                 parentWindow.LocationChanged -= SyncPosition;
                 parentWindow.SizeChanged -= SyncSize;
-            };
+                parentWindow.Closed -= Unsubscribe;
+                helperWindow.Closed -= Unsubscribe;
+            }
+
+            parentWindow.LocationChanged += SyncPosition;
+            parentWindow.SizeChanged += SyncSize;
+            parentWindow.Closed += Unsubscribe;
+            helperWindow.Closed += Unsubscribe;
 
             helperWindow.Show();
             return helperWindow;
