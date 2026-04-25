@@ -164,13 +164,15 @@ namespace ContextMenuManager.Views
                 AppMessageBox.Show(AppString.Message.OldBackupVersion, AppString.General.AppName);
             }
 
+            // Manual restore: always starts at first mode (index 0); selection is NOT persisted to settings.
             var dlg = new BackupDialog
             {
                 Title = AppString.Dialog.RestoreBackupItem,
                 TvTitle = AppString.Dialog.RestoreContent,
                 TvItems = BackupHelper.GetBackupRestoreScenesText(BackupList.metaData.BackupScenes),
                 CmbTitle = AppString.Dialog.RestoreMode,
-                CmbItems = [AppString.Dialog.RestoreMode1, AppString.Dialog.RestoreMode2, AppString.Dialog.RestoreMode3]
+                CmbItems = [AppString.Dialog.RestoreMode1, AppString.Dialog.RestoreMode2, AppString.Dialog.RestoreMode3],
+                CmbSelectedIndex = 0
             };
 
             if (dlg.ShowDialog() != true)
