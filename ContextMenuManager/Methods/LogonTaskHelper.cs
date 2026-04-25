@@ -15,7 +15,7 @@ namespace ContextMenuManager.Methods
         /// <summary>Returns true if the current process is running with administrator privileges.</summary>
         public static bool IsAdministrator()
         {
-            using var identity = WindowsIdentity.GetCurrent();
+            var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
@@ -43,15 +43,16 @@ namespace ContextMenuManager.Methods
 
                 using var td = TaskService.Instance.NewTask();
                 td.RegistrationInfo.Description = LogonTaskDesc;
+                using var currentIdentity = WindowsIdentity.GetCurrent();
                 td.Triggers.Add(new LogonTrigger
                 {
-                    UserId = WindowsIdentity.GetCurrent().Name,
+                    UserId = currentIdentity.Name,
                     Delay = TimeSpan.FromSeconds(2)
                 });
                 td.Actions.Add(new ExecAction(appPath, LogonRestoreArg));
 
                 // Only set highest run-level when already running as administrator.
-                if (IsAdministrator())
+                if (new WindowsPrincipal(currentIdentity).IsInRole(WindowsBuiltInRole.Administrator))
                 {
                     td.Principal.RunLevel = TaskRunLevel.Highest;
                 }
