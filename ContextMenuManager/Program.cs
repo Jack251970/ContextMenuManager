@@ -59,6 +59,10 @@ namespace ContextMenuManager
                 helper.RestoreItems(filePath, sceneTexts, restoreMode, silentReporter);
 
                 var restoreList = helper.restoreList ?? throw new InvalidDataException("Failed to parse restore items from backup file.");
+
+                // If any items were actually changed, restart Explorer so the changes take effect.
+                if (restoreList.Count > 0)
+                    ExternalProgram.RestartExplorer();
             }
             catch
             {
