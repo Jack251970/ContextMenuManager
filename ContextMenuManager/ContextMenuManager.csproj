@@ -40,6 +40,7 @@
   <ItemGroup>
 		<PackageReference Include="FluentIcons.Wpf" Version="2.1.324" />
 		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
+		<PackageReference Include="TaskScheduler" Version="2.12.2" />
   </ItemGroup>
 	
   <ItemGroup>
@@ -55,26 +56,17 @@
 		<MakeDir Directories="$(TargetDir)Config\Languages" />
 		<MakeDir Directories="$(TargetDir)Config\Dictionaries\Web" />
 
-		<Copy
-			SourceFiles="$(ProjectDir)Properties\Resources\Texts\AppLanguageDic.ini"
-			DestinationFiles="$(TargetDir)Config\Languages\zh-CN.ini"
-			OverwriteReadOnlyFiles="true" />
+		<Copy SourceFiles="$(ProjectDir)Properties\Resources\Texts\AppLanguageDic.ini" DestinationFiles="$(TargetDir)Config\Languages\zh-CN.ini" OverwriteReadOnlyFiles="true" />
 
 		<ItemGroup>
 			<LanguageFiles Include="$(SolutionDir)Languages\*.*" />
 		</ItemGroup>
-		<Copy
-			SourceFiles="@(LanguageFiles)"
-			DestinationFolder="$(TargetDir)Config\Languages"
-			OverwriteReadOnlyFiles="true" />
+		<Copy SourceFiles="@(LanguageFiles)" DestinationFolder="$(TargetDir)Config\Languages" OverwriteReadOnlyFiles="true" />
 
 		<ItemGroup>
 			<WebDictFiles Include="$(ProjectDir)Properties\Resources\Texts\*.*" />
 		</ItemGroup>
-		<Copy
-			SourceFiles="@(WebDictFiles)"
-			DestinationFolder="$(TargetDir)Config\Dictionaries\Web"
-			OverwriteReadOnlyFiles="true" />
+		<Copy SourceFiles="@(WebDictFiles)" DestinationFolder="$(TargetDir)Config\Dictionaries\Web" OverwriteReadOnlyFiles="true" />
 
 		<Delete Files="$(TargetDir)Config\Dictionaries\Web\AppLanguageDic.ini" />
 	</Target>

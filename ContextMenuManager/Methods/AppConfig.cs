@@ -212,6 +212,29 @@ namespace ContextMenuManager.Methods
             set => SetGeneralValue("AutoBackup", value ? 1 : 0);
         }
 
+        public static string LogonRestoreFilePath
+        {
+            get => GetGeneralValue("LogonRestoreFilePath");
+            set => SetGeneralValue("LogonRestoreFilePath", value ?? "");
+        }
+
+        public static string LogonRestoreScenes
+        {
+            get => GetGeneralValue("LogonRestoreScenes");
+            set => SetGeneralValue("LogonRestoreScenes", value ?? "");
+        }
+
+        public static int LogonRestoreMode
+        {
+            get
+            {
+                var value = GetGeneralValue("LogonRestoreMode");
+                if (int.TryParse(value, out var mode) && mode is >= 0 and <= 2) return mode;
+                return 0;
+            }
+            set => SetGeneralValue("LogonRestoreMode", value);
+        }
+
         public static DateTime LastCheckUpdateTime
         {
             get
