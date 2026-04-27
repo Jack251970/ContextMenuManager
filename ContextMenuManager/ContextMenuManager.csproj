@@ -38,7 +38,7 @@
 	</PropertyGroup>
 	
   <ItemGroup>
-		<PackageReference Include="FluentIcons.Wpf" Version="2.1.324" />
+		<PackageReference Include="FluentIcons.Wpf" Version="2.1.325" />
 		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
   </ItemGroup>
 	
