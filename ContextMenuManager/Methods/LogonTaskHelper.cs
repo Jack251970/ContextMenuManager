@@ -15,7 +15,7 @@ namespace ContextMenuManager.Methods
         /// <summary>Returns true if the current process is running with administrator privileges.</summary>
         public static bool IsAdministrator()
         {
-            var identity = WindowsIdentity.GetCurrent();
+            using var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
