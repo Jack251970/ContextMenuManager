@@ -627,7 +627,7 @@ namespace ContextMenuManager
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (ExplorerRestarterBanner.IsPendingRestart)
+            if (ExplorerRestarter.IsPendingRestart)
             {
                 var result = AppMessageBox.Show(
                     AppString.Other.RestartExplorer,

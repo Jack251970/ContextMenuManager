@@ -6,6 +6,7 @@ namespace ContextMenuManager.Controls
 {
     public partial class ExplorerRestarter : InfoBar
     {
+        public static bool IsPendingRestart { get; private set; }
         private static ExplorerRestarter current;
 
         public ExplorerRestarter()
@@ -28,15 +29,15 @@ namespace ContextMenuManager.Controls
             };
         }
 
-        public bool IsPendingRestart => IsOpen == true;
-
         public static void Show()
         {
+            IsPendingRestart = true;
             current?.Dispatcher.Invoke(() => current.IsOpen = true);
         }
 
         public static void Hide()
         {
+            IsPendingRestart = false;
             current?.Dispatcher.Invoke(() => current.IsOpen = false);
         }
 

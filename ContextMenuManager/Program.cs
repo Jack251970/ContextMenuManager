@@ -60,8 +60,8 @@ namespace ContextMenuManager
 
                 var restoreList = helper.restoreList ?? throw new InvalidDataException("Failed to parse restore items from backup file.");
 
-                // If any items were actually changed, restart Explorer so the changes take effect.
-                if (restoreList.Count > 0)
+                // If any items need to restart Explorer, restart Explorer so the changes take effect.
+                if (ExplorerRestarter.IsPendingRestart)
                     ExternalProgram.RestartExplorer();
             }
             catch
