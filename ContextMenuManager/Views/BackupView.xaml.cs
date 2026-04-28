@@ -353,7 +353,7 @@ namespace ContextMenuManager.Views
                     _ => AppString.Dialog.RestoreMode1
                 };
 
-                LogonRestoreHintText.Text = $"{AppString.Other.LogonRestoreBackup ?? "Backup"}: {backupText}";
+                LogonRestoreHintText.Text = $"{AppString.Other.LogonRestoreBackup ?? "Backup"}: {backupText} ({modeText})";
             }
             catch
             {
