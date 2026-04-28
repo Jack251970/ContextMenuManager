@@ -455,7 +455,7 @@ namespace ContextMenuManager.Views
             if (string.IsNullOrEmpty(dlg.ResultFilePath))
             {
                 AppMessageBox.Show(
-                    AppString.Message.LogonRestoreNoBackup ?? "No backup selected.",
+                    AppString.Message.NotChooseAnyBackup ?? "No backup selected.",
                     AppString.General.AppName);
                 return false;
             }
