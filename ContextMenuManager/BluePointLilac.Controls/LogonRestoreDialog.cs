@@ -58,7 +58,8 @@ namespace ContextMenuManager.Controls
                         Content = entry.DisplayText,
                         Tag = entry.FilePath
                     });
-                    if (!string.IsNullOrEmpty(SelectedFilePath) && entry.FilePath == SelectedFilePath)
+                    if (!string.IsNullOrEmpty(SelectedFilePath)
+                        && string.Equals(entry.FilePath, SelectedFilePath, StringComparison.OrdinalIgnoreCase))
                         preSelectedIndex = i;
                 }
             }
