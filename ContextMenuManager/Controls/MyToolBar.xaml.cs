@@ -1,3 +1,4 @@
+using Microsoft.Win32;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -5,16 +6,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 
 namespace ContextMenuManager.Controls
 {
     public partial class MyToolBar : UserControl
     {
-        public const double SelectedOpacity = 0.8;
-        public const double HoveredOpacity = 0.4;
-        public const double UnselectedOpacity = 0.0;
-
         private MyToolBarButton _selectedButton;
 
         public MyToolBar()
@@ -31,7 +29,7 @@ namespace ContextMenuManager.Controls
 
                 if (_selectedButton != null)
                 {
-                    _selectedButton.AnimateOpacity(UnselectedOpacity);
+                    _selectedButton.SetState(ButtonState.Normal);
                     _selectedButton.Cursor = Cursors.Hand;
                 }
 
@@ -39,7 +37,7 @@ namespace ContextMenuManager.Controls
 
                 if (_selectedButton != null)
                 {
-                    _selectedButton.AnimateOpacity(SelectedOpacity);
+                    _selectedButton.SetState(ButtonState.Selected);
                     _selectedButton.Cursor = Cursors.Arrow;
                 }
 
@@ -88,17 +86,17 @@ namespace ContextMenuManager.Controls
             button.MouseEnter += (sender, e) =>
             {
                 if (button != SelectedButton)
-                {
-                    button.AnimateOpacity(HoveredOpacity);
-                }
+                    button.SetState(ButtonState.Hover);
+                else
+                    button.SetState(ButtonState.SelectedHover);
             };
 
             button.MouseLeave += (sender, e) =>
             {
                 if (button != SelectedButton)
-                {
-                    button.AnimateOpacity(UnselectedOpacity);
-                }
+                    button.SetState(ButtonState.Normal);
+                else
+                    button.SetState(ButtonState.Selected);
             };
 
             ButtonContainer.Children.Add(button);
@@ -118,16 +116,22 @@ namespace ContextMenuManager.Controls
         }
     }
 
+    public enum ButtonState
+    {
+        Normal,
+        Hover,
+        Selected,
+        SelectedHover
+    }
+
     public class MyToolBarButton : ContentControl
     {
-        private readonly Rectangle _highlightRect;
+        private readonly Border _backgroundBorder;
         private readonly TextBlock _labelText;
+        private readonly FontIcon _icon;
 
         public bool CanBeSelected { get; set; } = true;
 
-        /// <summary>
-        /// 使用 FontIcon glyph 创建工具栏按钮
-        /// </summary>
         public MyToolBarButton(string glyph, string text)
         {
             Width = 72;
@@ -135,16 +139,14 @@ namespace ContextMenuManager.Controls
             Cursor = Cursors.Hand;
             Background = Brushes.Transparent;
 
-            _highlightRect = new Rectangle
+            _backgroundBorder = new Border
             {
-                RadiusX = 10,
-                RadiusY = 10,
-                Fill = new SolidColorBrush(Colors.White),
-                Opacity = 0,
+                CornerRadius = new CornerRadius(8),
+                Background = Brushes.Transparent,
                 IsHitTestVisible = false
             };
 
-            var icon = new FontIcon
+            _icon = new FontIcon
             {
                 Glyph = glyph,
                 FontSize = 24,
@@ -158,8 +160,7 @@ namespace ContextMenuManager.Controls
                 Text = text,
                 FontSize = 11,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 4, 0, 0),
-                Foreground = new SolidColorBrush(Color.FromRgb(51, 51, 51))
+                Margin = new Thickness(0, 4, 0, 0)
             };
 
             var contentPanel = new StackPanel
@@ -169,26 +170,98 @@ namespace ContextMenuManager.Controls
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            contentPanel.Children.Add(icon);
+            contentPanel.Children.Add(_icon);
             contentPanel.Children.Add(_labelText);
 
             var grid = new Grid();
-            grid.Children.Add(_highlightRect);
+            grid.Children.Add(_backgroundBorder);
             grid.Children.Add(contentPanel);
 
             Content = grid;
+
+            UpdateColors();
+            ThemeManager.Current.ActualApplicationThemeChanged += (_, _) => UpdateColors();
         }
 
-        public void AnimateOpacity(double targetOpacity)
+        public void SetState(ButtonState state)
         {
-            var animation = new DoubleAnimation
-            {
-                To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(150),
-                FillBehavior = FillBehavior.HoldEnd
-            };
+            var isDark = ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark;
+            var accent = GetSystemAccentColor();
+            var accentBrush = new SolidColorBrush(accent);
+            var accentDarkBrush = new SolidColorBrush(DarkenColor(accent, 0.85));
 
-            _highlightRect.BeginAnimation(Rectangle.OpacityProperty, animation);
+            Brush bg;
+            Brush fg;
+
+            switch (state)
+            {
+                case ButtonState.Hover:
+                    bg = isDark
+                        ? new SolidColorBrush(Color.FromRgb(45, 45, 45))
+                        : new SolidColorBrush(Color.FromRgb(238, 238, 238));
+                    fg = isDark ? Brushes.White : new SolidColorBrush(Color.FromRgb(51, 51, 51));
+                    break;
+
+                case ButtonState.Selected:
+                case ButtonState.SelectedHover:
+                    bg = state == ButtonState.SelectedHover ? accentDarkBrush : accentBrush;
+                    fg = Brushes.White;
+                    break;
+
+                default: // Normal
+                    bg = Brushes.Transparent;
+                    fg = isDark ? Brushes.White : new SolidColorBrush(Color.FromRgb(51, 51, 51));
+                    break;
+            }
+
+            AnimateBackground(bg);
+            _labelText.Foreground = fg;
+            _icon.Foreground = fg;
+        }
+
+        private void AnimateBackground(Brush targetBrush)
+        {
+            // If current background is transparent and target is not, fade in
+            // If current is solid and target is transparent, fade out
+            // If both are solid, crossfade would be ideal but simple swap is acceptable for WinUI style
+            _backgroundBorder.Background = targetBrush;
+        }
+
+        private void UpdateColors()
+        {
+            // Re-apply current state with new theme colors
+            SetState(ButtonState.Normal);
+        }
+
+        private static Color GetSystemAccentColor()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+                if (key != null)
+                {
+                    var value = key.GetValue("AccentColor");
+                    if (value is int intValue)
+                    {
+                        // DWORD is in BGR format
+                        byte b = (byte)(intValue & 0xFF);
+                        byte g = (byte)((intValue >> 8) & 0xFF);
+                        byte r = (byte)((intValue >> 16) & 0xFF);
+                        return Color.FromRgb(r, g, b);
+                    }
+                }
+            }
+            catch { }
+            // Fallback to default Windows 11 blue
+            return Color.FromRgb(0, 120, 212);
+        }
+
+        private static Color DarkenColor(Color color, double factor)
+        {
+            return Color.FromRgb(
+                (byte)(color.R * factor),
+                (byte)(color.G * factor),
+                (byte)(color.B * factor));
         }
     }
 }

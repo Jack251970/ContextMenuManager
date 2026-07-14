@@ -28,7 +28,7 @@
         </Grid.RowDefinitions>
 
         <!-- Top Toolbar -->
-        <Border Grid.Row="0" Background="#F0F0F0" BorderBrush="#D0D0D0" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="Transparent" BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" BorderThickness="0,0,0,1">
             <controls:MyToolBar x:Name="ToolBar"/>
         </Border>
 
@@ -40,7 +40,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Sidebar - using iNKORE ListView style -->
-            <Border Grid.Column="0" Width="160" Background="#F5F5F5" BorderBrush="#D0D0D0" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Width="160" Background="Transparent" BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" BorderThickness="0,0,1,0">
                 <ui:ListView x:Name="SideBar" Margin="0,4" SelectionChanged="SideBar_SelectionChanged"/>
             </Border>
 
@@ -57,10 +57,10 @@
         </Grid>
 
         <!-- Separator before status bar -->
-        <Border Grid.Row="2" Height="1" Background="#D0D0D0"/>
+        <Border Grid.Row="2" Height="1" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"/>
 
         <!-- Status Bar -->
-        <StatusBar Grid.Row="3" Background="#F0F0F0">
+        <StatusBar Grid.Row="3" Background="Transparent">
             <StatusBarItem VerticalAlignment="Stretch">
                 <TextBlock x:Name="StatusText" Padding="8,2" VerticalAlignment="Center"/>
             </StatusBarItem>
