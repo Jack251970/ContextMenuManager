@@ -38,7 +38,7 @@
 	</PropertyGroup>
 	
   <ItemGroup>
-		<PackageReference Include="FluentIcons.Wpf" Version="2.1.331" />
+		<PackageReference Include="FluentIcons.Wpf" Version="2.1.333" />
 		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
 		<PackageReference Include="TaskScheduler" Version="2.12.2" />
   </ItemGroup>
