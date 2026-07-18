@@ -87,7 +87,7 @@ namespace ContextMenuManager.Controls
         {
             var dialog = ContentDialogHost.CreateDialog(title, owner);
             dialog.IsPrimaryButtonEnabled = false;
-            dialog.CloseButtonText = AppString.Dialog.OK;
+            dialog.CloseButtonText = AppString.Dialog.Cancel;
 
             list.MinWidth = 500;
             list.MinHeight = 400;
