@@ -78,11 +78,8 @@ namespace ContextMenuManager.Controls
         public void AddButton(AppBarToggleButton button, bool canBeSelected = true)
         {
             button.Margin = new Thickness(12, 4, 0, 4);
-            button.Padding = new Thickness(0, 0, 0, 0);
             button.Width = 88;
             button.Height = 88;
-            button.FontSize = 13;
-            button.Cursor = Cursors.Hand;
 
             if (!canBeSelected)
             {

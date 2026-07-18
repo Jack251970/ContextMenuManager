@@ -168,7 +168,8 @@ namespace ContextMenuManager
                     Icon = new FontIcon
                     {
                         Glyph = glyph,
-                        FontSize = 30,
+                        
+                        FontSize = 30
                     },
                     Label = label,
                     Tag = i
@@ -208,6 +209,7 @@ namespace ContextMenuManager
 
             ToolBar.SelectedIndex = selectedToolBarIndex;
         }
+
         private void OnToolBarSelectionChanged(object sender, EventArgs e)
         {
             var idx = ToolBar.SelectedIndex;

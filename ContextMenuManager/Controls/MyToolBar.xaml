@@ -4,19 +4,33 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     Height="96"
     mc:Ignorable="d">
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <!-- 按钮容器 -->
-        <WrapPanel x:Name="ButtonContainer" Grid.Column="0" VerticalAlignment="Center" Margin="8,0"/>
+        <!--  按钮容器  -->
+        <WrapPanel
+            x:Name="ButtonContainer"
+            Grid.Column="0"
+            Margin="8,0"
+            VerticalAlignment="Center">
+            <WrapPanel.Resources>
+                <!--  Override styles of UI.WPF.Modern  -->
+                <sys:Double x:Key="AppBarButtonContentHeight">36</sys:Double>
+            </WrapPanel.Resources>
+        </WrapPanel>
 
-        <!-- 搜索框容器 -->
-        <ContentPresenter x:Name="SearchBoxHost" Grid.Column="1" Margin="0,0,16,0" VerticalAlignment="Center"/>
+        <!--  搜索框容器  -->
+        <ContentPresenter
+            x:Name="SearchBoxHost"
+            Grid.Column="1"
+            Margin="0,0,16,0"
+            VerticalAlignment="Center" />
     </Grid>
 </UserControl>
