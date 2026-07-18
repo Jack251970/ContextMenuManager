@@ -5,13 +5,12 @@ using ContextMenuManager.Views;
 using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using DrawingSize = System.Drawing.Size;
 
 namespace ContextMenuManager
@@ -36,19 +35,98 @@ namespace ContextMenuManager
         private AboutAppView AboutAppView { get => field ??= new(); }
         private DonateView DonateView { get => field ??= new(); }
 
+        private TextBox SearchBox { get; set; }
+
         private UIElement currentListControl;
         private string currentTag;
+        private int selectedToolBarIndex = 0;
 
         private readonly SearchService searchService = new();
+
+        // Toolbar button data: (label, icon glyph, tag prefix)
+        private readonly (string label, string glyph, int tagIndex)[] toolbarItems = new[]
+        {
+            ("", "\uE80F", 0),   // Home
+            ("", "\uE8A9", 1),   // Type
+            ("", "\uE90F", 2),   // Rule
+            ("", "\uE72C", 3),   // Refresh (not selectable)
+            ("", "\uE946", 4),   // About
+        };
+
+        // Sidebar items per toolbar tab (null = separator)
+        private static readonly string[] GeneralItems =
+        {
+            null, // placeholder for index alignment
+            null, // placeholder
+            null, // placeholder
+            null, // placeholder
+            null, // placeholder
+            null, // placeholder
+            null, // placeholder
+            null, // placeholder
+            null, // placeholder
+            null, // placeholder
+            null, // separator
+            null, // New
+            null, // SendTo
+            null, // OpenWith
+            null, // separator
+            null, // WinX
+        };
+
+        private static readonly string[] TypeItems =
+        {
+            null, // LnkFile
+            null, // UwpLnk
+            null, // ExeFile
+            null, // UnknownType
+            null, // separator
+            null, // CustomExtension
+            null, // PerceivedType
+            null, // DirectoryType
+            null, // separator
+            null, // MenuAnalysis
+        };
+
+        private static readonly string[] OtherRuleItems =
+        {
+            null, // EnhanceMenu
+            null, // DetailedEdit
+            null, // separator
+            null, // DragDrop
+            null, // PublicReferences
+            null, // IEMenu
+            null, // separator
+            null, // GuidBlocked
+            null, // CustomRegPath
+        };
+
+        private static readonly string[] AboutItems =
+        {
+            null, // AppSetting
+            null, // AppLanguage
+            null, // BackupRestore
+            null, // Dictionaries
+            null, // AboutApp
+            null, // Donate
+        };
+
+        private readonly int[] lastItemIndex = new int[5];
 
         public MainWindow()
         {
             InitializeComponent();
 
+            // 初始化搜索框
+            SearchBox = new TextBox
+            {
+                Width = 200,
+                Height = 28,
+                Tag = AppString.Other.SearchContent ?? "Search..."
+            };
+
             Title = AppString.General.AppName ?? "ContextMenuManager";
             Icon = AppResources.Logo.ToBitmapSource();
-            RefreshButton.Content = AppString.ToolBar.Refresh ?? "Refresh";
-            ControlHelper.SetPlaceholderText(SearchBox, AppString.Other.SearchContent ?? "Search...");
             AppSettingView.OwnerWindow = this;
             LanguagesView.OwnerWindow = this;
             BackupView.OwnerWindow = this;
@@ -62,466 +140,344 @@ namespace ContextMenuManager
             }
             Topmost = AppConfig.TopMost;
 
-            // Populate navigation items from AppString
-            BuildNavigation();
-            AdjustPaneWidthToContent();
+            BuildToolBar();
+            SwitchTab();
 
             // First-run language download prompt
             Loaded += (_, _) => FirstRunDownloadLanguage();
         }
 
-        // Navigation building
-
-        private void BuildNavigation()
+        private void BuildToolBar()
         {
-            var homeItem = MakeSectionItem(AppString.ToolBar.Home ?? "Home", "\uE80F");
-            AddSubItems(homeItem,
-            [
-                (AppString.SideBar.File ?? "File", "shell_file"),
-                (AppString.SideBar.Folder ?? "Folder", "shell_folder"),
-                (AppString.SideBar.Directory ?? "Directory", "shell_directory"),
-                (AppString.SideBar.Background ?? "Background", "shell_background"),
-                (AppString.SideBar.Desktop ?? "Desktop", "shell_desktop"),
-                (AppString.SideBar.Drive ?? "Drive", "shell_drive"),
-                (AppString.SideBar.AllObjects ?? "All Objects", "shell_allobjects"),
-                (AppString.SideBar.Computer ?? "Computer", "shell_computer"),
-                (AppString.SideBar.RecycleBin ?? "Recycle Bin", "shell_recyclebin"),
-                (AppString.SideBar.Library ?? "Library", "shell_library"),
-            ]);
-            homeItem.MenuItems.Add(new NavigationViewItemSeparator());
-            homeItem.MenuItems.Add(MakeItem(AppString.SideBar.New ?? "New", "shell_new"));
-            homeItem.MenuItems.Add(MakeItem(AppString.SideBar.SendTo ?? "Send To", "shell_sendto"));
-            homeItem.MenuItems.Add(MakeItem(AppString.SideBar.OpenWith ?? "Open With", "shell_openwith"));
-            homeItem.MenuItems.Add(new NavigationViewItemSeparator());
-            homeItem.MenuItems.Add(MakeItem(AppString.SideBar.WinX ?? "WinX", "shell_winx"));
-            homeItem.IsExpanded = true;
-
-            var typeItem = MakeSectionItem(AppString.ToolBar.Type ?? "Type", "\uE8A9");
-            AddSubItems(typeItem,
-            [
-                (AppString.SideBar.LnkFile ?? "Lnk File", "type_lnk"),
-                (AppString.SideBar.UwpLnk ?? "UWP Lnk", "type_uwplnk"),
-                (AppString.SideBar.ExeFile ?? "Exe File", "type_exe"),
-                (AppString.SideBar.UnknownType ?? "Unknown Type", "type_unknown"),
-            ]);
-            typeItem.MenuItems.Add(new NavigationViewItemSeparator());
-            AddSubItems(typeItem,
-            [
-                (AppString.SideBar.CustomExtension ?? "Custom Extension", "type_custom"),
-                (AppString.SideBar.PerceivedType ?? "Perceived Type", "type_perceived"),
-                (AppString.SideBar.DirectoryType ?? "Directory Type", "type_directory"),
-            ]);
-            typeItem.MenuItems.Add(new NavigationViewItemSeparator());
-            typeItem.MenuItems.Add(MakeItem(AppString.SideBar.MenuAnalysis ?? "Menu Analysis", "type_menuanalysis"));
-
-            var ruleItem = MakeSectionItem(AppString.ToolBar.Rule ?? "Rule", "\uE90F");
-            AddSubItems(ruleItem,
-            [
-                (AppString.SideBar.EnhanceMenu ?? "Enhance Menu", "rule_enhance"),
-                (AppString.SideBar.DetailedEdit ?? "Detailed Edit", "rule_detailed"),
-            ]);
-            ruleItem.MenuItems.Add(new NavigationViewItemSeparator());
-            AddSubItems(ruleItem,
-            [
-                (AppString.SideBar.DragDrop ?? "Drag Drop", "rule_dragdrop"),
-                (AppString.SideBar.PublicReferences ?? "Public References", "rule_public"),
-                (AppString.SideBar.IEMenu ?? "IE Menu", "rule_ie"),
-            ]);
-            ruleItem.MenuItems.Add(new NavigationViewItemSeparator());
-            AddSubItems(ruleItem,
-            [
-                (AppString.SideBar.GuidBlocked ?? "GUID Blocked", "rule_guid"),
-                (AppString.SideBar.CustomRegPath ?? "Custom Reg Path", "rule_customreg"),
-            ]);
-
-            NavView.MenuItems.Add(homeItem);
-            NavView.MenuItems.Add(typeItem);
-            NavView.MenuItems.Add(ruleItem);
-
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppSetting ?? "Settings", "about_settings", "\uE713"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AppLanguage ?? "Language", "about_language", "\uE775"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.BackupRestore ?? "Backup", "about_backup", "\uE777"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.Dictionaries ?? "Dictionaries", "about_dict", "\uE82D"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.AboutApp ?? "About", "about_app", "\uE946"));
-            NavView.FooterMenuItems.Add(MakeItem(AppString.SideBar.Donate ?? "Donate", "about_donate", "\uEB51"));
-
-            if (NavView.MenuItems[0] is NavigationViewItem parent && parent.MenuItems[0] is NavigationViewItem item)
+            var items = new (string label, string glyph)[]
             {
-                NavView.SelectedItem = item;
-            }
-        }
+                (AppString.ToolBar.Home ?? "Home", "\uE80F"),
+                (AppString.ToolBar.Type ?? "Type", "\uE8A9"),
+                (AppString.ToolBar.Rule ?? "Rule", "\uE90F"),
+                (AppString.ToolBar.Refresh ?? "Refresh", "\uE72C"),
+                (AppString.ToolBar.About ?? "About", "\uE946"),
+            };
 
-        // Sizes OpenPaneLength to fit the widest item label so translations don't get clipped.
-        // Chrome values are measured against iNKORE.UI.WPF.Modern v0.10.2's NavigationViewItem template
-        // (Segoe UI 14pt): an item's rendered width = LPad + content + RPad, where LPad/RPad depend
-        // on whether the item has an icon or an expand chevron.
-        private void AdjustPaneWidthToContent()
-        {
-            const double chevronChrome = 100;  // expandable parent (icon + chevron slot)
-            const double iconChrome = 74;      // leaf with icon (footer items)
-            const double plainChrome = 67;     // nested leaf, no icon
-            const double minPaneLength = 185;
-            const double maxPaneLength = 400;
-
-            var typeface = new Typeface(NavView.FontFamily, NavView.FontStyle, NavView.FontWeight, NavView.FontStretch);
-            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-            var fontSize = NavView.FontSize > 0 ? NavView.FontSize : 14;
-
-            double maxRequired = 0;
-            foreach (var item in EnumerateNavigationItems())
+            var buttons = new AppBarToggleButton[items.Length];
+            for (int i = 0; i < items.Length; i++)
             {
-                if (item.Content is not string text || text.Length == 0) continue;
+                var (label, glyph) = items[i];
 
-                double chrome = item.MenuItems.Count > 0 ? chevronChrome
-                              : item.Icon != null ? iconChrome
-                              : plainChrome;
-
-                var ft = new FormattedText(
-                    text,
-                    CultureInfo.CurrentUICulture,
-                    FlowDirection.LeftToRight,
-                    typeface,
-                    fontSize,
-                    Brushes.Black,
-                    pixelsPerDip);
-
-                double required = ft.Width + chrome;
-                if (required > maxRequired) maxRequired = required;
-            }
-
-            NavView.OpenPaneLength = Math.Clamp(
-                Math.Ceiling(maxRequired),
-                minPaneLength,
-                maxPaneLength);
-        }
-
-        private static NavigationViewItem MakeSectionItem(string content, string glyph)
-        {
-            var item = new NavigationViewItem() { Content = content, Icon = new FontIcon { Glyph = glyph } };
-            return item;
-        }
-
-        private static NavigationViewItem MakeItem(string content, string tag, string glyph = null)
-        {
-            var item = new NavigationViewItem { Content = content, Tag = tag };
-            if (!string.IsNullOrEmpty(glyph))
-            {
-                item.Icon = new FontIcon { Glyph = glyph };
-            }
-            return item;
-        }
-
-        private void AddSubItems(NavigationViewItem parent, (string content, string tag)[] items)
-        {
-            foreach (var (content, tag) in items)
-            {
-                parent.MenuItems.Add(MakeItem(content, tag));
-            }
-            foreach (var item in parent.MenuItems)
-            {
-                if (item is NavigationViewItem navItem)
+                var button = new AppBarToggleButton
                 {
-                    navItem.MouseEnter += NavItem_MouseEnter;
-                    navItem.MouseLeave += NavItem_MouseLeave;
+                    Icon = new FontIcon
+                    {
+                        Glyph = glyph,
+                        
+                        FontSize = 30
+                    },
+                    Label = label,
+                    Tag = i
+                };
+
+                buttons[i] = button;
+            }
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                ToolBar.AddButton(buttons[i], i != 3);
+            }
+
+            // 刷新按钮不可选中
+            buttons[3].MouseDown += (_, e) =>
+            {
+                if (e.ChangedButton == MouseButton.Left)
+                    RefreshApp();
+            };
+
+            // 搜索框
+            ToolBar.AddSearchBox(SearchBox);
+
+            // 切换标签时显示/隐藏搜索框 + 切换侧边栏
+            ToolBar.SelectedButtonChanged += (sender, e) =>
+            {
+                ControlHelper.SetPlaceholderText(SearchBox, AppString.Other.SearchContent ?? "Search...");
+                SearchBox.Text = string.Empty;
+                SearchBox.Visibility = ToolBar.SelectedIndex == 4
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+                OnToolBarSelectionChanged(sender, e);
+            };
+
+            SearchBox.TextChanged += SearchBox_TextChanged;
+            SearchBox.Visibility = Visibility.Visible;
+
+            ToolBar.SelectedIndex = selectedToolBarIndex;
+        }
+
+        private void OnToolBarSelectionChanged(object sender, EventArgs e)
+        {
+            var idx = ToolBar.SelectedIndex;
+            if (idx >= 0 && idx != selectedToolBarIndex)
+            {
+                selectedToolBarIndex = idx;
+                SwitchTab();
+            }
+        }
+
+        private void SwitchTab()
+        {
+            SideBar.Items.Clear();
+            string[] items;
+            switch (selectedToolBarIndex)
+            {
+                case 0: items = GetGeneralItems(); break;
+                case 1: items = GetTypeItems(); break;
+                case 2: items = GetOtherRuleItems(); break;
+                case 4: items = GetAboutItems(); break;
+                default: return;
+            }
+
+            foreach (var item in items)
+            {
+                if (item == null)
+                {
+                    // Separator
+                    var sep = new Separator();
+                    SideBar.Items.Add(sep);
+                }
+                else
+                {
+                    SideBar.Items.Add(item);
                 }
             }
+
+            SideBar.SelectedIndex = Math.Min(lastItemIndex[selectedToolBarIndex], SideBar.Items.Count - 1);
         }
 
-        private void NavItem_MouseEnter(object sender, MouseEventArgs e)
+        private string[] GetGeneralItems()
         {
-            if (sender is NavigationViewItem item && item.Tag is string tag)
+            return new[]
             {
-                UpdateStatusText(GetStatusText(tag));
-            }
+                AppString.SideBar.File ?? "File",
+                AppString.SideBar.Folder ?? "Folder",
+                AppString.SideBar.Directory ?? "Directory",
+                AppString.SideBar.Background ?? "Background",
+                AppString.SideBar.Desktop ?? "Desktop",
+                AppString.SideBar.Drive ?? "Drive",
+                AppString.SideBar.AllObjects ?? "All Objects",
+                AppString.SideBar.Computer ?? "Computer",
+                AppString.SideBar.RecycleBin ?? "Recycle Bin",
+                AppString.SideBar.Library ?? "Library",
+                null,
+                AppString.SideBar.New ?? "New",
+                AppString.SideBar.SendTo ?? "Send To",
+                AppString.SideBar.OpenWith ?? "Open With",
+                null,
+                AppString.SideBar.WinX ?? "WinX",
+            };
         }
 
-        private void NavItem_MouseLeave(object sender, MouseEventArgs e)
+        private string[] GetTypeItems()
         {
-            UpdateStatusText(GetStatusText(currentTag));
-        }
-
-        // Navigation / content switching
-
-        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            if (args.SelectedItem is NavigationViewItem item && item.Tag is string tag)
+            return new[]
             {
-                NavView.Header = item.Content;
-                SearchBox.Text = string.Empty;
-                searchService.Clear();
-                NavigateTo(tag);
-            }
+                AppString.SideBar.LnkFile ?? "Lnk File",
+                AppString.SideBar.UwpLnk ?? "UWP Lnk",
+                AppString.SideBar.ExeFile ?? "Exe File",
+                AppString.SideBar.UnknownType ?? "Unknown Type",
+                null,
+                AppString.SideBar.CustomExtension ?? "Custom Extension",
+                AppString.SideBar.PerceivedType ?? "Perceived Type",
+                AppString.SideBar.DirectoryType ?? "Directory Type",
+                null,
+                AppString.SideBar.MenuAnalysis ?? "Menu Analysis",
+            };
         }
 
-        private void NavigateTo(string tag)
+        private string[] GetOtherRuleItems()
         {
-            ArgumentNullException.ThrowIfNull(tag);
-
-            if (currentTag == tag)
+            return new[]
             {
-                return;
-            }
+                AppString.SideBar.EnhanceMenu ?? "Enhance Menu",
+                AppString.SideBar.DetailedEdit ?? "Detailed Edit",
+                null,
+                AppString.SideBar.DragDrop ?? "Drag Drop",
+                AppString.SideBar.PublicReferences ?? "Public References",
+                AppString.SideBar.IEMenu ?? "IE Menu",
+                null,
+                AppString.SideBar.GuidBlocked ?? "GUID Blocked",
+                AppString.SideBar.CustomRegPath ?? "Custom Reg Path",
+            };
+        }
 
-            currentTag = tag;
+        private string[] GetAboutItems()
+        {
+            return new[]
+            {
+                AppString.SideBar.AppSetting ?? "Settings",
+                AppString.SideBar.AppLanguage ?? "Language",
+                AppString.SideBar.BackupRestore ?? "Backup",
+                AppString.SideBar.Dictionaries ?? "Dictionaries",
+                AppString.SideBar.AboutApp ?? "About",
+                AppString.SideBar.Donate ?? "Donate",
+            };
+        }
 
+        private void SideBar_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SideBar.SelectedIndex < 0) return;
+            SwitchItem();
+        }
+
+        private void SwitchItem()
+        {
             if (currentListControl is MyList myList)
             {
                 myList.ClearItems();
             }
             currentListControl = null;
+            WpfContentHost.Content = null;
+            WpfContentHost.Visibility = Visibility.Collapsed;
 
-            switch (tag)
+            lastItemIndex[selectedToolBarIndex] = SideBar.SelectedIndex;
+
+            switch (selectedToolBarIndex)
             {
-                case "shell_file": LoadShell(Scenes.File); break;
-                case "shell_folder": LoadShell(Scenes.Folder); break;
-                case "shell_directory": LoadShell(Scenes.Directory); break;
-                case "shell_background": LoadShell(Scenes.Background); break;
-                case "shell_desktop": LoadShell(Scenes.Desktop); break;
-                case "shell_drive": LoadShell(Scenes.Drive); break;
-                case "shell_allobjects": LoadShell(Scenes.AllObjects); break;
-                case "shell_computer": LoadShell(Scenes.Computer); break;
-                case "shell_recyclebin": LoadShell(Scenes.RecycleBin); break;
-                case "shell_library": LoadShell(Scenes.Library); break;
-                case "shell_new": LoadShell(Scenes.New); break;
-                case "shell_sendto": LoadShell(Scenes.SendTo); break;
-                case "shell_openwith": LoadShell(Scenes.OpenWith); break;
-                case "shell_winx": LoadShell(Scenes.WinX); break;
-
-                case "type_lnk": LoadShell(Scenes.LnkFile); break;
-                case "type_uwplnk": LoadShell(Scenes.UwpLnk); break;
-                case "type_exe": LoadShell(Scenes.ExeFile); break;
-                case "type_unknown": LoadShell(Scenes.UnknownType); break;
-                case "type_custom": LoadShell(Scenes.CustomExtension); break;
-                case "type_perceived": LoadShell(Scenes.PerceivedType); break;
-                case "type_directory": LoadShell(Scenes.DirectoryType); break;
-                case "type_menuanalysis": LoadShell(Scenes.MenuAnalysis); break;
-
-                case "rule_enhance": LoadShell(Scenes.EnhanceMenu); break;
-                case "rule_detailed": LoadShell(Scenes.DetailedEdit); break;
-                case "rule_dragdrop": LoadShell(Scenes.DragDrop); break;
-                case "rule_public": LoadShell(Scenes.PublicReferences); break;
-                case "rule_ie": LoadShell(Scenes.InternetExplorer); break;
-                case "rule_guid": LoadShell(Scenes.GuidBlocked); break;
-                case "rule_customreg": LoadShell(Scenes.CustomRegPath); break;
-
-                case "about_settings":
-                    AppSettingView.RefreshFromConfig();
-                    ShowControl(AppSettingView);
-                    break;
-                case "about_language":
-                    LanguagesView.LoadLanguages();
-                    ShowControl(LanguagesView);
-                    break;
-                case "about_backup":
-                    BackupView.LoadItems();
-                    ShowControl(BackupView);
-                    break;
-                case "about_dict":
-                    DictionariesView.LoadText();
-                    ShowControl(DictionariesView);
-                    break;
-                case "about_app":
-                    AboutAppView.RefreshContent();
-                    ShowControl(AboutAppView);
-                    break;
-                case "about_donate":
-                    DonateView.RefreshContent();
-                    ShowControl(DonateView);
-                    break;
-                default:
-                    throw new NotImplementedException();
+                case 0: SwitchGeneralItem(); break;
+                case 1: SwitchTypeItem(); break;
+                case 2: SwitchOtherRuleItem(); break;
+                case 4: SwitchAboutItem(); break;
             }
 
             UpdateStatusText(GetStatusText(currentTag));
         }
 
-        internal void JumpToScene(Scenes scene)
+        private void SwitchGeneralItem()
         {
-            var tag = scene switch
+            var idx = SideBar.SelectedIndex;
+            var scenes = new[]
             {
-                Scenes.File => "shell_file",
-                Scenes.Folder => "shell_folder",
-                Scenes.Directory => "shell_directory",
-                Scenes.Background => "shell_background",
-                Scenes.Desktop => "shell_desktop",
-                Scenes.Drive => "shell_drive",
-                Scenes.AllObjects => "shell_allobjects",
-                Scenes.Computer => "shell_computer",
-                Scenes.RecycleBin => "shell_recyclebin",
-                Scenes.Library => "shell_library",
-                Scenes.New => "shell_new",
-                Scenes.SendTo => "shell_sendto",
-                Scenes.OpenWith => "shell_openwith",
-                Scenes.WinX => "shell_winx",
-                Scenes.LnkFile => "type_lnk",
-                Scenes.UwpLnk => "type_uwplnk",
-                Scenes.ExeFile => "type_exe",
-                Scenes.UnknownType => "type_unknown",
-                Scenes.CustomExtension => "type_custom",
-                Scenes.PerceivedType => "type_perceived",
-                Scenes.DirectoryType => "type_directory",
-                Scenes.MenuAnalysis => "type_menuanalysis",
-                Scenes.EnhanceMenu => "rule_enhance",
-                Scenes.DetailedEdit => "rule_detailed",
-                Scenes.DragDrop => "rule_dragdrop",
-                Scenes.PublicReferences => "rule_public",
-                Scenes.CustomRegPath => "rule_customreg",
-                _ => null
-            } ?? throw new ArgumentException("Unsupported scene for JumpToScene", nameof(scene));
-            SelectNavigationItem(tag);
-        }
+                Scenes.File, Scenes.Folder, Scenes.Directory, Scenes.Background,
+                Scenes.Desktop, Scenes.Drive, Scenes.AllObjects, Scenes.Computer,
+                Scenes.RecycleBin, Scenes.Library,
+            };
 
-        internal static string GetStatusText(Scenes scene)
-        {
-            return scene switch
+            if (idx >= 0 && idx < scenes.Length)
             {
-                Scenes.File => AppString.StatusBar.File,
-                Scenes.Folder => AppString.StatusBar.Folder,
-                Scenes.Directory => AppString.StatusBar.Directory,
-                Scenes.Background => AppString.StatusBar.Background,
-                Scenes.Desktop => AppString.StatusBar.Desktop,
-                Scenes.Drive => AppString.StatusBar.Drive,
-                Scenes.AllObjects => AppString.StatusBar.AllObjects,
-                Scenes.Computer => AppString.StatusBar.Computer,
-                Scenes.RecycleBin => AppString.StatusBar.RecycleBin,
-                Scenes.Library => AppString.StatusBar.Library,
-                Scenes.New => AppString.StatusBar.New,
-                Scenes.SendTo => AppString.StatusBar.SendTo,
-                Scenes.OpenWith => AppString.StatusBar.OpenWith,
-                Scenes.WinX => AppString.StatusBar.WinX,
-                Scenes.LnkFile => AppString.StatusBar.LnkFile,
-                Scenes.UwpLnk => AppString.StatusBar.UwpLnk,
-                Scenes.ExeFile => AppString.StatusBar.ExeFile,
-                Scenes.UnknownType => AppString.StatusBar.UnknownType,
-                Scenes.CustomExtension => AppString.StatusBar.CustomExtension,
-                Scenes.PerceivedType => AppString.StatusBar.PerceivedType,
-                Scenes.DirectoryType => AppString.StatusBar.DirectoryType,
-                Scenes.MenuAnalysis => AppString.StatusBar.MenuAnalysis,
-                Scenes.EnhanceMenu => AppString.StatusBar.EnhanceMenu,
-                Scenes.DetailedEdit => AppString.StatusBar.DetailedEdit,
-                Scenes.DragDrop => AppString.StatusBar.DragDrop,
-                Scenes.PublicReferences => AppString.StatusBar.PublicReferences,
-                Scenes.InternetExplorer => AppString.StatusBar.IEMenu,
-                Scenes.GuidBlocked => AppString.StatusBar.GuidBlocked,
-                Scenes.CustomRegPath => AppString.StatusBar.CustomRegPath,
-                _ => null
-            } ?? throw new ArgumentException("Unsupported scene for GetStatusText", nameof(scene));
-        }
-
-        internal static string GetStatusText(string tag)
-        {
-            return tag switch
-            {
-                "shell_file" => GetStatusText(Scenes.File),
-                "shell_folder" => GetStatusText(Scenes.Folder),
-                "shell_directory" => GetStatusText(Scenes.Directory),
-                "shell_background" => GetStatusText(Scenes.Background),
-                "shell_desktop" => GetStatusText(Scenes.Desktop),
-                "shell_drive" => GetStatusText(Scenes.Drive),
-                "shell_allobjects" => GetStatusText(Scenes.AllObjects),
-                "shell_computer" => GetStatusText(Scenes.Computer),
-                "shell_recyclebin" => GetStatusText(Scenes.RecycleBin),
-                "shell_library" => GetStatusText(Scenes.Library),
-                "shell_new" => GetStatusText(Scenes.New),
-                "shell_sendto" => GetStatusText(Scenes.SendTo),
-                "shell_openwith" => GetStatusText(Scenes.OpenWith),
-                "shell_winx" => GetStatusText(Scenes.WinX),
-                "type_lnk" => GetStatusText(Scenes.LnkFile),
-                "type_uwplnk" => GetStatusText(Scenes.UwpLnk),
-                "type_exe" => GetStatusText(Scenes.ExeFile),
-                "type_unknown" => GetStatusText(Scenes.UnknownType),
-                "type_custom" => GetStatusText(Scenes.CustomExtension),
-                "type_perceived" => GetStatusText(Scenes.PerceivedType),
-                "type_directory" => GetStatusText(Scenes.DirectoryType),
-                "type_menuanalysis" => GetStatusText(Scenes.MenuAnalysis),
-                "rule_enhance" => GetStatusText(Scenes.EnhanceMenu),
-                "rule_detailed" => GetStatusText(Scenes.DetailedEdit),
-                "rule_dragdrop" => GetStatusText(Scenes.DragDrop),
-                "rule_public" => GetStatusText(Scenes.PublicReferences),
-                "rule_ie" => GetStatusText(Scenes.InternetExplorer),
-                "rule_guid" => GetStatusText(Scenes.GuidBlocked),
-                "rule_customreg" => GetStatusText(Scenes.CustomRegPath),
-                "about_settings" => DefaultText,
-                "about_language" => DefaultText,
-                "about_backup" => DefaultText,
-                "about_dict" => DefaultText,
-                "about_app" => DefaultText,
-                "about_donate" => DefaultText,
-                _ => null
-            } ?? throw new ArgumentException("Unsupported tag for GetStatusText", nameof(tag));
-        }
-
-        internal void RefreshCurrentView()
-        {
-            NavigateTo(currentTag);
-        }
-
-        private void SelectNavigationItem(string tag)
-        {
-            foreach (var item in EnumerateNavigationItems())
-            {
-                if (string.Equals(item.Tag as string, tag, StringComparison.Ordinal))
-                {
-                    NavView.SelectedItem = item;
-                    return;
-                }
+                ShellList.Scene = scenes[idx];
+                ShellList.LoadItems();
+                ShowControl(ShellList);
+                currentTag = $"shell_{scenes[idx]}";
+                return;
             }
 
-            NavigateTo(tag);
-        }
-
-        private IEnumerable<NavigationViewItem> EnumerateNavigationItems()
-        {
-            foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
+            // New=11, SendTo=12, OpenWith=13, WinX=15
+            switch (idx)
             {
-                foreach (var nested in EnumerateNavigationItems(item))
-                {
-                    yield return nested;
-                }
-            }
-
-            foreach (var item in NavView.FooterMenuItems.OfType<NavigationViewItem>())
-            {
-                yield return item;
+                case 11: ShellNewList.LoadItems(); ShowControl(ShellNewList); currentTag = "shell_new"; break;
+                case 12: SendToList.LoadItems(); ShowControl(SendToList); currentTag = "shell_sendto"; break;
+                case 13: OpenWithList.LoadItems(); ShowControl(OpenWithList); currentTag = "shell_openwith"; break;
+                case 15: WinXList.LoadItems(); ShowControl(WinXList); currentTag = "shell_winx"; break;
             }
         }
 
-        private static IEnumerable<NavigationViewItem> EnumerateNavigationItems(NavigationViewItem item)
+        private void SwitchTypeItem()
         {
-            yield return item;
-
-            foreach (var nested in item.MenuItems.OfType<NavigationViewItem>())
+            var typeScenes = new Scenes?[]
             {
-                foreach (var child in EnumerateNavigationItems(nested))
-                {
-                    yield return child;
-                }
+                Scenes.LnkFile, Scenes.UwpLnk, Scenes.ExeFile, Scenes.UnknownType,
+                null,
+                Scenes.CustomExtension, Scenes.PerceivedType, Scenes.DirectoryType,
+                null,
+                Scenes.MenuAnalysis,
+            };
+
+            var idx = SideBar.SelectedIndex;
+            if (idx >= 0 && idx < typeScenes.Length && typeScenes[idx].HasValue)
+            {
+                ShellList.Scene = typeScenes[idx].Value;
+                ShellList.LoadItems();
+                ShowControl(ShellList);
+                currentTag = $"type_{typeScenes[idx].Value}";
             }
         }
 
-        private void LoadShell(Scenes scene)
+        private void SwitchOtherRuleItem()
         {
-            switch (scene)
+            switch (SideBar.SelectedIndex)
             {
-                case Scenes.New: ShellNewList.LoadItems(); ShowControl(ShellNewList); break;
-                case Scenes.SendTo: SendToList.LoadItems(); ShowControl(SendToList); break;
-                case Scenes.OpenWith: OpenWithList.LoadItems(); ShowControl(OpenWithList); break;
-                case Scenes.WinX: WinXList.LoadItems(); ShowControl(WinXList); break;
-                case Scenes.InternetExplorer: IEList.LoadItems(); ShowControl(IEList); break;
-                case Scenes.GuidBlocked: GuidBlockedList.LoadItems(); ShowControl(GuidBlockedList); break;
-                case Scenes.EnhanceMenu:
+                case 0:
                     EnhanceMenusList.ScenePath = null;
                     EnhanceMenusList.LoadItems();
                     ShowControl(EnhanceMenusList);
+                    currentTag = "rule_enhance";
                     break;
-                case Scenes.DetailedEdit:
+                case 1:
                     DetailedEditList.GroupGuid = Guid.Empty;
                     DetailedEditList.LoadItems();
                     ShowControl(DetailedEditList);
+                    currentTag = "rule_detailed";
                     break;
-                default:
-                    ShellList.Scene = scene; ShellList.LoadItems();
+                case 3:
+                    ShellList.Scene = Scenes.DragDrop;
+                    ShellList.LoadItems();
                     ShowControl(ShellList);
+                    currentTag = "rule_dragdrop";
+                    break;
+                case 4:
+                    ShellList.Scene = Scenes.PublicReferences;
+                    ShellList.LoadItems();
+                    ShowControl(ShellList);
+                    currentTag = "rule_public";
+                    break;
+                case 5:
+                    IEList.LoadItems();
+                    ShowControl(IEList);
+                    currentTag = "rule_ie";
+                    break;
+                case 7:
+                    GuidBlockedList.LoadItems();
+                    ShowControl(GuidBlockedList);
+                    currentTag = "rule_guid";
+                    break;
+                case 8:
+                    ShellList.Scene = Scenes.CustomRegPath;
+                    ShellList.LoadItems();
+                    ShowControl(ShellList);
+                    currentTag = "rule_customreg";
+                    break;
+            }
+        }
+
+        private void SwitchAboutItem()
+        {
+            switch (SideBar.SelectedIndex)
+            {
+                case 0:
+                    AppSettingView.RefreshFromConfig();
+                    ShowControl(AppSettingView);
+                    currentTag = "about_settings";
+                    break;
+                case 1:
+                    LanguagesView.LoadLanguages();
+                    ShowControl(LanguagesView);
+                    currentTag = "about_language";
+                    break;
+                case 2:
+                    BackupView.LoadItems();
+                    ShowControl(BackupView);
+                    currentTag = "about_backup";
+                    break;
+                case 3:
+                    DictionariesView.LoadText();
+                    ShowControl(DictionariesView);
+                    currentTag = "about_dict";
+                    break;
+                case 4:
+                    AboutAppView.RefreshContent();
+                    ShowControl(AboutAppView);
+                    currentTag = "about_app";
+                    break;
+                case 5:
+                    DonateView.RefreshContent();
+                    ShowControl(DonateView);
+                    currentTag = "about_donate";
                     break;
             }
         }
@@ -531,30 +487,21 @@ namespace ContextMenuManager
             WpfContentHost.Content = ctrl;
             WpfContentHost.Visibility = Visibility.Visible;
             currentListControl = ctrl;
-            SetSearchEnabled(ctrl is MyList);
             if (ctrl is not MyList) UpdateStatusText(DefaultText);
         }
 
-        private void SetSearchEnabled(bool enabled)
-        {
-            SearchBox.Text = string.Empty;
-            SearchBoxPanel.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        // Refresh
-
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        private void RefreshApp()
         {
             ObjectPath.ClearFilePathDic();
             AppConfig.ReloadConfig();
             GuidInfo.ReloadDics();
             XmlDicHelper.ReloadDics();
-            NavigateTo(currentTag);
+            SwitchItem();
         }
 
         // Search
 
-        private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             FilterItems(SearchBox.Text);
         }
@@ -616,7 +563,88 @@ namespace ContextMenuManager
             }
         }
 
-        // Status bar helper
+        // Status bar
+
+        internal static string GetStatusText(Scenes scene)
+        {
+            return scene switch
+            {
+                Scenes.File => AppString.StatusBar.File,
+                Scenes.Folder => AppString.StatusBar.Folder,
+                Scenes.Directory => AppString.StatusBar.Directory,
+                Scenes.Background => AppString.StatusBar.Background,
+                Scenes.Desktop => AppString.StatusBar.Desktop,
+                Scenes.Drive => AppString.StatusBar.Drive,
+                Scenes.AllObjects => AppString.StatusBar.AllObjects,
+                Scenes.Computer => AppString.StatusBar.Computer,
+                Scenes.RecycleBin => AppString.StatusBar.RecycleBin,
+                Scenes.Library => AppString.StatusBar.Library,
+                Scenes.New => AppString.StatusBar.New,
+                Scenes.SendTo => AppString.StatusBar.SendTo,
+                Scenes.OpenWith => AppString.StatusBar.OpenWith,
+                Scenes.WinX => AppString.StatusBar.WinX,
+                Scenes.LnkFile => AppString.StatusBar.LnkFile,
+                Scenes.UwpLnk => AppString.StatusBar.UwpLnk,
+                Scenes.ExeFile => AppString.StatusBar.ExeFile,
+                Scenes.UnknownType => AppString.StatusBar.UnknownType,
+                Scenes.CustomExtension => AppString.StatusBar.CustomExtension,
+                Scenes.PerceivedType => AppString.StatusBar.PerceivedType,
+                Scenes.DirectoryType => AppString.StatusBar.DirectoryType,
+                Scenes.MenuAnalysis => AppString.StatusBar.MenuAnalysis,
+                Scenes.EnhanceMenu => AppString.StatusBar.EnhanceMenu,
+                Scenes.DetailedEdit => AppString.StatusBar.DetailedEdit,
+                Scenes.DragDrop => AppString.StatusBar.DragDrop,
+                Scenes.PublicReferences => AppString.StatusBar.PublicReferences,
+                Scenes.InternetExplorer => AppString.StatusBar.IEMenu,
+                Scenes.GuidBlocked => AppString.StatusBar.GuidBlocked,
+                Scenes.CustomRegPath => AppString.StatusBar.CustomRegPath,
+                _ => null
+            } ?? throw new ArgumentException("Unsupported scene for GetStatusText", nameof(scene));
+        }
+
+        internal static string GetStatusText(string tag)
+        {
+            if (tag == null) return DefaultText;
+            return tag switch
+            {
+                "shell_file" => GetStatusText(Scenes.File),
+                "shell_folder" => GetStatusText(Scenes.Folder),
+                "shell_directory" => GetStatusText(Scenes.Directory),
+                "shell_background" => GetStatusText(Scenes.Background),
+                "shell_desktop" => GetStatusText(Scenes.Desktop),
+                "shell_drive" => GetStatusText(Scenes.Drive),
+                "shell_allobjects" => GetStatusText(Scenes.AllObjects),
+                "shell_computer" => GetStatusText(Scenes.Computer),
+                "shell_recyclebin" => GetStatusText(Scenes.RecycleBin),
+                "shell_library" => GetStatusText(Scenes.Library),
+                "shell_new" => GetStatusText(Scenes.New),
+                "shell_sendto" => GetStatusText(Scenes.SendTo),
+                "shell_openwith" => GetStatusText(Scenes.OpenWith),
+                "shell_winx" => GetStatusText(Scenes.WinX),
+                "type_lnk" => GetStatusText(Scenes.LnkFile),
+                "type_uwplnk" => GetStatusText(Scenes.UwpLnk),
+                "type_exe" => GetStatusText(Scenes.ExeFile),
+                "type_unknown" => GetStatusText(Scenes.UnknownType),
+                "type_custom" => GetStatusText(Scenes.CustomExtension),
+                "type_perceived" => GetStatusText(Scenes.PerceivedType),
+                "type_directory" => GetStatusText(Scenes.DirectoryType),
+                "type_menuanalysis" => GetStatusText(Scenes.MenuAnalysis),
+                "rule_enhance" => GetStatusText(Scenes.EnhanceMenu),
+                "rule_detailed" => GetStatusText(Scenes.DetailedEdit),
+                "rule_dragdrop" => GetStatusText(Scenes.DragDrop),
+                "rule_public" => GetStatusText(Scenes.PublicReferences),
+                "rule_ie" => GetStatusText(Scenes.InternetExplorer),
+                "rule_guid" => GetStatusText(Scenes.GuidBlocked),
+                "rule_customreg" => GetStatusText(Scenes.CustomRegPath),
+                "about_settings" => DefaultText,
+                "about_language" => DefaultText,
+                "about_backup" => DefaultText,
+                "about_dict" => DefaultText,
+                "about_app" => DefaultText,
+                "about_donate" => DefaultText,
+                _ => DefaultText
+            };
+        }
 
         private void UpdateStatusText(string text)
         {
@@ -645,6 +673,80 @@ namespace ContextMenuManager
             Opacity = 0;
         }
 
+        internal void JumpToScene(Scenes scene)
+        {
+            var tag = scene switch
+            {
+                Scenes.File => "shell_file",
+                Scenes.Folder => "shell_folder",
+                Scenes.Directory => "shell_directory",
+                Scenes.Background => "shell_background",
+                Scenes.Desktop => "shell_desktop",
+                Scenes.Drive => "shell_drive",
+                Scenes.AllObjects => "shell_allobjects",
+                Scenes.Computer => "shell_computer",
+                Scenes.RecycleBin => "shell_recyclebin",
+                Scenes.Library => "shell_library",
+                Scenes.New => "shell_new",
+                Scenes.SendTo => "shell_sendto",
+                Scenes.OpenWith => "shell_openwith",
+                Scenes.WinX => "shell_winx",
+                Scenes.LnkFile => "type_lnk",
+                Scenes.UwpLnk => "type_uwplnk",
+                Scenes.ExeFile => "type_exe",
+                Scenes.UnknownType => "type_unknown",
+                Scenes.CustomExtension => "type_custom",
+                Scenes.PerceivedType => "type_perceived",
+                Scenes.DirectoryType => "type_directory",
+                Scenes.MenuAnalysis => "type_menuanalysis",
+                Scenes.EnhanceMenu => "rule_enhance",
+                Scenes.DetailedEdit => "rule_detailed",
+                Scenes.DragDrop => "rule_dragdrop",
+                Scenes.PublicReferences => "rule_public",
+                Scenes.CustomRegPath => "rule_customreg",
+                _ => null
+            } ?? throw new ArgumentException("Unsupported scene for JumpToScene", nameof(scene));
+
+            // Map scene to toolbar index and sidebar index
+            int toolbarIdx = scene switch
+            {
+                Scenes.File or Scenes.Folder or Scenes.Directory or Scenes.Background
+                    or Scenes.Desktop or Scenes.Drive or Scenes.AllObjects or Scenes.Computer
+                    or Scenes.RecycleBin or Scenes.Library or Scenes.New or Scenes.SendTo
+                    or Scenes.OpenWith or Scenes.WinX => 0,
+                Scenes.LnkFile or Scenes.UwpLnk or Scenes.ExeFile or Scenes.UnknownType
+                    or Scenes.CustomExtension or Scenes.PerceivedType or Scenes.DirectoryType
+                    or Scenes.MenuAnalysis => 1,
+                Scenes.EnhanceMenu or Scenes.DetailedEdit or Scenes.DragDrop
+                    or Scenes.PublicReferences or Scenes.InternetExplorer or Scenes.GuidBlocked
+                    or Scenes.CustomRegPath => 2,
+                _ => 0
+            };
+
+            int sidebarIdx = scene switch
+            {
+                Scenes.File => 0, Scenes.Folder => 1, Scenes.Directory => 2,
+                Scenes.Background => 3, Scenes.Desktop => 4, Scenes.Drive => 5,
+                Scenes.AllObjects => 6, Scenes.Computer => 7, Scenes.RecycleBin => 8,
+                Scenes.Library => 9, Scenes.New => 11, Scenes.SendTo => 12,
+                Scenes.OpenWith => 13, Scenes.WinX => 15,
+                Scenes.LnkFile => 0, Scenes.UwpLnk => 1, Scenes.ExeFile => 2,
+                Scenes.UnknownType => 3, Scenes.CustomExtension => 5,
+                Scenes.PerceivedType => 6, Scenes.DirectoryType => 7,
+                Scenes.MenuAnalysis => 9,
+                Scenes.EnhanceMenu => 0, Scenes.DetailedEdit => 1,
+                Scenes.DragDrop => 3, Scenes.PublicReferences => 4,
+                Scenes.InternetExplorer => 5, Scenes.GuidBlocked => 7,
+                Scenes.CustomRegPath => 8,
+                _ => 0
+            };
+
+            selectedToolBarIndex = toolbarIdx;
+            ToolBar.SelectedIndex = toolbarIdx;
+            SwitchTab();
+            SideBar.SelectedIndex = sidebarIdx;
+        }
+
         private void FirstRunDownloadLanguage()
         {
             if (!AppConfig.IsFirstRun)
@@ -667,7 +769,9 @@ namespace ContextMenuManager
 
             if (result == MessageBoxResult.Yes)
             {
-                NavigateTo("about_language");
+                selectedToolBarIndex = 4;
+                ToolBar.SelectedIndex = 4;
+                SideBar.SelectedIndex = 1;
                 LanguagesView.ShowLanguageDialog();
             }
         }

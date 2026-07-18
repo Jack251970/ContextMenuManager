@@ -5,6 +5,16 @@ namespace ContextMenuManager.Methods
 {
     internal static class AppImage
     {
+        ///<summary>主页</summary>
+        public static readonly Image Home = AppResources.Home;
+        ///<summary>文件类型</summary>
+        public static readonly Image Type = AppResources.Type;
+        ///<summary>星形/规则</summary>
+        public static readonly Image Star = AppResources.Star;
+        ///<summary>刷新</summary>
+        public static readonly Image Refresh = AppResources.Refresh;
+        ///<summary>关于</summary>
+        public static readonly Image About = AppResources.About;
         ///<summary>Microsoft Store</summary>
         public static readonly Image MicrosoftStore = AppResources.MicrosoftStore;
         ///<summary>系统文件</summary>

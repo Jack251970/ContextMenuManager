@@ -86,6 +86,11 @@ namespace ContextMenuManager.Properties
         public static Image Logo => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/Logo.png");
         public static Image MicrosoftStore => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/MicrosoftStore.png");
         public static Image BuyMeCoffe => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/BuyMeCoffe.png");
+        public static Image Home => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/Home.png");
+        public static Image Type => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/Type.png");
+        public static Image Star => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/Star.png");
+        public static Image Refresh => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/Refresh.png");
+        public static Image About => GetImage("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Images/About.png");
         public static string AppLanguageDic => GetText("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Texts/AppLanguageDic.ini");
         public static string GuidInfosDic => GetText("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Texts/GuidInfosDic.ini");
         public static string DetailedEditDic => GetText("pack://application:,,,/ContextMenuManager;component/Properties/Resources/Texts/DetailedEditDic.xml");
