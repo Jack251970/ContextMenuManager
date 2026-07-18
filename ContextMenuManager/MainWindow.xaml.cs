@@ -159,23 +159,27 @@ namespace ContextMenuManager
                 (AppString.ToolBar.About ?? "About", "\uE946"),
             };
 
-            var buttons = new MyToolBarButton[items.Length];
+            var buttons = new AppBarToggleButton[items.Length];
             for (int i = 0; i < items.Length; i++)
             {
                 var (label, glyph) = items[i];
 
-                var button = new MyToolBarButton(glyph, label)
+                var button = new AppBarToggleButton
                 {
+                    Icon = new FontIcon { Glyph = glyph },
+                    Label = label,
                     Tag = i
                 };
 
                 buttons[i] = button;
             }
 
-            ToolBar.AddButtons(buttons);
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                ToolBar.AddButton(buttons[i], i != 3);
+            }
 
             // 刷新按钮不可选中
-            buttons[3].CanBeSelected = false;
             buttons[3].MouseDown += (_, e) =>
             {
                 if (e.ChangedButton == MouseButton.Left)
