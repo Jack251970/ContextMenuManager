@@ -75,7 +75,7 @@ namespace ContextMenuManager.Controls.Interfaces
                     }
                 };
 
-                var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+                var result = ContentDialogHost.ShowContentDialog(dialog, owner);
                 if (result == ContentDialogResult.Primary)
                 {
                     Command = txtCommand.Text;

@@ -92,7 +92,7 @@ namespace ContextMenuManager.Controls
                 Children = { lblRestore, dataGrid }
             };
 
-            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            ContentDialogHost.ShowContentDialog(dialog, owner);
             return true;
         }
 

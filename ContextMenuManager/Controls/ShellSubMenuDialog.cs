@@ -43,7 +43,7 @@ namespace ContextMenuManager.Controls
                         }
                     };
 
-                    var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+                    var result = ContentDialogHost.ShowContentDialog(dialog, owner);
 
                     if (result == ContentDialogResult.Primary)
                     {
@@ -93,7 +93,7 @@ namespace ContextMenuManager.Controls
             list.MinHeight = 400;
             dialog.Content = list;
 
-            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            ContentDialogHost.ShowContentDialog(dialog, owner);
             return false;
         }
 
