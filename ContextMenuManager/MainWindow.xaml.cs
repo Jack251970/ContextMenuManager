@@ -3,6 +3,7 @@ using ContextMenuManager.Methods;
 using ContextMenuManager.Properties;
 using ContextMenuManager.Views;
 using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -192,6 +193,7 @@ namespace ContextMenuManager
             // 切换标签时显示/隐藏搜索框 + 切换侧边栏
             ToolBar.SelectedButtonChanged += (sender, e) =>
             {
+                ControlHelper.SetPlaceholderText(SearchBox, AppString.Other.SearchContent ?? "Search...");
                 SearchBox.Text = string.Empty;
                 SearchBox.Visibility = ToolBar.SelectedIndex == 4
                     ? Visibility.Collapsed
