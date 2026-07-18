@@ -38,7 +38,7 @@ namespace ContextMenuManager.Controls
             };
 
             dialog.Content = inputBox;
-            var result = ContentDialogHost.RunBlocking(owner => dialog.ShowAsync(owner), owner);
+            var result = ContentDialogHost.ShowContentDialog(dialog, owner);
             var accepted = result == ContentDialogResult.Primary;
             Text = accepted ? inputBox.Text : null;
             return accepted;

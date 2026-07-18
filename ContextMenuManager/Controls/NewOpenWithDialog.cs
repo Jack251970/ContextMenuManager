@@ -64,7 +64,7 @@ namespace ContextMenuManager.Controls
                 }
             };
 
-            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            var result = ContentDialogHost.ShowContentDialog(dialog, owner);
             if (result != ContentDialogResult.Primary)
             {
                 return false;

@@ -28,7 +28,7 @@ namespace ContextMenuManager.Controls
             list.LoadItems();
 
             dialog.Content = list;
-            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            ContentDialogHost.ShowContentDialog(dialog, owner);
             return false;
         }
     }

@@ -58,7 +58,7 @@ namespace ContextMenuManager.Controls
 
             dialog.Content = stackPanel;
 
-            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            var result = ContentDialogHost.ShowContentDialog(dialog, owner);
             if (result == ContentDialogResult.Primary)
             {
                 for (var i = 0; i < verbs.Length; i++)

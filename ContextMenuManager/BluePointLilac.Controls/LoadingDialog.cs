@@ -23,6 +23,7 @@ namespace ContextMenuManager.Controls
         private LoadingDialog(string title, Action<LoadingDialogInterface> action, MainWindow owner = null)
         {
             dialog = ContentDialogHost.CreateDialog(title, owner);
+            // 此处禁止主按钮，仅支持关闭按钮提供快速结束功能
             dialog.IsPrimaryButtonEnabled = false;
             dialog.DefaultButton = ContentDialogButton.None;
 

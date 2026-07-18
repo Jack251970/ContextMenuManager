@@ -40,7 +40,7 @@ namespace ContextMenuManager.Controls
             }
 
             dialog.Content = comboBox;
-            var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            var result = ContentDialogHost.ShowContentDialog(dialog, owner);
             if (result != ContentDialogResult.Primary)
             {
                 return false;

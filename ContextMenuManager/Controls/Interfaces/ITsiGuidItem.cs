@@ -227,7 +227,7 @@ namespace ContextMenuManager.Controls.Interfaces
 
                 dialog.Content = stackPanel;
 
-                var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+                var result = ContentDialogHost.ShowContentDialog(dialog, owner);
 
                 if (result == ContentDialogResult.Primary)
                 {

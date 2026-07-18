@@ -26,6 +26,7 @@ namespace ContextMenuManager.Controls
             return ContentDialogHost.RunBlocking(async owner =>
             {
                 var dialog = ContentDialogHost.CreateDialog(Text, (MainWindow)owner);
+                // 此处禁止主按钮，仅支持关闭按钮提供停止下载功能
                 dialog.IsPrimaryButtonEnabled = false;
                 dialog.DefaultButton = ContentDialogButton.Close;
 

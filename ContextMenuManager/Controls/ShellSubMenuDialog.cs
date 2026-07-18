@@ -43,7 +43,7 @@ namespace ContextMenuManager.Controls
                         }
                     };
 
-                    var result = ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+                    var result = ContentDialogHost.ShowContentDialog(dialog, owner);
 
                     if (result == ContentDialogResult.Primary)
                     {
@@ -86,6 +86,7 @@ namespace ContextMenuManager.Controls
         private static bool ShowListDialog(string title, MyList list, MainWindow owner)
         {
             var dialog = ContentDialogHost.CreateDialog(title, owner);
+            // 此处禁止主按钮，仅支持关闭按钮提供完成更改的功能
             dialog.IsPrimaryButtonEnabled = false;
             dialog.CloseButtonText = AppString.Dialog.OK;
 
@@ -93,7 +94,7 @@ namespace ContextMenuManager.Controls
             list.MinHeight = 400;
             dialog.Content = list;
 
-            ContentDialogHost.RunBlocking(dialog.ShowAsync, owner);
+            ContentDialogHost.ShowContentDialog(dialog, owner);
             return false;
         }
 
