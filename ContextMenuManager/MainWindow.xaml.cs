@@ -5,14 +5,12 @@ using ContextMenuManager.Views;
 using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using DrawingSize = System.Drawing.Size;
 
 namespace ContextMenuManager
@@ -167,7 +165,11 @@ namespace ContextMenuManager
 
                 var button = new AppBarToggleButton
                 {
-                    Icon = new FontIcon { Glyph = glyph },
+                    Icon = new FontIcon
+                    {
+                        Glyph = glyph,
+                        FontSize = 30,
+                    },
                     Label = label,
                     Tag = i
                 };
@@ -203,8 +205,9 @@ namespace ContextMenuManager
 
             SearchBox.TextChanged += SearchBox_TextChanged;
             SearchBox.Visibility = Visibility.Visible;
-        }
 
+            ToolBar.SelectedIndex = selectedToolBarIndex;
+        }
         private void OnToolBarSelectionChanged(object sender, EventArgs e)
         {
             var idx = ToolBar.SelectedIndex;
