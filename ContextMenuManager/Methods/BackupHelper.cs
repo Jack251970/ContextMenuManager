@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
@@ -1485,9 +1486,9 @@ namespace ContextMenuManager.Methods
             {
                 backupRestoreList.Add(new BackupItem
                 {
-                    KeyName = keyName,
+                    KeyName = SanitizeXmlString(keyName),
                     ItemType = backupItemType,
-                    ItemData = itemData,
+                    ItemData = SanitizeXmlString(itemData),
                     BackupScene = scene,
                 });
             }
@@ -1526,14 +1527,78 @@ namespace ContextMenuManager.Methods
             {
                 var myData = new BackupData()
                 {
-                    MetaData = metaData,
+                    MetaData = new MetaData
+                    {
+                        Version = metaData.Version,
+                        BackupScenes = metaData.BackupScenes,
+                        CreateTime = metaData.CreateTime,
+                        Device = SanitizeXmlString(metaData.Device),
+                    },
                     BackupList = backupRestoreList,
                 };
 
-                // 序列化root对象并保存到XML文档
-                using var stream = new FileStream(filePath, FileMode.Create);
-                backupDataSerializer.Serialize(stream, myData, namespaces);
+                // 先完整写入同目录临时文件，避免序列化失败时留下空的备份文件
+                var targetFilePath = Path.GetFullPath(filePath);
+                var directory = Path.GetDirectoryName(targetFilePath);
+                var tempFilePath = Path.Combine(directory,
+                    $".{Path.GetFileName(targetFilePath)}.{Guid.NewGuid():N}.tmp");
+                try
+                {
+                    using (var stream = new FileStream(tempFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                    {
+                        backupDataSerializer.Serialize(stream, myData, namespaces);
+                        stream.Flush(true);
+                    }
+                    File.Move(tempFilePath, targetFilePath, true);
+                }
+                finally
+                {
+                    if (File.Exists(tempFilePath))
+                    {
+                        File.Delete(tempFilePath);
+                    }
+                }
             }
+        }
+
+        private static string SanitizeXmlString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            StringBuilder sanitized = null;
+            for (var i = 0; i < value.Length; i++)
+            {
+                var character = value[i];
+                if (XmlConvert.IsXmlChar(character))
+                {
+                    sanitized?.Append(character);
+                    continue;
+                }
+
+                // XmlConvert checks one UTF-16 code unit at a time. A valid surrogate pair
+                // represents a legal supplementary XML character and must be kept intact.
+                if (char.IsHighSurrogate(character) &&
+                    i + 1 < value.Length && char.IsLowSurrogate(value[i + 1]))
+                {
+                    if (sanitized != null)
+                    {
+                        sanitized.Append(character);
+                        sanitized.Append(value[i + 1]);
+                    }
+                    i++;
+                    continue;
+                }
+
+                if (sanitized == null)
+                {
+                    sanitized = new StringBuilder(value.Length);
+                    sanitized.Append(value, 0, i);
+                }
+            }
+            return sanitized?.ToString() ?? value;
         }
 
         public static void LoadBackupList(string filePath)
