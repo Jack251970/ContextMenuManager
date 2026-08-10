@@ -302,12 +302,10 @@ namespace ContextMenuManager.Controls
             FilePath = lnkPath;
             RefreshKeyPath();
 
-            List.Controls.Remove(Control);
             for (var i = 0; i < List.Controls.Count; i++)
             {
                 if (List.Controls[i].Item is WinXGroupItem groupItem && groupItem.Text == dlg.Selected)
                 {
-                    List.Controls.Add(Control);
                     List.SetItemIndex(this, i + 1);
                     Visible = !groupItem.IsFold;
                     ((WinXGroupItem)FoldGroupItem).RemoveWinXItem(this);
