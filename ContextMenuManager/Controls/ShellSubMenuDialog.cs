@@ -212,8 +212,8 @@ namespace ContextMenuManager.Controls
                 SubKeyNames.RemoveAt(index - 1);
                 var nextIndex = index;
                 if (index == Controls.Count - 1) nextIndex--;
-                Controls.Remove(item.Control);
-                Controls[nextIndex]?.Focus();
+                RemoveItem(item);
+                if (Controls.Count > 0) Controls[nextIndex].Focus();
                 SaveSorting();
                 item.Dispose();
             }
@@ -500,7 +500,7 @@ namespace ContextMenuManager.Controls
                     var index = List.GetItemIndex(this);
                     if (index == List.Controls.Count - 1) index--;
                     List.Controls[index]?.Focus();
-                    List.Controls.Remove(Control);
+                    List.RemoveItem(this);
                     Dispose();
                 }
             }

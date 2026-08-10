@@ -116,9 +116,11 @@ namespace ContextMenuManager.Controls
             Array.ForEach(GuidBlockedList.BlockedPaths, path => RegistryEx.DeleteValue(path, Value));
             if (!Guid.Equals(Guid.Empty)) ExplorerRestarter.Show();
             var index = List.GetItemIndex(this);
-            index -= (index < List.Controls.Count - 1) ? 0 : 1;
-            List.Controls.Remove(Control);
-            List.Controls[index]?.Focus();
+            List.RemoveItem(this);
+            if (List.Controls.Count > 0)
+            {
+                List.Controls[Math.Min(index, List.Controls.Count - 1)].Focus();
+            }
             Dispose();
         }
     }

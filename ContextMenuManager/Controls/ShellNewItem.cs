@@ -331,7 +331,7 @@ namespace ContextMenuManager.Controls
         {
             RegistryEx.DeleteKeyTree(RegPath);
             RegistryEx.DeleteKeyTree(BackupPath);
-            List.Controls.Remove(Control);
+            List.RemoveItem(this);
             if (ShellNewList.ShellNewLockItem.IsLocked) List?.SaveSorting();
         }
 

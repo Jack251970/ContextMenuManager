@@ -52,8 +52,11 @@ namespace ContextMenuManager.Controls.Interfaces
                     AppMessageBox.Show(AppString.Message.AuthorityProtection);
                     return;
                 }
-                list.Controls.Remove(listItem.Control);
-                list.Controls[index < list.Controls.Count ? index : (list.Controls.Count - 1)].Focus();
+                list.RemoveItem(listItem);
+                if (list.Controls.Count > 0)
+                {
+                    list.Controls[Math.Min(index, list.Controls.Count - 1)].Focus();
+                }
                 listItem.Dispose();
             };
         }

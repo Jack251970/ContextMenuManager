@@ -96,6 +96,11 @@ namespace ContextMenuManager.Controls
             stackPanel.Children.Insert(index, item.Control);
         }
 
+        public void RemoveItem(MyListItem item)
+        {
+            if (item != null) stackPanel.Children.Remove(item.Control);
+        }
+
         public virtual void ClearItems()
         {
             stackPanel.Children.Clear();
