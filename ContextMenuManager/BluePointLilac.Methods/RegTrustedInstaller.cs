@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
@@ -164,10 +164,10 @@ namespace ContextMenuManager.Methods
             if (string.IsNullOrWhiteSpace(regPath)) return;
             RegistryKey? key = null;
             WindowsIdentity? id = null;
-            //利用试错判断是否有写入权限
+            //利用试错判断是否有写入权限（用不触发所有权的方式探测，避免与获取所有权形成递归）
             try
             {
-                key = RegistryEx.GetRegistryKey(regPath, true);
+                key = RegistryEx.GetRegistryKeyWithoutTakingOwnership(regPath, true);
             }
             catch
             {
@@ -233,13 +233,16 @@ namespace ContextMenuManager.Methods
         /// <summary>获取注册表项及其子项、递归子级子项权限</summary>
         /// <remarks>将注册表项所有者改为当前管理员用户</remarks>
         /// <param name="regPath">要获取权限的注册表完整路径</param>
+        /// <remarks>若指定路径不存在，则向上查找最近的已存在父级并获取其所有权</remarks>
         public static void TakeRegTreeOwnerShip(string regPath)
         {
             if (string.IsNullOrWhiteSpace(regPath)) return;
-            TakeRegKeyOwnerShip(regPath);
+            var targetPath = FindExistingKeyPath(regPath);
+            if (string.IsNullOrWhiteSpace(targetPath)) return;
+            TakeRegKeyOwnerShip(targetPath);
             try
             {
-                using var key = RegistryEx.GetRegistryKey(regPath);
+                using var key = RegistryEx.GetRegistryKeyWithoutTakingOwnership(targetPath);
                 if (key == null) return;
                 foreach (var subKeyName in key.GetSubKeyNames())
                 {
@@ -247,6 +250,20 @@ namespace ContextMenuManager.Methods
                 }
             }
             catch { }
+        }
+
+        /// <summary>找到最近一个存在的注册表祖先路径（含自身）</summary>
+        private static string? FindExistingKeyPath(string regPath)
+        {
+            if (RegistryEx.KeyExists(regPath)) return regPath;
+            var rootName = RegistryEx.GetRootName(regPath);
+            var current = regPath;
+            while (!current.Equals(rootName, StringComparison.OrdinalIgnoreCase))
+            {
+                current = RegistryEx.GetParentPath(current);
+                if (RegistryEx.KeyExists(current)) return current;
+            }
+            return RegistryEx.KeyExists(rootName) ? rootName : null;
         }
     }
 }

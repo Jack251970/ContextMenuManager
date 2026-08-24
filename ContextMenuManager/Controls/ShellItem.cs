@@ -454,11 +454,13 @@ namespace ContextMenuManager.Controls
             TsiSetTop.Click += (sender, e) => ItemPosition = Positions.Top;
             TsiSetBottom.Click += (sender, e) => ItemPosition = Positions.Bottom;
             TsiDefault.Click += (sender, e) => ItemPosition = Positions.Default;
-            TsiOnlyInExplorer.Click += (sender, e) => OnlyInExplorer = !TsiOnlyInExplorer.Checked;
-            TsiOnlyWithShift.Click += (sender, e) => OnlyWithShift = !TsiOnlyWithShift.Checked;
-            TsiNoWorkDir.Click += (sender, e) => NoWorkingDirectory = !TsiNoWorkDir.Checked;
-            TsiNeverDefault.Click += (sender, e) => NeverDefault = !TsiNeverDefault.Checked;
-            TsiShowAsDisabled.Click += (sender, e) => ShowAsDisabledIfHidden = !TsiShowAsDisabled.Checked;
+            // 点击时 WPF 已自动切换 IsChecked（IsCheckable 项），直接采用其新状态；
+            // 再按真实读取值回写一遍，若受保护拒绝写入则把勾选状态回滚一致
+            TsiOnlyInExplorer.Click += (s, e) => { OnlyInExplorer = TsiOnlyInExplorer.Checked; TsiOnlyInExplorer.Checked = OnlyInExplorer; };
+            TsiOnlyWithShift.Click += (s, e) => { OnlyWithShift = TsiOnlyWithShift.Checked; TsiOnlyWithShift.Checked = OnlyWithShift; };
+            TsiNoWorkDir.Click += (s, e) => { NoWorkingDirectory = TsiNoWorkDir.Checked; TsiNoWorkDir.Checked = NoWorkingDirectory; };
+            TsiNeverDefault.Click += (s, e) => { NeverDefault = TsiNeverDefault.Checked; TsiNeverDefault.Checked = NeverDefault; };
+            TsiShowAsDisabled.Click += (s, e) => { ShowAsDisabledIfHidden = TsiShowAsDisabled.Checked; TsiShowAsDisabled.Checked = ShowAsDisabledIfHidden; };
             TsiClsidLocation.Click += (sender, e) => ExternalProgram.JumpRegEdit(GuidInfo.GetClsidPath(Guid), null, AppConfig.OpenMoreRegedit);
             ChkVisible.PreCheckChanging += () => !ChkVisible.IsOn || TryProtectOpenItem();
             Control.ContextMenu.Opened += (sender, e) => RefreshMenuItem();
@@ -483,7 +485,11 @@ namespace ContextMenuManager.Controls
 
         private void UseShieldIcon()
         {
-            var flag = HasLUAShield = TsiShieldIcon.Checked = !TsiShieldIcon.Checked;
+            // 勾选菜单项点击时 WPF 已自动切换 IsChecked，直接采用其新状态，
+            // 并按真实值回写，写失败时回滚勾选状态
+            var flag = TsiShieldIcon.Checked;
+            HasLUAShield = flag;
+            TsiShieldIcon.Checked = HasLUAShield;
             if (IconLocation == null)
             {
                 if (flag)
