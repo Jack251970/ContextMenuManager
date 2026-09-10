@@ -34,7 +34,7 @@ namespace ContextMenuManager.Controls
         public new bool Checked
         {
             get => IsChecked;
-            set => IsChecked = value;
+            set { IsCheckable = true; IsChecked = value; }
         }
 
         public bool Visible

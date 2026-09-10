@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
 using System.Security.AccessControl;
 
@@ -158,16 +158,35 @@ namespace ContextMenuManager.Methods
             }
         }
 
-        private static RegistryKey? GetRegistryKeyWithoutTakingOwnership(string regPath, bool writable = false, bool create = false)
+        /// <summary>不做获取所有权处理，直接打开指定注册表项</summary>
+        /// <remarks>用于避免在获取所有权过程中与自身产生递归调用</remarks>
+        public static RegistryKey? GetRegistryKeyWithoutTakingOwnership(string regPath, bool writable = false, bool create = false)
         {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root)
             {
                 if (create) return root.CreateSubKey(keyPath, writable);
-                else
+                else return root.OpenSubKey(keyPath, writable);
+            }
+        }
+
+        /// <summary>判断指定注册表项是否存在（不触发获取所有权逻辑）</summary>
+        public static bool KeyExists(string regPath)
+        {
+            try
+            {
+                GetRootAndSubRegPath(regPath, out var root, out var subRegPath);
+                using (root)
                 {
-                    return root.OpenSubKey(keyPath, writable);
+                    // 根项（如HKEY_CLASSES_ROOT）必然存在
+                    if (string.IsNullOrEmpty(subRegPath)) return true;
+                    using var key = root.OpenSubKey(subRegPath);
+                    return key != null;
                 }
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -176,10 +195,16 @@ namespace ContextMenuManager.Methods
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root)
             {
-                if (create) return root.CreateSubKey(keyPath, writable);
+                if (create)
+                {
+                    // 创建的子项可能尚不存在，无法直接获取其所有权，
+                    // 需先获取最近一个已存在祖先项的所有权，再在父级下创建
+                    RegTrustedInstaller.TakeRegTreeOwnerShip(regPath);
+                    return root.CreateSubKey(keyPath, writable);
+                }
                 else
                 {
-                    RegTrustedInstaller.TakeRegTreeOwnerShip(keyPath);
+                    RegTrustedInstaller.TakeRegTreeOwnerShip(regPath);
                     return root.OpenSubKey(keyPath, writable);
                 }
             }

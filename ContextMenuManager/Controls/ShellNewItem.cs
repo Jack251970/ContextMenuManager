@@ -294,10 +294,11 @@ namespace ContextMenuManager.Controls
                 TsiEditData.Visible = CanEditData;
                 TsiChangeCommand.Visible = CanChangeCommand;
                 TsiBeforeSeparator.IsEnabled = !DefaultBeforeSeparator;
-                TsiBeforeSeparator.IsChecked = BeforeSeparator;
+                TsiBeforeSeparator.Checked = BeforeSeparator;
             };
             TsiEditData.Click += (sender, e) => EditInitialData();
-            TsiBeforeSeparator.Click += (sender, e) => MoveWithSeparator(!TsiBeforeSeparator.Checked);
+            // 勾选菜单项点击时 WPF 已自动切换 IsChecked，直接采用其新状态
+            TsiBeforeSeparator.Click += (sender, e) => MoveWithSeparator(TsiBeforeSeparator.Checked);
             BtnMoveUp.Click += (sender, e) => List?.MoveItem(this, true);
             BtnMoveDown.Click += (sender, e) => List?.MoveItem(this, false);
         }
@@ -316,7 +317,8 @@ namespace ContextMenuManager.Controls
 
         public void SetSortabled(bool isLocked)
         {
-            BtnMoveDown.Visibility = BtnMoveUp.Visibility = (isLocked && CanSort) ? Visibility.Visible : Visibility.Collapsed;
+            // 只要该项可排序就显示上下移动按钮，避免未锁定(默认状态)时无法自由调整顺序
+            BtnMoveDown.Visibility = BtnMoveUp.Visibility = CanSort ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void MoveWithSeparator(bool isBefore)
