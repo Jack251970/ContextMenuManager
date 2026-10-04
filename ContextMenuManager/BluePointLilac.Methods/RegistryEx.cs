@@ -42,7 +42,8 @@ namespace ContextMenuManager.Methods
         public static void CopyTo(string srcPath, string dstPath)
         {
             using var srcKey = GetRegistryKey(srcPath);
-            using var dstKey = GetRegistryKey(dstPath, true, true);
+            using var dstKey = GetRegistryKey(dstPath, true, true)
+                ?? throw new InvalidOperationException($"Failed to create registry key: {dstPath}");
             CopyTo(srcKey, dstKey);
         }
 
@@ -153,7 +154,7 @@ namespace ContextMenuManager.Methods
             {
                 return GetRegistryKeyWithoutTakingOwnership(regPath, writable, create);
             }
-            catch
+            catch (Exception ex) when (!create || ex is UnauthorizedAccessException or SecurityException)
             {
                 return GetRegistryKeyWithTakingOwnership(regPath, writable, create);
             }
@@ -191,18 +192,14 @@ namespace ContextMenuManager.Methods
             {
                 if (create)
                 {
-                    var currentPath = regPath;
-                    while (true)
+                    // 目标已存在时处理目标本身；否则仅处理最近已存在父项。
+                    var existingPath = regPath;
+                    while (!KeyExists(existingPath))
                     {
-                        RegTrustedInstaller.TakeRegKeyOwnerShip(currentPath);
-                        try
-                        {
-                            return root.CreateSubKey(keyPath, writable);
-                        }
-                        catch (UnauthorizedAccessException) when (currentPath.Contains('\\')) { }
-                        catch (SecurityException) when (currentPath.Contains('\\')) { }
-                        currentPath = GetParentPath(currentPath);
+                        existingPath = GetParentPath(existingPath);
                     }
+                    RegTrustedInstaller.TakeRegKeyOwnerShip(existingPath);
+                    return root.CreateSubKey(keyPath, writable);
                 }
                 else
                 {

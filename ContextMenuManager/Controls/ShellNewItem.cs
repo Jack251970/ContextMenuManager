@@ -57,7 +57,7 @@ namespace ContextMenuManager.Controls
             if (list != null)
             {
                 InitializeComponents();
-                SetSortabled(ShellNewList.ShellNewLockItem.IsLocked);
+                UpdateSortButtons();
             }
         }
 
@@ -315,9 +315,9 @@ namespace ContextMenuManager.Controls
             if (dlg.ShowDialog() == true) InitialData = dlg.Text;
         }
 
-        public void SetSortabled(bool isLocked)
+        private void UpdateSortButtons()
         {
-            // 只要该项可排序就显示上下移动按钮，避免未锁定(默认状态)时无法自由调整顺序
+            // 按钮仅取决于项目是否可排序，与锁定状态无关
             BtnMoveDown.Visibility = BtnMoveUp.Visibility = CanSort ? Visibility.Visible : Visibility.Collapsed;
         }
 

@@ -176,7 +176,8 @@ namespace ContextMenuManager.Controls
 
         private void AddNewItem(bool isMulti, bool isSE, string seVerb, int seWindowStyle)
         {
-            using var shellKey = RegistryEx.GetRegistryKey(ShellPath, true, true);
+            using var shellKey = RegistryEx.GetRegistryKey(ShellPath, true, true)
+                ?? throw new InvalidOperationException($"Failed to create registry key: {ShellPath}");
             var keyName = "Item";
             NewItemRegPath = ObjectPath.GetNewPathWithIndex($@"{ShellPath}\{keyName}", ObjectPath.PathType.Registry, 0);
             keyName = RegistryEx.GetKeyName(NewItemRegPath);

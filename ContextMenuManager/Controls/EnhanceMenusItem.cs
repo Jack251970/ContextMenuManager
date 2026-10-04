@@ -44,7 +44,8 @@ namespace ContextMenuManager.Controls
             if (!XmlDicHelper.FileExists(valueXN)) return;
             if (!XmlDicHelper.JudgeCulture(valueXN)) return;
             if (!XmlDicHelper.JudgeOSVersion(valueXN)) return;
-            using var key = RegistryEx.GetRegistryKey(regPath, true, true);
+            using var key = RegistryEx.GetRegistryKey(regPath, true, true)
+                ?? throw new InvalidOperationException($"Failed to create registry key: {regPath}");
             foreach (XmlNode xn in valueXN.ChildNodes)
             {
                 if (xn is XmlComment) continue;
