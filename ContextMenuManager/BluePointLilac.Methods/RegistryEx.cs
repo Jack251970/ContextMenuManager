@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using System;
+using System.Security;
 using System.Security.AccessControl;
 
 #nullable enable
@@ -171,22 +172,15 @@ namespace ContextMenuManager.Methods
         }
 
         /// <summary>判断指定注册表项是否存在（不触发获取所有权逻辑）</summary>
+        /// <remarks>无法读取时抛出异常，不将访问被拒绝视为项不存在</remarks>
         public static bool KeyExists(string regPath)
         {
-            try
+            GetRootAndSubRegPath(regPath, out var root, out var subRegPath);
+            using (root)
             {
-                GetRootAndSubRegPath(regPath, out var root, out var subRegPath);
-                using (root)
-                {
-                    // 根项（如HKEY_CLASSES_ROOT）必然存在
-                    if (string.IsNullOrEmpty(subRegPath)) return true;
-                    using var key = root.OpenSubKey(subRegPath);
-                    return key != null;
-                }
-            }
-            catch
-            {
-                return false;
+                if (string.IsNullOrEmpty(subRegPath)) return true;
+                using var key = root.OpenSubKey(subRegPath);
+                return key != null;
             }
         }
 
@@ -197,10 +191,18 @@ namespace ContextMenuManager.Methods
             {
                 if (create)
                 {
-                    // 创建的子项可能尚不存在，无法直接获取其所有权，
-                    // 需先获取最近一个已存在祖先项的所有权，再在父级下创建
-                    RegTrustedInstaller.TakeRegTreeOwnerShip(regPath);
-                    return root.CreateSubKey(keyPath, writable);
+                    var currentPath = regPath;
+                    while (true)
+                    {
+                        RegTrustedInstaller.TakeRegKeyOwnerShip(currentPath);
+                        try
+                        {
+                            return root.CreateSubKey(keyPath, writable);
+                        }
+                        catch (UnauthorizedAccessException) when (currentPath.Contains('\\')) { }
+                        catch (SecurityException) when (currentPath.Contains('\\')) { }
+                        currentPath = GetParentPath(currentPath);
+                    }
                 }
                 else
                 {

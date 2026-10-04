@@ -166,8 +166,8 @@ namespace ContextMenuManager.Controls
                     if (guidPath != null)
                     {
                         var regPath = $@"{root.Name}\{guidPath}\DefaultIcon";
-                        RegTrustedInstaller.TakeRegTreeOwnerShip(regPath);
-                        Registry.SetValue(regPath, "", value);
+                        using var key = RegistryEx.GetRegistryKey(regPath, true, true);
+                        key.SetValue("", value);
                         ExplorerRestarter.Show();
                     }
                 }
