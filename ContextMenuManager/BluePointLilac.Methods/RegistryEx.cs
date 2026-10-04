@@ -1,5 +1,6 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
+using System.Security;
 using System.Security.AccessControl;
 
 #nullable enable
@@ -41,7 +42,8 @@ namespace ContextMenuManager.Methods
         public static void CopyTo(string srcPath, string dstPath)
         {
             using var srcKey = GetRegistryKey(srcPath);
-            using var dstKey = GetRegistryKey(dstPath, true, true);
+            using var dstKey = GetRegistryKey(dstPath, true, true)
+                ?? throw new InvalidOperationException($"Failed to create registry key: {dstPath}");
             CopyTo(srcKey, dstKey);
         }
 
@@ -152,22 +154,34 @@ namespace ContextMenuManager.Methods
             {
                 return GetRegistryKeyWithoutTakingOwnership(regPath, writable, create);
             }
-            catch
+            catch (Exception ex) when (!create || ex is UnauthorizedAccessException or SecurityException)
             {
                 return GetRegistryKeyWithTakingOwnership(regPath, writable, create);
             }
         }
 
-        private static RegistryKey? GetRegistryKeyWithoutTakingOwnership(string regPath, bool writable = false, bool create = false)
+        /// <summary>不做获取所有权处理，直接打开指定注册表项</summary>
+        /// <remarks>用于避免在获取所有权过程中与自身产生递归调用</remarks>
+        public static RegistryKey? GetRegistryKeyWithoutTakingOwnership(string regPath, bool writable = false, bool create = false)
         {
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root)
             {
                 if (create) return root.CreateSubKey(keyPath, writable);
-                else
-                {
-                    return root.OpenSubKey(keyPath, writable);
-                }
+                else return root.OpenSubKey(keyPath, writable);
+            }
+        }
+
+        /// <summary>判断指定注册表项是否存在（不触发获取所有权逻辑）</summary>
+        /// <remarks>无法读取时抛出异常，不将访问被拒绝视为项不存在</remarks>
+        public static bool KeyExists(string regPath)
+        {
+            GetRootAndSubRegPath(regPath, out var root, out var subRegPath);
+            using (root)
+            {
+                if (string.IsNullOrEmpty(subRegPath)) return true;
+                using var key = root.OpenSubKey(subRegPath);
+                return key != null;
             }
         }
 
@@ -176,10 +190,20 @@ namespace ContextMenuManager.Methods
             GetRootAndSubRegPath(regPath, out var root, out var keyPath);
             using (root)
             {
-                if (create) return root.CreateSubKey(keyPath, writable);
+                if (create)
+                {
+                    // 目标已存在时处理目标本身；否则仅处理最近已存在父项。
+                    var existingPath = regPath;
+                    while (!KeyExists(existingPath))
+                    {
+                        existingPath = GetParentPath(existingPath);
+                    }
+                    RegTrustedInstaller.TakeRegKeyOwnerShip(existingPath);
+                    return root.CreateSubKey(keyPath, writable);
+                }
                 else
                 {
-                    RegTrustedInstaller.TakeRegTreeOwnerShip(keyPath);
+                    RegTrustedInstaller.TakeRegTreeOwnerShip(regPath);
                     return root.OpenSubKey(keyPath, writable);
                 }
             }

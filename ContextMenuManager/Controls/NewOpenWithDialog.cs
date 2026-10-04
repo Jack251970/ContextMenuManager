@@ -108,11 +108,13 @@ namespace ContextMenuManager.Controls
                 }
             }
 
-            using (var key = RegistryEx.GetRegistryKey(appRegPath, true, true))
+            using (var key = RegistryEx.GetRegistryKey(appRegPath, true, true)
+                ?? throw new InvalidOperationException($"Failed to create registry key: {appRegPath}"))
             {
                 key.SetValue("FriendlyAppName", itemText);
             }
-            using var cmdKey = RegistryEx.GetRegistryKey(commandPath, true, true);
+            using var cmdKey = RegistryEx.GetRegistryKey(commandPath, true, true)
+                ?? throw new InvalidOperationException($"Failed to create registry key: {commandPath}");
             cmdKey.SetValue("", itemCommand);
             RegPath = cmdKey.Name;
 

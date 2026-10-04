@@ -1,5 +1,6 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -164,10 +165,10 @@ namespace ContextMenuManager.Methods
             if (string.IsNullOrWhiteSpace(regPath)) return;
             RegistryKey? key = null;
             WindowsIdentity? id = null;
-            //利用试错判断是否有写入权限
+            //利用试错判断是否有写入权限（用不触发所有权的方式探测，避免与获取所有权形成递归）
             try
             {
-                key = RegistryEx.GetRegistryKey(regPath, true);
+                key = RegistryEx.GetRegistryKeyWithoutTakingOwnership(regPath, true);
             }
             catch
             {
@@ -236,17 +237,23 @@ namespace ContextMenuManager.Methods
         public static void TakeRegTreeOwnerShip(string regPath)
         {
             if (string.IsNullOrWhiteSpace(regPath)) return;
-            TakeRegKeyOwnerShip(regPath);
-            try
+            var paths = new Stack<string>();
+            paths.Push(regPath);
+            while (paths.Count > 0)
             {
-                using var key = RegistryEx.GetRegistryKey(regPath);
-                if (key == null) return;
-                foreach (var subKeyName in key.GetSubKeyNames())
+                var path = paths.Pop();
+                TakeRegKeyOwnerShip(path);
+                try
                 {
-                    TakeRegTreeOwnerShip($@"{key.Name}\{subKeyName}");
+                    using var key = RegistryEx.GetRegistryKeyWithoutTakingOwnership(path);
+                    if (key == null) continue;
+                    foreach (var subKeyName in key.GetSubKeyNames())
+                    {
+                        paths.Push($@"{key.Name}\{subKeyName}");
+                    }
                 }
+                catch { }
             }
-            catch { }
         }
     }
 }

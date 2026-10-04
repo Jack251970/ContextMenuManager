@@ -166,8 +166,9 @@ namespace ContextMenuManager.Controls
                     if (guidPath != null)
                     {
                         var regPath = $@"{root.Name}\{guidPath}\DefaultIcon";
-                        RegTrustedInstaller.TakeRegTreeOwnerShip(regPath);
-                        Registry.SetValue(regPath, "", value);
+                        using var key = RegistryEx.GetRegistryKey(regPath, true, true)
+                            ?? throw new InvalidOperationException($"Failed to create registry key: {regPath}");
+                        key.SetValue("", value);
                         ExplorerRestarter.Show();
                     }
                 }

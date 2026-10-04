@@ -119,9 +119,16 @@ namespace ContextMenuManager.Controls
                     extensions.Add(item.Extension);
                 }
             }
-            ShellNewLockItem.UnLock();
-            Registry.SetValue(ShellNewPath, "Classes", extensions.ToArray());
-            ShellNewLockItem.Lock();
+            var wasLocked = ShellNewLockItem.IsLocked;
+            if (wasLocked) ShellNewLockItem.UnLock();
+            try
+            {
+                Registry.SetValue(ShellNewPath, "Classes", extensions.ToArray());
+            }
+            finally
+            {
+                if (wasLocked) ShellNewLockItem.Lock();
+            }
         }
 
         private void AddNewItem()
@@ -239,15 +246,12 @@ namespace ContextMenuManager.Controls
                 get => IsLocked;
                 set
                 {
-                    if (value) List.SaveSorting();
-                    else UnLock();
-                    foreach (var ctr in List.Controls)
+                    if (value)
                     {
-                        if (ctr.Item is ShellNewItem item)
-                        {
-                            item.SetSortabled(value);
-                        }
+                        List.SaveSorting();
+                        Lock();
                     }
+                    else UnLock();
                 }
             }
 

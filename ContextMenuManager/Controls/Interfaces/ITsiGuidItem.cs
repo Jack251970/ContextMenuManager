@@ -56,7 +56,8 @@ namespace ContextMenuManager.Controls.Interfaces
         {
             foreach (var path in GuidBlockedList.BlockedPaths)
             {
-                if (TsiBlockGuid.Checked)
+                // 勾选菜单项点击时 WPF 已自动切换 IsChecked，这里取反等价于点击前的真实阻止状态
+                if (!TsiBlockGuid.Checked)
                 {
                     RegistryEx.DeleteValue(path, Item.Guid.ToString("B"));
                 }

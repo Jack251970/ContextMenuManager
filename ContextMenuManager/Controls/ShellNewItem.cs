@@ -57,7 +57,7 @@ namespace ContextMenuManager.Controls
             if (list != null)
             {
                 InitializeComponents();
-                SetSortabled(ShellNewList.ShellNewLockItem.IsLocked);
+                UpdateSortButtons();
             }
         }
 
@@ -294,10 +294,11 @@ namespace ContextMenuManager.Controls
                 TsiEditData.Visible = CanEditData;
                 TsiChangeCommand.Visible = CanChangeCommand;
                 TsiBeforeSeparator.IsEnabled = !DefaultBeforeSeparator;
-                TsiBeforeSeparator.IsChecked = BeforeSeparator;
+                TsiBeforeSeparator.Checked = BeforeSeparator;
             };
             TsiEditData.Click += (sender, e) => EditInitialData();
-            TsiBeforeSeparator.Click += (sender, e) => MoveWithSeparator(!TsiBeforeSeparator.Checked);
+            // 勾选菜单项点击时 WPF 已自动切换 IsChecked，直接采用其新状态
+            TsiBeforeSeparator.Click += (sender, e) => MoveWithSeparator(TsiBeforeSeparator.Checked);
             BtnMoveUp.Click += (sender, e) => List?.MoveItem(this, true);
             BtnMoveDown.Click += (sender, e) => List?.MoveItem(this, false);
         }
@@ -314,9 +315,10 @@ namespace ContextMenuManager.Controls
             if (dlg.ShowDialog() == true) InitialData = dlg.Text;
         }
 
-        public void SetSortabled(bool isLocked)
+        private void UpdateSortButtons()
         {
-            BtnMoveDown.Visibility = BtnMoveUp.Visibility = (isLocked && CanSort) ? Visibility.Visible : Visibility.Collapsed;
+            // 按钮仅取决于项目是否可排序，与锁定状态无关
+            BtnMoveDown.Visibility = BtnMoveUp.Visibility = CanSort ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void MoveWithSeparator(bool isBefore)

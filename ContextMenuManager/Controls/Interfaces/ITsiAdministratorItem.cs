@@ -33,7 +33,8 @@ namespace ContextMenuManager.Controls.Interfaces
             };
             Click += (sender, e) =>
             {
-                item.ShellLink.RunAsAdministrator = !Checked;
+                // 勾选菜单项点击时 WPF 已自动切换 IsChecked，直接采用其新状态
+                item.ShellLink.RunAsAdministrator = Checked;
                 item.ShellLink.Save();
                 if (item is WinXItem) ExplorerRestarter.Show();
             };
